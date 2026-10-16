@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matplotlib – Day 5 | Capstone Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F8FAFC;--surface:#FFFFFF;--border:#CBD5E1;--accent:#0F172A;--accent2:#1E293B;
+    --green:#059669;--red:#EF233C;--gold:#D97706;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;
+    --text:#0F172A;--muted:#475569;--code-bg:#0B1120;--code-text:#CBD5E1;--tag-bg:#F1F5F9;--tag-text:#1E293B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(15,23,42,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#D97706 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'📊';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#D97706,#F59E0B);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#94A3B8;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FDBA74;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#475569;font-style:italic;} .op{color:#CBD5E1;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.gold{border-color:var(--gold);background:#FFFBEB;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.green .callout-title{color:var(--green);} .callout.gold .callout-title{color:var(--gold);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#1E293B,#0F172A);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0F172A,#1E293B,#D97706);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#0F172A,#D97706);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;} .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .certificate{border:3px solid var(--gold);border-radius:16px;padding:40px;text-align:center;background:linear-gradient(135deg,#FFFBEB,#F8FAFC);margin-top:32px;position:relative;overflow:hidden;}
+  .certificate::before{content:'📊';font-size:200px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;}
+  .certificate .cert-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+  .certificate h2{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);margin-bottom:8px;}
+  .certificate .cert-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin:16px 0;}
+  .certificate p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto 20px;}
+  .cert-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;}
+  .cert-skill{background:var(--accent);color:#fff;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">📊 Matplotlib</div><span class="sep">|</span><span class="day-label">Day 5 of 5 · Final</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">100%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Matplotlib Full Course · Day 5 · Capstone</div>
+  <h1>Advanced Layouts &amp;<br><span>Capstone Dashboard</span></h1>
+  <p>The final day. Master advanced layout composition, image handling, and professional export workflows — then build a complete executive dashboard from raw data to polished PDF report.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🖼️ Image Handling</span>
+    <span class="hero-pill">📐 Advanced Layout Composition</span>
+    <span class="hero-pill">🎯 Design Principles</span>
+    <span class="hero-pill">📄 Multi-Page PDF Reports</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Full Dashboard Capstone</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎓 <strong>Final Day!</strong> You've covered Figures/Axes → Styling → Statistical Charts → Animation. Today closes the loop with a professional, multi-chart dashboard capstone.</p>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🖼️</div>
+    <div><h2>Working with Images</h2><p>Reading, displaying, and combining images with charts</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> matplotlib.image <span class="kw">as</span> mpimg
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># Read an image file into a NumPy array</span>
+img = mpimg.<span class="fn">imread</span>(<span class="st">'logo.png'</span>)   <span class="cm"># shape: (height, width, channels)</span>
+<span class="fn">print</span>(img.shape)   <span class="cm"># e.g. (400, 600, 4) — RGBA</span>
+
+<span class="cm"># Display an image</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>()
+ax.<span class="fn">imshow</span>(img)
+ax.<span class="fn">axis</span>(<span class="st">'off'</span>)          <span class="cm"># hide axes/ticks for a clean image display</span>
+
+<span class="cm"># Place a logo/watermark INSIDE a chart using inset_axes</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+ax.<span class="fn">plot</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>], [<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>])
+logo_ax = ax.<span class="fn">inset_axes</span>([<span class="nm">0.85</span>, <span class="nm">0.85</span>, <span class="nm">0.12</span>, <span class="nm">0.12</span>])
+logo_ax.<span class="fn">imshow</span>(img)
+logo_ax.<span class="fn">axis</span>(<span class="st">'off'</span>)
+
+<span class="cm"># Generate synthetic "image" data (e.g., for heatmaps of pixel-like data)</span>
+noise_img = <span class="op">np</span>.random.<span class="fn">rand</span>(<span class="nm">100</span>,<span class="nm">100</span>,<span class="nm">3</span>)   <span class="cm"># random RGB image array</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>()
+ax.<span class="fn">imshow</span>(noise_img)
+
+<span class="cm"># Save the current figure AS an image and re-read it (round trip)</span>
+fig.<span class="fn">savefig</span>(<span class="st">'chart.png'</span>, dpi=<span class="nm">150</span>)
+reloaded = mpimg.<span class="fn">imread</span>(<span class="st">'chart.png'</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📐</div>
+    <div><h2>Advanced Layout Composition</h2><p>Combining every layout tool for real dashboard construction</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Real dashboards combine <strong>GridSpec/mosaic</strong>, <strong>shared axes</strong>, <strong>varying panel sizes</strong>, and <strong>consistent styling</strong> — all working together. This section shows the complete pattern.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># A realistic multi-panel dashboard skeleton</span>
+fig = <span class="op">plt</span>.<span class="fn">figure</span>(figsize=(<span class="nm">16</span>, <span class="nm">10</span>))
+gs = fig.<span class="fn">add_gridspec</span>(<span class="nm">3</span>, <span class="nm">4</span>,
+                        height_ratios=[<span class="nm">0.15</span>, <span class="nm">1</span>, <span class="nm">1</span>],   <span class="cm"># thin header row on top</span>
+                        hspace=<span class="nm">0.45</span>, wspace=<span class="nm">0.35</span>)
+
+<span class="cm"># Row 0: KPI number cards (thin strip across the top)</span>
+kpi_axes = [fig.<span class="fn">add_subplot</span>(gs[<span class="nm">0</span>, i]) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">4</span>)]
+kpi_values = [<span class="st">'₹4.2Cr'</span>, <span class="st">'12,450'</span>, <span class="st">'94.2%'</span>, <span class="st">'+18%'</span>]
+kpi_labels = [<span class="st">'Revenue'</span>, <span class="st">'Orders'</span>, <span class="st">'Uptime'</span>, <span class="st">'Growth'</span>]
+<span class="kw">for</span> ax, val, lab <span class="kw">in</span> <span class="fn">zip</span>(kpi_axes, kpi_values, kpi_labels):
+    ax.<span class="fn">axis</span>(<span class="st">'off'</span>)
+    ax.<span class="fn">text</span>(<span class="nm">0.5</span>, <span class="nm">0.7</span>, val, ha=<span class="st">'center'</span>, fontsize=<span class="nm">22</span>, fontweight=<span class="st">'bold'</span>, transform=ax.transAxes)
+    ax.<span class="fn">text</span>(<span class="nm">0.5</span>, <span class="nm">0.2</span>, lab, ha=<span class="st">'center'</span>, fontsize=<span class="nm">11</span>, color=<span class="st">'gray'</span>, transform=ax.transAxes)
+
+<span class="cm"># Row 1: main trend chart (spans first 3 cols) + a summary panel (last col)</span>
+ax_trend   = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">0</span>:<span class="nm">3</span>])
+ax_summary = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">3</span>])
+
+<span class="cm"># Row 2: four smaller charts</span>
+ax_bar  = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">2</span>, <span class="nm">0</span>])
+ax_pie  = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">2</span>, <span class="nm">1</span>])
+ax_hist = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">2</span>, <span class="nm">2</span>])
+ax_heat = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">2</span>, <span class="nm">3</span>])
+
+fig.<span class="fn">suptitle</span>(<span class="st">'Executive Dashboard'</span>, fontsize=<span class="nm">20</span>, fontweight=<span class="st">'bold'</span>, y=<span class="nm">0.98</span>)</pre>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-title">💡 KPI Cards Trick</div>
+      A common dashboard pattern is a row of "number cards" — big bold numbers with small labels underneath. Build these with <code>ax.axis('off')</code> (hide the plot frame entirely) and <code>ax.text()</code> calls at relative positions — no actual chart data needed, just formatted text.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🎯</div>
+    <div><h2>Design Principles for Data Visualization</h2><p>What separates professional dashboards from cluttered ones</p></div>
+  </div>
+  <div class="section-body">
+
+    <h3>The Data-Ink Ratio (Edward Tufte)</h3>
+    <p>Maximise the ink used to show DATA, minimise "chartjunk" — decorative elements that don't convey information.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># ❌ Chartjunk-heavy defaults</span>
+ax.<span class="fn">bar</span>(x, y)
+<span class="cm"># default: heavy border, gridlines everywhere, 3D-style shadows if enabled</span>
+
+<span class="cm"># ✅ Clean, high data-ink-ratio version</span>
+ax.<span class="fn">bar</span>(x, y, color=<span class="st">'#0F172A'</span>, width=<span class="nm">0.6</span>)
+ax.spines[<span class="st">'top'</span>].<span class="fn">set_visible</span>(<span class="kw">False</span>)
+ax.spines[<span class="st">'right'</span>].<span class="fn">set_visible</span>(<span class="kw">False</span>)
+ax.spines[<span class="st">'left'</span>].<span class="fn">set_visible</span>(<span class="kw">False</span>)     <span class="cm"># even left spine can go if gridlines show scale</span>
+ax.<span class="fn">grid</span>(axis=<span class="st">'y'</span>, alpha=<span class="nm">0.2</span>)              <span class="cm"># only horizontal gridlines, very subtle</span>
+ax.<span class="fn">tick_params</span>(left=<span class="kw">False</span>)               <span class="cm"># remove tick marks, keep labels</span></pre>
+    </div>
+
+    <h3>Design Checklist for Dashboards</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Principle</th><th>Implementation</th></tr>
+        <tr><td><strong>One message per chart</strong></td><td>Don't cram unrelated data into one Axes</td></tr>
+        <tr><td><strong>Consistent color meaning</strong></td><td>If blue = "good" in chart 1, keep it in chart 2</td></tr>
+        <tr><td><strong>Sort categorical data</strong></td><td>Bar charts sorted by value, not alphabetically (unless order matters)</td></tr>
+        <tr><td><strong>Direct labeling over legends</strong></td><td>Label lines directly at their endpoint when possible — faster to read</td></tr>
+        <tr><td><strong>Appropriate precision</strong></td><td>Don't show 4 decimal places if 1 is meaningful</td></tr>
+        <tr><td><strong>Highlight, don't decorate</strong></td><td>Use color/bold sparingly to draw attention to the KEY insight</td></tr>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Direct labeling technique — label lines at their endpoint instead of a legend</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+<span class="kw">for</span> name, series, color <span class="kw">in</span> <span class="fn">zip</span>([<span class="st">'Product A'</span>,<span class="st">'Product B'</span>], [series_a, series_b], [<span class="st">'#0F172A'</span>,<span class="st">'#D97706'</span>]):
+    ax.<span class="fn">plot</span>(months, series, color=color, linewidth=<span class="nm">2.5</span>)
+    ax.<span class="fn">text</span>(<span class="fn">len</span>(months)-<span class="nm">0.5</span>, series[-<span class="nm">1</span>], <span class="st">f' {name}'</span>, color=color,
+            fontsize=<span class="nm">11</span>, fontweight=<span class="st">'bold'</span>, va=<span class="st">'center'</span>)
+<span class="cm"># No legend needed — labels sit right at the line's end, faster to read!</span>
+
+<span class="cm"># Highlighting one key series among many gray ones</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+<span class="kw">for</span> name, series <span class="kw">in</span> all_products.items():
+    <span class="kw">if</span> name == <span class="st">'Flagship Product'</span>:
+        ax.<span class="fn">plot</span>(months, series, color=<span class="st">'#D97706'</span>, linewidth=<span class="nm">3</span>, zorder=<span class="nm">5</span>, label=name)
+    <span class="kw">else</span>:
+        ax.<span class="fn">plot</span>(months, series, color=<span class="st">'lightgray'</span>, linewidth=<span class="nm">1</span>, zorder=<span class="nm">1</span>)
+ax.<span class="fn">legend</span>()</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">📄</div>
+    <div><h2>Multi-Page PDF Reports</h2><p>Combining multiple figures into one shareable document</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> matplotlib.backends.backend_pdf <span class="kw">import</span> PdfPages
+
+<span class="cm"># Combine multiple figures into ONE multi-page PDF file</span>
+<span class="kw">with</span> <span class="fn">PdfPages</span>(<span class="st">'quarterly_report.pdf'</span>) <span class="kw">as</span> pdf:
+
+    <span class="cm"># Page 1: title / summary page</span>
+    fig1, ax1 = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">11</span>,<span class="nm">8.5</span>))   <span class="cm"># US Letter proportions</span>
+    ax1.<span class="fn">axis</span>(<span class="st">'off'</span>)
+    ax1.<span class="fn">text</span>(<span class="nm">0.5</span>, <span class="nm">0.6</span>, <span class="st">'Q4 2024 Report'</span>, ha=<span class="st">'center'</span>, fontsize=<span class="nm">28</span>, fontweight=<span class="st">'bold'</span>)
+    ax1.<span class="fn">text</span>(<span class="nm">0.5</span>, <span class="nm">0.5</span>, <span class="st">'Prepared by Data Team'</span>, ha=<span class="st">'center'</span>, fontsize=<span class="nm">14</span>, color=<span class="st">'gray'</span>)
+    pdf.<span class="fn">savefig</span>(fig1)
+    <span class="op">plt</span>.<span class="fn">close</span>(fig1)
+
+    <span class="cm"># Page 2: revenue chart</span>
+    fig2, ax2 = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">11</span>,<span class="nm">8.5</span>))
+    ax2.<span class="fn">plot</span>(months, revenue)
+    ax2.<span class="fn">set_title</span>(<span class="st">'Revenue Trend'</span>)
+    pdf.<span class="fn">savefig</span>(fig2)
+    <span class="op">plt</span>.<span class="fn">close</span>(fig2)
+
+    <span class="cm"># Page 3: dashboard grid</span>
+    fig3, axes = <span class="op">plt</span>.<span class="fn">subplots</span>(<span class="nm">2</span>,<span class="nm">2</span>, figsize=(<span class="nm">11</span>,<span class="nm">8.5</span>))
+    <span class="cm"># ... populate axes ...</span>
+    pdf.<span class="fn">savefig</span>(fig3)
+    <span class="op">plt</span>.<span class="fn">close</span>(fig3)
+
+    <span class="cm"># Metadata (visible in PDF properties)</span>
+    d = pdf.infodict()
+    d[<span class="st">'Title'</span>]  = <span class="st">'Quarterly Business Report'</span>
+    d[<span class="st">'Author'</span>] = <span class="st">'Data Analytics Team'</span>
+
+<span class="fn">print</span>(<span class="st">"Multi-page PDF report saved ✅"</span>)</pre>
+    </div>
+
+    <div class="callout gold">
+      <div class="callout-title">✅ PdfPages — The Multi-Chart Report Tool</div>
+      <code>PdfPages</code> lets you accumulate any number of separate Matplotlib figures into ONE PDF file, each as its own page — perfect for board decks, monthly reports, or scientific papers where each chart deserves its own full page.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">mpimg.imread()</div><div class="mc-desc">Load image as NumPy array</div><div class="mc-ex">shape (h,w,channels)</div></div>
+      <div class="mini-card"><div class="mc-name">ax.axis('off')</div><div class="mc-desc">Hide all axes decoration</div><div class="mc-ex">clean image/KPI display</div></div>
+      <div class="mini-card"><div class="mc-name">fig.add_gridspec()</div><div class="mc-desc">Multi-panel dashboard layout</div><div class="mc-ex">height_ratios, wspace</div></div>
+      <div class="mini-card"><div class="mc-name">Direct labeling</div><div class="mc-desc">ax.text() at line endpoint</div><div class="mc-ex">skip the legend</div></div>
+      <div class="mini-card"><div class="mc-name">PdfPages()</div><div class="mc-desc">Multi-page PDF export</div><div class="mc-ex">pdf.savefig(fig)</div></div>
+      <div class="mini-card"><div class="mc-name">zorder=</div><div class="mc-desc">Draw order / layering control</div><div class="mc-ex">higher = drawn on top</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Final Practice MCQs — 20 Questions</h2><p>Images, layouts, design principles, PDF export, and the full course. Pass: 16/20.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPSTONE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#0F172A,#D97706)">🏆</div>
+    <div><h2>Capstone Project — Full Executive Dashboard &amp; PDF Report</h2><p>Estimated time: 3–4 hours &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐ &nbsp;|&nbsp; Uses ALL 5 days</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>📋 Project Brief — Meridian Retail Group Annual Report</h3>
+      <p>You are the <strong>Head of Data Visualization</strong> at <em>Meridian Retail Group</em>. The board needs a complete visual annual report — one comprehensive on-screen dashboard PLUS a multi-page printable PDF — covering sales trends, regional performance, product distributions, correlation analysis, and a forecast animation. Build it using EVERY technique from Days 1-5.</p>
+      <span class="cap-badge">Day 1: Figure/Axes, Basic Charts</span>
+      <span class="cap-badge">Day 2: Styling &amp; GridSpec</span>
+      <span class="cap-badge">Day 3: Box/Violin/Heatmap</span>
+      <span class="cap-badge">Day 4: Animation</span>
+      <span class="cap-badge">Day 5: Layout &amp; PDF Export</span>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0F172A">1</div><h4>Phase 1 — Data Generation</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Generate the Full Business Dataset</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> matplotlib.animation <span class="kw">as</span> animation
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">21</span>)
+
+<span class="cm"># Monthly revenue for 24 months</span>
+months_24 = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">24</span>)
+base = <span class="nm">80</span> + months_24 * <span class="nm">2.2</span>
+revenue = base + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">6</span>, <span class="nm">24</span>) + <span class="nm">15</span>*<span class="op">np</span>.<span class="fn">sin</span>(months_24/<span class="nm">2</span>)   <span class="cm"># seasonal pattern</span>
+
+<span class="cm"># Regional performance</span>
+regions = [<span class="st">'North'</span>,<span class="st">'South'</span>,<span class="st">'East'</span>,<span class="st">'West'</span>,<span class="st">'Central'</span>]
+region_revenue = <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">150</span>,<span class="nm">450</span>,<span class="nm">5</span>).<span class="fn">round</span>(<span class="nm">1</span>)
+
+<span class="cm"># Product category distributions (for box/violin)</span>
+categories = [<span class="st">'Electronics'</span>,<span class="st">'Apparel'</span>,<span class="st">'Home'</span>,<span class="st">'Grocery'</span>]
+cat_margins = [<span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">22</span>,<span class="nm">5</span>,<span class="nm">80</span>), <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">35</span>,<span class="nm">8</span>,<span class="nm">80</span>),
+               <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">18</span>,<span class="nm">4</span>,<span class="nm">80</span>), <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">12</span>,<span class="nm">3</span>,<span class="nm">80</span>)]
+
+<span class="cm"># Correlation matrix: business factors</span>
+factors = [<span class="st">'AdSpend'</span>,<span class="st">'FootTraffic'</span>,<span class="st">'PriceIndex'</span>,<span class="st">'Revenue'</span>]
+corr = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1.00</span>,<span class="nm">0.55</span>,-<span class="nm">0.20</span>,<span class="nm">0.68</span>],
+                 [<span class="nm">0.55</span>,<span class="nm">1.00</span>,-<span class="nm">0.15</span>,<span class="nm">0.71</span>],
+                 [-<span class="nm">0.20</span>,-<span class="nm">0.15</span>,<span class="nm">1.00</span>,-<span class="nm">0.35</span>],
+                 [<span class="nm">0.68</span>,<span class="nm">0.71</span>,-<span class="nm">0.35</span>,<span class="nm">1.00</span>]])
+
+<span class="cm"># Simple linear forecast for next 6 months (for the animation)</span>
+z = <span class="op">np</span>.<span class="fn">polyfit</span>(months_24, revenue, <span class="nm">1</span>)
+p = <span class="op">np</span>.<span class="fn">poly1d</span>(z)
+forecast_months = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">24</span>, <span class="nm">30</span>)
+forecast_revenue = p(forecast_months)
+
+<span class="fn">print</span>(<span class="st">"Data generated ✅"</span>)</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Build the Static Dashboard</h4><span class="phase-time">~60 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Set Global Style &amp; Create the GridSpec Skeleton</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="op">plt</span>.rcParams.<span class="fn">update</span>({
+    <span class="st">'font.family'</span>:<span class="st">'sans-serif'</span>, <span class="st">'font.size'</span>:<span class="nm">10</span>,
+    <span class="st">'axes.spines.top'</span>:<span class="kw">False</span>, <span class="st">'axes.spines.right'</span>:<span class="kw">False</span>,
+    <span class="st">'axes.grid'</span>:<span class="kw">True</span>, <span class="st">'grid.alpha'</span>:<span class="nm">0.2</span>
+})
+NAVY, GOLD, GRAY = <span class="st">'#0F172A'</span>, <span class="st">'#D97706'</span>, <span class="st">'#94A3B8'</span>
+
+fig = <span class="op">plt</span>.<span class="fn">figure</span>(figsize=(<span class="nm">18</span>, <span class="nm">11</span>))
+gs = fig.<span class="fn">add_gridspec</span>(<span class="nm">3</span>, <span class="nm">4</span>, height_ratios=[<span class="nm">0.15</span>,<span class="nm">1</span>,<span class="nm">1</span>], hspace=<span class="nm">0.5</span>, wspace=<span class="nm">0.35</span>)
+fig.<span class="fn">suptitle</span>(<span class="st">'Meridian Retail Group — Annual Board Report'</span>, fontsize=<span class="nm">20</span>, fontweight=<span class="st">'bold'</span>, color=NAVY)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Build the KPI Card Row</h5>
+          <p>Compute and display 4 KPI cards: Total Revenue, YoY Growth %, Best Region, Best Category — using the axis('off') + text() technique.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Build the Main Trend Chart with Direct Labeling</h5>
+          <p>Plot the 24-month revenue trend as the large chart spanning columns 0-2 of row 1. Add a 3-month rolling average overlay. Use direct end-of-line labeling instead of a legend.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">4</div><div class="step-content">
+          <h5>Build the Region Summary Panel</h5>
+          <p>In the row-1 rightmost column, build a horizontal bar chart of regions sorted by revenue, with the top region highlighted in gold and others in gray.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">5</div><div class="step-content">
+          <h5>Build 4 Supporting Charts in Row 2</h5>
+          <ul>
+            <li><strong>Box plot</strong>: margin distribution by category</li>
+            <li><strong>Pie/donut</strong>: revenue share by region</li>
+            <li><strong>Histogram</strong>: margin distribution across all products with mean line</li>
+            <li><strong>Heatmap</strong>: business factor correlation matrix, annotated</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Forecast Animation</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Separate Animated Forecast Reveal</h5>
+          <p>Create a SEPARATE figure (not part of the static dashboard) animating the historical revenue line drawing in, followed by the forecast line extending with a distinct dashed style and shaded uncertainty band.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">10</span>,<span class="nm">6</span>))
+all_months = <span class="op">np</span>.<span class="fn">concatenate</span>([months_24, forecast_months])
+ax.<span class="fn">set_xlim</span>(<span class="nm">0</span>, <span class="nm">30</span>); ax.<span class="fn">set_ylim</span>(<span class="nm">50</span>, <span class="fn">max</span>(revenue.<span class="fn">max</span>(),forecast_revenue.<span class="fn">max</span>())+<span class="nm">15</span>)
+
+line_hist, = ax.<span class="fn">plot</span>([], [], color=NAVY, linewidth=<span class="nm">2.5</span>)
+line_fcst, = ax.<span class="fn">plot</span>([], [], color=GOLD, linewidth=<span class="nm">2.5</span>, linestyle=<span class="st">'--'</span>)
+ax.<span class="fn">axvline</span>(<span class="nm">24</span>, color=<span class="st">'gray'</span>, linestyle=<span class="st">':'</span>, alpha=<span class="nm">0.5</span>)
+ax.<span class="fn">set_title</span>(<span class="st">'Revenue Trend + 6-Month Forecast'</span>)
+
+<span class="kw">def</span> <span class="fn">update</span>(frame):
+    <span class="kw">if</span> frame &lt;= <span class="nm">24</span>:
+        line_hist.<span class="fn">set_data</span>(months_24[:frame], revenue[:frame])
+    <span class="kw">else</span>:
+        line_hist.<span class="fn">set_data</span>(months_24, revenue)
+        line_fcst.<span class="fn">set_data</span>(forecast_months[:frame-<span class="nm">24</span>], forecast_revenue[:frame-<span class="nm">24</span>])
+    <span class="kw">return</span> line_hist, line_fcst
+
+ani = animation.<span class="fn">FuncAnimation</span>(fig, update, frames=<span class="nm">30</span>, interval=<span class="nm">80</span>, blit=<span class="kw">True</span>, repeat=<span class="kw">False</span>)
+ani.<span class="fn">save</span>(<span class="st">'forecast_reveal.gif'</span>, writer=<span class="st">'pillow'</span>, fps=<span class="nm">12</span>)</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div><h4>Phase 4 — Multi-Page PDF Report</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Assemble the Full PDF Board Report</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> matplotlib.backends.backend_pdf <span class="kw">import</span> PdfPages
+
+<span class="kw">with</span> <span class="fn">PdfPages</span>(<span class="st">'meridian_annual_report.pdf'</span>) <span class="kw">as</span> pdf:
+    <span class="cm"># Page 1: Cover</span>
+    fig_cover, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">11</span>,<span class="nm">8.5</span>))
+    ax.<span class="fn">axis</span>(<span class="st">'off'</span>)
+    ax.<span class="fn">text</span>(<span class="nm">0.5</span>,<span class="nm">0.55</span>,<span class="st">'Meridian Retail Group'</span>, ha=<span class="st">'center'</span>, fontsize=<span class="nm">30</span>, fontweight=<span class="st">'bold'</span>, color=NAVY)
+    ax.<span class="fn">text</span>(<span class="nm">0.5</span>,<span class="nm">0.48</span>,<span class="st">'Annual Board Report — FY2024'</span>, ha=<span class="st">'center'</span>, fontsize=<span class="nm">16</span>, color=GOLD)
+    pdf.<span class="fn">savefig</span>(fig_cover); <span class="op">plt</span>.<span class="fn">close</span>(fig_cover)
+
+    <span class="cm"># Page 2: the full dashboard figure built in Phase 2</span>
+    pdf.<span class="fn">savefig</span>(fig)   <span class="cm"># the dashboard figure object from Phase 2</span>
+
+    <span class="cm"># Page 3: revenue trend, full page</span>
+    fig_trend, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">11</span>,<span class="nm">8.5</span>))
+    ax.<span class="fn">plot</span>(months_24, revenue, color=NAVY)
+    ax.<span class="fn">set_title</span>(<span class="st">'Detailed Revenue Trend'</span>)
+    pdf.<span class="fn">savefig</span>(fig_trend); <span class="op">plt</span>.<span class="fn">close</span>(fig_trend)
+
+    d = pdf.infodict()
+    d[<span class="st">'Title'</span>] = <span class="st">'Meridian Retail Annual Report'</span>
+    d[<span class="st">'Author'</span>] = <span class="st">'Data Visualization Team'</span>
+
+<span class="fn">print</span>(<span class="st">"Full PDF report generated ✅"</span>)</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">5</div><h4>Phase 5 — Final Deliverables Summary</h4><span class="phase-time">~15 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Export Everything &amp; Print Final Summary</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED CONSOLE OUTPUT</span></div>
+<pre>═══════════════════════════════════════════════
+    MERIDIAN RETAIL — DELIVERABLES SUMMARY
+═══════════════════════════════════════════════
+DASHBOARD METRICS
+  Total Revenue (24mo)  : ₹????.?Cr
+  YoY Growth            : +??.?%
+  Best Region           : ??? (₹???.?L)
+  Best Category (margin): ??? (??.?%)
+  Strongest Correlate    : ??? with Revenue (r=?.??)
+
+FORECAST
+  6-Month Projection    : ₹???.? → ₹???.?
+  Trend Slope           : +?.? per month
+
+FILES GENERATED
+  ✅ dashboard.png              (high-res static dashboard)
+  ✅ forecast_reveal.gif        (animated forecast)
+  ✅ meridian_annual_report.pdf (3-page board report)
+═══════════════════════════════════════════════</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Capstone Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated 24-month revenue, regional, category, and correlation data</li>
+        <li>Applied global rcParams brand styling</li>
+        <li>Built GridSpec layout with KPI row + main content rows</li>
+        <li>Built 4 KPI number cards using axis('off') + text()</li>
+        <li>Built main revenue trend chart with rolling average and direct labeling</li>
+        <li>Built sorted, highlighted regional bar chart</li>
+        <li>Built box plot of category margins</li>
+        <li>Built donut chart of regional revenue share</li>
+        <li>Built histogram with mean line of product margins</li>
+        <li>Built annotated correlation heatmap</li>
+        <li>Applied fig.suptitle() and tight_layout equivalent spacing</li>
+        <li>Built a separate animated forecast reveal (historical + dashed forecast)</li>
+        <li>Exported the animation as GIF</li>
+        <li>Assembled a 3-page PDF report using PdfPages (cover, dashboard, detail page)</li>
+        <li>Set PDF metadata (Title, Author)</li>
+        <li>Printed complete deliverables summary</li>
+      </ul>
+    </div>
+
+    <div class="callout gold" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges — Prove Mastery</div>
+      <ol style="margin-top:8px;">
+        <li><strong>Dark mode version</strong>: Rebuild the entire dashboard using plt.style.context('dark_background') for a presentation-screen variant.</li>
+        <li><strong>Interactive explorer</strong>: Add a slider that lets viewers change the forecast horizon (3-12 months) and see the projection update live.</li>
+        <li><strong>Automated report function</strong>: Wrap the whole capstone into a function <code>generate_report(data_dict, output_path)</code> that could run monthly with new data.</li>
+      </ol>
+    </div>
+
+    <div class="certificate">
+      <div class="cert-title">Certificate of Completion</div>
+      <h2>Matplotlib Full Course</h2>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">This certifies that you have completed all 5 days of</div>
+      <div class="cert-name">📊 Matplotlib Mastery Track</div>
+      <p>You have built expertise in chart fundamentals, styling, statistical visualization, animation, and professional dashboard/report construction.</p>
+      <div class="cert-skills">
+        <span class="cert-skill">✓ Figure &amp; Axes</span>
+        <span class="cert-skill">✓ Line/Bar/Scatter/Hist</span>
+        <span class="cert-skill">✓ Styles &amp; Colormaps</span>
+        <span class="cert-skill">✓ GridSpec Layouts</span>
+        <span class="cert-skill">✓ Box/Violin/Heatmap</span>
+        <span class="cert-skill">✓ 3D &amp; Contour</span>
+        <span class="cert-skill">✓ FuncAnimation</span>
+        <span class="cert-skill">✓ Widgets &amp; Events</span>
+        <span class="cert-skill">✓ Design Principles</span>
+        <span class="cert-skill">✓ PDF Reports</span>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--muted);">⭐ 100 MCQs passed &nbsp;|&nbsp; 5 Real-World Projects &nbsp;|&nbsp; 1 Full Executive Dashboard Capstone</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Matplotlib Full Course — Complete! 🎉</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Figure &amp; Basic Plots</span>
+    <span class="day-pill done">Day 2 · Styling &amp; Subplots</span>
+    <span class="day-pill done">Day 3 · Statistical Charts</span>
+    <span class="day-pill done">Day 4 · Animation</span>
+    <span class="day-pill done active">Day 5 · Capstone ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">Next up: <strong>Seaborn</strong> — statistical visualization built on Matplotlib!</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What does `mpimg.imread('logo.png')` return?",opts:["A file path string","A NumPy array representing the image, with shape (height, width, channels)","A Matplotlib Figure object","A base64 encoded string"],ans:1,explain:"imread() loads image data into a NumPy array. For a color PNG this is typically shape (height, width, 4) for RGBA, or (height, width, 3) for RGB — pixel values are floats 0-1 for PNG or ints 0-255 for JPEG."},
+  {code:"ax.axis('off')",q:"What is a common use case for this in dashboard construction?",opts:["It deletes the data","Hiding all axes decoration (ticks, labels, spines) — commonly used for displaying images cleanly or building text-only 'KPI card' panels","It closes the figure","It removes the title only"],ans:1,explain:"axis('off') removes all axis decoration — no ticks, no tick labels, no spines. This is essential for cleanly displaying an image without a distracting frame, or for building custom text-based panels like KPI number cards where you just want centered text with no chart frame."},
+  {code:"gs = fig.add_gridspec(3, 4, height_ratios=[0.15, 1, 1])",q:"What does the height_ratios=[0.15, 1, 1] achieve in a dashboard layout?",opts:["Creates 3 equal rows","Makes the FIRST row much thinner (15% the height of the other rows) — ideal for a compact KPI summary strip above the main content","Removes the first row entirely","Sets the figure's total height"],ans:1,explain:"height_ratios controls the proportional height of each grid row. [0.15, 1, 1] makes row 0 only 15% as tall as rows 1 and 2 — perfect for a thin strip of KPI number cards sitting above the main, larger chart panels."},
+  {q:"What is the 'data-ink ratio' principle (from Edward Tufte) in data visualization design?",opts:["The ratio of red to blue ink used","Maximise the proportion of a chart's visual elements ('ink') that convey actual data, minimising decorative 'chartjunk' that adds no information","A measurement of printer ink cost","The ratio of text to charts in a document"],ans:1,explain:"Tufte's data-ink ratio principle argues that every mark on a chart should ideally represent data. Unnecessary gridlines, borders, 3D effects, and decoration that don't convey information are 'chartjunk' and should be minimized or removed for clearer communication."},
+  {code:"ax.text(len(months)-0.5, series[-1], f' {name}', color=color, va='center')",q:"What visualization technique does this implement?",opts:["A legend box","Direct labeling — placing the series name as text right at the END of its line, eliminating the need for a separate legend and speeding up reading","A title","An annotation arrow"],ans:1,explain:"Direct labeling places each line's name right next to its final data point, in matching color. Readers can instantly associate each line with its label without eye movement back and forth to a legend box — considered a best practice for charts with few (2-5) lines."},
+  {q:"What is the purpose of `zorder` when plotting multiple overlapping elements?",opts:["It sets the z-axis scale in 3D plots only","It controls the DRAWING/STACKING ORDER — higher zorder values are drawn on top of lower ones, useful for ensuring an important highlighted series sits above background elements","It has no effect in 2D plots","It zooms the plot"],ans:1,explain:"zorder determines which elements are drawn on top when they overlap. A common pattern: gray background lines get zorder=1, while one highlighted 'important' line gets zorder=5, ensuring it's always visible on top even where lines cross."},
+  {q:"What does `matplotlib.backends.backend_pdf.PdfPages` allow you to do?",opts:["Only save a single figure as PDF","Combine MULTIPLE separate Matplotlib figures into ONE multi-page PDF document, with each figure becoming its own page","Convert PDFs to images","Read data from PDF files"],ans:1,explain:"PdfPages is a context manager that lets you call pdf.savefig(fig) multiple times with different figure objects, accumulating them as separate pages in one output PDF file — ideal for multi-chart reports, board decks, or scientific papers."},
+  {code:"with PdfPages('report.pdf') as pdf:\n    pdf.savefig(fig1)\n    plt.close(fig1)\n    pdf.savefig(fig2)\n    plt.close(fig2)",q:"Why call plt.close(fig1) after adding it to the PDF?",opts:["It's required for pdf.savefig() to work at all","It frees up memory by closing the figure window/object once it's no longer needed, important when generating many figures for a large multi-page report","It deletes the PDF","It's optional and has no purpose"],ans:1,explain:"Each matplotlib figure consumes memory until explicitly closed. When building reports with many pages/figures in a loop, forgetting to close each figure after adding it to the PDF can lead to significant memory buildup — plt.close() releases those resources."},
+  {q:"In dashboard design, why is it recommended to sort a bar chart by value rather than alphabetically (unless order has inherent meaning)?",opts:["Alphabetical sorting is always wrong","Sorting by value makes ranking and comparison instantly visible (biggest to smallest), which is usually the actual insight viewers need; alphabetical order provides no analytical value","Alphabetical order is faster to compute","Bar charts cannot be sorted"],ans:1,explain:"Unless there's a specific reason to preserve alphabetical or chronological order, sorting bars by their value lets viewers instantly see 'what's biggest/smallest' without having to visually scan and compare across an unordered list — a key readability improvement."},
+  {q:"What does `d = pdf.infodict(); d['Title'] = 'My Report'` accomplish?",opts:["Changes the visible chart title","Sets PDF document METADATA (visible in file properties/document info, not on the page itself) such as the document title and author","Adds a page header","Nothing — this is invalid syntax"],ans:1,explain:"pdf.infodict() gives access to the PDF file's metadata dictionary (similar to a Word document's 'Properties'). Setting Title/Author here embeds that information into the PDF file itself, viewable in PDF reader 'Document Properties', separate from any visible chart titles."},
+  {q:"Why might a dashboard designer choose to REMOVE the left spine (`ax.spines['left'].set_visible(False)`) even though gridlines remain?",opts:["It's always required","If horizontal gridlines already provide the visual reference for reading values, the left spine (vertical border) becomes redundant 'ink' that can be removed for a cleaner, more minimal look","Removing spines breaks the chart","It makes the chart faster to render"],ans:1,explain:"This follows the data-ink minimization principle: if gridlines already let viewers read approximate values, a solid left border line becomes redundant decoration. Many modern, minimal dashboard styles remove most or all spines, relying on subtle gridlines and tick labels instead."},
+  {code:"logo_ax = ax.inset_axes([0.85, 0.85, 0.12, 0.12])\nlogo_ax.imshow(img)\nlogo_ax.axis('off')",q:"What visual element is being created here?",opts:["A zoomed data view","A small logo/watermark placed in the top-right corner of the main chart, using inset_axes to position and display an image inside the plot area","A second data series","A colorbar"],ans:1,explain:"This pattern places a small image (like a company logo) as a watermark within the chart, positioned near the top-right (0.85, 0.85 in axes fraction coordinates) with a small size (0.12 x 0.12) — common in branded business reports and presentations."},
+  {q:"What is a key benefit of building KPI 'number cards' (big number + small label) as part of a dashboard, compared to just showing all data in charts?",opts:["Number cards use more ink and are always worse","They provide immediate, at-a-glance headline metrics (like 'Total Revenue: ₹4.2Cr') without requiring the viewer to read and interpret a chart — useful for executives who want the bottom line first","Number cards are required by Matplotlib","There is no benefit"],ans:1,explain:"Executive dashboards often lead with key headline numbers (KPIs) that busy stakeholders can absorb in seconds, before diving into detailed charts for those who want more context. This mirrors how real business dashboards (Tableau, PowerBI) are typically structured."},
+  {q:"When generating a large PDF report with many charts, why might you generate a 'cover page' figure using axis('off') and only text() calls, rather than an actual chart?",opts:["Cover pages must contain data","A title/cover page conveys report identity (title, author, date) rather than data — using text on a blank axis-free canvas is the appropriate tool for pure typographic content, not a chart","This is not possible in Matplotlib","Cover pages slow down PDF generation significantly"],ans:1,explain:"Not every page in a Matplotlib-generated PDF needs to be a chart. For a title/cover page, you want clean typography (big title, subtitle, date) with no chart elements at all — achieved by turning off all axis decoration and placing only text at controlled positions."},
+  {q:"What does combining `plt.rcParams.update({...})` at the START of a large dashboard script accomplish for maintainability?",opts:["It has no maintainability benefit","It centralizes ALL styling defaults (fonts, spine visibility, grid settings) in one place, so every subsequent chart in the script automatically inherits consistent styling without repeating settings on each individual ax call","It only affects the first chart","rcParams must be set individually per chart"],ans:1,explain:"Setting global rcParams once at the top of a script means every chart created afterward automatically follows the same font, spine, and grid conventions — critical for a multi-panel dashboard where visual CONSISTENCY across all panels matters for professional appearance."},
+  {q:"In the capstone's forecast animation, why use a DASHED linestyle specifically for the forecast portion, distinct from the solid historical data line?",opts:["Dashed lines render faster","Visual convention: a dashed/different line style clearly signals to viewers 'this portion is a PROJECTION/uncertain estimate, not actual observed data' — an important distinction to avoid misleading interpretation","Dashed lines are required by Matplotlib for future dates","There's no meaningful reason"],ans:1,explain:"Using a distinct visual style (dashed line, different color, shaded uncertainty band) for forecasted/projected data versus solid lines for actual historical data is a widely recognized convention that prevents viewers from mistaking a prediction for confirmed fact — an important data ethics/clarity consideration."},
+  {q:"What figure size convention is typically used for exporting charts intended for standard printed report pages (like the PDF report in this capstone)?",opts:["Always use figsize=(1,1)","figsize=(11, 8.5) approximates US Letter paper proportions (or figsize=(11.69, 8.27) for A4), ensuring the exported page fills a standard printed sheet appropriately","Figure size doesn't matter for PDFs","Always use the smallest possible figsize"],ans:1,explain:"Matching figsize to standard paper dimensions (11x8.5 inches for US Letter landscape, or A4 equivalents) ensures that when pages are printed or viewed in a PDF reader, the chart fills the page appropriately without awkward white space or cropping."},
+  {q:"Why might a data visualization team build BOTH a light-themed and dark-themed version of the same dashboard (as suggested in the stretch challenge)?",opts:["Dark mode is always technically required","Different viewing contexts call for different themes — a light theme suits printed reports/documents, while a dark theme often suits live presentation screens or dashboards viewed in dim conference rooms, improving readability in each context","There's no practical reason to have both","Matplotlib requires two versions of every chart"],ans:1,explain:"Light and dark themes serve different practical purposes: light backgrounds print well and read well in bright offices; dark backgrounds reduce eye strain and glare in dimly lit presentation rooms or on OLED displays. Professional visualization teams often maintain both variants for different delivery contexts."},
+  {q:"What is the overall educational purpose of the Day 5 capstone combining GridSpec, statistical charts, animation, and PDF export into ONE project?",opts:["To only test PDF knowledge","To demonstrate that real-world data visualization work integrates ALL techniques together — a professional dashboard rarely uses just one chart type or one export format, but combines layout composition, multiple chart types, motion, and multi-format delivery cohesively","To avoid using any charts","To focus exclusively on animation"],ans:1,explain:"The capstone mirrors an ACTUAL data visualization deliverable: a cohesive dashboard requires layout skill (GridSpec), diverse chart types matched to each question (trend lines, box plots, heatmaps), sometimes motion for engagement (animation), and professional delivery formats (PNG for screens, PDF for print/sharing) — all working together as one integrated skill set."},
+  {q:"Which best describes the relationship between 'chartjunk removal' (Tufte's principle) and 'highlighting the key insight' (contrast principle) as complementary dashboard design strategies?",opts:["They contradict each other","They work together: removing unnecessary decorative elements (chartjunk) creates visual quiet, which then makes deliberately highlighted elements (like a bold-colored key line among gray ones) stand out MORE effectively by contrast","Only one principle should ever be applied","Highlighting always adds chartjunk"],ans:1,explain:"These principles reinforce each other. A chart cluttered with unnecessary gridlines, borders, and decoration makes it hard for any single highlighted element to stand out — the visual noise competes for attention. By first minimizing chartjunk, the remaining deliberate highlight (bold color, extra line weight) becomes much more effective at drawing the eye to the key insight."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review layout composition and design principles, then try again! 📚"],[50,75,"Almost there! Focus on PdfPages and highlighting techniques. 💪"],[75,90,"Strong finish! You've completed the Matplotlib course. 🎉"],[90,101,"Perfect score — Matplotlib Master achieved! 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — Course Complete! 5 days × 20 MCQs = 100 total questions.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

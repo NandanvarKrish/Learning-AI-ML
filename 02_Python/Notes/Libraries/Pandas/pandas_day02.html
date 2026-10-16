@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pandas – Day 2 | Data Cleaning</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+
+  :root {
+    --bg:        #FAF5FF;
+    --surface:   #FFFFFF;
+    --border:    #E9D5FF;
+    --accent:    #7C3AED;
+    --accent2:   #4C1D95;
+    --green:     #059669;
+    --red:       #EF233C;
+    --yellow:    #F59E0B;
+    --blue:      #3B82F6;
+    --teal:      #0891B2;
+    --orange:    #EA580C;
+    --text:      #1E0A3C;
+    --muted:     #6D28D9;
+    --code-bg:   #0D0520;
+    --code-text: #E9D5FF;
+    --tag-bg:    #F3E8FF;
+    --tag-text:  #4C1D95;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(124,58,237,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;}
+  .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;}
+  .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+
+  .hero{background:linear-gradient(135deg,#7C3AED 0%,#4C1D95 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#DDD6FE;}
+  .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;}
+  .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);}
+  h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;}
+  ul,ol{padding-left:22px;margin-bottom:10px;}
+  li{margin-bottom:5px;}
+  strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#7C3AED;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#C4B5FD;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#ffffff;font-style:italic;} .op{color:#E9D5FF;} .hl{color:#FFFFFF;font-weight:600;}
+
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout.orange{border-color:var(--orange);background:#FFF7ED;}
+  .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout        .callout-title{color:var(--accent);}
+  .callout.green  .callout-title{color:var(--green);}
+  .callout.blue   .callout-title{color:var(--blue);}
+  .callout.yellow .callout-title{color:#92400E;}
+  .callout.red    .callout-title{color:var(--red);}
+  .callout.orange .callout-title{color:var(--orange);}
+  .callout.teal   .callout-title{color:var(--teal);}
+
+  .tbl-wrap{overflow-x:auto;margin:14px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:var(--bg);}
+
+  .df-visual{overflow-x:auto;margin:14px 0;}
+  .df-table{border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12.5px;min-width:400px;}
+  .df-table th{background:var(--accent);color:#fff;padding:7px 12px;text-align:left;font-weight:600;border:1px solid #6D28D9;}
+  .df-table th.idx-col{background:#6D28D9;text-align:center;}
+  .df-table td{padding:5px 12px;border:1px solid var(--border);}
+  .df-table td.idx{background:var(--tag-bg);color:var(--tag-text);font-weight:600;text-align:center;}
+  .df-table td.nan{color:#EF233C;font-style:italic;background:#FFF1F2;}
+  .df-table td.filled{color:#059669;background:#ECFDF5;font-weight:500;}
+  .df-table tr:hover td{background:#F5F0FF;}
+
+  .before-after{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0;}
+  .ba-box{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .ba-header{padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+  .ba-header.before{background:#FFF1F2;color:var(--red);}
+  .ba-header.after{background:#ECFDF5;color:var(--green);}
+  .ba-body{padding:14px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;}
+
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+
+  .fbox{background:linear-gradient(135deg,#4C1D95,#7C3AED);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;}
+  .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+
+  /* QUIZ */
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);}
+  .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);}
+  .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;}
+  .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;}
+  .opt.correct-ans .opt-letter{background:var(--green);color:#fff;}
+  .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
+  .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;}
+  .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);}
+  .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#7C3AED,#4C1D95);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;}
+  .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;}
+  .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;}
+  .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+
+  /* TASK */
+  .task-hero{background:linear-gradient(135deg,#7C3AED,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;}
+  .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;}
+  .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;}
+  .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;}
+  .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;}
+  .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;}
+  .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;}
+  .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}.before-after{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐼 Pandas</div>
+  <span class="sep">|</span>
+  <span class="day-label">Day 2 of 5</span>
+  <div class="spacer"></div>
+  <span class="progress-label" style="margin-right:8px">40%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:40%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pandas Full Course · Day 2</div>
+  <h1>Data Cleaning &amp; <span>Missing Data</span></h1>
+  <p>Real-world data is messy — wrong types, duplicate rows, messy strings, inconsistent values, and NaN everywhere. Today you master every technique to fix it all.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🩺 Missing Values</span>
+    <span class="hero-pill">🗑️ Dropping Data</span>
+    <span class="hero-pill">🔧 Filling Values</span>
+    <span class="hero-pill">🔄 Type Conversion</span>
+    <span class="hero-pill">📝 String Cleaning</span>
+    <span class="hero-pill">🔁 Replacing Values</span>
+    <span class="hero-pill">➕ Adding Columns</span>
+    <span class="hero-pill">🔃 Sorting</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════
+     SECTION 1 — MISSING VALUES
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🩺</div>
+    <div>
+      <h2>Understanding &amp; Detecting Missing Values</h2>
+      <p>NaN, None, NaT — know your missing data before fixing it</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>Real datasets almost always have missing data. Pandas represents missing values as <strong>NaN</strong> (Not a Number for floats), <strong>None</strong> (for objects), and <strong>NaT</strong> (Not a Time for dates). Learning to detect, measure, and handle them is the #1 data cleaning skill.</p>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Why Missing Data Matters</div>
+      Most statistical functions (mean, std, correlation) silently ignore NaN — which can give misleading results. ML models crash or produce wrong predictions on NaN. You MUST understand and handle missing data before any analysis.
+    </div>
+
+    <!-- Visual with NaN -->
+    <div class="df-visual">
+      <table class="df-table">
+        <tr><th class="idx-col">#</th><th>Name</th><th>Age</th><th>Salary</th><th>City</th><th>Rating</th></tr>
+        <tr><td class="idx">0</td><td>Alice</td><td>28</td><td>85000</td><td>Mumbai</td><td>4.5</td></tr>
+        <tr><td class="idx">1</td><td>Bob</td><td class="nan">NaN</td><td>72000</td><td>Delhi</td><td class="nan">NaN</td></tr>
+        <tr><td class="idx">2</td><td class="nan">None</td><td>29</td><td class="nan">NaN</td><td>Bangalore</td><td>3.8</td></tr>
+        <tr><td class="idx">3</td><td>Dave</td><td>42</td><td>105000</td><td class="nan">NaN</td><td>4.9</td></tr>
+        <tr><td class="idx">4</td><td>Eve</td><td>31</td><td>68000</td><td>Pune</td><td class="nan">NaN</td></tr>
+      </table>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">Red cells = missing data. 5 NaN values across 4 different columns.</div>
+    </div>
+
+    <h3>Detecting Missing Values</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+<span class="kw">import</span> numpy  <span class="kw">as</span> <span class="op">np</span>
+
+df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Name'</span>  :[<span class="st">'Alice'</span>, <span class="st">'Bob'</span>, <span class="kw">None</span>, <span class="st">'Dave'</span>, <span class="st">'Eve'</span>],
+    <span class="st">'Age'</span>   :[<span class="nm">28</span>, <span class="op">np</span>.nan, <span class="nm">29</span>, <span class="nm">42</span>, <span class="nm">31</span>],
+    <span class="st">'Salary'</span>:[<span class="nm">85000</span>, <span class="nm">72000</span>, <span class="op">np</span>.nan, <span class="nm">105000</span>, <span class="nm">68000</span>],
+    <span class="st">'City'</span>  :[<span class="st">'Mumbai'</span>,<span class="st">'Delhi'</span>,<span class="st">'Bangalore'</span>, <span class="op">np</span>.nan,<span class="st">'Pune'</span>],
+    <span class="st">'Rating'</span>:[<span class="nm">4.5</span>, <span class="op">np</span>.nan, <span class="nm">3.8</span>, <span class="nm">4.9</span>, <span class="op">np</span>.nan]
+})
+
+<span class="cm"># ── Detection methods ──────────────────────────────</span>
+<span class="fn">print</span>(df.<span class="fn">isnull</span>())           <span class="cm"># True/False per cell</span>
+<span class="fn">print</span>(df.<span class="fn">isna</span>())             <span class="cm"># same (alias)</span>
+<span class="fn">print</span>(df.<span class="fn">notnull</span>())          <span class="cm"># opposite — True where NOT null</span>
+
+<span class="cm"># Count per column</span>
+<span class="fn">print</span>(df.<span class="fn">isnull</span>().<span class="fn">sum</span>())
+<span class="cm"># Name      1
+# Age       1
+# Salary    1
+# City      1
+# Rating    2</span>
+
+<span class="cm"># Percentage missing per column</span>
+miss_pct = df.<span class="fn">isnull</span>().<span class="fn">mean</span>() * <span class="nm">100</span>
+<span class="fn">print</span>(miss_pct.<span class="fn">round</span>(<span class="nm">1</span>))
+
+<span class="cm"># Total missing in whole DataFrame</span>
+<span class="fn">print</span>(df.<span class="fn">isnull</span>().<span class="fn">sum</span>().<span class="fn">sum</span>())   <span class="cm"># 6</span>
+
+<span class="cm"># Rows with ANY missing value</span>
+rows_with_nan = df[df.<span class="fn">isnull</span>().<span class="fn">any</span>(axis=<span class="nm">1</span>)]
+<span class="fn">print</span>(<span class="st">f"Rows with at least 1 NaN: {len(rows_with_nan)}"</span>)  <span class="cm"># 4</span>
+
+<span class="cm"># Columns with ANY missing value</span>
+cols_with_nan = df.columns[df.<span class="fn">isnull</span>().<span class="fn">any</span>()]
+<span class="fn">print</span>(cols_with_nan)
+
+<span class="cm"># Rows where ALL values are missing</span>
+all_null_rows = df[df.<span class="fn">isnull</span>().<span class="fn">all</span>(axis=<span class="nm">1</span>)]</pre>
+    </div>
+
+    <h3>Types of Missing Data — What's Really Happening</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Meaning</th><th>Example</th><th>Strategy</th></tr>
+        <tr><td><strong>MCAR</strong><br><small>Missing Completely At Random</small></td><td>No pattern — random data entry error</td><td>Survey skipped randomly</td><td>Drop or impute — usually safe</td></tr>
+        <tr><td><strong>MAR</strong><br><small>Missing At Random</small></td><td>Missingness related to other observed data</td><td>Men less likely to report weight</td><td>Impute using related columns</td></tr>
+        <tr><td><strong>MNAR</strong><br><small>Missing Not At Random</small></td><td>Missingness related to the missing value itself</td><td>High earners don't report salary</td><td>Domain knowledge needed — careful!</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 2 — DROPPING DATA
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DC2626">🗑️</div>
+    <div>
+      <h2>Dropping Missing Values &amp; Duplicates</h2>
+      <p>When to remove data entirely — and how to do it precisely</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>dropna() — Remove Rows or Columns with NaN</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Drop rows with ANY NaN (default)</span>
+df_clean = df.<span class="fn">dropna</span>()
+<span class="fn">print</span>(<span class="st">f"Before: {len(df)}, After: {len(df_clean)}"</span>)   <span class="cm"># 5 → 1 (only Alice!)</span>
+
+<span class="cm"># Drop rows only if ALL values are NaN</span>
+df.<span class="fn">dropna</span>(how=<span class="st">'all'</span>)
+
+<span class="cm"># Drop rows with NaN in SPECIFIC columns only</span>
+df.<span class="fn">dropna</span>(subset=[<span class="st">'Age'</span>, <span class="st">'Salary'</span>])   <span class="cm"># only drop if Age OR Salary is null</span>
+
+<span class="cm"># Require at least N non-null values to keep the row</span>
+df.<span class="fn">dropna</span>(thresh=<span class="nm">4</span>)   <span class="cm"># keep rows with at least 4 non-null values</span>
+
+<span class="cm"># Drop COLUMNS with any NaN</span>
+df.<span class="fn">dropna</span>(axis=<span class="nm">1</span>)             <span class="cm"># axis=1 means columns</span>
+df.<span class="fn">dropna</span>(axis=<span class="st">'columns'</span>)    <span class="cm"># same</span>
+
+<span class="cm"># inplace — modify original instead of returning new</span>
+df.<span class="fn">dropna</span>(subset=[<span class="st">'Salary'</span>], inplace=<span class="kw">True</span>)
+
+<span class="cm"># IMPORTANT: Pandas returns a copy by default
+# Use inplace=True OR reassign: df = df.dropna()</span></pre>
+    </div>
+
+    <h3>Handling Duplicate Rows</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Name'</span>  :[<span class="st">'Alice'</span>,<span class="st">'Bob'</span>,<span class="st">'Alice'</span>,<span class="st">'Carol'</span>,<span class="st">'Bob'</span>,<span class="st">'Dave'</span>],
+    <span class="st">'Dept'</span>  :[<span class="st">'Eng'</span>,<span class="st">'HR'</span>,<span class="st">'Eng'</span>,<span class="st">'Mktg'</span>,<span class="st">'HR'</span>,<span class="st">'Eng'</span>],
+    <span class="st">'Salary'</span>:[<span class="nm">90000</span>,<span class="nm">60000</span>,<span class="nm">90000</span>,<span class="nm">75000</span>,<span class="nm">60000</span>,<span class="nm">95000</span>]
+})
+
+<span class="cm"># Detect duplicates</span>
+<span class="fn">print</span>(df.<span class="fn">duplicated</span>())              <span class="cm"># True where row is a duplicate</span>
+<span class="fn">print</span>(df.<span class="fn">duplicated</span>().<span class="fn">sum</span>())       <span class="cm"># 2 (Alice+Eng+90k and Bob+HR+60k)</span>
+
+<span class="cm"># Show the duplicate rows</span>
+<span class="fn">print</span>(df[df.<span class="fn">duplicated</span>()])
+
+<span class="cm"># Show ALL versions (first + duplicates)</span>
+<span class="fn">print</span>(df[df.<span class="fn">duplicated</span>(keep=<span class="kw">False</span>)])
+
+<span class="cm"># Drop duplicates (keep first occurrence by default)</span>
+df_unique = df.<span class="fn">drop_duplicates</span>()
+<span class="fn">print</span>(<span class="st">f"After drop: {len(df_unique)}"</span>)   <span class="cm"># 4</span>
+
+<span class="cm"># Keep last occurrence</span>
+df.<span class="fn">drop_duplicates</span>(keep=<span class="st">'last'</span>)
+
+<span class="cm"># Drop duplicates based on SUBSET of columns only</span>
+df.<span class="fn">drop_duplicates</span>(subset=[<span class="st">'Name'</span>])        <span class="cm"># unique names only</span>
+df.<span class="fn">drop_duplicates</span>(subset=[<span class="st">'Name'</span>,<span class="st">'Dept'</span>]) <span class="cm"># unique Name+Dept combos</span>
+
+<span class="cm"># Drop specific rows by index label</span>
+df.<span class="fn">drop</span>(index=[<span class="nm">0</span>, <span class="nm">2</span>])          <span class="cm"># drop rows 0 and 2</span>
+df.<span class="fn">drop</span>(index=df[df[<span class="st">'Salary'</span>] < <span class="nm">65000</span>].index)  <span class="cm"># drop low earners</span>
+
+<span class="cm"># Drop specific columns</span>
+df.<span class="fn">drop</span>(columns=[<span class="st">'Salary'</span>])           <span class="cm"># drop Salary column</span>
+df.<span class="fn">drop</span>(columns=[<span class="st">'Dept'</span>,<span class="st">'Salary'</span>])   <span class="cm"># drop multiple</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Dropping Too Aggressively</div>
+      <code>dropna()</code> with default settings drops ANY row with a single NaN — which can delete most of your data! Always check what you'll lose first: <code>df.isnull().sum()</code> and <code>df.dropna().shape</code> before committing.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 3 — FILLING VALUES
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🔧</div>
+    <div>
+      <h2>Filling &amp; Imputing Missing Values</h2>
+      <p>Replace NaN intelligently — the smarter alternative to dropping</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>fillna() — The Primary Tool</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Name'</span>  :[<span class="st">'Alice'</span>,<span class="st">'Bob'</span>,<span class="kw">None</span>,<span class="st">'Dave'</span>,<span class="st">'Eve'</span>],
+    <span class="st">'Age'</span>   :[<span class="nm">28</span>, <span class="op">np</span>.nan, <span class="nm">29</span>, <span class="nm">42</span>, <span class="nm">31</span>],
+    <span class="st">'Salary'</span>:[<span class="nm">85000</span>, <span class="nm">72000</span>, <span class="op">np</span>.nan, <span class="nm">105000</span>, <span class="nm">68000</span>],
+    <span class="st">'Dept'</span>  :[<span class="st">'Eng'</span>,<span class="st">'HR'</span>,<span class="kw">None</span>,<span class="st">'Eng'</span>,<span class="st">'HR'</span>]
+})
+
+<span class="cm"># Fill with a constant</span>
+df[<span class="st">'Name'</span>].<span class="fn">fillna</span>(<span class="st">'Unknown'</span>)
+df[<span class="st">'Age'</span>].<span class="fn">fillna</span>(<span class="nm">0</span>)
+
+<span class="cm"># Fill with column mean (best for numeric data)</span>
+df[<span class="st">'Age'</span>].<span class="fn">fillna</span>(df[<span class="st">'Age'</span>].<span class="fn">mean</span>())
+df[<span class="st">'Salary'</span>].<span class="fn">fillna</span>(df[<span class="st">'Salary'</span>].<span class="fn">median</span>())  <span class="cm"># median for skewed data</span>
+
+<span class="cm"># Fill with column mode (best for categorical)</span>
+df[<span class="st">'Dept'</span>].<span class="fn">fillna</span>(df[<span class="st">'Dept'</span>].<span class="fn">mode</span>()[<span class="nm">0</span>])    <span class="cm"># mode()[0] = most common</span>
+
+<span class="cm"># Fill multiple columns at once with a dict</span>
+df.<span class="fn">fillna</span>({
+    <span class="st">'Name'</span>  : <span class="st">'Unknown'</span>,
+    <span class="st">'Age'</span>   : df[<span class="st">'Age'</span>].<span class="fn">mean</span>(),
+    <span class="st">'Salary'</span>: df[<span class="st">'Salary'</span>].<span class="fn">median</span>(),
+    <span class="st">'Dept'</span>  : <span class="st">'Not Assigned'</span>
+})</pre>
+    </div>
+
+    <h3>Forward Fill &amp; Backward Fill — For Sequential Data</h3>
+    <div class="before-after">
+      <div class="ba-box">
+        <div class="ba-header before">❌ Before (with NaN)</div>
+        <div class="ba-body">
+          Jan  →  100<br>Feb  →  <span style="color:#EF233C">NaN</span><br>Mar  →  <span style="color:#EF233C">NaN</span><br>Apr  →  150<br>May  →  <span style="color:#EF233C">NaN</span>
+        </div>
+      </div>
+      <div class="ba-box">
+        <div class="ba-header after">✅ After ffill()</div>
+        <div class="ba-body">
+          Jan  →  100<br>Feb  →  <span style="color:#059669">100</span><br>Mar  →  <span style="color:#059669">100</span><br>Apr  →  150<br>May  →  <span style="color:#059669">150</span>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>sales = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="nm">100</span>, <span class="op">np</span>.nan, <span class="op">np</span>.nan, <span class="nm">150</span>, <span class="op">np</span>.nan])
+
+<span class="cm"># Forward fill — carry last valid value forward</span>
+<span class="fn">print</span>(sales.<span class="fn">ffill</span>())    <span class="cm"># [100, 100, 100, 150, 150]</span>
+
+<span class="cm"># Backward fill — carry next valid value backward</span>
+<span class="fn">print</span>(sales.<span class="fn">bfill</span>())    <span class="cm"># [100, 150, 150, 150, NaN]</span>
+
+<span class="cm"># Limit how many consecutive NaNs to fill</span>
+<span class="fn">print</span>(sales.<span class="fn">ffill</span>(limit=<span class="nm">1</span>))  <span class="cm"># [100, 100, NaN, 150, 150]  ← only 1 consecutive</span>
+
+<span class="cm"># On a DataFrame — fill along rows or columns</span>
+df.<span class="fn">ffill</span>(axis=<span class="nm">0</span>)   <span class="cm"># fill down each column</span>
+df.<span class="fn">ffill</span>(axis=<span class="nm">1</span>)   <span class="cm"># fill across each row</span>
+
+<span class="cm"># Old syntax (still works)</span>
+sales.<span class="fn">fillna</span>(method=<span class="st">'ffill'</span>)
+sales.<span class="fn">fillna</span>(method=<span class="st">'bfill'</span>)</pre>
+    </div>
+
+    <h3>Interpolation — Smarter Filling for Numeric Data</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>s = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="nm">10</span>, <span class="op">np</span>.nan, <span class="op">np</span>.nan, <span class="nm">40</span>, <span class="op">np</span>.nan, <span class="nm">60</span>])
+
+<span class="cm"># Linear interpolation — straight line between known points</span>
+<span class="fn">print</span>(s.<span class="fn">interpolate</span>())
+<span class="cm"># 0    10.0
+# 1    20.0   ← (10+40)/3 step = 10
+# 2    30.0   ← (10+40)/3 step = 20
+# 3    40.0
+# 4    50.0   ← (40+60)/2
+# 5    60.0</span>
+
+<span class="cm"># Other interpolation methods</span>
+s.<span class="fn">interpolate</span>(method=<span class="st">'polynomial'</span>, order=<span class="nm">2</span>)  <span class="cm"># quadratic curve</span>
+s.<span class="fn">interpolate</span>(method=<span class="st">'nearest'</span>)             <span class="cm"># nearest valid value</span>
+s.<span class="fn">interpolate</span>(method=<span class="st">'time'</span>)               <span class="cm"># for time series</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Method</th><th>Best For</th><th>Pandas Code</th></tr>
+        <tr><td><strong>Constant</strong></td><td>Categorical / flags / known defaults</td><td><code>df.fillna('Unknown')</code></td></tr>
+        <tr><td><strong>Mean</strong></td><td>Normally distributed numeric data</td><td><code>df.fillna(df.mean())</code></td></tr>
+        <tr><td><strong>Median</strong></td><td>Skewed numeric data (salaries, prices)</td><td><code>df.fillna(df.median())</code></td></tr>
+        <tr><td><strong>Mode</strong></td><td>Categorical / discrete columns</td><td><code>df.fillna(df.mode().iloc[0])</code></td></tr>
+        <tr><td><strong>Forward Fill</strong></td><td>Time series, sequential data</td><td><code>df.ffill()</code></td></tr>
+        <tr><td><strong>Backward Fill</strong></td><td>Time series, known future values</td><td><code>df.bfill()</code></td></tr>
+        <tr><td><strong>Interpolate</strong></td><td>Sensor readings, smooth numeric trends</td><td><code>df.interpolate()</code></td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 4 — TYPE CONVERSION
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🔄</div>
+    <div>
+      <h2>Data Type Conversion — astype &amp; to_numeric</h2>
+      <p>Fix wrong dtypes — the silent destroyer of correct analysis</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>Wrong dtypes are extremely common when reading CSV files. A column of numbers stored as strings will give you string concatenation instead of addition! Always check <code>df.dtypes</code> and fix them early.</p>
+
+    <h3>astype() — Convert Column Type</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'ID'</span>    : [<span class="st">'1'</span>, <span class="st">'2'</span>, <span class="st">'3'</span>],        <span class="cm"># should be int</span>
+    <span class="st">'Age'</span>   : [<span class="st">'28'</span>, <span class="st">'34'</span>, <span class="st">'29'</span>],      <span class="cm"># should be int</span>
+    <span class="st">'Salary'</span>: [<span class="st">'85000.0'</span>, <span class="st">'72000'</span>, <span class="st">'91000'</span>],  <span class="cm"># should be float</span>
+    <span class="st">'Active'</span>: [<span class="st">'True'</span>, <span class="st">'False'</span>, <span class="st">'True'</span>],   <span class="cm"># should be bool</span>
+    <span class="st">'Score'</span> : [<span class="nm">92.5</span>, <span class="nm">78.3</span>, <span class="nm">85.0</span>]           <span class="cm"># already float — convert to int</span>
+})
+
+<span class="fn">print</span>(df.dtypes)   <span class="cm"># all 'object' — classic CSV problem!</span>
+
+<span class="cm"># Convert individual columns</span>
+df[<span class="st">'ID'</span>]     = df[<span class="st">'ID'</span>].<span class="fn">astype</span>(<span class="fn">int</span>)
+df[<span class="st">'Age'</span>]    = df[<span class="st">'Age'</span>].<span class="fn">astype</span>(<span class="fn">int</span>)
+df[<span class="st">'Salary'</span>] = df[<span class="st">'Salary'</span>].<span class="fn">astype</span>(<span class="fn">float</span>)
+df[<span class="st">'Score'</span>]  = df[<span class="st">'Score'</span>].<span class="fn">astype</span>(<span class="fn">int</span>)       <span class="cm"># 92.5 → 92 (truncates!)</span>
+df[<span class="st">'Active'</span>] = df[<span class="st">'Active'</span>].<span class="fn">astype</span>(<span class="fn">bool</span>)     <span class="cm"># ⚠️ 'False' str → True! (non-empty)</span>
+
+<span class="cm"># Better boolean conversion</span>
+df[<span class="st">'Active'</span>] = df[<span class="st">'Active'</span>].<span class="fn">map</span>({<span class="st">'True'</span>:<span class="kw">True</span>, <span class="st">'False'</span>:<span class="kw">False</span>})
+
+<span class="cm"># Convert to category — saves memory for repeated strings</span>
+df[<span class="st">'Dept'</span>] = df[<span class="st">'Dept'</span>].<span class="fn">astype</span>(<span class="st">'category'</span>)
+
+<span class="cm"># Convert all at once with a dict</span>
+df = df.<span class="fn">astype</span>({<span class="st">'ID'</span>:<span class="fn">int</span>, <span class="st">'Age'</span>:<span class="fn">int</span>, <span class="st">'Salary'</span>:<span class="fn">float</span>})</pre>
+    </div>
+
+    <h3>pd.to_numeric() — Handles Errors Gracefully</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>messy = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'100'</span>, <span class="st">'200'</span>, <span class="st">'N/A'</span>, <span class="st">'300'</span>, <span class="st">'abc'</span>, <span class="st">'400'</span>])
+
+<span class="cm"># astype(float) would CRASH on 'N/A' and 'abc'</span>
+<span class="cm"># pd.to_numeric with errors='coerce' converts bad values to NaN</span>
+clean = <span class="op">pd</span>.<span class="fn">to_numeric</span>(messy, errors=<span class="st">'coerce'</span>)
+<span class="fn">print</span>(clean)
+<span class="cm"># 0    100.0
+# 1    200.0
+# 2      NaN   ← 'N/A' coerced to NaN
+# 3    300.0
+# 4      NaN   ← 'abc' coerced to NaN
+# 5    400.0</span>
+
+<span class="cm"># errors options:</span>
+<span class="cm">#  'raise'  → default — raises ValueError on bad input</span>
+<span class="cm">#  'coerce' → bad values become NaN  ← use this for messy data</span>
+<span class="cm">#  'ignore' → bad values stay as-is (string remains)</span>
+
+<span class="cm"># pd.to_datetime() — parse date strings</span>
+dates = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'2024-01-15'</span>, <span class="st">'15/01/2024'</span>, <span class="st">'Jan 15 2024'</span>])
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">to_datetime</span>(dates))                        <span class="cm"># auto-detect format</span>
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">to_datetime</span>(dates, format=<span class="st">'%Y-%m-%d'</span>))      <span class="cm"># explicit format</span>
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">to_datetime</span>(dates, errors=<span class="st">'coerce'</span>))         <span class="cm"># NaT for unparseable</span>
+
+<span class="cm"># Downcasting — save memory with smaller dtypes</span>
+df[<span class="st">'Age'</span>] = <span class="op">pd</span>.<span class="fn">to_numeric</span>(df[<span class="st">'Age'</span>], downcast=<span class="st">'integer'</span>)  <span class="cm"># int64→int8 if fits</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 5 — STRING CLEANING
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">📝</div>
+    <div>
+      <h2>String Cleaning with .str Accessor</h2>
+      <p>Fix messy text — trim whitespace, fix case, split, extract, replace</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>The <strong>.str accessor</strong> lets you apply string methods to every element of a Series at once — no loops needed. It's one of Pandas' most powerful features for text cleaning.</p>
+
+    <h3>Essential String Operations</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>names = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'  alice '</span>, <span class="st">'BOB'</span>, <span class="st">'Carol  '</span>, <span class="st">'  DAVE'</span>, <span class="st">'eve'</span>])
+
+<span class="cm"># ── Case ──────────────────────────────────────────</span>
+<span class="fn">print</span>(names.<span class="fn">str</span>.<span class="fn">lower</span>())      <span class="cm"># ['  alice ', 'bob', 'carol  ', '  dave', 'eve']</span>
+<span class="fn">print</span>(names.<span class="fn">str</span>.<span class="fn">upper</span>())      <span class="cm"># ['  ALICE ', 'BOB', ...]</span>
+<span class="fn">print</span>(names.<span class="fn">str</span>.<span class="fn">title</span>())      <span class="cm"># ['  Alice ', 'Bob', ...]</span>
+<span class="fn">print</span>(names.<span class="fn">str</span>.<span class="fn">capitalize</span>()) <span class="cm"># first char upper only</span>
+
+<span class="cm"># ── Whitespace ────────────────────────────────────</span>
+<span class="fn">print</span>(names.<span class="fn">str</span>.<span class="fn">strip</span>())      <span class="cm"># remove leading AND trailing spaces</span>
+<span class="fn">print</span>(names.<span class="fn">str</span>.<span class="fn">lstrip</span>())     <span class="cm"># remove leading spaces only</span>
+<span class="fn">print</span>(names.<span class="fn">str</span>.<span class="fn">rstrip</span>())     <span class="cm"># remove trailing spaces only</span>
+
+<span class="cm"># ── Combining (chain operations) ──────────────────</span>
+clean = names.<span class="fn">str</span>.<span class="fn">strip</span>().<span class="fn">str</span>.<span class="fn">title</span>()
+<span class="fn">print</span>(clean)   <span class="cm"># ['Alice', 'Bob', 'Carol', 'Dave', 'Eve'] ✅</span>
+
+<span class="cm"># ── Finding & Checking ─────────────────────────────</span>
+emails = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'alice@gmail.com'</span>, <span class="st">'bob@company.org'</span>, <span class="st">'invalid'</span>])
+<span class="fn">print</span>(emails.<span class="fn">str</span>.<span class="fn">contains</span>(<span class="st">'@'</span>))         <span class="cm"># [True, True, False]</span>
+<span class="fn">print</span>(emails.<span class="fn">str</span>.<span class="fn">startswith</span>(<span class="st">'alice'</span>))   <span class="cm"># [True, False, False]</span>
+<span class="fn">print</span>(emails.<span class="fn">str</span>.<span class="fn">endswith</span>(<span class="st">'.com'</span>))      <span class="cm"># [True, False, False]</span>
+<span class="fn">print</span>(emails.<span class="fn">str</span>.<span class="fn">len</span>())                 <span class="cm"># [15, 15, 7]</span>
+
+<span class="cm"># ── Replace ───────────────────────────────────────</span>
+phones = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'(022) 1234-5678'</span>, <span class="st">'(011) 9876-5432'</span>])
+clean_phones = phones.<span class="fn">str</span>.<span class="fn">replace</span>(<span class="st">'[()\\- ]'</span>, <span class="st">''</span>, regex=<span class="kw">True</span>)
+<span class="fn">print</span>(clean_phones)   <span class="cm"># ['02212345678', '01198765432']</span>
+
+<span class="cm"># ── Splitting ─────────────────────────────────────</span>
+full_names = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'Alice Smith'</span>, <span class="st">'Bob Jones'</span>, <span class="st">'Carol Brown'</span>])
+split = full_names.<span class="fn">str</span>.<span class="fn">split</span>(<span class="st">' '</span>, expand=<span class="kw">True</span>)  <span class="cm"># expand=True → DataFrame</span>
+<span class="fn">print</span>(split)
+<span class="cm">#         0       1
+# 0   Alice   Smith
+# 1     Bob   Jones
+# 2   Carol   Brown</span>
+
+df[<span class="st">'FirstName'</span>] = full_names.<span class="fn">str</span>.<span class="fn">split</span>(<span class="st">' '</span>).<span class="fn">str</span>[<span class="nm">0</span>]  <span class="cm"># 'Alice', 'Bob', 'Carol'</span>
+df[<span class="st">'LastName'</span>]  = full_names.<span class="fn">str</span>.<span class="fn">split</span>(<span class="st">' '</span>).<span class="fn">str</span>[<span class="nm">1</span>]  <span class="cm"># 'Smith', 'Jones', 'Brown'</span>
+
+<span class="cm"># ── Extracting with Regex ─────────────────────────</span>
+data = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'ID:1001 Name:Alice'</span>, <span class="st">'ID:1002 Name:Bob'</span>])
+<span class="fn">print</span>(data.<span class="fn">str</span>.<span class="fn">extract</span>(<span class="st">r'ID:(\d+)'</span>))       <span class="cm"># extract the ID number</span>
+<span class="fn">print</span>(data.<span class="fn">str</span>.<span class="fn">extract</span>(<span class="st">r'Name:(\w+)'</span>))     <span class="cm"># extract the name</span>
+
+<span class="cm"># ── Padding ───────────────────────────────────────</span>
+ids = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="st">'1'</span>, <span class="st">'22'</span>, <span class="st">'333'</span>])
+<span class="fn">print</span>(ids.<span class="fn">str</span>.<span class="fn">zfill</span>(<span class="nm">5</span>))      <span class="cm"># ['00001', '00022', '00333']</span>
+<span class="fn">print</span>(ids.<span class="fn">str</span>.<span class="fn">pad</span>(<span class="nm">5</span>, side=<span class="st">'left'</span>, fillchar=<span class="st">'0'</span>))  <span class="cm"># same</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 6 — REPLACING & RENAMING
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🔁</div>
+    <div>
+      <h2>Replacing Values, Renaming &amp; Reindexing</h2>
+      <p>Fix inconsistent values, rename columns, reset the index</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>replace() — Fix Inconsistent Values</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Gender'</span>:[<span class="st">'M'</span>,<span class="st">'F'</span>,<span class="st">'Male'</span>,<span class="st">'Female'</span>,<span class="st">'m'</span>,<span class="st">'f'</span>,<span class="st">'MALE'</span>],
+    <span class="st">'Status'</span>:[<span class="st">'Active'</span>,<span class="st">'active'</span>,<span class="st">'1'</span>,<span class="st">'Inactive'</span>,<span class="st">'0'</span>,<span class="st">'Yes'</span>,<span class="st">'No'</span>],
+    <span class="st">'Score'</span> :[-<span class="nm">1</span>, <span class="nm">85</span>, <span class="nm">999</span>, <span class="nm">72</span>, <span class="nm">91</span>, -<span class="nm">99</span>, <span class="nm">88</span>]   <span class="cm"># -1 and 999 = error codes</span>
+})
+
+<span class="cm"># Replace single value</span>
+df[<span class="st">'Gender'</span>].<span class="fn">replace</span>(<span class="st">'M'</span>, <span class="st">'Male'</span>)
+
+<span class="cm"># Replace multiple values with a dict</span>
+df[<span class="st">'Gender'</span>] = df[<span class="st">'Gender'</span>].<span class="fn">replace</span>({
+    <span class="st">'M'</span>:<span class="st">'Male'</span>, <span class="st">'m'</span>:<span class="st">'Male'</span>, <span class="st">'MALE'</span>:<span class="st">'Male'</span>,
+    <span class="st">'F'</span>:<span class="st">'Female'</span>, <span class="st">'f'</span>:<span class="st">'Female'</span>
+})
+
+<span class="cm"># Cleaner: normalise case first, then replace</span>
+df[<span class="st">'Gender'</span>] = df[<span class="st">'Gender'</span>].<span class="fn">str</span>.<span class="fn">lower</span>().<span class="fn">replace</span>({<span class="st">'m'</span>:<span class="st">'Male'</span>, <span class="st">'f'</span>:<span class="st">'Female'</span>,
+                                                     <span class="st">'male'</span>:<span class="st">'Male'</span>, <span class="st">'female'</span>:<span class="st">'Female'</span>})
+
+<span class="cm"># Replace error codes with NaN</span>
+df[<span class="st">'Score'</span>] = df[<span class="st">'Score'</span>].<span class="fn">replace</span>([-<span class="nm">1</span>, -<span class="nm">99</span>, <span class="nm">999</span>], <span class="op">np</span>.nan)
+
+<span class="cm"># Replace in whole DataFrame at once</span>
+df.<span class="fn">replace</span>({<span class="st">'Status'</span>: {<span class="st">'1'</span>:<span class="st">'Active'</span>, <span class="st">'0'</span>:<span class="st">'Inactive'</span>,
+                        <span class="st">'active'</span>:<span class="st">'Active'</span>, <span class="st">'Yes'</span>:<span class="st">'Active'</span>, <span class="st">'No'</span>:<span class="st">'Inactive'</span>}})
+
+<span class="cm"># Replace with regex</span>
+df.<span class="fn">replace</span>(<span class="st">r'^\s*$'</span>, <span class="op">np</span>.nan, regex=<span class="kw">True</span>)  <span class="cm"># empty strings → NaN</span></pre>
+    </div>
+
+    <h3>Renaming Columns &amp; Index</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Rename specific columns with dict</span>
+df.<span class="fn">rename</span>(columns={<span class="st">'Name'</span>:<span class="st">'FullName'</span>, <span class="st">'Dept'</span>:<span class="st">'Department'</span>})
+
+<span class="cm"># Rename all columns with a list (must match count)</span>
+df.columns = [<span class="st">'id'</span>, <span class="st">'full_name'</span>, <span class="st">'age'</span>, <span class="st">'salary'</span>, <span class="st">'dept'</span>]
+
+<span class="cm"># Clean column names: lowercase + replace spaces with underscore</span>
+df.columns = df.columns.<span class="fn">str</span>.<span class="fn">lower</span>().<span class="fn">str</span>.<span class="fn">replace</span>(<span class="st">' '</span>, <span class="st">'_'</span>).<span class="fn">str</span>.<span class="fn">strip</span>()
+
+<span class="cm"># Apply function to all column names</span>
+df.<span class="fn">rename</span>(columns=<span class="fn">str</span>.upper)    <span class="cm"># ALL CAPS</span>
+df.<span class="fn">rename</span>(columns=<span class="fn">str</span>.lower)    <span class="cm"># all lowercase</span>
+
+<span class="cm"># Rename index</span>
+df.<span class="fn">rename</span>(index={<span class="nm">0</span>:<span class="st">'first'</span>, <span class="nm">1</span>:<span class="st">'second'</span>})
+
+<span class="cm"># Reset index — make existing index a column, reset to 0,1,2...</span>
+df.<span class="fn">reset_index</span>()                  <span class="cm"># old index becomes a column</span>
+df.<span class="fn">reset_index</span>(drop=<span class="kw">True</span>)         <span class="cm"># old index discarded</span>
+
+<span class="cm"># Set a column as the index</span>
+df.<span class="fn">set_index</span>(<span class="st">'EmpID'</span>)             <span class="cm"># EmpID becomes the row labels</span>
+df.<span class="fn">set_index</span>([<span class="st">'EmpID'</span>,<span class="st">'Name'</span>])   <span class="cm"># MultiIndex</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 7 — ADDING COLUMNS & SORTING
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">➕</div>
+    <div>
+      <h2>Adding Columns, Sorting &amp; Applying Functions</h2>
+      <p>Create derived features, sort your data, apply transformations</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>Adding &amp; Modifying Columns</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Name'</span>    :[<span class="st">'Alice'</span>,<span class="st">'Bob'</span>,<span class="st">'Carol'</span>,<span class="st">'Dave'</span>],
+    <span class="st">'Salary'</span>  :[<span class="nm">85000</span>, <span class="nm">72000</span>, <span class="nm">91000</span>, <span class="nm">105000</span>],
+    <span class="st">'YearsExp'</span>:[<span class="nm">5</span>, <span class="nm">3</span>, <span class="nm">7</span>, <span class="nm">12</span>],
+    <span class="st">'Dept'</span>    :[<span class="st">'Eng'</span>,<span class="st">'HR'</span>,<span class="st">'Eng'</span>,<span class="st">'Mgtm'</span>]
+})
+
+<span class="cm"># 1. Simple assignment</span>
+df[<span class="st">'Bonus'</span>] = df[<span class="st">'Salary'</span>] * <span class="nm">0.10</span>          <span class="cm"># 10% bonus</span>
+df[<span class="st">'TotalComp'</span>] = df[<span class="st">'Salary'</span>] + df[<span class="st">'Bonus'</span>]
+
+<span class="cm"># 2. Conditional column with np.where</span>
+df[<span class="st">'Senior'</span>] = <span class="op">np</span>.<span class="fn">where</span>(df[<span class="st">'YearsExp'</span>] >= <span class="nm">7</span>, <span class="st">'Senior'</span>, <span class="st">'Junior'</span>)
+
+<span class="cm"># 3. Multiple conditions with np.select</span>
+conditions = [
+    df[<span class="st">'Salary'</span>] >= <span class="nm">100000</span>,
+    df[<span class="st">'Salary'</span>] >= <span class="nm">80000</span>,
+    df[<span class="st">'Salary'</span>] >= <span class="nm">60000</span>
+]
+choices = [<span class="st">'High'</span>, <span class="st">'Mid'</span>, <span class="st">'Low'</span>]
+df[<span class="st">'SalaryBand'</span>] = <span class="op">np</span>.<span class="fn">select</span>(conditions, choices, default=<span class="st">'Entry'</span>)
+
+<span class="cm"># 4. Using pd.cut — bin continuous into categories</span>
+df[<span class="st">'AgeBand'</span>] = <span class="op">pd</span>.<span class="fn">cut</span>(df[<span class="st">'YearsExp'</span>],
+                       bins=[<span class="nm">0</span>, <span class="nm">3</span>, <span class="nm">7</span>, <span class="nm">15</span>],
+                       labels=[<span class="st">'Junior'</span>,<span class="st">'Mid'</span>,<span class="st">'Senior'</span>])
+
+<span class="cm"># 5. pd.get_dummies — one-hot encode categorical column</span>
+dummies = <span class="op">pd</span>.<span class="fn">get_dummies</span>(df[<span class="st">'Dept'</span>], prefix=<span class="st">'dept'</span>)
+df = <span class="op">pd</span>.<span class="fn">concat</span>([df, dummies], axis=<span class="nm">1</span>)
+
+<span class="cm"># 6. assign() — method chaining friendly</span>
+df = df.<span class="fn">assign</span>(
+    Bonus     = <span class="kw">lambda</span> x: x[<span class="st">'Salary'</span>] * <span class="nm">0.1</span>,
+    TotalComp = <span class="kw">lambda</span> x: x[<span class="st">'Salary'</span>] + x[<span class="st">'Bonus'</span>],
+    SeniorFlag= <span class="kw">lambda</span> x: x[<span class="st">'YearsExp'</span>] >= <span class="nm">7</span>
+)</pre>
+    </div>
+
+    <h3>apply() — Row or Column Transformations</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># apply() on a column (Series)</span>
+df[<span class="st">'Grade'</span>] = df[<span class="st">'Salary'</span>].<span class="fn">apply</span>(<span class="kw">lambda</span> x: <span class="st">'A'</span> <span class="kw">if</span> x > <span class="nm">90000</span> <span class="kw">else</span> <span class="st">'B'</span>)
+
+<span class="cm"># apply() on each ROW (axis=1) — access multiple columns</span>
+<span class="kw">def</span> <span class="fn">score_employee</span>(row):
+    score = row[<span class="st">'Salary'</span>] / <span class="nm">10000</span> + row[<span class="st">'YearsExp'</span>] * <span class="nm">2</span>
+    <span class="kw">return</span> <span class="fn">round</span>(score, <span class="nm">1</span>)
+
+df[<span class="st">'Score'</span>] = df.<span class="fn">apply</span>(score_employee, axis=<span class="nm">1</span>)
+
+<span class="cm"># map() — fastest for element-wise Series transformation</span>
+dept_codes = {<span class="st">'Eng'</span>:<span class="nm">1</span>, <span class="st">'HR'</span>:<span class="nm">2</span>, <span class="st">'Mgtm'</span>:<span class="nm">3</span>}
+df[<span class="st">'DeptCode'</span>] = df[<span class="st">'Dept'</span>].<span class="fn">map</span>(dept_codes)</pre>
+    </div>
+
+    <h3>Sorting Data</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Sort by single column — ascending (default)</span>
+df.<span class="fn">sort_values</span>(<span class="st">'Salary'</span>)
+df.<span class="fn">sort_values</span>(<span class="st">'Salary'</span>, ascending=<span class="kw">False</span>)   <span class="cm"># highest first</span>
+
+<span class="cm"># Sort by multiple columns</span>
+df.<span class="fn">sort_values</span>([<span class="st">'Dept'</span>, <span class="st">'Salary'</span>], ascending=[<span class="kw">True</span>, <span class="kw">False</span>])
+<span class="cm"># Sort by Dept A→Z, then within each Dept sort Salary high→low</span>
+
+<span class="cm"># Sort index</span>
+df.<span class="fn">sort_index</span>()               <span class="cm"># ascending index</span>
+df.<span class="fn">sort_index</span>(ascending=<span class="kw">False</span>)
+
+<span class="cm"># nlargest / nsmallest — faster than sort + head</span>
+df.<span class="fn">nlargest</span>(<span class="nm">5</span>, <span class="st">'Salary'</span>)         <span class="cm"># top 5 salaries</span>
+df.<span class="fn">nsmallest</span>(<span class="nm">3</span>, <span class="st">'YearsExp'</span>)      <span class="cm"># 3 least experienced</span>
+df[<span class="st">'Salary'</span>].<span class="fn">nlargest</span>(<span class="nm">5</span>)        <span class="cm"># on a Series</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     QUIZ
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div>
+      <h2>Practice MCQs — 20 Questions</h2>
+      <p>Missing data, dropping, filling, types, strings, replacing, sorting. Need 16/20 to pass.</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div>
+      <div class="score-msg" id="score-msg"></div>
+      <div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     REAL WORLD TASK
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🏆</div>
+    <div>
+      <h2>Real-World Task — E-Commerce Data Cleaning Pipeline</h2>
+      <p>Estimated time: 80–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Data Engineer</strong> at <em>ShopSmart India</em>. The raw sales database export is a complete mess — wrong dtypes, inconsistent text, duplicate records, missing values everywhere, and error codes masquerading as real data. Build a <strong>full production-quality cleaning pipeline</strong> that transforms the raw data into a clean, analysis-ready dataset.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">1</div>
+        <h4>Phase 1 — Generate the Raw Messy Dataset</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Create a Realistic Messy DataFrame</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+<span class="kw">import</span> numpy  <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(<span class="nm">42</span>)
+n = <span class="nm">200</span>
+
+categories  = [<span class="st">'Electronics'</span>,<span class="st">'Clothing'</span>,<span class="st">'Books'</span>,<span class="st">'Home'</span>,<span class="st">'Sports'</span>]
+cat_messy   = [<span class="st">'electronics'</span>,<span class="st">'CLOTHING'</span>,<span class="st">'Books'</span>,<span class="st">'home'</span>,
+               <span class="st">'Sports'</span>,<span class="st">'ELECTRONICS'</span>,<span class="st">'clothing'</span>,<span class="st">'BOOKS'</span>,<span class="st">'HOME'</span>,<span class="st">'sports'</span>]
+statuses    = [<span class="st">'Completed'</span>,<span class="st">'completed'</span>,<span class="st">'COMPLETED'</span>,
+               <span class="st">'Pending'</span>,<span class="st">'pending'</span>,<span class="st">'1'</span>,<span class="st">'0'</span>,<span class="st">'Yes'</span>,<span class="st">'No'</span>,<span class="st">'Cancelled'</span>]
+
+raw_prices  = rng.<span class="fn">choice</span>([<span class="st">f'₹{x:.2f}'</span> <span class="kw">for</span> x <span class="kw">in</span> rng.<span class="fn">uniform</span>(<span class="nm">99</span>,<span class="nm">9999</span>,<span class="nm">150</span>)] +
+                           [<span class="st">'N/A'</span>]*<span class="nm">30</span> + [<span class="st">'--'</span>]*<span class="nm">20</span>, n)
+
+df_raw = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'OrderID'</span>   : [<span class="st">f'  ORD{rng.integers(1000,9999)}'</span> <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)],
+    <span class="st">'Customer'</span>  : rng.<span class="fn">choice</span>([<span class="st">'  Alice  '</span>,<span class="st">'BOB'</span>,<span class="st">'carol'</span>,<span class="st">'  DAVE'</span>,
+                                <span class="st">'Eve  '</span>,<span class="kw">None</span>,<span class="st">'alice'</span>,<span class="st">'bob  '</span>], n),
+    <span class="st">'Category'</span>  : rng.<span class="fn">choice</span>(cat_messy, n),
+    <span class="st">'Price'</span>     : raw_prices,
+    <span class="st">'Quantity'</span>  : rng.<span class="fn">choice</span>([<span class="st">'1'</span>,<span class="st">'2'</span>,<span class="st">'3'</span>,<span class="st">'5'</span>,<span class="st">'-1'</span>,<span class="st">'999'</span>,<span class="kw">None</span>], n),
+    <span class="st">'Rating'</span>    : rng.<span class="fn">choice</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>,<span class="nm">5</span>,<span class="op">np</span>.nan,<span class="nm">-1</span>,<span class="nm">99</span>], n),
+    <span class="st">'Status'</span>    : rng.<span class="fn">choice</span>(statuses, n),
+    <span class="st">'Date'</span>      : rng.<span class="fn">choice</span>([<span class="st">'2024-01-15'</span>,<span class="st">'15/01/2024'</span>,<span class="st">'Jan 15'</span>,
+                                <span class="st">'2024-02-20'</span>,<span class="kw">None</span>,<span class="st">'invalid'</span>], n),
+    <span class="st">'Discount%'</span> : rng.<span class="fn">choice</span>([<span class="st">'10%'</span>,<span class="st">'20%'</span>,<span class="st">'0%'</span>,<span class="st">'5%'</span>,<span class="st">'N/A'</span>,<span class="kw">None</span>], n)
+})
+
+<span class="cm"># Add 20 exact duplicate rows</span>
+df_raw = <span class="op">pd</span>.<span class="fn">concat</span>([df_raw, df_raw.<span class="fn">sample</span>(<span class="nm">20</span>, random_state=<span class="nm">1</span>)], ignore_index=<span class="kw">True</span>)
+
+df_raw.<span class="fn">to_csv</span>(<span class="st">'shopsmart_raw.csv'</span>, index=<span class="kw">False</span>)
+<span class="fn">print</span>(<span class="st">f"Raw dataset: {df_raw.shape}"</span>)
+df_raw.<span class="fn">info</span>()</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#DC2626">2</div>
+        <h4>Phase 2 — Diagnose the Data Quality Issues</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Build a Data Quality Report</h5>
+            <p>Before cleaning anything, document every problem. Print a report covering:</p>
+            <ul>
+              <li>Total rows and columns</li>
+              <li>Missing values per column (count + %)</li>
+              <li>Number of duplicate rows</li>
+              <li>Dtypes (identify which ones are wrong)</li>
+              <li>Unique values in categorical columns (spot inconsistencies)</li>
+              <li>Min/max of numeric-ish columns (spot error codes like -1, 999)</li>
+            </ul>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="fn">print</span>(<span class="st">"=== DATA QUALITY REPORT ==="</span>)
+<span class="fn">print</span>(<span class="st">f"Shape: {df_raw.shape}"</span>)
+<span class="fn">print</span>(<span class="st">"\n--- Missing Values ---"</span>)
+miss = df_raw.<span class="fn">isnull</span>().<span class="fn">sum</span>()
+miss_pct = (miss / <span class="fn">len</span>(df_raw) * <span class="nm">100</span>).<span class="fn">round</span>(<span class="nm">1</span>)
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Missing'</span>:miss, <span class="st">'%'</span>:miss_pct}))
+<span class="fn">print</span>(<span class="st">f"\nDuplicates: {df_raw.duplicated().sum()}"</span>)
+<span class="fn">print</span>(<span class="st">"\n--- Category Values ---"</span>)
+<span class="fn">print</span>(df_raw[<span class="st">'Category'</span>].<span class="fn">value_counts</span>())
+<span class="fn">print</span>(df_raw[<span class="st">'Status'</span>].<span class="fn">value_counts</span>())</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">3</div>
+        <h4>Phase 3 — Clean Each Column</h4>
+        <span class="phase-time">~35 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Step-by-Step Cleaning</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CLEANING PIPELINE — BUILD THIS</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>df = df_raw.<span class="fn">copy</span>()   <span class="cm"># always work on a copy!</span>
+
+<span class="cm"># STEP 1: Remove exact duplicate rows</span>
+df = df.<span class="fn">drop_duplicates</span>()
+<span class="fn">print</span>(<span class="st">f"After dedup: {len(df)} rows"</span>)
+
+<span class="cm"># STEP 2: Clean OrderID — strip whitespace</span>
+df[<span class="st">'OrderID'</span>] = df[<span class="st">'OrderID'</span>].<span class="fn">str</span>.<span class="fn">strip</span>()
+
+<span class="cm"># STEP 3: Clean Customer — strip + title case + fill missing</span>
+df[<span class="st">'Customer'</span>] = (df[<span class="st">'Customer'</span>]
+                    .<span class="fn">str</span>.<span class="fn">strip</span>()
+                    .<span class="fn">str</span>.<span class="fn">title</span>()
+                    .<span class="fn">fillna</span>(<span class="st">'Unknown'</span>))
+
+<span class="cm"># STEP 4: Clean Category — standardise case</span>
+df[<span class="st">'Category'</span>] = df[<span class="st">'Category'</span>].<span class="fn">str</span>.<span class="fn">strip</span>().<span class="fn">str</span>.<span class="fn">title</span>()
+
+<span class="cm"># STEP 5: Clean Price — remove ₹ symbol, convert to float</span>
+<span class="cm"># Your turn: strip '₹', handle 'N/A' and '--', convert to float</span>
+<span class="cm"># HINT: str.replace('₹',''), then pd.to_numeric(errors='coerce')</span>
+
+<span class="cm"># STEP 6: Clean Quantity — convert to int, fix error codes</span>
+<span class="cm"># -1 and 999 are error codes → replace with NaN, then fill with median</span>
+
+<span class="cm"># STEP 7: Clean Rating — replace -1 and 99 with NaN</span>
+df[<span class="st">'Rating'</span>] = df[<span class="st">'Rating'</span>].<span class="fn">replace</span>([-<span class="nm">1</span>, <span class="nm">99</span>], <span class="op">np</span>.nan)
+
+<span class="cm"># STEP 8: Standardise Status</span>
+status_map = {
+    <span class="st">'completed'</span>:<span class="st">'Completed'</span>, <span class="st">'COMPLETED'</span>:<span class="st">'Completed'</span>, <span class="st">'1'</span>:<span class="st">'Completed'</span>, <span class="st">'Yes'</span>:<span class="st">'Completed'</span>,
+    <span class="st">'pending'</span>:<span class="st">'Pending'</span>,
+    <span class="st">'0'</span>:<span class="st">'Cancelled'</span>, <span class="st">'No'</span>:<span class="st">'Cancelled'</span>
+}
+df[<span class="st">'Status'</span>] = df[<span class="st">'Status'</span>].<span class="fn">replace</span>(status_map)
+
+<span class="cm"># STEP 9: Clean Date — parse to datetime, NaT for invalid</span>
+df[<span class="st">'Date'</span>] = <span class="op">pd</span>.<span class="fn">to_datetime</span>(df[<span class="st">'Date'</span>], errors=<span class="st">'coerce'</span>)
+
+<span class="cm"># STEP 10: Clean Discount% — remove '%', convert to float, fill NaN with 0</span>
+df[<span class="st">'Discount'</span>] = (<span class="op">pd</span>.<span class="fn">to_numeric</span>(
+    df[<span class="st">'Discount%'</span>].<span class="fn">str</span>.<span class="fn">replace</span>(<span class="st">'%'</span>,<span class="st">''</span>).<span class="fn">str</span>.<span class="fn">strip</span>(),
+    errors=<span class="st">'coerce'</span>
+) / <span class="nm">100</span>).<span class="fn">fillna</span>(<span class="nm">0</span>)
+df = df.<span class="fn">drop</span>(columns=[<span class="st">'Discount%'</span>])
+
+<span class="fn">print</span>(<span class="st">"\nAfter cleaning:"</span>)
+df.<span class="fn">info</span>()</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">4</div>
+        <h4>Phase 4 — Feature Engineering &amp; Final Touches</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Add Derived Columns</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Revenue = Price × Quantity × (1 - Discount)</span>
+df[<span class="st">'Revenue'</span>] = df[<span class="st">'Price'</span>] * df[<span class="st">'Quantity'</span>] * (<span class="nm">1</span> - df[<span class="st">'Discount'</span>])
+
+<span class="cm"># Price Band using pd.cut</span>
+df[<span class="st">'PriceBand'</span>] = <span class="op">pd</span>.<span class="fn">cut</span>(df[<span class="st">'Price'</span>],
+                        bins=[<span class="nm">0</span>, <span class="nm">500</span>, <span class="nm">2000</span>, <span class="nm">5000</span>, <span class="nm">99999</span>],
+                        labels=[<span class="st">'Budget'</span>,<span class="st">'Mid'</span>,<span class="st">'Premium'</span>,<span class="st">'Luxury'</span>])
+
+<span class="cm"># Extract month from Date</span>
+df[<span class="st">'Month'</span>] = df[<span class="st">'Date'</span>].dt.<span class="fn">month_name</span>()
+
+<span class="cm"># Clean column names</span>
+df.columns = df.columns.<span class="fn">str</span>.<span class="fn">lower</span>().<span class="fn">str</span>.<span class="fn">replace</span>(<span class="st">' '</span>,<span class="st">'_'</span>)
+
+<span class="cm"># Sort by revenue descending</span>
+df = df.<span class="fn">sort_values</span>(<span class="st">'revenue'</span>, ascending=<span class="kw">False</span>).<span class="fn">reset_index</span>(drop=<span class="kw">True</span>)
+
+<span class="cm"># Save clean dataset</span>
+df.<span class="fn">to_csv</span>(<span class="st">'shopsmart_clean.csv'</span>, index=<span class="kw">False</span>)
+<span class="fn">print</span>(<span class="st">f"Clean dataset saved: {df.shape}"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">5</div>
+        <h4>Phase 5 — Cleaning Report</h4>
+        <span class="phase-time">~10 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Print the Full Cleaning Summary</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED OUTPUT FORMAT</span></div>
+<pre>═══════════════════════════════════════════════
+    SHOPSMART DATA CLEANING REPORT
+═══════════════════════════════════════════════
+RAW DATA
+  Rows (with duplicates) : 220
+  Columns                : 9
+
+ISSUES FOUND &amp; FIXED
+  ✅ Duplicate rows removed   : 20
+  ✅ OrderID whitespace fixed : ???
+  ✅ Customer names cleaned   : ???  (??? were 'Unknown')
+  ✅ Category standardised    : 10 variants → 5 clean
+  ✅ Price '₹' removed        : ??? invalid → NaN → filled median
+  ✅ Quantity error codes     : -1, 999 → NaN → filled
+  ✅ Rating error codes       : -1, 99  → NaN
+  ✅ Status standardised      : 10 variants → 3 clean
+  ✅ Date parsed              : ??? invalid → NaT
+  ✅ Discount % converted     : ???% → decimal, NaN → 0
+  ✅ Revenue column added
+  ✅ PriceBand column added
+  ✅ Month column added
+
+CLEAN DATA
+  Rows          : ???
+  Columns       : ???
+  Missing Values: ???
+  Dtypes        : date(1) float(3) int(1) object(5)
+
+TOP 3 REVENUE ORDERS
+  1. ORD???? | ??? | ₹???
+  2. ORD???? | ??? | ₹???
+  3. ORD???? | ??? | ₹???
+═══════════════════════════════════════════════</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Created messy dataset with 200+20 duplicate rows and 9 messy columns</li>
+        <li>Built a full data quality diagnostic report before cleaning</li>
+        <li>Removed 20 duplicate rows using drop_duplicates()</li>
+        <li>Cleaned OrderID with str.strip()</li>
+        <li>Cleaned Customer with strip + title + fillna('Unknown')</li>
+        <li>Standardised Category from 10 variants to 5 with str.title()</li>
+        <li>Stripped ₹ symbol from Price, handled N/A and --, used pd.to_numeric(errors='coerce')</li>
+        <li>Fixed Quantity error codes (-1, 999) → NaN, filled with median</li>
+        <li>Replaced Rating error codes (-1, 99) → NaN</li>
+        <li>Standardised Status from 10 variants to 3 using replace() dict</li>
+        <li>Parsed Date column with pd.to_datetime(errors='coerce')</li>
+        <li>Converted Discount% from '10%' string to 0.10 float, filled NaN with 0</li>
+        <li>Added Revenue, PriceBand (pd.cut), and Month columns</li>
+        <li>Cleaned column names to snake_case</li>
+        <li>Sorted by revenue descending and reset index</li>
+        <li>Saved clean dataset as CSV</li>
+        <li>Printed complete cleaning summary report</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 30 min)</div>
+      Build a reusable <strong>data validation function</strong>: <code>validate_df(df)</code> that checks: (1) no duplicate OrderIDs, (2) Price &gt; 0 for all rows, (3) Quantity between 1 and 100, (4) Rating between 1 and 5 where not null, (5) Status is one of the 3 valid values. Returns a dict of {column: issues_found}. Run it on both the raw and clean data to show improvement.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Pandas Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Series &amp; DataFrames</span>
+    <span class="day-pill done active">Day 2 · Data Cleaning</span>
+    <span class="day-pill">Day 3 · GroupBy &amp; Merge</span>
+    <span class="day-pill">Day 4 · Time Series</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What is the difference between `df.isnull()` and `df.isna()`?",opts:["isnull() only works on numeric columns","isna() only works on object columns","They are identical aliases — both return True where values are NaN/None/NaT","isnull() returns count, isna() returns boolean"],ans:2,explain:"isna() and isnull() are exact aliases — they do the same thing. Both return a boolean DataFrame/Series that is True wherever values are NaN, None, or NaT."},
+  {code:"df.isnull().sum().sum()",q:"What does this compute?",opts:["Number of rows with ANY null","Number of columns with nulls","Total count of ALL null values in the entire DataFrame","Percentage of nulls"],ans:2,explain:"df.isnull() → boolean DataFrame. .sum() → count per column (Series). .sum() again → sum all column counts → total NaN count in the whole DataFrame."},
+  {q:"What does `df.dropna(thresh=4)` do?",opts:["Drops rows with more than 4 nulls","Keeps only rows with AT LEAST 4 non-null values","Drops the first 4 null rows","Drops 4% of rows with nulls"],ans:1,explain:"thresh=N keeps rows that have at least N non-null values. So thresh=4 drops any row with fewer than 4 valid (non-NaN) values across all columns."},
+  {code:"df['Salary'].fillna(df['Salary'].median())",q:"When is filling with MEDIAN better than MEAN?",opts:["When the column has no missing values","When the column is categorical","When salary data is skewed (a few very high earners pull the mean up)","When you want exact values only"],ans:2,explain:"The mean is sensitive to outliers. For salary data, a few extremely high earners can pull the mean far above the 'typical' value. The median (middle value) is more robust and represents a better central value for imputing."},
+  {q:"What does `df.ffill()` do?",opts:["Fill forward with the NEXT valid value","Fill each NaN with the PREVIOUS valid value (carry forward)","Fill with the column's first value","Fill all NaNs with 0"],ans:1,explain:"ffill (forward fill) replaces each NaN with the most recent non-null value above it in the column. It's ideal for time series where you expect values to remain the same until explicitly changed."},
+  {code:"s = pd.Series(['100','N/A','300','abc'])\nprint(pd.to_numeric(s, errors='coerce'))",q:"What is printed?",opts:["Error — ValueError","[100.0, NaN, 300.0, NaN]","['100', 'N/A', '300', 'abc']","[100, 0, 300, 0]"],ans:1,explain:"pd.to_numeric with errors='coerce' converts valid strings to numbers and converts unparseable values ('N/A', 'abc') to NaN instead of raising an error."},
+  {q:"What is wrong with `df['Active'] = df['Active'].astype(bool)` when the column contains the string 'False'?",opts:["It raises a TypeError","Non-empty strings (including 'False') evaluate to True in Python — so 'False' becomes True!","It works perfectly","It converts 'False' to 0"],ans:1,explain:"In Python, any non-empty string is truthy — including the string 'False'. So astype(bool) on string 'False' gives True, not False. Use .map({'True':True,'False':False}) for correct conversion."},
+  {code:"names = pd.Series(['  Alice  ', 'BOB', 'carol'])\nprint(names.str.strip().str.title())",q:"What is printed?",opts:["['  Alice  ', 'BOB', 'carol']","['Alice', 'Bob', 'Carol']","['ALICE', 'BOB', 'CAROL']","Error — cannot chain str methods"],ans:1,explain:"str.strip() removes leading/trailing whitespace → ['Alice', 'BOB', 'carol']. str.title() capitalises first letter of each word → ['Alice', 'Bob', 'Carol']."},
+  {q:"What does `full_names.str.split(' ', expand=True)` return?",opts:["A list of lists","A single column with split values","A DataFrame with one column per split part","A Series of tuples"],ans:2,explain:"With expand=True, str.split() returns a DataFrame where each split part becomes its own column. Without expand=True, it returns a Series of lists."},
+  {q:"When should you use `df.drop_duplicates(subset=['Name','Dept'])`?",opts:["To keep only rows where Name equals Dept","To remove rows where BOTH Name AND Dept are identical to another row","To drop the Name and Dept columns","To find rows with duplicated names"],ans:1,explain:"subset=['Name','Dept'] means two rows are considered duplicates only if BOTH Name AND Dept match. Rows with the same name but different departments are NOT considered duplicates."},
+  {code:"df['Price'].replace(['N/A','--'], np.nan)",q:"What does this do?",opts:["Drops rows where Price is 'N/A' or '--'","Replaces the string values 'N/A' and '--' with NaN","Converts Price to float","Raises an error"],ans:1,explain:"replace() substitutes specified values with new ones. Here it converts the string placeholders 'N/A' and '--' into proper NaN values, enabling numeric operations and correct null detection."},
+  {q:"What does `df.rename(columns={'old_name':'new_name'})` return?",opts:["Modifies df in place and returns None","Returns a NEW DataFrame with renamed columns (original unchanged unless inplace=True)","Renames both columns and index","Returns a Series of column names"],ans:1,explain:"By default, rename() (like most Pandas operations) returns a new DataFrame. The original is unchanged. Use inplace=True to modify the original, or reassign: df = df.rename(...)."},
+  {q:"What does `df.reset_index(drop=True)` do?",opts:["Deletes all index values","Resets the row index to 0,1,2,... and DISCARDS the old index","Resets the row index and adds old index as a column","Sorts the DataFrame by index"],ans:1,explain:"reset_index() resets to 0,1,2,... With drop=True, the old index is thrown away. Without drop=True (default), the old index becomes a regular column, which is useful when the index contained meaningful data (like dates or IDs)."},
+  {code:"df.columns = df.columns.str.lower().str.replace(' ', '_')",q:"What does this accomplish?",opts:["Filters columns with spaces","Cleans all column names to snake_case — lowercase with underscores instead of spaces","Drops columns with special characters","Raises an error"],ans:1,explain:"This is a common column-name cleaning pattern. df.columns returns an Index object that supports .str methods. The chain: lowercase all names → replace spaces with underscores → clean snake_case column names."},
+  {q:"What does `pd.cut(df['Price'], bins=[0,500,2000,10000], labels=['Budget','Mid','Premium'])` do?",opts:["Cuts the DataFrame to 3 rows","Splits the column into 3 numeric bins and assigns category labels","Drops rows outside the bin range","Creates 3 new columns"],ans:1,explain:"pd.cut() bins a continuous numeric column into discrete categories. Each value is assigned to the bucket [0-500]→Budget, [500-2000]→Mid, [2000-10000]→Premium. Returns a Categorical Series."},
+  {code:"df.sort_values(['Dept','Salary'], ascending=[True,False])",q:"How is this sorted?",opts:["By Salary then Dept, both ascending","Dept alphabetically A→Z, then within each dept, Salary highest→lowest","Both ascending","Both descending"],ans:1,explain:"Multi-column sort with mixed direction: Dept ascending (A→Z alphabetically), and within each Department, Salary descending (highest first). ascending=[True,False] maps to the columns list in order."},
+  {q:"What is the best imputation strategy for a heavily skewed 'House Price' column?",opts:["Mean — always most accurate","Median — robust to outliers, better for skewed distributions","Mode — most common value","Forward fill — prices don't change"],ans:1,explain:"For skewed data like house prices (where a few mansions can skew the mean drastically), the median is the better imputation choice. It represents the 'middle' house price and isn't pulled by extreme values."},
+  {code:"df['Score'].apply(lambda x: 'Pass' if x >= 50 else 'Fail')",q:"What does this return?",opts:["A scalar — the number of passes","A DataFrame with two columns","A Series with 'Pass'/'Fail' for each row","Modifies df['Score'] in place"],ans:2,explain:"apply() with a function returns a new Series (same length as the original) where each element has been transformed by the function. Here each score becomes 'Pass' or 'Fail'. The original column is NOT modified."},
+  {q:"What does `df.nlargest(5, 'Revenue')` return?",opts:["The 5 rows with lowest Revenue","The 5 rows with highest Revenue, sorted descending","A Series of the 5 largest Revenue values","The top 5 Revenue values as a list"],ans:1,explain:"nlargest(n, column) returns the n rows with the LARGEST values in the specified column, already sorted descending. It's faster than df.sort_values('Revenue',ascending=False).head(5)."},
+  {q:"What does `df.interpolate()` do to a Series [10, NaN, NaN, 40]?",opts:["Fills NaN with the column mean","Fills NaN with forward fill","Fills NaN using linear interpolation between known values: [10, 20, 30, 40]","Raises an error for 2 consecutive NaNs"],ans:2,explain:"Linear interpolation fits a straight line between known points. Between 10 (index 0) and 40 (index 3), the line passes through 20 at index 1 and 30 at index 2. This is better than mean/median when data has a trend."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Data cleaning is tough — revisit fillna, replace and str methods! 📚"],[50,75,"Getting there! Focus on type conversion and string cleaning. 💪"],[75,90,"Strong work! Data cleaning skills are solid. 🎉"],[90,101,"Excellent! Day 2 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+
+buildQuiz();
+</script>
+</body>
+</html>

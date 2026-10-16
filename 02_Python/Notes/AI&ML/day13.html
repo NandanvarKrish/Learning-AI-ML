@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 13 — Correlation vs. Causation</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.scale-grid{display:flex; justify-content:space-between; margin:14px 0; font-family:var(--font-mono); font-size:12px; text-align:center;}
+.scale-grid div{flex:1;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:150px;}
+.solver input[type=range]{flex:1; min-width:140px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:50px; text-align:center;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:16px;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 13 of 210 · Phase 1: Statistics & Probability Week</span>
+    <h1>Correlation vs. Causation</h1>
+    <div class="subtitle">~2 hours · One of the most misunderstood ideas in all of data analysis</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>ML models are extremely good at finding correlations in data — patterns where two things move together. They are <strong>not</strong> designed to tell you whether one causes the other. Misreading a model's correlational findings as causal is one of the most common (and costly) mistakes made by beginners and professionals alike, especially when a model is used to justify a real business or policy decision.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> What is correlation?</h2>
+  <p>Correlation measures how strongly two variables move together, expressed as a <strong>correlation coefficient (r)</strong> ranging from -1 to +1:</p>
+  <div class="scale-grid">
+    <div><strong>-1</strong><br>Perfect negative</div>
+    <div><strong>0</strong><br>No correlation</div>
+    <div><strong>+1</strong><br>Perfect positive</div>
+  </div>
+  <div class="panel">
+    <p><strong>Positive correlation (r near +1):</strong> as one variable increases, the other tends to increase too. Example: hours studied and exam score.</p>
+    <p><strong>Negative correlation (r near -1):</strong> as one increases, the other tends to decrease. Example: price of a product and quantity demanded.</p>
+    <p><strong>No correlation (r near 0):</strong> no consistent relationship. Example: a person's shoe size and their favorite color.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> What is causation?</h2>
+  <p>Causation means one variable <strong>directly produces a change</strong> in another — not just moves alongside it. Establishing causation typically requires controlled experiments (like A/B tests) or careful statistical techniques designed specifically to rule out other explanations — it is NOT something you can conclude just by observing that two things are correlated.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> The classic example (ice cream & drowning)</h2>
+  <div class="panel">
+    <p class="example-tag">The textbook case, because it's so intuitive</p>
+    <p>Ice cream sales and drowning deaths are strongly positively correlated — months with higher ice cream sales also have more drowning incidents. Does ice cream cause drowning? Obviously not.</p>
+    <p><strong>The real explanation: a confounding variable — hot weather.</strong> Hot weather causes both more ice cream buying AND more swimming (hence more drowning risk). The two variables are correlated only because they share a common cause, not because either causes the other.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (business — the trap beginners fall into)</h2>
+  <div class="panel">
+    <p class="example-tag">Business example</p>
+    <p>A company notices: months with higher ad spend also have higher sales. Correlation = 0.8 (strong). A junior analyst concludes: "more ad spend causes more sales — let's spend even more!"</p>
+    <p><strong>But consider the confounders:</strong> Maybe the company increases ad spend seasonally (festival months), and sales rise in those months <em>regardless</em> of ads, just due to seasonal demand. Or maybe rising sales gave the company more budget to spend on ads (reverse causation — sales causing ad spend, not the other way around!). Correlation alone cannot distinguish between these explanations — you'd need a controlled experiment (e.g., randomly varying ad spend across similar regions) to know the true causal effect.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (reverse causation)</h2>
+  <div class="panel">
+    <p class="example-tag">A subtler trap — which direction does causation run?</p>
+    <p>A hospital notices: patients who stay longer in the hospital have worse health outcomes. Does staying longer <em>cause</em> worse outcomes? Almost certainly the reverse: <strong>patients who are already sicker require longer stays</strong> — sickness causes longer stays, not the other way around. Always ask: "could the arrow of causation point the opposite direction from what seems obvious?"</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — "Correlated, therefore causal."</strong> The single most common statistical error in the world. Always ask what else could explain the pattern.</p>
+    <p><strong>Mistake 2 — Ignoring confounding variables.</strong> Always ask: is there a third factor influencing both variables (like weather influencing both ice cream sales and drownings)?</p>
+    <p><strong>Mistake 3 — Missing reverse causation.</strong> Just because A and B are correlated doesn't tell you whether A causes B, B causes A, or both influence each other.</p>
+    <p><strong>Mistake 4 — Trusting an ML model's "feature importance" as causal proof.</strong> A model finding that a feature strongly predicts an outcome tells you it's a good <em>predictor</em> — not that changing that feature would actually change the outcome. This distinction matters enormously for real business/policy decisions built on model outputs.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <p>For each scenario, identify: is this likely correlation without causation, and if so, what's the probable confounder or alternate explanation?</p>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Correlation Strength Visualizer</h2>
+  <div class="solver">
+    <h3>Drag to set a target correlation, see the scatter plot change</h3>
+    <div class="solver-row">
+      <label>Target correlation (r)</label>
+      <input type="range" id="rSlider" min="-1" max="1" step="0.1" value="0.7">
+      <span class="val" id="rVal">0.7</span>
+    </div>
+    <button onclick="generateScatter()">Generate New Random Data</button>
+    <canvas id="plot" width="600" height="320"></canvas>
+    <div class="solver-result" id="result"></div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Notice: no matter how strong the correlation looks, the scatter plot alone never tells you WHY the two variables move together — that always requires outside knowledge or an experiment.</p>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> When you build your first regression models in Phase 3, they will find correlations in your data — strong ones, often. Keep today's lesson close: a model finding that a feature predicts an outcome well is not proof that changing that feature would change the outcome. Causal inference is its own advanced field, separate from standard predictive ML.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 13 of 210 · AI & ML Study Plan · Phase 1: Statistics & Probability Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Cities with more fire trucks dispatched to a fire also report more fire damage. Does dispatching more trucks cause more damage?", steps: "No — confounder: larger/more severe fires require both more trucks AND cause more damage. Fire severity drives both variables." },
+  { q: "Countries with more Nobel laureates also have higher chocolate consumption per capita (a real, famous spurious correlation). Does chocolate cause Nobel prizes?", steps: "Extremely unlikely — probable confounder: wealthier/more developed countries tend to have both higher chocolate consumption AND better-funded research institutions." },
+  { q: "Students who sit in the front row of class tend to get better grades. Does sitting in front cause better grades?", steps: "Possibly reverse-ish: more motivated/engaged students may choose to sit in front AND study harder — motivation could be the confounder, not seat location itself." },
+  { q: "A website notices: pages that load faster have higher user engagement. Is this necessarily causal?", steps: "Could be causal (frustration from slow loading) but also confounded — well-funded, well-designed sites might both load faster AND be more engaging for other reasons (design quality)." },
+  { q: "A company observes: employees who attend more training sessions have higher performance ratings. What's a plausible confounder?", steps: "Employee motivation/ambition — highly motivated employees may both seek out more training AND naturally perform better, regardless of the training's actual effect." },
+  { q: "Towns with more churches also have more bars (a classic real correlation). What's the likely confounder?", steps: "Population size / town size — bigger towns simply have more of both churches and bars, unrelated to any causal link between the two." },
+  { q: "A drug trial (randomized, controlled) shows patients given the drug recover faster than those given a placebo. Is this correlation or causation, and why?", steps: "This IS evidence of causation — random assignment to drug vs. placebo rules out most confounders, which is exactly why controlled experiments (not just observed correlation) are the gold standard for establishing causation." },
+  { q: "An ML model finds 'number of browser tabs open' strongly predicts 'likelihood of making a purchase' on an e-commerce site. Should the company force users to open more tabs to increase sales?", steps: "No — this is almost certainly a correlation from user behavior type (engaged/research-heavy shoppers open more tabs AND buy more), not a causal lever the company can pull." },
+  { q: "Ice cream sales and drownings are correlated. What's the confounding variable?", steps: "Hot weather — it independently increases both ice cream purchases and swimming (hence drowning risk)." },
+  { q: "In your own words: why can't a scatter plot alone, no matter how strong the correlation, ever prove causation?", steps: "A scatter plot only shows that two variables move together — it contains no information about which one (if either) is driving the other, or whether a third factor is driving both. Causation requires additional evidence, usually a controlled experiment." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const rSlider = document.getElementById('rSlider');
+const rVal = document.getElementById('rVal');
+rSlider.addEventListener('input', () => { rVal.textContent = rSlider.value; });
+
+function randNormal(){
+  // Box-Muller approx via sum of uniforms (close enough for visualization)
+  let sum = 0;
+  for(let i=0;i<6;i++) sum += Math.random();
+  return sum - 3;
+}
+
+function generateScatter(){
+  const targetR = parseFloat(rSlider.value);
+  const n = 60;
+  const xs = [], ys = [];
+  for(let i=0;i<n;i++){
+    const x = randNormal();
+    const noise = randNormal();
+    const y = targetR*x + Math.sqrt(Math.max(0,1-targetR*targetR))*noise;
+    xs.push(x); ys.push(y);
+  }
+  // compute actual Pearson r
+  const meanX = xs.reduce((a,b)=>a+b,0)/n;
+  const meanY = ys.reduce((a,b)=>a+b,0)/n;
+  let num=0, denX=0, denY=0;
+  for(let i=0;i<n;i++){
+    num += (xs[i]-meanX)*(ys[i]-meanY);
+    denX += Math.pow(xs[i]-meanX,2);
+    denY += Math.pow(ys[i]-meanY,2);
+  }
+  const actualR = num / Math.sqrt(denX*denY);
+
+  document.getElementById('result').innerHTML = `Actual measured correlation from this random sample: <strong style="color:#c05621;">r ≈ ${actualR.toFixed(2)}</strong> (target was ${targetR})`;
+
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const padding = 40;
+  const allX = xs.concat([]), allY = ys.concat([]);
+  const minX = Math.min(...allX), maxX = Math.max(...allX);
+  const minY = Math.min(...allY), maxY = Math.max(...allY);
+  const scaleX = v => padding + ((v-minX)/(maxX-minX)) * (w-padding*2);
+  const scaleY = v => h - padding - ((v-minY)/(maxY-minY)) * (h-padding*2);
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, h-padding); ctx.lineTo(w-padding, h-padding); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, h-padding); ctx.stroke();
+
+  ctx.fillStyle = '#c05621';
+  for(let i=0;i<n;i++){
+    ctx.beginPath();
+    ctx.arc(scaleX(xs[i]), scaleY(ys[i]), 5, 0, 2*Math.PI);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#6b6459'; ctx.font = '11px monospace';
+  ctx.fillText('Variable X', w-padding-60, h-padding+20);
+  ctx.save();
+  ctx.translate(15, h/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Variable Y', 0, 0);
+  ctx.restore();
+}
+generateScatter();
+
+const quizData = [
+  { q: "A correlation coefficient of r = -0.9 means:", opts: ["No relationship","A strong positive relationship","A strong negative relationship","An error in calculation"], correct: 2, explain: "Values close to -1 indicate a strong negative (inverse) relationship — as one variable rises, the other tends to fall." },
+  { q: "What is a 'confounding variable'?", opts: ["A variable that has no effect on anything","A third factor that influences both variables being studied, creating a misleading correlation","Another name for correlation coefficient","A variable only found in ML models"], correct: 1, explain: "Confounders (like weather in the ice cream/drowning example) create correlation between two variables without either causing the other." },
+  { q: "The strongest way to establish TRUE causation is generally:", opts: ["A high correlation coefficient","A large dataset, regardless of design","A randomized controlled experiment","A strong opinion from an expert"], correct: 2, explain: "Random assignment (like in drug trials) rules out most confounders, making controlled experiments the gold standard for causal claims." },
+  { q: "'Towns with more churches have more bars' is best explained by:", opts: ["Churches cause bars to open","Bars cause churches to open","Town/population size affects both independently","This proves an actual causal link"], correct: 2, explain: "Bigger towns simply have more of everything — a classic confounder." },
+  { q: "Reverse causation means:", opts: ["There is no relationship at all","What looks like 'A causes B' might actually be 'B causes A'","Correlation coefficients can be negative","Two variables are perfectly correlated"], correct: 1, explain: "E.g., sicker patients causing longer hospital stays, not longer stays causing sickness." },
+  { q: "An ML model's 'feature importance' score tells you:", opts: [
+      "That feature definitely causes the outcome",
+      "That the feature is a strong predictor of the outcome in the data — not necessarily a cause",
+      "Nothing useful at all",
+      "The exact dollar value of that feature"
+    ], correct: 1, explain: "Feature importance reflects predictive/correlational strength, not proven causation." },
+  { q: "Why is 'more ad spend correlates with more sales' not proof that ads caused the sales increase?", opts: ["It definitely is proof", "Other factors (seasonality, reverse causation from budget allocation) could explain the pattern instead", "Ad spend never affects sales", "Correlation and causation are the same thing"], correct: 1, explain: "Without a controlled experiment, seasonal demand or budget-follows-sales explanations remain equally plausible." },
+  { q: "If two variables have r ≈ 0, what does that tell you?", opts: ["They definitely cause each other", "There's little to no LINEAR relationship between them in this data", "One variable is always larger", "The data must be wrong"], correct: 1, explain: "r near 0 indicates no clear linear correlation — though note, r can miss strong NON-linear relationships too." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

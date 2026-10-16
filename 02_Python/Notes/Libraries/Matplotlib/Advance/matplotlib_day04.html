@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matplotlib – Day 4 | Animations & Interactive Plots</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFF7ED;--surface:#FFFFFF;--border:#FED7AA;--accent:#C2410C;--accent2:#7C2D12;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;
+    --text:#2B0E02;--muted:#C2410C;--code-bg:#1D0C02;--code-text:#FED7AA;--tag-bg:#FFEDD5;--tag-text:#7C2D12;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(194,65,12,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#C2410C 0%,#7C2D12 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#FED7AA;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#F97316;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FDBA74;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#7C2D12;font-style:italic;} .op{color:#FED7AA;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#7C2D12,#C2410C);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  /* LIVE ANIMATION DEMO */
+  .demo-box{border:2px solid var(--border);border-radius:12px;padding:24px;background:var(--bg);margin:16px 0;text-align:center;}
+  .demo-canvas-wrap{position:relative;height:220px;background:#0F0704;border-radius:10px;overflow:hidden;margin-bottom:14px;}
+  #sineCanvas{width:100%;height:100%;display:block;}
+  .demo-controls{display:flex;gap:10px;justify-content:center;}
+  .demo-btn{padding:8px 18px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600;font-size:13px;cursor:pointer;}
+  .demo-btn:hover{background:var(--accent2);}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#C2410C,#7C2D12);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#C2410C,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">📊 Matplotlib</div><span class="sep">|</span><span class="day-label">Day 4 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">80%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:80%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Matplotlib Full Course · Day 4</div>
+  <h1>Animations &amp; <span>Interactive Plots</span></h1>
+  <p>Bring your charts to life with FuncAnimation, build interactive widgets with sliders and buttons, and export to GIF/MP4.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🎬 FuncAnimation</span>
+    <span class="hero-pill">📈 Animating Line Plots</span>
+    <span class="hero-pill">🎚️ Sliders &amp; Buttons</span>
+    <span class="hero-pill">🖱️ Event Handling</span>
+    <span class="hero-pill">💾 GIF/MP4 Export</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- Live browser demo to illustrate the concept -->
+<div class="demo-box">
+  <div style="font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:600;">🎬 LIVE PREVIEW — This is what a Matplotlib FuncAnimation looks like when it plays (rendered here in the browser for illustration)</div>
+  <div class="demo-canvas-wrap"><canvas id="sineCanvas"></canvas></div>
+  <div class="demo-controls">
+    <button class="demo-btn" onclick="toggleAnim()" id="animBtn">Pause</button>
+    <button class="demo-btn" onclick="resetAnim()">Reset</button>
+  </div>
+</div>
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🎬</div>
+    <div><h2>FuncAnimation — The Core Animation Engine</h2><p>How Matplotlib animates: redraw a frame, repeat</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>FuncAnimation</strong> works by repeatedly calling a function you define, each time updating the plot data for the next "frame". Matplotlib handles the redraw timing and looping.</p>
+
+    <div class="fbox">
+      <div class="ft">🎬 The Animation Pattern</div>
+      <div class="fm">1. Create the figure and initial (empty) plot ONCE</div>
+      <div class="fm">2. Define update(frame) — modifies the plot data for that frame</div>
+      <div class="fm">3. FuncAnimation(fig, update, frames=N, interval=ms) — runs it</div>
+      <div class="fnote">Only update the DATA inside update() — never recreate the whole figure each frame (very slow).</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> matplotlib.animation <span class="kw">as</span> animation
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+x = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">2</span>*<span class="op">np</span>.pi, <span class="nm">100</span>)
+
+<span class="cm"># Create the line ONCE — we'll update its data each frame</span>
+line, = ax.<span class="fn">plot</span>(x, <span class="op">np</span>.<span class="fn">sin</span>(x))
+ax.<span class="fn">set_ylim</span>(-<span class="nm">1.5</span>, <span class="nm">1.5</span>)
+ax.<span class="fn">set_title</span>(<span class="st">'Animated Sine Wave'</span>)
+
+<span class="kw">def</span> <span class="fn">update</span>(frame):
+    <span class="cm"># frame goes 0, 1, 2, ... automatically</span>
+    y = <span class="op">np</span>.<span class="fn">sin</span>(x + frame * <span class="nm">0.1</span>)   <span class="cm"># shift the wave slightly each frame</span>
+    line.<span class="fn">set_ydata</span>(y)              <span class="cm"># update ONLY the data — fast!</span>
+    <span class="kw">return</span> line,                  <span class="cm"># must return an iterable of updated artists</span>
+
+ani = animation.<span class="fn">FuncAnimation</span>(
+    fig, update,
+    frames=<span class="nm">100</span>,        <span class="cm"># total number of frames</span>
+    interval=<span class="nm">50</span>,        <span class="cm"># milliseconds between frames (50ms = 20fps)</span>
+    blit=<span class="kw">True</span>          <span class="cm"># only redraw changed parts — much faster</span>
+)
+
+<span class="op">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 blit=True — The Performance Secret</div>
+      With <code>blit=True</code>, Matplotlib only redraws the parts of the figure that actually CHANGED (the line data), not the entire canvas (axes, labels, gridlines). This is dramatically faster, especially for complex plots. The tradeoff: your update function must return the changed artists, and it works best on simpler animations.
+    </div>
+
+    <h3>FuncAnimation Parameters</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Parameter</th><th>Purpose</th></tr>
+        <tr><td><code>fig</code></td><td>The Figure object to animate</td></tr>
+        <tr><td><code>func</code></td><td>Update function called each frame</td></tr>
+        <tr><td><code>frames</code></td><td>Number of frames, or an iterable/generator of frame values</td></tr>
+        <tr><td><code>interval</code></td><td>Delay between frames in milliseconds</td></tr>
+        <tr><td><code>blit</code></td><td>Only redraw changed elements (faster, but has limitations)</td></tr>
+        <tr><td><code>repeat</code></td><td>Whether to loop the animation (default True)</td></tr>
+        <tr><td><code>init_func</code></td><td>Optional function to draw the initial clean state</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📈</div>
+    <div><h2>Animating Common Chart Types</h2><p>Line, scatter, bar — the patterns for each</p></div>
+  </div>
+  <div class="section-body">
+
+    <h3>Growing Line Chart (Time Series Reveal)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+dates = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">100</span>)
+prices = <span class="nm">100</span> + <span class="op">np</span>.<span class="fn">cumsum</span>(<span class="op">np</span>.random.<span class="fn">randn</span>(<span class="nm">100</span>))
+
+line, = ax.<span class="fn">plot</span>([], [], color=<span class="st">'#C2410C'</span>, linewidth=<span class="nm">2</span>)
+ax.<span class="fn">set_xlim</span>(<span class="nm">0</span>, <span class="nm">100</span>)
+ax.<span class="fn">set_ylim</span>(prices.<span class="fn">min</span>()-<span class="nm">5</span>, prices.<span class="fn">max</span>()+<span class="nm">5</span>)
+ax.<span class="fn">set_title</span>(<span class="st">'Stock Price — Building Up'</span>)
+
+<span class="kw">def</span> <span class="fn">update</span>(frame):
+    line.<span class="fn">set_data</span>(dates[:frame], prices[:frame])   <span class="cm"># reveal more data each frame</span>
+    <span class="kw">return</span> line,
+
+ani = animation.<span class="fn">FuncAnimation</span>(fig, update, frames=<span class="fn">len</span>(dates), interval=<span class="nm">30</span>, blit=<span class="kw">True</span>)</pre>
+    </div>
+
+    <h3>Animated Scatter Plot</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">7</span>,<span class="nm">7</span>))
+n = <span class="nm">50</span>
+scat = ax.<span class="fn">scatter</span>(<span class="op">np</span>.random.<span class="fn">rand</span>(n), <span class="op">np</span>.random.<span class="fn">rand</span>(n), c=<span class="st">'#F97316'</span>, s=<span class="nm">50</span>)
+ax.<span class="fn">set_xlim</span>(<span class="nm">0</span>,<span class="nm">1</span>); ax.<span class="fn">set_ylim</span>(<span class="nm">0</span>,<span class="nm">1</span>)
+
+<span class="kw">def</span> <span class="fn">update</span>(frame):
+    <span class="cm"># Random walk: nudge every point slightly</span>
+    new_offsets = scat.<span class="fn">get_offsets</span>() + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">0.01</span>, (n,<span class="nm">2</span>))
+    new_offsets = <span class="op">np</span>.<span class="fn">clip</span>(new_offsets, <span class="nm">0</span>, <span class="nm">1</span>)      <span class="cm"># keep points in bounds</span>
+    scat.<span class="fn">set_offsets</span>(new_offsets)         <span class="cm"># update position data</span>
+    <span class="kw">return</span> scat,
+
+ani = animation.<span class="fn">FuncAnimation</span>(fig, update, frames=<span class="nm">200</span>, interval=<span class="nm">40</span>, blit=<span class="kw">True</span>)</pre>
+    </div>
+
+    <h3>Animated Bar Chart (Race Chart Style)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+categories = [<span class="st">'A'</span>,<span class="st">'B'</span>,<span class="st">'C'</span>,<span class="st">'D'</span>]
+<span class="cm"># Simulated growth data over 30 "months"</span>
+growth = <span class="op">np</span>.<span class="fn">cumsum</span>(<span class="op">np</span>.random.<span class="fn">rand</span>(<span class="nm">30</span>, <span class="nm">4</span>), axis=<span class="nm">0</span>)
+
+bars = ax.<span class="fn">bar</span>(categories, growth[<span class="nm">0</span>], color=[<span class="st">'#C2410C'</span>,<span class="st">'#F97316'</span>,<span class="st">'#FDBA74'</span>,<span class="st">'#FED7AA'</span>])
+ax.<span class="fn">set_ylim</span>(<span class="nm">0</span>, growth.<span class="fn">max</span>()*<span class="nm">1.1</span>)
+
+<span class="kw">def</span> <span class="fn">update</span>(frame):
+    <span class="kw">for</span> bar, height <span class="kw">in</span> <span class="fn">zip</span>(bars, growth[frame]):
+        bar.<span class="fn">set_height</span>(height)     <span class="cm"># update each bar's height</span>
+    ax.<span class="fn">set_title</span>(<span class="st">f'Month {frame+1}'</span>)
+    <span class="kw">return</span> bars
+
+<span class="cm"># NOTE: when the title changes each frame, blit=True can't fully cover it —
+# often set blit=False for animations with changing text</span>
+ani = animation.<span class="fn">FuncAnimation</span>(fig, update, frames=<span class="nm">30</span>, interval=<span class="nm">150</span>, blit=<span class="kw">False</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🎚️</div>
+    <div><h2>Interactive Widgets — Sliders &amp; Buttons</h2><p>Let users control parameters live, without re-running code</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>The <code>matplotlib.widgets</code> module provides interactive UI elements — sliders, buttons, checkboxes, radio buttons — that work within a plot window (Jupyter with an interactive backend, or a standalone window).</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> matplotlib.widgets <span class="kw">import</span> Slider, Button, RadioButtons
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">6</span>))
+<span class="op">plt</span>.<span class="fn">subplots_adjust</span>(bottom=<span class="nm">0.35</span>)   <span class="cm"># make room at the bottom for widgets</span>
+
+x = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">200</span>)
+init_freq = <span class="nm">1.0</span>
+line, = ax.<span class="fn">plot</span>(x, <span class="op">np</span>.<span class="fn">sin</span>(init_freq * x))
+ax.<span class="fn">set_ylim</span>(-<span class="nm">1.5</span>, <span class="nm">1.5</span>)
+
+<span class="cm"># ── SLIDER ── position: [left, bottom, width, height]</span>
+ax_freq = <span class="op">plt</span>.<span class="fn">axes</span>([<span class="nm">0.25</span>, <span class="nm">0.20</span>, <span class="nm">0.5</span>, <span class="nm">0.03</span>])
+freq_slider = <span class="fn">Slider</span>(ax_freq, <span class="st">'Frequency'</span>, <span class="nm">0.1</span>, <span class="nm">5.0</span>, valinit=init_freq)
+
+<span class="kw">def</span> <span class="fn">update</span>(val):
+    line.<span class="fn">set_ydata</span>(<span class="op">np</span>.<span class="fn">sin</span>(freq_slider.val * x))
+    fig.canvas.<span class="fn">draw_idle</span>()      <span class="cm"># efficient redraw</span>
+
+freq_slider.<span class="fn">on_changed</span>(update)   <span class="cm"># call update() whenever the slider moves</span>
+
+<span class="cm"># ── BUTTON ──</span>
+ax_reset = <span class="op">plt</span>.<span class="fn">axes</span>([<span class="nm">0.8</span>, <span class="nm">0.05</span>, <span class="nm">0.1</span>, <span class="nm">0.04</span>])
+reset_button = <span class="fn">Button</span>(ax_reset, <span class="st">'Reset'</span>)
+
+<span class="kw">def</span> <span class="fn">reset</span>(event):
+    freq_slider.<span class="fn">reset</span>()
+
+reset_button.<span class="fn">on_clicked</span>(reset)
+
+<span class="cm"># ── RADIO BUTTONS ──</span>
+ax_radio = <span class="op">plt</span>.<span class="fn">axes</span>([<span class="nm">0.025</span>, <span class="nm">0.5</span>, <span class="nm">0.15</span>, <span class="nm">0.15</span>])
+radio = <span class="fn">RadioButtons</span>(ax_radio, (<span class="st">'sin'</span>, <span class="st">'cos'</span>, <span class="st">'tan'</span>))
+
+<span class="kw">def</span> <span class="fn">change_function</span>(label):
+    funcs = {<span class="st">'sin'</span>: <span class="op">np</span>.sin, <span class="st">'cos'</span>: <span class="op">np</span>.cos, <span class="st">'tan'</span>: <span class="op">np</span>.tan}
+    line.<span class="fn">set_ydata</span>(funcs[label](freq_slider.val * x))
+    fig.canvas.<span class="fn">draw_idle</span>()
+
+radio.<span class="fn">on_clicked</span>(change_function)
+
+<span class="op">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Widgets Need an Interactive Backend</div>
+      Interactive widgets require a GUI backend (TkAgg, Qt5Agg) or <code>%matplotlib widget</code> in Jupyter. They will NOT work with the default inline/static backend used for embedding plots in reports — always test in the actual target environment.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🖱️</div>
+    <div><h2>Event Handling — Clicks, Hovers &amp; Keys</h2><p>Making charts respond directly to mouse and keyboard</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>()
+ax.<span class="fn">scatter</span>(<span class="op">np</span>.random.<span class="fn">rand</span>(<span class="nm">20</span>), <span class="op">np</span>.random.<span class="fn">rand</span>(<span class="nm">20</span>))
+
+<span class="cm"># Respond to mouse clicks</span>
+<span class="kw">def</span> <span class="fn">on_click</span>(event):
+    <span class="kw">if</span> event.inaxes:    <span class="cm"># only if click was INSIDE the axes</span>
+        <span class="fn">print</span>(<span class="st">f"Clicked at: ({event.xdata:.2f}, {event.ydata:.2f})"</span>)
+        ax.<span class="fn">plot</span>(event.xdata, event.ydata, <span class="st">'r*'</span>, markersize=<span class="nm">15</span>)
+        fig.canvas.<span class="fn">draw</span>()
+
+fig.canvas.mpl_connect(<span class="st">'button_press_event'</span>, on_click)
+
+<span class="cm"># Respond to mouse movement (hover)</span>
+<span class="kw">def</span> <span class="fn">on_hover</span>(event):
+    <span class="kw">if</span> event.inaxes:
+        ax.<span class="fn">set_title</span>(<span class="st">f"Mouse at ({event.xdata:.2f}, {event.ydata:.2f})"</span>)
+        fig.canvas.<span class="fn">draw_idle</span>()
+
+fig.canvas.mpl_connect(<span class="st">'motion_notify_event'</span>, on_hover)
+
+<span class="cm"># Respond to key presses</span>
+<span class="kw">def</span> <span class="fn">on_key</span>(event):
+    <span class="kw">if</span> event.key == <span class="st">'c'</span>:
+        ax.<span class="fn">cla</span>()               <span class="cm"># clear axes when 'c' is pressed</span>
+        fig.canvas.<span class="fn">draw</span>()
+
+fig.canvas.mpl_connect(<span class="st">'key_press_event'</span>, on_key)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Event Name</th><th>Triggers On</th></tr>
+        <tr><td><code>'button_press_event'</code></td><td>Mouse click down</td></tr>
+        <tr><td><code>'button_release_event'</code></td><td>Mouse click released</td></tr>
+        <tr><td><code>'motion_notify_event'</code></td><td>Mouse movement (hover)</td></tr>
+        <tr><td><code>'key_press_event'</code></td><td>Keyboard key pressed</td></tr>
+        <tr><td><code>'pick_event'</code></td><td>Clicking directly on a plotted artist (with picker=True set)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">💾</div>
+    <div><h2>Exporting Animations — GIF &amp; MP4</h2><p>Sharing your animated charts outside of Python</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Save as GIF (requires 'pillow' — usually already installed with matplotlib)</span>
+ani.<span class="fn">save</span>(<span class="st">'animation.gif'</span>, writer=<span class="st">'pillow'</span>, fps=<span class="nm">20</span>)
+
+<span class="cm"># Save as MP4 (requires ffmpeg installed separately on your system)</span>
+ani.<span class="fn">save</span>(<span class="st">'animation.mp4'</span>, writer=<span class="st">'ffmpeg'</span>, fps=<span class="nm">30</span>, dpi=<span class="nm">150</span>)
+
+<span class="cm"># More control over the writer</span>
+<span class="kw">from</span> matplotlib.animation <span class="kw">import</span> PillowWriter
+writer = <span class="fn">PillowWriter</span>(fps=<span class="nm">15</span>)
+ani.<span class="fn">save</span>(<span class="st">'smooth_animation.gif'</span>, writer=writer)
+
+<span class="cm"># Display inline in Jupyter as HTML5 video</span>
+<span class="kw">from</span> IPython.display <span class="kw">import</span> HTML
+HTML(ani.<span class="fn">to_jshtml</span>())      <span class="cm"># interactive JS player with play/pause controls</span>
+HTML(ani.<span class="fn">to_html5_video</span>())  <span class="cm"># embedded HTML5 video</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Export Format Guide</div>
+      <ul>
+        <li><strong>GIF</strong> → universal, works everywhere (Slack, docs, web), but larger file size, no audio, limited colors</li>
+        <li><strong>MP4</strong> → smaller file size, smoother playback, requires ffmpeg installed separately</li>
+        <li><strong>to_jshtml()</strong> → best for Jupyter notebooks — gives interactive play/pause/scrub controls</li>
+      </ul>
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">FuncAnimation()</div><div class="mc-desc">Core animation driver</div><div class="mc-ex">frames, interval, blit</div></div>
+      <div class="mini-card"><div class="mc-name">line.set_data()</div><div class="mc-desc">Update line plot per frame</div><div class="mc-ex">line.set_ydata(y)</div></div>
+      <div class="mini-card"><div class="mc-name">scat.set_offsets()</div><div class="mc-desc">Update scatter positions</div><div class="mc-ex">(n,2) array</div></div>
+      <div class="mini-card"><div class="mc-name">Slider()</div><div class="mc-desc">Interactive value control</div><div class="mc-ex">on_changed(func)</div></div>
+      <div class="mini-card"><div class="mc-name">fig.canvas.mpl_connect()</div><div class="mc-desc">Bind event handlers</div><div class="mc-ex">'button_press_event'</div></div>
+      <div class="mini-card"><div class="mc-name">ani.save()</div><div class="mc-desc">Export to file</div><div class="mc-ex">writer='pillow'/'ffmpeg'</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>FuncAnimation, widgets, event handling, exports. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#C2410C">🏆</div>
+    <div><h2>Real-World Task — Animated Epidemic Simulation Dashboard</h2><p>Estimated time: 90–110 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Data Visualization Engineer</strong> at <em>PublicHealth Labs</em>. Build an animated SIR (Susceptible-Infected-Recovered) epidemic model simulation with an interactive parameter dashboard, exported as a shareable GIF for public communication.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#C2410C">1</div><h4>Phase 1 — SIR Model Simulation</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Implement the SIR Model</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> matplotlib.animation <span class="kw">as</span> animation
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># SIR model parameters</span>
+N = <span class="nm">1000</span>          <span class="cm"># total population</span>
+beta = <span class="nm">0.3</span>       <span class="cm"># infection rate</span>
+gamma = <span class="nm">0.1</span>      <span class="cm"># recovery rate</span>
+days = <span class="nm">160</span>
+
+<span class="cm"># Initial state</span>
+S, I, R = [N-<span class="nm">1</span>], [<span class="nm">1</span>], [<span class="nm">0</span>]
+
+<span class="cm"># Simulate day by day using simple Euler method</span>
+<span class="kw">for</span> t <span class="kw">in</span> <span class="fn">range</span>(days):
+    new_infections = beta * S[-<span class="nm">1</span>] * I[-<span class="nm">1</span>] / N
+    new_recoveries = gamma * I[-<span class="nm">1</span>]
+    S.<span class="fn">append</span>(S[-<span class="nm">1</span>] - new_infections)
+    I.<span class="fn">append</span>(I[-<span class="nm">1</span>] + new_infections - new_recoveries)
+    R.<span class="fn">append</span>(R[-<span class="nm">1</span>] + new_recoveries)
+
+S, I, R = <span class="op">np</span>.<span class="fn">array</span>(S), <span class="op">np</span>.<span class="fn">array</span>(I), <span class="op">np</span>.<span class="fn">array</span>(R)
+<span class="fn">print</span>(<span class="st">f"Peak infections: {I.max():.0f} on day {I.argmax()}"</span>)</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Build the Animated Chart</h4><span class="phase-time">~35 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Animate the 3 Curves Growing Over Time</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">10</span>,<span class="nm">6</span>))
+ax.<span class="fn">set_xlim</span>(<span class="nm">0</span>, days)
+ax.<span class="fn">set_ylim</span>(<span class="nm">0</span>, N*<span class="nm">1.05</span>)
+ax.<span class="fn">set_xlabel</span>(<span class="st">'Days'</span>); ax.<span class="fn">set_ylabel</span>(<span class="st">'People'</span>)
+
+line_s, = ax.<span class="fn">plot</span>([], [], color=<span class="st">'#3B82F6'</span>, linewidth=<span class="nm">2.5</span>, label=<span class="st">'Susceptible'</span>)
+line_i, = ax.<span class="fn">plot</span>([], [], color=<span class="st">'#EF233C'</span>, linewidth=<span class="nm">2.5</span>, label=<span class="st">'Infected'</span>)
+line_r, = ax.<span class="fn">plot</span>([], [], color=<span class="st">'#059669'</span>, linewidth=<span class="nm">2.5</span>, label=<span class="st">'Recovered'</span>)
+day_text = ax.<span class="fn">text</span>(<span class="nm">0.02</span>, <span class="nm">0.95</span>, <span class="st">''</span>, transform=ax.transAxes, fontsize=<span class="nm">12</span>, fontweight=<span class="st">'bold'</span>)
+ax.<span class="fn">legend</span>(loc=<span class="st">'upper right'</span>)
+ax.<span class="fn">set_title</span>(<span class="st">'SIR Epidemic Model Simulation'</span>)
+
+t_axis = <span class="op">np</span>.<span class="fn">arange</span>(<span class="fn">len</span>(S))
+
+<span class="kw">def</span> <span class="fn">update</span>(frame):
+    line_s.<span class="fn">set_data</span>(t_axis[:frame], S[:frame])
+    line_i.<span class="fn">set_data</span>(t_axis[:frame], I[:frame])
+    line_r.<span class="fn">set_data</span>(t_axis[:frame], R[:frame])
+    day_text.<span class="fn">set_text</span>(<span class="st">f'Day {frame}'</span>)
+    <span class="kw">return</span> line_s, line_i, line_r, day_text
+
+ani = animation.<span class="fn">FuncAnimation</span>(fig, update, frames=<span class="fn">len</span>(t_axis),
+                              interval=<span class="nm">30</span>, blit=<span class="kw">True</span>, repeat=<span class="kw">False</span>)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Add a Peak Marker That Appears at the Right Frame</h5>
+          <p>Add a star marker on the Infected curve that only appears once the animation reaches the peak day, with an annotation showing the peak value.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Interactive Parameter Explorer</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Static Dashboard with Sliders for beta and gamma</h5>
+          <p>Create a separate (non-animated) interactive figure with 2 sliders — one for infection rate (beta, 0.1-0.6) and one for recovery rate (gamma, 0.05-0.3). When either slider moves, re-run the SIR simulation and update the plotted curves immediately.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Add a Reset Button</h5>
+          <p>Add a button that resets both sliders to their default values (beta=0.3, gamma=0.1).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div><h4>Phase 4 — Export &amp; Deliver</h4><span class="phase-time">~15 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Export the Animation for Public Sharing</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>ani.<span class="fn">save</span>(<span class="st">'sir_simulation.gif'</span>, writer=<span class="st">'pillow'</span>, fps=<span class="nm">25</span>)
+<span class="fn">print</span>(<span class="st">"Animation saved ✅"</span>)</pre></div>
+          <p>Verify the exported GIF plays smoothly and file size is reasonable (reduce fps or frame count if too large for sharing).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Implemented SIR epidemic model with Euler simulation over 160 days</li>
+        <li>Identified peak infection day and value</li>
+        <li>Built animated 3-line chart (S, I, R) using FuncAnimation with set_data()</li>
+        <li>Added a live day counter text updating each frame</li>
+        <li>Added a peak marker that appears at the correct frame</li>
+        <li>Built an interactive slider dashboard for beta and gamma parameters</li>
+        <li>Connected slider on_changed() to re-run simulation and update the plot</li>
+        <li>Added a reset button restoring default parameter values</li>
+        <li>Exported the animation as a GIF using the pillow writer</li>
+        <li>Verified the exported file plays correctly and is reasonably sized</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 30 min)</div>
+      Add mouse hover event handling: when the user hovers over any point on the Infected curve, display a tooltip-style annotation showing the exact day and infection count at that x-position, updating dynamically with <code>motion_notify_event</code>.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Matplotlib Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Figure &amp; Basic Plots</span>
+    <span class="day-pill done">Day 2 · Styling &amp; Subplots</span>
+    <span class="day-pill done">Day 3 · Statistical Charts</span>
+    <span class="day-pill done active">Day 4 · Animation</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+// Live demo animation
+let animRunning = true;
+let animFrame = 0;
+const canvas = document.getElementById('sineCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas(){canvas.width = canvas.clientWidth * devicePixelRatio; canvas.height = canvas.clientHeight * devicePixelRatio; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function drawFrame(){
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#0F0704';
+  ctx.fillRect(0,0,w,h);
+  // grid
+  ctx.strokeStyle = 'rgba(254,215,170,0.08)';
+  ctx.lineWidth = 1;
+  for(let gx=0; gx<w; gx+=40){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
+  for(let gy=0; gy<h; gy+=30){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
+  // sine wave, shifting phase = animFrame
+  ctx.beginPath();
+  ctx.strokeStyle = '#F97316';
+  ctx.lineWidth = 3;
+  for(let px=0; px<=w; px+=2){
+    const xVal = (px/w) * 4*Math.PI;
+    const yVal = Math.sin(xVal + animFrame*0.05);
+    const py = h/2 - yVal * (h/2 - 20);
+    if(px===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  // moving marker dot
+  const markerX = (animFrame % 200)/200 * w;
+  const markerXVal = (markerX/w)*4*Math.PI;
+  const markerY = h/2 - Math.sin(markerXVal + animFrame*0.05) * (h/2-20);
+  ctx.beginPath();
+  ctx.arc(markerX, markerY, 6, 0, Math.PI*2);
+  ctx.fillStyle = '#FED7AA';
+  ctx.fill();
+
+  ctx.fillStyle = '#FED7AA';
+  ctx.font = '11px monospace';
+  ctx.fillText('frame = ' + animFrame + '   line.set_ydata(sin(x + frame*0.05))', 10, 18);
+
+  if(animRunning){ animFrame++; requestAnimationFrame(drawFrame); }
+}
+drawFrame();
+function toggleAnim(){
+  animRunning = !animRunning;
+  document.getElementById('animBtn').textContent = animRunning ? 'Pause' : 'Play';
+  if(animRunning) drawFrame();
+}
+function resetAnim(){ animFrame = 0; if(!animRunning){ animRunning=true; document.getElementById('animBtn').textContent='Pause'; drawFrame(); } }
+
+const questions=[
+  {q:"What is the core pattern behind FuncAnimation?",opts:["It re-renders the entire figure from scratch on every frame","It calls a user-defined update function repeatedly, each time modifying the existing plot's DATA (not recreating the figure) for the next frame","It only works with pre-rendered video files","It requires a GPU"],ans:1,explain:"FuncAnimation repeatedly calls your update function, which should modify data on EXISTING plot objects (like line.set_ydata()) rather than recreating the whole figure — this is what makes animations performant."},
+  {code:"line, = ax.plot(x, y)\ndef update(frame):\n    line.set_ydata(np.sin(x + frame*0.1))\n    return line,",q:"Why does update() return `line,` (with a trailing comma)?",opts:["It's a typo","This creates a tuple containing the line object — FuncAnimation with blit=True requires the update function to return an iterable of the modified artists","The comma has no effect","It converts line to a string"],ans:1,explain:"When blit=True, FuncAnimation needs to know exactly which artists changed so it can redraw only those. Returning `line,` creates a 1-element tuple containing the Line2D object — the required format even for a single artist."},
+  {q:"What does `blit=True` do in FuncAnimation, and what's the tradeoff?",opts:["It has no effect on performance","It only redraws the parts of the canvas that changed (much faster), but requires the update function to properly return modified artists and can have issues with changing text/titles","It makes text bold","It disables the animation"],ans:1,explain:"blit=True dramatically improves performance by redrawing only changed elements rather than the whole canvas. The tradeoff is added complexity — the update function must return artists, and some elements (like axis titles) may not blit correctly, sometimes requiring blit=False for those cases."},
+  {code:"scat.set_offsets(new_positions)",q:"What does this do in an animated scatter plot?",opts:["Changes the marker colors","Updates the x,y POSITIONS of all scatter points at once, using a (n,2) shaped array","Removes all points","Changes marker size"],ans:1,explain:"set_offsets() takes an (n_points, 2) array of new [x,y] coordinates and updates ALL scatter point positions simultaneously — the standard way to animate scatter plot movement, like in a random walk animation."},
+  {q:"Why might you set `blit=False` for a bar chart animation where the title text changes each frame (e.g., showing 'Month 5')?",opts:["Bar charts can't be animated at all","With blit=True, changing text elements outside the returned artist list (like the title) may not properly redraw; blit=False forces a full redraw every frame, ensuring everything (including titles) updates correctly","blit only works with line plots","There's no reason — always use blit=True"],ans:1,explain:"blit=True optimizes by only redrawing returned artists. If your title/text changes but isn't included in what you return (or blitting has edge cases with certain artist types), it may not update visually. blit=False sacrifices some speed for guaranteed correctness on every element."},
+  {q:"What is the purpose of the `interval` parameter in FuncAnimation?",opts:["Total animation duration in seconds","The delay in MILLISECONDS between each frame — controls playback speed (lower = faster)","Number of times to loop","Frame width in pixels"],ans:1,explain:"interval sets the delay between frames in milliseconds. interval=50 means roughly 20 frames per second (1000ms/50ms). Lower interval values create faster, smoother-looking playback (up to a point limited by rendering speed)."},
+  {q:"What Python module provides interactive UI elements like Slider, Button, and RadioButtons for Matplotlib?",opts:["matplotlib.animation","matplotlib.widgets","matplotlib.interactive","matplotlib.gui"],ans:1,explain:"matplotlib.widgets contains Slider, Button, RadioButtons, CheckButtons, and other interactive UI elements that can be embedded directly within a Matplotlib figure window."},
+  {code:"ax_freq = plt.axes([0.25, 0.20, 0.5, 0.03])\nslider = Slider(ax_freq, 'Frequency', 0.1, 5.0)",q:"What does the list [0.25, 0.20, 0.5, 0.03] specify?",opts:["RGB color values","The [left, bottom, width, height] position of the slider's axes, as fractions (0-1) of the figure","The min/max/step/default values","Font size settings"],ans:1,explain:"plt.axes() creates a new Axes at a specific position within the figure, defined as [left, bottom, width, height] — all as fractions of the total figure size (0 to 1). This is commonly used to carve out space for widgets like sliders and buttons."},
+  {code:"freq_slider.on_changed(update)",q:"What triggers the update function here?",opts:["Every animation frame automatically","Whenever the user drags/moves the slider, on_changed() calls the update function with the new slider value","Only when the figure is first created","When the plot is saved"],ans:1,explain:"on_changed() registers a callback function that Matplotlib calls automatically whenever the slider's value changes (i.e., when the user interacts with it by dragging). This is the standard event-binding pattern for widgets."},
+  {q:"Why is `fig.canvas.draw_idle()` typically preferred over `fig.canvas.draw()` inside a widget callback?",opts:["draw_idle() draws in a different color","draw_idle() schedules a redraw to happen efficiently (avoiding redundant redraws if multiple updates occur quickly), while draw() forces an immediate synchronous redraw","There's no difference","draw() is deprecated"],ans:1,explain:"draw_idle() is a smarter, deferred redraw — if multiple rapid changes occur (like fast slider dragging), it avoids wasting time on redundant intermediate redraws and lets the GUI event loop optimize timing. draw() forces an immediate, potentially wasteful redraw on every single call."},
+  {q:"What event name would you connect to detect a user clicking on the plot?",opts:["'mouse_click'","'button_press_event'","'click_event'","'on_click'"],ans:1,explain:"Matplotlib's event system uses specific string names: 'button_press_event' for mouse clicks, 'motion_notify_event' for mouse movement, 'key_press_event' for keyboard. You connect handlers via fig.canvas.mpl_connect('button_press_event', your_function)."},
+  {code:"def on_click(event):\n    if event.inaxes:\n        print(event.xdata, event.ydata)", q:"Why check `if event.inaxes` before using event.xdata?",opts:["It's unnecessary boilerplate","event.xdata/ydata are only meaningful when the click occurred INSIDE an Axes; clicking outside (e.g., in the figure margin) gives None or invalid coordinates","inaxes checks internet connection","It prevents the function from running twice"],ans:1,explain:"If a user clicks outside any Axes (like in the figure's white margin), event.inaxes will be None/False, and event.xdata/ydata won't correspond to meaningful data coordinates. Checking inaxes first prevents errors or nonsensical output from out-of-bounds clicks."},
+  {q:"Which library/tool does Matplotlib require to be separately installed on the system for MP4 video export (`writer='ffmpeg'`)?",opts:["No separate installation needed — MP4 works automatically","ffmpeg must be installed on the system separately (Matplotlib calls it as an external program); GIF export via 'pillow' does NOT need this extra step","A paid Matplotlib Pro license","Adobe Premiere"],ans:1,explain:"MP4 export uses ffmpeg as an external command-line tool that must be installed on your system PATH separately — it's not bundled with Matplotlib. GIF export via the 'pillow' writer works out of the box since Pillow is typically already a Matplotlib dependency."},
+  {q:"What does `HTML(ani.to_jshtml())` provide when used in a Jupyter notebook?",opts:["A static image only","An interactive JavaScript-based player embedded in the notebook, with play/pause/scrub controls for the animation","Exports directly to a file","Converts the animation to a table"],ans:1,explain:"to_jshtml() converts the FuncAnimation into a self-contained HTML/JavaScript player that renders inline in Jupyter, complete with play, pause, and frame-scrubbing controls — much more convenient for notebook-based exploration than a static GIF."},
+  {code:"day_text = ax.text(0.02, 0.95, '', transform=ax.transAxes, ...)\n...\nday_text.set_text(f'Day {frame}')",q:"Why use transform=ax.transAxes for this text label?",opts:["It's required for all text","It positions the text at a FIXED relative location (2% from left, 95% up) regardless of the data's x/y range, ideal for a persistent on-screen counter","It makes the text invisible","It rotates the text"],ans:1,explain:"transAxes coordinates (0 to 1) stay fixed relative to the Axes area regardless of what data range is plotted. This ensures a status/counter text label stays in the same visual corner throughout the animation, even as the underlying data's x/y scale might differ or change."},
+  {q:"In the SIR epidemic model animation, what does `line_i.set_data(t_axis[:frame], I[:frame])` accomplish?",opts:["Resets the infected line to zero","Progressively reveals more of the Infected curve as frame increases — showing only data UP TO the current frame, creating a 'drawing in' animation effect","Deletes all previous data","Changes the line color"],ans:1,explain:"By slicing both arrays with [:frame], only data up to the current frame index is shown. As frame increases from 0 to the max, progressively more of the curve becomes visible — this creates the classic 'line drawing itself over time' animation effect."},
+  {q:"What is a key difference between exporting as GIF vs MP4 for sharing on platforms like Slack or documentation sites?",opts:["No difference — they're interchangeable","GIF is more universally compatible (auto-plays everywhere without special support, no audio) but has larger file sizes and limited color depth; MP4 is more efficient but needs proper video support","MP4 files can't loop","GIF requires special browser plugins"],ans:1,explain:"GIFs are extremely portable — most platforms auto-embed and loop them without any 'play button' interaction needed, at the cost of larger files and 256-color limitation. MP4s are more efficient and higher quality but sometimes require explicit video player support or a click to play, depending on the platform."},
+  {q:"When building an interactive slider-based parameter explorer (not a frame-by-frame animation), what does the update function typically need to do differently compared to a FuncAnimation update function?",opts:["Nothing different at all","It typically needs to RE-RUN the underlying computation/simulation (e.g., re-solve the SIR model) using the new slider value(s), then update the plotted line data with the new results","It should always return None","It cannot update line data"],ans:1,explain:"Unlike frame-based animation where data is pre-computed, a slider callback typically needs to recompute results on-the-fly based on the new parameter value (e.g., re-run the SIR simulation with a new beta), THEN update the plot lines with the newly computed data — combining computation and visualization update in one callback."},
+  {q:"Why might you want to add a 'Reset' button alongside sliders in an interactive dashboard?",opts:["Buttons are required by Matplotlib for any slider to work","It gives users a quick way to return all parameters to sensible default values without manually dragging each slider back — improves usability, especially after extensive exploration","Reset buttons make the animation faster","There's no real reason — it's purely decorative"],ans:1,explain:"After a user has experimented by dragging multiple sliders to various extreme values, manually returning each one to its default can be tedious. A single 'Reset' button calling slider.reset() on each slider provides a fast, user-friendly way to restore the baseline view."},
+  {q:"What potential issue should you watch for when exporting a long, high-frame-count animation as a GIF for public sharing (e.g., on a website)?",opts:["GIFs cannot exceed 10 frames","Large frame counts and high resolution can produce very large file sizes; reducing fps, frame count, or figure DPI helps keep the file size reasonable for web sharing","GIFs automatically compress themselves","There is no file size concern with GIFs"],ans:1,explain:"GIF files can become quite large, especially with many frames, high resolution, or many colors. For practical web/messaging sharing, it's often necessary to reduce the fps, total frame count (e.g., skip every other simulation day), or output DPI/size to keep file sizes manageable."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review FuncAnimation and widgets, then try again! 📚"],[50,75,"Good progress! Focus on blit and event handling. 💪"],[75,90,"Strong Day 4! Animation skills are solid. 🎉"],[90,101,"Excellent! Day 4 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

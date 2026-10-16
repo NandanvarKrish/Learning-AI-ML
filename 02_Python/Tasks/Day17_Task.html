@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 17 — AI Task: NumPy Advanced — Broadcasting, Linear Algebra & Neural Networks</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eff6ff;--paper:#fff;--p2:#dbeafe;
+  --ink:#0a1628;--ink2:#1e3a5f;--ink3:#5080b0;
+  --rule:#bfdbfe;
+  --blue:#1d4ed8;--bs:#eff6ff;--bb:#bfdbfe;
+  --green:#15803d;--gs:#f0fdf4;--gb:#bbf7d0;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#7c3aed;--ps:#f5f3ff;--pb:#ddd6fe;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --sh:0 1px 4px rgba(30,80,200,.07),0 4px 18px rgba(30,80,200,.06);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bfdbfe55,transparent 42%),radial-gradient(circle at 5% 92%,#93c5fd44,transparent 40%);min-height:100vh}
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(30,80,200,.06)}
+.bar-in{max-width:880px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:var(--blue);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.page{max-width:880px;margin:0 auto;padding:40px 20px 90px}
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--blue)}
+.hsub{font-size:.95rem;color:var(--ink2);max-width:620px;line-height:1.8;margin-bottom:18px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--blue),#1e40af);border-radius:99px;transition:width .7s ease}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:26px 28px;margin-bottom:18px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tl{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.18rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.85;margin-bottom:12px}
+.card p:last-child{margin-bottom:0}
+.sh2{font-family:'Fraunces',Georgia,serif;font-size:1rem;font-weight:700;color:var(--ink);margin:18px 0 8px;border-left:3px solid var(--blue);padding-left:10px}
+.cb{border-radius:10px;padding:13px 16px;font-size:.88rem;line-height:1.75;margin:12px 0;display:flex;gap:11px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:2px;font-style:normal;font-size:1rem}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+.analogy{background:linear-gradient(135deg,#f0f7ff,#e8f2ff);border:1.5px solid var(--bb);border-radius:12px;padding:16px 18px;margin:14px 0}
+.analogy-title{font-weight:700;font-size:.82rem;color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em}
+.analogy-body{font-size:.88rem;color:var(--ink2);line-height:1.8}
+
+/* broadcasting visual */
+.bc-vis{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;align-items:center;gap:8px;margin:16px 0}
+@media(max-width:560px){.bc-vis{grid-template-columns:1fr}}
+.bc-box{border-radius:10px;padding:14px;border:1.5px solid var(--rule);background:var(--p2);text-align:center}
+.bc-box.result{background:var(--bs);border-color:var(--blue)}
+.bc-label{font-family:'DM Mono',monospace;font-size:.66rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.bc-arr{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--blue);font-weight:700;line-height:1.9}
+.bc-shape{font-family:'DM Mono',monospace;font-size:.66rem;color:var(--ink3);margin-top:5px}
+.bc-op{font-size:1.4rem;color:var(--ink3);text-align:center;font-weight:700}
+
+/* matrix multiply visual */
+.mm-vis{background:var(--p2);border:1.5px solid var(--rule);border-radius:12px;padding:18px;margin:14px 0}
+.mm-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.mm-box{background:var(--blue);color:#fff;border-radius:8px;padding:10px 16px;font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;text-align:center}
+.mm-box.result{background:#059669}
+.mm-op{font-size:1.1rem;color:var(--ink3);font-weight:700}
+.mm-label{font-size:.75rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:4px}
+
+/* linalg table */
+.fn-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.84rem}
+.fn-table th{background:var(--p2);font-weight:600;padding:9px 14px;text-align:left;border:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.fn-table td{padding:9px 14px;border:1px solid var(--rule);color:var(--ink2);vertical-align:top}
+.fn-table tr:nth-child(even) td{background:#f4f9ff}
+.fn-table td:first-child{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;color:var(--blue)}
+
+/* steps */
+.steps{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.step{display:flex;gap:13px;align-items:flex-start;padding:12px 15px;background:var(--bg);border:1.5px solid var(--rule);border-radius:10px}
+.step-num{background:var(--blue);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:2px}
+.step-body{font-size:.88rem;color:var(--ink2);line-height:1.7}
+.step-body code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--blue)}
+.step-body strong{color:var(--ink)}
+
+/* code windows */
+.cw{background:#0a1628;border-radius:10px;margin:14px 0;overflow:hidden}
+.cbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0f2040;border-bottom:1px solid #1a3060}
+.cdots{display:flex;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot-r{background:#ef4444}.dot-y{background:#f59e0b}.dot-g{background:#22c55e}
+.clang{font-family:'DM Mono',monospace;font-size:.62rem;color:#5080b0;letter-spacing:.1em;text-transform:uppercase}
+.cbody{padding:18px;font-family:'DM Mono',monospace;font-size:.84rem;line-height:2.1;overflow-x:auto;color:#d0e8ff}
+.cm{color:#304870;font-style:italic}.kw{color:#93c5fd}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#d0e8ff}.op{color:#5080b0}
+
+/* explorer */
+.explorer{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.exp-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.exp-lbl{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--ink3);min-width:80px}
+.exp-inp,.exp-sel{flex:1;border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink);background:var(--paper);outline:none;min-width:120px;transition:border-color .2s}
+.exp-inp:focus,.exp-sel:focus{border-color:var(--blue)}
+.exp-out{margin-top:12px;background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink2);line-height:2;white-space:pre-wrap;display:none}
+.exp-out.show{display:block}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 18px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#1e40af}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+
+/* TASK CARDS */
+.task-card{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);margin-bottom:22px;overflow:hidden;box-shadow:var(--sh)}
+.task-head{padding:18px 22px;display:flex;align-items:flex-start;gap:14px}
+.task-num{background:var(--blue);color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:.84rem;padding:5px 13px;border-radius:6px;flex-shrink:0;margin-top:2px}
+.task-body{flex:1}
+.task-title{font-family:'Fraunces',Georgia,serif;font-size:1.08rem;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3}
+.task-desc{font-size:.9rem;color:var(--ink2);line-height:1.85}
+.task-desc code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--blue)}
+.task-explain{background:linear-gradient(135deg,#f0f7ff,#e8f2ff);border:1.5px solid var(--bb);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:.86rem;color:var(--ink2);line-height:1.8}
+.task-explain strong{color:var(--blue)}
+.task-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.ptag{font-family:'DM Mono',monospace;font-size:.63rem;padding:3px 10px;border-radius:99px;font-weight:600}
+.ptag-b{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.ptag-g{background:var(--gs);border:1px solid var(--gb);color:var(--green)}
+.ptag-a{background:var(--as);border:1px solid var(--ab);color:var(--amber)}
+.ptag-p{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+
+/* puzzle */
+.puzzle-section{border-top:2px dashed var(--rule);padding:16px 22px;background:#f8fbff}
+.pz-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.pz-icon{font-size:1.1rem}
+.pz-title{font-size:.84rem;font-weight:700;color:var(--ink2)}
+.pz-q{font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5}
+.pz-opts{display:flex;flex-direction:column;gap:7px}
+.popt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;background:var(--paper);user-select:none}
+.popt:hover:not(.dis){background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.popt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600;cursor:default}
+.popt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red);cursor:default}
+.popt.dis{cursor:default;opacity:.55}
+.popt-l{width:21px;height:21px;border-radius:6px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.popt.cor .popt-l{background:var(--green);border-color:var(--green);color:#fff}
+.popt.wrg .popt-l{background:var(--red);border-color:var(--red);color:#fff}
+.pz-fb{margin-top:9px;padding:10px 13px;border-radius:8px;font-size:.84rem;line-height:1.7;display:none}
+.pz-fb.show{display:block}
+.pz-fb.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.pz-fb.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* code reveal */
+.code-reveal{display:none;border-top:2px solid var(--gb);background:#f0fdf4}
+.code-reveal.show{display:block}
+.cr-head{display:flex;align-items:center;gap:9px;padding:12px 22px;border-bottom:1px solid var(--rule)}
+.cr-title{font-size:.84rem;font-weight:700;color:var(--green)}
+
+/* done row */
+.done-row{display:flex;align-items:center;gap:10px;padding:12px 22px;border-top:1px solid var(--rule);background:var(--bg)}
+.done-cb{width:20px;height:20px;border:2px solid #5080b0;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700;flex-shrink:0;transition:all .2s}
+.done-cb.on{background:var(--green);border-color:var(--green)}
+.done-lbl{font-size:.84rem;color:var(--ink2);cursor:pointer;user-select:none}
+
+/* AI chat */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:320px;overflow-y:auto;background:#f8fbff}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--blue);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--bs);border:1px solid var(--bb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--blue)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aic-send:hover{background:#1e40af}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* fill */
+.fq{margin-bottom:14px}
+.fq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:380px;transition:border-color .2s}
+.fi:focus{border-color:var(--blue)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+
+/* MCQ */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.82rem;line-height:1.7;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+.final{background:linear-gradient(135deg,#0a1628,#1e3a5f);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.fin-emoji{font-size:2.5rem;margin-bottom:10px}
+.fin-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.fin-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.fin-cta{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:11px 24px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;border:none}
+.fin-cta:hover{background:rgba(255,255,255,.25)}
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-ttl{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700}
+.sh-sub{font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-bdg{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+@media(max-width:600px){.card,.task-card{padding:18px 16px}.mm-row{flex-direction:column}.exp-row{flex-direction:column;align-items:flex-start}.exp-inp,.exp-sel{width:100%}.aic-msgs{max-height:260px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">📅 Day 17</div>
+      <div class="btl">NumPy Advanced — Broadcasting · Linear Algebra · Neural Networks</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 2 · Week 1 · Day 17 Task</div>
+  <h1>NumPy Advanced:<br><em>Broadcasting, Linear Algebra & Neural Networks</em></h1>
+  <p class="hsub">Today is where NumPy gets really exciting. You'll learn <strong>broadcasting</strong> (the rule behind all vectorised ops), <strong>matrix multiplication</strong> (the engine of neural networks), and then BUILD a real neural network layer using only NumPy — no Keras, no PyTorch. Just math.</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">📡 Broadcasting</span>
+    <span class="pill">🔢 np.where()</span>
+    <span class="pill">✖️ Matrix Multiply @</span>
+    <span class="pill">🧠 Neural Network Layer</span>
+    <span class="pill">🔐 Puzzle Code</span>
+    <span class="pill">🧪 15 MCQs</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="cb cbb" style="margin-bottom:24px">
+  <i>🔐</i>
+  <span><strong>Same system as Day 16:</strong> Each task explains the concept in plain English with analogies, then you solve a puzzle to unlock the solution code. The concept explanations here are MORE detailed than the lesson — read them carefully before you start coding!</span>
+</div>
+
+<!-- ===== CONCEPTS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">📖</div>
+  <div><div class="sh-ttl">Read First — Understand Before Coding</div><div class="sh-sub">Three powerful NumPy concepts explained in simple language</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tl">📡 Concept 1 — Broadcasting</div>
+  <h2>Broadcasting: How NumPy Handles Different-Sized Arrays</h2>
+  <p>Broadcasting is the rule that makes operations like <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">X - X.mean(axis=0)</code> work — even though X has shape (3,3) and X.mean(axis=0) has shape (3,). How can you subtract them if they have different shapes? Broadcasting is the answer.</p>
+
+  <div class="analogy">
+    <div class="analogy-title">🎯 Analogy — The School Bell</div>
+    <div class="analogy-body">
+      Imagine 5 teachers each saying "add 10 bonus marks to everyone." They don't say it for each student — just once. But it applies to ALL 100 students. That's broadcasting: one instruction applies to many.<br><br>
+      In NumPy: <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">X + 10</code> — the scalar 10 is "broadcast" across every element of X. You don't need 10 copies of 10.
+    </div>
+  </div>
+
+  <div class="bc-vis">
+    <div class="bc-box">
+      <div class="bc-label">Array A — shape (3,3)</div>
+      <div class="bc-arr">[[1  2  3]<br>[4  5  6]<br>[7  8  9]]</div>
+    </div>
+    <div class="bc-op">+</div>
+    <div class="bc-box">
+      <div class="bc-label">Array B — shape (3,) → stretched to (3,3)</div>
+      <div class="bc-arr">[10  20  30]<br>→ applied to each row</div>
+    </div>
+    <div class="bc-op">=</div>
+    <div class="bc-box result">
+      <div class="bc-label">Result — shape (3,3)</div>
+      <div class="bc-arr">[[11  22  33]<br>[14  25  36]<br>[17  28  39]]</div>
+    </div>
+  </div>
+
+  <div class="sh2">📋 Broadcasting Rules (Simple Version)</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Shapes are compared right to left.</strong> <code>(3,3)</code> and <code>(3,)</code> → compare 3 vs 3 → they match ✅</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>If one dimension is 1, it stretches.</strong> <code>(3,1)</code> + <code>(3,3)</code> → the 1 stretches to 3 ✅</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>If dimensions differ AND neither is 1, it fails.</strong> <code>(3,3)</code> + <code>(4,)</code> → 3≠4 and neither is 1 → ERROR ❌</div></div>
+  </div>
+
+  <div class="cb cbg">
+    <i>🎯</i>
+    <span><strong>The most common broadcasting in ML:</strong> <code style="font-family:'DM Mono',monospace">(X - X.mean(axis=0)) / X.std(axis=0)</code> — Z-score standardisation. X has shape (n_samples, n_features). X.mean(axis=0) has shape (n_features,). Broadcasting subtracts each feature's mean from each row automatically. This is what <strong>sklearn's StandardScaler</strong> does internally.</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ctag tl">✖️ Concept 2 — Matrix Multiplication</div>
+  <h2>Matrix Multiply @ — The Engine of Every Neural Network</h2>
+  <p>Matrix multiplication (the <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">@</code> operator) is the single most important operation in deep learning. Every neural network forward pass is a series of matrix multiplications. Understanding this means understanding how neural networks actually compute things.</p>
+
+  <div class="analogy">
+    <div class="analogy-title">🧠 Analogy — Voting System</div>
+    <div class="analogy-body">
+      Imagine 3 judges, each scoring a student's work (study hours, attendance, textbook). Judge 1 cares 40% about study, 30% attendance, 30% textbook. Judge 2 cares 10% study, 50% attendance, 40% textbook. The dot product computes each judge's final score for one student. Matrix multiplication does this for MULTIPLE students and MULTIPLE judges AT ONCE.
+    </div>
+  </div>
+
+  <div class="mm-vis">
+    <div style="text-align:center;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink3)">Shape rule: (m, k) @ (k, n) → (m, n) — inner dimensions MUST match</div>
+    <div class="mm-row">
+      <div>
+        <div class="mm-label" style="text-align:center">X — 4 students × 3 features</div>
+        <div class="mm-box">shape (4, 3)</div>
+      </div>
+      <div class="mm-op">@</div>
+      <div>
+        <div class="mm-label" style="text-align:center">W.T — 3 features × 2 neurons</div>
+        <div class="mm-box">shape (3, 2)</div>
+      </div>
+      <div class="mm-op">=</div>
+      <div>
+        <div class="mm-label" style="text-align:center">Z — 4 students × 2 neuron outputs</div>
+        <div class="mm-box result">shape (4, 2)</div>
+      </div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:.75rem;color:var(--ink3);margin-top:8px;text-align:center">Inner dimensions 3 == 3 ✅ must match! Outer dims 4,2 = result shape</div>
+  </div>
+
+  <div class="cb cbr">
+    <i>⚠️</i>
+    <span><strong>Most common beginner error:</strong> <code style="font-family:'DM Mono',monospace">ValueError: matmul shape mismatch</code>. When you see this, print both shapes: <code style="font-family:'DM Mono',monospace">print(X.shape, W.shape)</code>. The inner dimensions must match. If X is (4,3) and W is (2,3), you need W.T (which flips to (3,2)) before multiplying: <code style="font-family:'DM Mono',monospace">X @ W.T</code>.</span>
+  </div>
+
+  <div class="sh2">🧠 What This Has to Do With Neural Networks</div>
+  <p>A neural network "dense layer" does exactly this:</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Matrix multiply:</strong> <code>Z = X @ W + b</code> — each neuron computes a weighted sum of all inputs. If you have 4 students and 3 features going into 2 neurons: X(4,3) @ W(3,2) + b(2,) = Z(4,2)</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Activation function:</strong> <code>A = np.maximum(0, Z)</code> — ReLU. Negative values become 0. Positive stay. This is what makes neural networks non-linear.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Stack layers:</strong> output of layer 1 becomes input of layer 2. Deep learning = many such layers stacked together. When you write <code>Keras.Dense(64, activation='relu')</code> — this is what it does.</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ctag tl">🔢 Concept 3 — np.where() and Advanced Indexing</div>
+  <h2>np.where() — A Vectorised if/else for Entire Arrays</h2>
+  <p>In Python Month 1, you used list comprehensions: <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">["Pass" if s>=50 else "Fail" for s in scores]</code>. NumPy's version is faster and works on arrays: <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">np.where(scores>=50, "Pass", "Fail")</code>.</p>
+
+  <div class="analogy">
+    <div class="analogy-title">💡 Think of it like a conditional column in Excel</div>
+    <div class="analogy-body">
+      In Excel: =IF(A2>=50, "Pass", "Fail") — you write this ONCE in one cell, then copy it to 1000 rows.<br>
+      In NumPy: np.where(scores>=50, "Pass", "Fail") — you write it ONCE, it applies to ALL 1000 elements at once, using C speed.
+    </div>
+  </div>
+
+  <div class="sh2">np.linalg — Linear Algebra Functions</div>
+  <table class="fn-table">
+    <thead><tr><th>Function</th><th>What it does</th><th>ML Use Case</th></tr></thead>
+    <tbody>
+      <tr><td>np.dot(a, b)</td><td>Dot product — multiply + sum</td><td>One neuron's computation</td></tr>
+      <tr><td>a @ b</td><td>Matrix multiply — modern syntax</td><td>Dense layer forward pass</td></tr>
+      <tr><td>A.T</td><td>Transpose — flip rows and cols</td><td>Align shapes for matmul</td></tr>
+      <tr><td>np.linalg.norm(v)</td><td>Vector length (magnitude)</td><td>Distance, L2 regularisation</td></tr>
+      <tr><td>np.linalg.inv(A)</td><td>Matrix inverse</td><td>Linear regression solution</td></tr>
+      <tr><td>np.linalg.eig(A)</td><td>Eigenvalues & eigenvectors</td><td>PCA dimensionality reduction</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== LIVE EXPLORER ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">⚡</div>
+  <div><div class="sh-ttl">Live Matrix Operations Explorer</div><div class="sh-sub">Try dot products, cosine similarity, and outer products on your own vectors</div></div>
+  <div class="sh-bdg">⏱ 5 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tl">⚡ Explorer</div>
+  <h2>Try Matrix & Vector Operations</h2>
+  <p>Enter two vectors and pick an operation. The explorer shows the computation step by step — including the maths behind the result.</p>
+  <div class="explorer">
+    <div class="exp-row">
+      <span class="exp-lbl">Vector A:</span>
+      <input class="exp-inp" id="exp-a" value="0.4, 0.3, 0.3" placeholder="weights e.g. 0.4, 0.3, 0.3"/>
+    </div>
+    <div class="exp-row">
+      <span class="exp-lbl">Vector B:</span>
+      <input class="exp-inp" id="exp-b" value="5, 80, 1" placeholder="features e.g. 5, 80, 1"/>
+    </div>
+    <div class="exp-row">
+      <span class="exp-lbl">Operation:</span>
+      <select class="exp-sel" id="exp-op">
+        <option value="dot">np.dot(A, B) — weighted sum (neuron output)</option>
+        <option value="elem">A × B — element-wise multiply</option>
+        <option value="broadcast">A + 10 — scalar broadcast</option>
+        <option value="norm">‖A‖ — vector magnitude (L2 norm)</option>
+        <option value="cosine">Cosine similarity A vs B</option>
+        <option value="where">np.where simulation — label each value</option>
+      </select>
+    </div>
+    <button class="btn btn-b" style="width:100%;justify-content:center;margin-top:4px" onclick="runExplorer()">▶ Compute</button>
+    <div class="exp-out" id="exp-out"></div>
+  </div>
+</div>
+
+<!-- ===== TASKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">🎯</div>
+  <div><div class="sh-ttl">Tasks — Solve Puzzle → Unlock Code</div><div class="sh-sub">Attempt each in Python IDLE first — then unlock to verify</div></div>
+  <div class="sh-bdg">⏱ 3–4 Hours</div>
+</div>
+
+<!-- TASK 1 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">1</div>
+    <div class="task-body">
+      <div class="task-title">🔢 np.where() — Label Data Without Any Loop</div>
+      <div class="task-desc">
+        Use <code>np.where()</code> to create labels, replace values, and find positions — all without writing a single for loop. This is the NumPy equivalent of an IF formula in Excel, applied to an entire array at once.<br><br>
+        <strong>What to do:</strong><br>
+        1. Create: <code>scores = np.array([85, 45, 72, 33, 91, 58, 76, 64])</code><br>
+        2. Create text labels: <code>np.where(scores >= 50, "Pass", "Fail")</code><br>
+        3. Create binary (0/1) labels: <code>np.where(scores >= 50, 1, 0)</code><br>
+        4. Replace failing scores with 0: <code>np.where(scores < 50, 0, scores)</code><br>
+        5. Get INDICES of passing scores: <code>np.where(scores >= 50)[0]</code><br>
+        6. Fancy indexing: select specific rows from 2D array
+      </div>
+      <div class="task-explain">
+        <strong>Why this matters in AI:</strong><br>
+        np.where() is how you quickly create labels for ML models:<br>
+        • <code>y = np.where(scores >= 50, 1, 0)</code> — binary classification labels (this IS your y array for training!)<br>
+        • <code>np.where(predictions > 0.5, 1, 0)</code> — threshold a model's probability outputs to get class predictions<br>
+        • <code>np.where(X[:, 2] == 1)[0]</code> — find indices of students who have a textbook (select a subset of your dataset)
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">np.where()</span><span class="ptag ptag-b">Fancy indexing</span><span class="ptag ptag-g">⭐ Beginner</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q"><code style="background:var(--p2);font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px">np.where(scores >= 50, 1, 0)</code> and <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px">np.where(scores >= 50)[0]</code> look similar. What is the key difference between them?</div>
+    <div class="pz-opts" id="pz1-opts">
+      <div class="popt" onclick="pz(1,'A',false)"><span class="popt-l">A</span> No difference — both return the same result</div>
+      <div class="popt" onclick="pz(1,'B',true)"><span class="popt-l">B</span> np.where(cond, 1, 0) returns an array of values (1 or 0 for EVERY element). np.where(cond)[0] returns only the INDICES where condition is True — not the values themselves.</div>
+      <div class="popt" onclick="pz(1,'C',false)"><span class="popt-l">C</span> np.where(cond)[0] is faster because it skips elements</div>
+      <div class="popt" onclick="pz(1,'D',false)"><span class="popt-l">D</span> They are the same but np.where(cond, 1, 0) is the older syntax</div>
+    </div>
+    <div class="pz-fb" id="pz1-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr1">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Task 1 Code Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task1_where.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="vr">scores</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>, <span class="nm">76</span>, <span class="nm">64</span>])
+
+<span class="cm"># ── np.where(condition, value_if_true, value_if_false) ──</span>
+<span class="vr">labels</span> = <span class="fn">np</span>.<span class="fn">where</span>(<span class="vr">scores</span> >= <span class="nm">50</span>, <span class="st">"Pass"</span>, <span class="st">"Fail"</span>)
+<span class="fn">print</span>(<span class="st">"Text labels:"</span>, <span class="vr">labels</span>)
+<span class="cm"># ['Pass' 'Fail' 'Pass' 'Fail' 'Pass' 'Pass' 'Pass' 'Pass']</span>
+
+<span class="cm"># Binary labels — this is y for ML training!</span>
+<span class="vr">y</span> = <span class="fn">np</span>.<span class="fn">where</span>(<span class="vr">scores</span> >= <span class="nm">50</span>, <span class="nm">1</span>, <span class="nm">0</span>)
+<span class="fn">print</span>(<span class="st">"Binary y:"</span>, <span class="vr">y</span>)
+<span class="cm"># [1 0 1 0 1 1 1 1]  ← feed this into model.fit(X, y)!</span>
+
+<span class="cm"># Replace failing values with 0 (keep passing as-is)</span>
+<span class="vr">clipped</span> = <span class="fn">np</span>.<span class="fn">where</span>(<span class="vr">scores</span> < <span class="nm">50</span>, <span class="nm">0</span>, <span class="vr">scores</span>)
+<span class="fn">print</span>(<span class="st">"Clipped:"</span>, <span class="vr">clipped</span>)
+<span class="cm"># [85  0 72  0 91 58 76 64]</span>
+
+<span class="cm"># ── np.where(condition)[0] → INDICES where True ──</span>
+<span class="vr">pass_idx</span> = <span class="fn">np</span>.<span class="fn">where</span>(<span class="vr">scores</span> >= <span class="nm">50</span>)[<span class="nm">0</span>]
+<span class="fn">print</span>(<span class="st">"Passing indices:"</span>, <span class="vr">pass_idx</span>)
+<span class="cm"># [0 2 4 5 6 7]  ← positions of passing students</span>
+<span class="fn">print</span>(<span class="st">"Passing scores:"</span>, <span class="vr">scores</span>[<span class="vr">pass_idx</span>])
+<span class="cm"># [85 72 91 58 76 64]  ← fancy indexing with indices!</span>
+
+<span class="cm"># ── 2D Fancy Indexing ────────────────────────────</span>
+<span class="vr">X</span> = <span class="fn">np</span>.<span class="fn">array</span>([
+    [<span class="nm">5</span>,  <span class="nm">80</span>, <span class="nm">1</span>],
+    [<span class="nm">2</span>,  <span class="nm">50</span>, <span class="nm">0</span>],
+    [<span class="nm">8</span>,  <span class="nm">90</span>, <span class="nm">1</span>],
+    [<span class="nm">1</span>,  <span class="nm">40</span>, <span class="nm">0</span>],
+])
+
+<span class="cm"># Select specific rows (students 0 and 2)</span>
+<span class="fn">print</span>(<span class="st">"\nSelected rows:"</span>, <span class="vr">X</span>[[<span class="nm">0</span>, <span class="nm">2</span>]])
+
+<span class="cm"># Select rows where attendance (col 1) >= 70</span>
+<span class="vr">high_att</span> = <span class="vr">X</span>[<span class="vr">X</span>[:, <span class="nm">1</span>] >= <span class="nm">70</span>]
+<span class="fn">print</span>(<span class="st">"High attendance:"</span>, <span class="vr">high_att</span>)
+<span class="cm"># Students with attendance >= 70: rows 0 and 2</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done1" onclick="markDone(1)"></div><span class="done-lbl" onclick="markDone(1)">I practiced np.where() and fancy indexing ✓</span></div>
+</div>
+
+<!-- TASK 2 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">2</div>
+    <div class="task-body">
+      <div class="task-title">📡 Broadcasting — Z-Score Standardisation</div>
+      <div class="task-desc">
+        Use broadcasting to perform Z-score standardisation on a 2D dataset. This is one of the most important operations in ML data preprocessing — and it's just 2 lines of NumPy.<br><br>
+        <strong>What to do:</strong><br>
+        1. Create a 2D dataset X with shape (4, 3) — 4 students, 3 features<br>
+        2. Compute column means: <code>col_mean = np.mean(X, axis=0)</code><br>
+        3. Compute column stds: <code>col_std = np.std(X, axis=0)</code><br>
+        4. Standardise: <code>X_scaled = (X - col_mean) / col_std</code><br>
+        5. Verify: mean of each column in X_scaled should be ≈ 0, std ≈ 1<br>
+        6. Also try: min-max normalisation with broadcasting
+      </div>
+      <div class="task-explain">
+        <strong>Why this matters in AI:</strong><br>
+        The formula <code>(X - col_mean) / col_std</code> uses broadcasting twice:<br>
+        • <code>X - col_mean</code>: X is (4,3), col_mean is (3,) → broadcasting subtracts each feature's mean from each row<br>
+        • <code>/ col_std</code>: divided by each feature's standard deviation<br><br>
+        Result: each feature now has mean≈0 and std≈1. This is called <strong>Z-score standardisation</strong>. Without this, features with large values (like income = 50,000) dominate over small ones (like age = 25). sklearn's <code>StandardScaler().fit_transform(X)</code> does EXACTLY this with the same math.
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">Broadcasting</span><span class="ptag ptag-b">StandardScaler</span><span class="ptag ptag-a">⭐⭐ Intermediate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">In <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px">X_scaled = (X - col_mean) / col_std</code>, X is shape (4,3) and col_mean is shape (3,). Why does this work without any error?</div>
+    <div class="pz-opts" id="pz2-opts">
+      <div class="popt" onclick="pz(2,'A',false)"><span class="popt-l">A</span> NumPy automatically converts col_mean to a list and loops through X</div>
+      <div class="popt" onclick="pz(2,'B',true)"><span class="popt-l">B</span> Broadcasting! NumPy aligns shapes from the right: (4,3) and (3,) → rightmost dims match (3==3) → col_mean is "stretched" to (4,3) by repeating the row 4 times. Each row of X gets the same subtraction.</div>
+      <div class="popt" onclick="pz(2,'C',false)"><span class="popt-l">C</span> NumPy only uses the first 3 rows of X to match col_mean's length</div>
+      <div class="popt" onclick="pz(2,'D',false)"><span class="popt-l">D</span> It only works if you use axis=1 explicitly</div>
+    </div>
+    <div class="pz-fb" id="pz2-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr2">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Task 2 Code Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task2_broadcasting.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="cm"># Dataset: 4 students, 3 features</span>
+<span class="cm"># Features: study_hours (1-10), attendance% (40-90), has_textbook (0/1)</span>
+<span class="vr">X</span> = <span class="fn">np</span>.<span class="fn">array</span>([
+    [<span class="nm">5</span>,  <span class="nm">80</span>, <span class="nm">1</span>],
+    [<span class="nm">2</span>,  <span class="nm">50</span>, <span class="nm">0</span>],
+    [<span class="nm">8</span>,  <span class="nm">90</span>, <span class="nm">1</span>],
+    [<span class="nm">1</span>,  <span class="nm">40</span>, <span class="nm">0</span>],
+], <span class="vr">dtype</span>=<span class="fn">float</span>)
+
+<span class="cm"># ── STEP 1: Compute column statistics ───────────</span>
+<span class="vr">col_mean</span> = <span class="fn">np</span>.<span class="fn">mean</span>(<span class="vr">X</span>, <span class="vr">axis</span>=<span class="nm">0</span>)
+<span class="vr">col_std</span>  = <span class="fn">np</span>.<span class="fn">std</span>(<span class="vr">X</span>, <span class="vr">axis</span>=<span class="nm">0</span>)
+<span class="fn">print</span>(<span class="st">f"Column means: {np.round(col_mean, 2)}"</span>)
+<span class="fn">print</span>(<span class="st">f"Column stds:  {np.round(col_std, 2)}"</span>)
+
+<span class="cm"># ── STEP 2: Z-score standardisation via broadcasting ─</span>
+<span class="cm"># X shape (4,3) - col_mean shape (3,) → BROADCASTING!</span>
+<span class="cm"># col_mean is treated as (1,3) and stretched to (4,3)</span>
+<span class="vr">X_scaled</span> = (<span class="vr">X</span> - <span class="vr">col_mean</span>) / <span class="vr">col_std</span>
+<span class="fn">print</span>(<span class="st">"\nZ-scored X:"</span>)
+<span class="fn">print</span>(<span class="fn">np</span>.<span class="fn">round</span>(<span class="vr">X_scaled</span>, <span class="nm">2</span>))
+
+<span class="cm"># ── STEP 3: Verify ───────────────────────────────</span>
+<span class="fn">print</span>(<span class="st">"\nVerification:"</span>)
+<span class="fn">print</span>(<span class="st">f"Mean of scaled (should be ≈0): {np.round(np.mean(X_scaled, axis=0), 10)}"</span>)
+<span class="fn">print</span>(<span class="st">f"Std of scaled  (should be ≈1): {np.round(np.std(X_scaled, axis=0), 2)}"</span>)
+
+<span class="cm"># ── COMPARE with sklearn ─────────────────────────</span>
+<span class="cm"># from sklearn.preprocessing import StandardScaler</span>
+<span class="cm"># scaler = StandardScaler()</span>
+<span class="cm"># X_sklearn = scaler.fit_transform(X)</span>
+<span class="cm"># np.allclose(X_scaled, X_sklearn)  → True!</span>
+<span class="cm"># They do EXACTLY the same calculation!</span>
+
+<span class="cm"># ── BROADCASTING EXAMPLES ────────────────────────</span>
+<span class="vr">row_vec</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])      <span class="cm"># shape (3,)</span>
+<span class="vr">col_vec</span> = <span class="vr">row_vec</span>.<span class="fn">reshape</span>(-<span class="nm">1</span>, <span class="nm">1</span>)  <span class="cm"># shape (3,1)</span>
+<span class="fn">print</span>(<span class="st">"\nrow + col (outer sum):"</span>)
+<span class="fn">print</span>(<span class="vr">row_vec</span> + <span class="vr">col_vec</span>)
+<span class="cm"># [[2 3 4], [3 4 5], [4 5 6]]  ← shape (3,3) via broadcasting!</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done2" onclick="markDone(2)"></div><span class="done-lbl" onclick="markDone(2)">I standardised a dataset using broadcasting ✓</span></div>
+</div>
+
+<!-- TASK 3 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">3</div>
+    <div class="task-body">
+      <div class="task-title">✖️ Dot Product & Matrix Multiply — What a Neuron Computes</div>
+      <div class="task-desc">
+        Build intuition for dot products and matrix multiplication from scratch. First understand what ONE neuron computes, then scale to many neurons and many students at once.<br><br>
+        <strong>What to do:</strong><br>
+        1. Manually compute a dot product: weights × inputs, then verify with <code>np.dot()</code><br>
+        2. Create weights matrix W (2 neurons, 3 features each)<br>
+        3. Compute Z = X @ W.T — verify the shapes at each step<br>
+        4. Apply ReLU: <code>A = np.maximum(0, Z)</code><br>
+        5. Try <code>np.linalg.norm()</code> on a vector — understand what it means
+      </div>
+      <div class="task-explain">
+        <strong>The dot product IS one neuron:</strong><br>
+        <code>weights = [0.4, 0.3, 0.3]</code> (how much the neuron cares about each feature)<br>
+        <code>inputs = [5, 80, 1]</code> (study hours, attendance, textbook)<br>
+        <code>output = 0.4×5 + 0.3×80 + 0.3×1 = 2 + 24 + 0.3 = 26.3</code><br><br>
+        This is ONE neuron for ONE student. Matrix multiply X @ W.T computes this for MULTIPLE neurons AND MULTIPLE students at once. That's why neural networks are fast — one matrix multiplication replaces millions of individual dot products.
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">np.dot()</span><span class="ptag ptag-b">@ matrix multiply</span><span class="ptag ptag-b">ReLU</span><span class="ptag ptag-a">⭐⭐ Intermediate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">X has shape (3, 3) and W has shape (2, 3). What does <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px">Z = X @ W.T</code> produce, and why do we need .T?</div>
+    <div class="pz-opts" id="pz3-opts">
+      <div class="popt" onclick="pz(3,'A',false)"><span class="popt-l">A</span> Z has shape (3,2) — but we don't need .T, just X @ W works fine</div>
+      <div class="popt" onclick="pz(3,'B',true)"><span class="popt-l">B</span> Z has shape (3,2) — 3 students × 2 neuron outputs. .T is needed because matrix multiply (m,k)@(k,n) requires inner dims to match. X is (3,3) and W is (2,3) — inner dims are 3 and 2 (don't match!). W.T flips W to (3,2), so X@W.T = (3,3)@(3,2) = (3,2) ✅</div>
+      <div class="popt" onclick="pz(3,'C',false)"><span class="popt-l">C</span> Z has shape (2,3) — .T just rotates the final result</div>
+      <div class="popt" onclick="pz(3,'D',false)"><span class="popt-l">D</span> ValueError — (3,3) and (2,3) are always incompatible</div>
+    </div>
+    <div class="pz-fb" id="pz3-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr3">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Task 3 Code Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task3_matmul.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="cm"># ── ONE NEURON = dot product ──────────────────────</span>
+<span class="vr">weights</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">0.4</span>, <span class="nm">0.3</span>, <span class="nm">0.3</span>])  <span class="cm"># how much neuron cares about each feature</span>
+<span class="vr">inputs</span>  = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">5</span>,   <span class="nm">80</span>,  <span class="nm">1</span>  ])  <span class="cm"># student: study_hrs, attendance, textbook</span>
+
+<span class="cm"># Manual calculation</span>
+<span class="vr">manual</span> = <span class="nm">0.4</span>*<span class="nm">5</span> + <span class="nm">0.3</span>*<span class="nm">80</span> + <span class="nm">0.3</span>*<span class="nm">1</span>
+<span class="fn">print</span>(<span class="st">f"Manual:    {manual}"</span>)         <span class="cm"># 26.3</span>
+
+<span class="vr">dot_result</span> = <span class="fn">np</span>.<span class="fn">dot</span>(<span class="vr">weights</span>, <span class="vr">inputs</span>)
+<span class="fn">print</span>(<span class="st">f"np.dot():  {dot_result}"</span>)      <span class="cm"># 26.3 — same!</span>
+
+<span class="cm"># ── MANY NEURONS × MANY STUDENTS = matrix multiply ──</span>
+<span class="vr">W</span> = <span class="fn">np</span>.<span class="fn">array</span>([
+    [<span class="nm">0.4</span>, <span class="nm">0.3</span>, <span class="nm">0.3</span>],   <span class="cm"># neuron 1 weights</span>
+    [<span class="nm">0.1</span>, <span class="nm">0.5</span>, <span class="nm">0.4</span>],   <span class="cm"># neuron 2 weights</span>
+])  <span class="cm"># shape (2, 3) — 2 neurons, each takes 3 inputs</span>
+
+<span class="vr">X</span> = <span class="fn">np</span>.<span class="fn">array</span>([
+    [<span class="nm">5</span>,  <span class="nm">80</span>, <span class="nm">1</span>],   <span class="cm"># student 1</span>
+    [<span class="nm">2</span>,  <span class="nm">50</span>, <span class="nm">0</span>],   <span class="cm"># student 2</span>
+    [<span class="nm">8</span>,  <span class="nm">90</span>, <span class="nm">1</span>],   <span class="cm"># student 3</span>
+], <span class="vr">dtype</span>=<span class="fn">float</span>)  <span class="cm"># shape (3, 3)</span>
+
+<span class="fn">print</span>(<span class="st">f"\nX shape: {X.shape}"</span>)    <span class="cm"># (3, 3)</span>
+<span class="fn">print</span>(<span class="st">f"W shape: {W.shape}"</span>)    <span class="cm"># (2, 3)</span>
+<span class="fn">print</span>(<span class="st">f"W.T shape: {W.T.shape}"</span>)  <span class="cm"># (3, 2) — transposed!</span>
+
+<span class="cm"># Matrix multiply: (3,3) @ (3,2) = (3,2)</span>
+<span class="vr">Z</span> = <span class="vr">X</span> @ <span class="vr">W</span>.<span class="vr">T</span>
+<span class="fn">print</span>(<span class="st">f"\nZ = X @ W.T, shape: {Z.shape}"</span>)  <span class="cm"># (3, 2)</span>
+<span class="fn">print</span>(<span class="vr">Z</span>)
+<span class="cm"># Each row = outputs of BOTH neurons for one student</span>
+<span class="cm"># Row 0: [26.3, 20.9]  ← student 1's outputs from neuron 1 and 2</span>
+
+<span class="cm"># ── ReLU ACTIVATION ──────────────────────────────</span>
+<span class="vr">A</span> = <span class="fn">np</span>.<span class="fn">maximum</span>(<span class="nm">0</span>, <span class="vr">Z</span>)  <span class="cm"># ReLU: negative → 0, positive → unchanged</span>
+<span class="fn">print</span>(<span class="st">"\nAfter ReLU:"</span>)
+<span class="fn">print</span>(<span class="vr">A</span>)
+
+<span class="cm"># ── VECTOR NORM ───────────────────────────────────</span>
+<span class="vr">v</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">3</span>, <span class="nm">4</span>])
+<span class="fn">print</span>(<span class="st">f"\n||v|| = {np.linalg.norm(v)}"</span>)  <span class="cm"># 5.0 (Pythagorean theorem!)</span>
+<span class="cm"># sqrt(3² + 4²) = sqrt(9+16) = sqrt(25) = 5</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done3" onclick="markDone(3)"></div><span class="done-lbl" onclick="markDone(3)">I computed dot products and matrix multiply ✓</span></div>
+</div>
+
+<!-- TASK 4 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">4</div>
+    <div class="task-body">
+      <div class="task-title">🧠 Build a Neural Network Dense Layer From Scratch!</div>
+      <div class="task-desc">
+        This is the most exciting task in Month 2 so far. You will build an actual neural network layer using ONLY NumPy. When you later use <code>Keras.Dense(4, activation='relu')</code>, you will know exactly what's happening inside.<br><br>
+        <strong>What to do:</strong><br>
+        1. Create a <code>DenseLayer</code> class with <code>__init__(in_features, out_features)</code><br>
+        2. Initialise: <code>self.W = np.random.randn(in_features, out_features) * scale</code><br>
+        3. Initialise: <code>self.b = np.zeros(out_features)</code><br>
+        4. Write <code>forward(X)</code>: <code>Z = X @ self.W + self.b</code>, then <code>A = np.maximum(0, Z)</code><br>
+        5. Create 2 layers (3→4 and 4→1) and pass data through both<br>
+        6. Print shapes at each step
+      </div>
+      <div class="task-explain">
+        <strong>Understanding each line:</strong><br>
+        • <code>self.W</code>: weight matrix — random numbers (neurons start with random connections)<br>
+        • <code>self.b</code>: bias — zeros initially (no bias at the start)<br>
+        • <code>Z = X @ self.W + self.b</code>: linear transform. X (4,3) @ W (3,4) = (4,4), then + b(4,) via broadcasting<br>
+        • <code>A = np.maximum(0, Z)</code>: ReLU activation. Kills all negative values. This is what makes deep networks powerful — without it, stacking layers would be pointless.<br><br>
+        When you train with sklearn or Keras, this forward pass runs thousands of times. You just built it from scratch.
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">DenseLayer class</span><span class="ptag ptag-b">Xavier init</span><span class="ptag ptag-b">ReLU</span><span class="ptag ptag-p">⭐⭐⭐ Advanced</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Key concept puzzle — unlock the DenseLayer code</div></div></div>
+    <div class="pz-q">In the forward pass: <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px">Z = X @ self.W + self.b</code>. If X is (4,3), W is (3,4), and b is (4,), what is the shape of Z and how does b get added?</div>
+    <div class="pz-opts" id="pz4-opts">
+      <div class="popt" onclick="pz(4,'A',false)"><span class="popt-l">A</span> Z is (4,3) — W must be square for matrix multiply to work</div>
+      <div class="popt" onclick="pz(4,'B',false)"><span class="popt-l">B</span> Z is (4,4) but + self.b fails because shapes don't match</div>
+      <div class="popt" onclick="pz(4,'C',true)"><span class="popt-l">C</span> X@W = (4,3)@(3,4) = (4,4). Then + b: b is (4,) which broadcasts to (4,4) — each row gets the bias added. Z is (4,4). This is the pre-activation output for 4 students and 4 neurons.</div>
+      <div class="popt" onclick="pz(4,'D',false)"><span class="popt-l">D</span> Z is (3,4) — matrix multiply preserves the first dimension of W</div>
+    </div>
+    <div class="pz-fb" id="pz4-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr4">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Task 4 — Complete Neural Network Layer! 🎉</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — neural_net_numpy.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+<span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">seed</span>(<span class="nm">42</span>)   <span class="cm"># reproducible!</span>
+
+<span class="kw">class</span> <span class="fn">DenseLayer</span>:
+    <span class="dc">"""A fully-connected neural network layer — just NumPy."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="vr">self</span>, <span class="vr">in_features</span>, <span class="vr">out_features</span>):
+        <span class="cm"># Xavier initialisation — prevents gradients from vanishing/exploding</span>
+        <span class="vr">scale</span>   = <span class="fn">np</span>.<span class="fn">sqrt</span>(<span class="nm">2.0</span> / <span class="vr">in_features</span>)
+        <span class="vr">self</span>.<span class="vr">W</span> = <span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">randn</span>(<span class="vr">in_features</span>, <span class="vr">out_features</span>) * <span class="vr">scale</span>
+        <span class="vr">self</span>.<span class="vr">b</span> = <span class="fn">np</span>.<span class="fn">zeros</span>(<span class="vr">out_features</span>)    <span class="cm"># bias starts at 0</span>
+        <span class="fn">print</span>(<span class="st">f"  Layer init: W={self.W.shape}, b={self.b.shape}"</span>)
+
+    <span class="kw">def</span> <span class="fn">forward</span>(<span class="vr">self</span>, <span class="vr">X</span>):
+        <span class="cm"># ① Linear transform: weighted sum for each neuron</span>
+        <span class="vr">Z</span> = <span class="vr">X</span> @ <span class="vr">self</span>.<span class="vr">W</span> + <span class="vr">self</span>.<span class="vr">b</span>  <span class="cm"># shape: (n_samples, out_features)</span>
+        <span class="cm"># ② ReLU activation: negative → 0, positive → unchanged</span>
+        <span class="vr">A</span> = <span class="fn">np</span>.<span class="fn">maximum</span>(<span class="nm">0</span>, <span class="vr">Z</span>)
+        <span class="fn">print</span>(<span class="st">f"  forward: X{X.shape} @ W{self.W.shape} → Z{Z.shape} → A{A.shape}"</span>)
+        <span class="kw">return</span> <span class="vr">A</span>
+
+    <span class="op">@property</span>
+    <span class="kw">def</span> <span class="fn">param_count</span>(<span class="vr">self</span>):
+        <span class="kw">return</span> <span class="vr">self</span>.<span class="vr">W</span>.<span class="vr">size</span> + <span class="vr">self</span>.<span class="vr">b</span>.<span class="vr">size</span>
+
+<span class="cm"># ── INPUT DATA ────────────────────────────────────</span>
+<span class="cm"># 4 students, 3 features (study_hrs, attendance, textbook)</span>
+<span class="vr">X</span> = <span class="fn">np</span>.<span class="fn">array</span>([
+    [<span class="nm">5</span>, <span class="nm">80</span>, <span class="nm">1</span>], [<span class="nm">2</span>, <span class="nm">50</span>, <span class="nm">0</span>], [<span class="nm">8</span>, <span class="nm">90</span>, <span class="nm">1</span>], [<span class="nm">1</span>, <span class="nm">40</span>, <span class="nm">0</span>]
+], <span class="vr">dtype</span>=<span class="fn">float</span>)
+
+<span class="cm"># ── BUILD THE NETWORK ─────────────────────────────</span>
+<span class="fn">print</span>(<span class="st">"\n=== Building 2-Layer Network ==="</span>)
+<span class="vr">layer1</span> = <span class="fn">DenseLayer</span>(<span class="nm">3</span>, <span class="nm">4</span>)   <span class="cm"># 3 inputs → 4 hidden neurons</span>
+<span class="vr">layer2</span> = <span class="fn">DenseLayer</span>(<span class="nm">4</span>, <span class="nm">1</span>)   <span class="cm"># 4 hidden → 1 output neuron</span>
+
+<span class="cm"># ── FORWARD PASS ─────────────────────────────────</span>
+<span class="fn">print</span>(<span class="st">f"\n=== Forward Pass (input: {X.shape}) ==="</span>)
+<span class="vr">h1</span>  = <span class="vr">layer1</span>.<span class="fn">forward</span>(<span class="vr">X</span>)    <span class="cm"># shape (4, 4) — 4 students, 4 hidden outputs</span>
+<span class="vr">out</span> = <span class="vr">layer2</span>.<span class="fn">forward</span>(<span class="vr">h1</span>)   <span class="cm"># shape (4, 1) — 4 students, 1 output each</span>
+
+<span class="fn">print</span>(<span class="st">f"\nPredictions: {np.round(out.flatten(), 3)}"</span>)
+<span class="fn">print</span>(<span class="st">f"Layer 1 params: {layer1.param_count}"</span>)  <span class="cm"># 3×4 + 4 = 16</span>
+<span class="fn">print</span>(<span class="st">f"Layer 2 params: {layer2.param_count}"</span>)  <span class="cm"># 4×1 + 1 = 5</span>
+
+<span class="cm"># ── COMPARE WITH KERAS ────────────────────────────</span>
+<span class="cm"># from tensorflow import keras</span>
+<span class="cm"># model = keras.Sequential([</span>
+<span class="cm">#     keras.layers.Dense(4, activation='relu', input_shape=(3,)),</span>
+<span class="cm">#     keras.layers.Dense(1)</span>
+<span class="cm"># ])</span>
+<span class="cm"># Keras does EXACTLY the same Z = X@W + b computation!</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done4" onclick="markDone(4)"></div><span class="done-lbl" onclick="markDone(4)">I built and ran a 2-layer neural network! ✓</span></div>
+</div>
+
+<!-- TASK 5 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">5</div>
+    <div class="task-body">
+      <div class="task-title">🎲 np.random, np.concatenate & Save/Load Arrays</div>
+      <div class="task-desc">
+        The final task covers the essential utilities: random number generation (critical for ML experiments), combining arrays, and saving/loading data.<br><br>
+        <strong>What to do:</strong><br>
+        1. <code>np.random.seed(42)</code> — set seed for reproducibility<br>
+        2. Create random arrays: <code>np.random.rand(3,3)</code>, <code>np.random.randn(3,3)</code>, <code>np.random.randint(0,100,10)</code><br>
+        3. Combine arrays: <code>np.vstack([a,b])</code>, <code>np.hstack([a,b])</code>, <code>np.column_stack([a,b])</code><br>
+        4. Manual train/test split using slicing<br>
+        5. Save: <code>np.save("weights.npy", arr)</code>, load back and verify<br>
+        6. Save to CSV: <code>np.savetxt("data.csv", X, delimiter=",")</code>
+      </div>
+      <div class="task-explain">
+        <strong>Why np.random matters in ML:</strong><br>
+        Every time you train a neural network, the weights are initialised randomly. Same network, different random seed → different results. This is why you always see <code>np.random.seed(42)</code> at the top of ML notebooks — it makes results reproducible so you and your team can compare results fairly.<br><br>
+        <code>np.save("weights.npy", W)</code> is how you save trained model weights to disk. After training for 10 hours, you don't want to lose your weights! <code>np.load("weights.npy")</code> loads them back. This is the foundation of model saving (Keras, PyTorch all build on this concept).
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">np.random</span><span class="ptag ptag-b">np.vstack/hstack</span><span class="ptag ptag-b">np.save/load</span><span class="ptag ptag-g">⭐ Beginner</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">What is the difference between <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px">np.random.rand(3,3)</code> and <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px">np.random.randn(3,3)</code>?</div>
+    <div class="pz-opts" id="pz5-opts">
+      <div class="popt" onclick="pz(5,'A',false)"><span class="popt-l">A</span> No difference — both generate random numbers between 0 and 1</div>
+      <div class="popt" onclick="pz(5,'B',true)"><span class="popt-l">B</span> rand() generates uniform random values between 0 and 1. randn() generates values from a normal distribution (mean=0, std=1) — so values can be negative and most cluster near 0. randn() is used for weight initialisation in neural networks.</div>
+      <div class="popt" onclick="pz(5,'C',false)"><span class="popt-l">C</span> rand() is random, randn() is not random — it follows a pattern</div>
+      <div class="popt" onclick="pz(5,'D',false)"><span class="popt-l">D</span> rand() creates floats, randn() creates integers</div>
+    </div>
+    <div class="pz-fb" id="pz5-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr5">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Task 5 Code Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task5_random.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="cm"># ── REPRODUCIBLE RANDOMNESS ───────────────────────</span>
+<span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">seed</span>(<span class="nm">42</span>)   <span class="cm"># same seed = same "random" numbers every run</span>
+
+<span class="cm"># ── RANDOM GENERATORS ────────────────────────────</span>
+<span class="vr">uniform</span>  = <span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">3</span>, <span class="nm">3</span>)      <span class="cm"># 0.0 to 1.0 — uniform</span>
+<span class="vr">normal</span>   = <span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">randn</span>(<span class="nm">3</span>, <span class="nm">3</span>)     <span class="cm"># mean=0, std=1 — bell curve</span>
+<span class="vr">integers</span> = <span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">randint</span>(<span class="nm">0</span>,<span class="nm">100</span>,<span class="nm">10</span>)<span class="cm"># 10 random integers 0-99</span>
+
+<span class="fn">print</span>(<span class="st">"Uniform (0-1):\n"</span>, <span class="fn">np</span>.<span class="fn">round</span>(<span class="vr">uniform</span>, <span class="nm">3</span>))
+<span class="fn">print</span>(<span class="st">"Normal (≈0):\n"</span>,  <span class="fn">np</span>.<span class="fn">round</span>(<span class="vr">normal</span>, <span class="nm">3</span>))
+<span class="fn">print</span>(<span class="st">"Integers:\n"</span>,     <span class="vr">integers</span>)
+
+<span class="cm"># ── COMBINING ARRAYS ─────────────────────────────</span>
+<span class="vr">a</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+<span class="vr">b</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">4</span>, <span class="nm">5</span>, <span class="nm">6</span>])
+
+<span class="fn">print</span>(<span class="st">"\nnp.vstack:"</span>, <span class="fn">np</span>.<span class="fn">vstack</span>([<span class="vr">a</span>, <span class="vr">b</span>]))        <span class="cm"># [[1,2,3],[4,5,6]] — 2 rows</span>
+<span class="fn">print</span>(<span class="st">"np.hstack:"</span>, <span class="fn">np</span>.<span class="fn">hstack</span>([<span class="vr">a</span>, <span class="vr">b</span>]))        <span class="cm"># [1,2,3,4,5,6] — joined flat</span>
+<span class="fn">print</span>(<span class="st">"col_stack:\n"</span>, <span class="fn">np</span>.<span class="fn">column_stack</span>([<span class="vr">a</span>, <span class="vr">b</span>])) <span class="cm"># [[1,4],[2,5],[3,6]] — 2 cols</span>
+
+<span class="cm"># ── TRAIN/TEST SPLIT ─────────────────────────────</span>
+<span class="vr">data</span> = <span class="fn">np</span>.<span class="fn">arange</span>(<span class="nm">20</span>).<span class="fn">reshape</span>(-<span class="nm">1</span>, <span class="nm">1</span>)
+<span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">shuffle</span>(<span class="vr">data</span>)          <span class="cm"># shuffle in-place</span>
+<span class="vr">n_train</span> = <span class="fn">int</span>(<span class="fn">len</span>(<span class="vr">data</span>) * <span class="nm">0.8</span>)
+<span class="vr">train</span>   = <span class="vr">data</span>[:<span class="vr">n_train</span>]
+<span class="vr">test</span>    = <span class="vr">data</span>[<span class="vr">n_train</span>:]
+<span class="fn">print</span>(<span class="st">f"\nTrain: {len(train)} | Test: {len(test)}"</span>)  <span class="cm"># 16 | 4</span>
+
+<span class="cm"># ── SAVE AND LOAD ────────────────────────────────</span>
+<span class="vr">weights</span> = <span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">randn</span>(<span class="nm">3</span>, <span class="nm">3</span>)
+<span class="fn">np</span>.<span class="fn">save</span>(<span class="st">"weights.npy"</span>, <span class="vr">weights</span>)
+<span class="vr">loaded</span>  = <span class="fn">np</span>.<span class="fn">load</span>(<span class="st">"weights.npy"</span>)
+<span class="fn">print</span>(<span class="st">"Weights match:"</span>, <span class="fn">np</span>.<span class="fn">allclose</span>(<span class="vr">weights</span>, <span class="vr">loaded</span>))  <span class="cm"># True</span>
+
+<span class="cm"># Save 2D array to CSV</span>
+<span class="vr">X</span> = <span class="fn">np</span>.<span class="fn">array</span>([[<span class="nm">5</span>,<span class="nm">80</span>,<span class="nm">1</span>],[<span class="nm">2</span>,<span class="nm">50</span>,<span class="nm">0</span>]], <span class="vr">dtype</span>=<span class="fn">float</span>)
+<span class="fn">np</span>.<span class="fn">savetxt</span>(<span class="st">"data.csv"</span>, <span class="vr">X</span>, <span class="vr">delimiter</span>=<span class="st">","</span>, <span class="vr">fmt</span>=<span class="st">"%.1f"</span>)
+<span class="vr">X_back</span>  = <span class="fn">np</span>.<span class="fn">loadtxt</span>(<span class="st">"data.csv"</span>, <span class="vr">delimiter</span>=<span class="st">","</span>)
+<span class="fn">print</span>(<span class="st">"Loaded from CSV:"</span>, <span class="vr">X_back</span>)
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done5" onclick="markDone(5)"></div><span class="done-lbl" onclick="markDone(5)">I practiced random arrays, stacking, and save/load ✓</span></div>
+</div>
+
+<!-- AI TUTOR -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">💬</div>
+  <div><div class="sh-ttl">AI Tutor — Ask Anything</div><div class="sh-sub">Confused about broadcasting? Matrix shapes? Ask in plain English</div></div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Ask — Get a Detailed Explanation</h2>
+  <p>Good questions to ask: <em>"Why do we need W.T in X @ W.T?"</em> · <em>"I don't understand what ReLU does"</em> · <em>"Explain broadcasting with a simple example"</em> · <em>"What is a dot product?"</em></p>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">NumPy Advanced Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">Day 17 · Broadcasting · Matrix Multiply · Neural Networks · I explain in simple language</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Hello! Day 17 is where things get really interesting. Ask me anything — especially if you're confused about shapes, matrix multiply, or why we need .T. No question is too basic!</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Day 17 shape rule to memorise:</strong><br><br>Matrix multiply: (m, k) @ (k, n) → (m, n)<br><br>The two INNER dimensions must match (both k). The outer dimensions become the result shape.<br><br>Example: X(4,3) @ W(3,2) → (4,2)<br>Inner: 3==3 ✅  Outer: 4 and 2 → result (4,2)</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask about broadcasting, matrix multiply, neural networks..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILL BLANKS -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">✏️</div>
+  <div><div class="sh-ttl">Fill in the Blanks</div><div class="sh-sub">Complete from memory</div></div>
+  <div class="sh-bdg">⏱ 10 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Quick Check</div>
+  <h2>Fill in the Missing Parts</h2>
+  <div id="fill-wrap"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <button class="btn btn-b" onclick="checkFill()">Check Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- MCQ -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-ttl">MCQ Quiz (15 Questions)</div><div class="sh-sub">Answer from memory — every explanation is written for beginners</div></div>
+  <div class="sh-bdg">📝 15 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 15</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 12/15 (80%). Read every explanation — especially shape errors!</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="fin-emoji" id="fin-emoji">🎉</div>
+  <div class="fin-title" id="fin-title">—</div>
+  <div class="fin-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">Day 18 tomorrow: <strong>Pandas DataFrames — Real Data Science Begins!</strong></p>
+  <button class="fin-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+</div>
+<footer>Day 17 of 300+ · AI/ML 15-Month Curriculum · Month 2, Week 1<br>Broadcasting · np.where · Matrix Multiply @ · Neural Network Dense Layer · np.random · np.linalg</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let tasksD=0,mcqS=0,fillS=0,mcqSet=new Set();
+function updateProg(){const t=Math.min(Math.round((tasksD/5)*40+(mcqS/15)*40+(fillS/8)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function markDone(n){const cb=document.getElementById('done'+n);const on=cb.classList.toggle('on');cb.textContent=on?'✓':'';tasksD=document.querySelectorAll('.done-cb.on').length;updateProg();}
+
+// ── EXPLORER ──
+function runExplorer(){
+  const ra=document.getElementById('exp-a').value;
+  const rb=document.getElementById('exp-b').value;
+  const op=document.getElementById('exp-op').value;
+  const a=ra.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n));
+  const b=rb.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n));
+  const out=document.getElementById('exp-out');
+  out.className='exp-out show';
+  let html=`<b style="color:var(--blue)">A</b> = [${a.join(', ')}]  shape: (${a.length},)\n`;
+  html+=`<b style="color:var(--blue)">B</b> = [${b.join(', ')}]  shape: (${b.length},)\n\n`;
+  if(op==='dot'){
+    if(a.length!==b.length){html+='❌ Lengths must match for dot product!';out.innerHTML=html;return;}
+    const pairs=a.map((ai,i)=>`${ai}×${b[i]}`).join(' + ');
+    const result=a.reduce((s,ai,i)=>s+ai*b[i],0);
+    html+=`<b>np.dot(A, B)</b>:\n${pairs}\n= <b style="color:var(--blue)">${result.toFixed(4)}</b>\n\n`;
+    html+=`💡 This is what ONE neuron computes!\n(weighted sum of all inputs)`;
+  } else if(op==='elem'){
+    if(a.length!==b.length){html+='❌ Lengths must match!';out.innerHTML=html;return;}
+    const res=a.map((ai,i)=>(ai*b[i]).toFixed(3));
+    html+=`<b>A × B (element-wise):</b>\n[${res.join(', ')}]\n\nNot the same as dot product!\nEach position multiplied independently.`;
+  } else if(op==='broadcast'){
+    const res=a.map(ai=>(ai+10).toFixed(1));
+    html+=`<b>A + 10 (scalar broadcast):</b>\n[${res.join(', ')}]\n\nThe scalar 10 is "stretched" to match array length.\nSame as: A + [10,10,10,...] but without making the copy.`;
+  } else if(op==='norm'){
+    const norm=Math.sqrt(a.reduce((s,ai)=>s+ai*ai,0));
+    html+=`<b>np.linalg.norm(A):</b>\n= sqrt(${a.map(ai=>`${ai}²`).join(' + ')})\n= sqrt(${a.reduce((s,ai)=>s+ai*ai,0).toFixed(2)})\n= <b style="color:var(--blue)">${norm.toFixed(4)}</b>\n\n`;
+    html+=`This is the Euclidean distance from the origin (like Pythagoras in N dimensions).\nUsed in L2 regularisation and distance metrics.`;
+  } else if(op==='cosine'){
+    if(a.length!==b.length){html+='❌ Lengths must match!';out.innerHTML=html;return;}
+    const dot=a.reduce((s,ai,i)=>s+ai*b[i],0);
+    const na=Math.sqrt(a.reduce((s,ai)=>s+ai*ai,0));
+    const nb=Math.sqrt(b.reduce((s,bi)=>s+bi*bi,0));
+    const cos=dot/(na*nb);
+    html+=`<b>Cosine Similarity:</b>\n= dot(A,B) / (||A|| × ||B||)\n= ${dot.toFixed(2)} / (${na.toFixed(2)} × ${nb.toFixed(2)})\n= <b style="color:var(--blue)">${cos.toFixed(4)}</b>\n\n1.0 = identical direction | 0 = perpendicular | -1 = opposite`;
+  } else if(op==='where'){
+    const avg=a.reduce((s,x)=>s+x,0)/a.length;
+    const labels=a.map(x=>x>=avg?'High':'Low');
+    const binary=a.map(x=>x>=avg?1:0);
+    html+=`<b>np.where(A >= mean, "High", "Low"):</b>\nmean = ${avg.toFixed(2)}\n[${labels.join(', ')}]\n\n<b>Binary (1/0):</b>\n[${binary.join(', ')}]\n\nThis is how you create ML training labels!`;
+  }
+  out.innerHTML=html;
+}
+
+// ── PUZZLE ──
+const PZ_FB={
+  1:{ok:`✅ Correct! np.where(cond, 1, 0) → returns a value (1 OR 0) for EVERY element — same length as the input array. np.where(cond)[0] → returns only the POSITIONS (indices) where condition is True — shorter than input. Use the first for labels, the second to find positions.`,
+     no:`❌ np.where with 3 arguments returns VALUES: one value per element. np.where with only the condition returns a TUPLE of index arrays — [0] gets the first (row indices). Different use cases!`},
+  2:{ok:`✅ Exactly! Broadcasting rule: align shapes from the right. (4,3) and (3,): rightmost dimensions are 3 and 3 — they match! NumPy "stretches" col_mean to (4,3) by repeating it 4 times (one per row) without actually copying memory. Each row gets the same column means subtracted.`,
+     no:`❌ Broadcasting works because shapes align from the right: (4,3) and (3,) — last dim 3==3 matches. NumPy treats (3,) as if it were (1,3) and reuses it for each of the 4 rows. This is how all Z-score and min-max normalisation works in NumPy.`},
+  3:{ok:`✅ Correct! X@W requires inner dimensions to match: X is (3,3), W is (2,3). Inner dims are 3 and 2 — they DON'T match! W.T (transpose) flips W from (2,3) to (3,2). Now X@W.T = (3,3)@(3,2) — inner dims are 3 and 3 — they match! Result: (3,2) — 3 students, 2 neuron outputs.`,
+     no:`❌ The transpose is needed because matrix multiply (m,k)@(k,n) requires the INNER dims (k) to match. X is (3,3) and W is (2,3) — inner dims 3 and 2 don't match. W.T flips W to (3,2). Then X@W.T = (3,3)@(3,2): inner dims 3==3 ✅. Result (3,2).`},
+  4:{ok:`✅ Correct! X@W: (4,3)@(3,4) = (4,4). Inner dims 3==3 ✅. So Z is (4,4). Then + self.b: b is (4,) which broadcasts to (4,4) — each of the 4 rows gets the same bias vector added. This is the linear transform: each student gets 4 neuron outputs, each shifted by its bias.`,
+     no:`❌ X(4,3) @ W(3,4) = (4,4) — inner dims 3==3, outer dims give the result shape 4×4. Then b(4,) broadcasts across all 4 rows, adding the same bias to each row. Z is (4,4): 4 students × 4 neurons.`},
+  5:{ok:`✅ Correct! rand() = uniform distribution: all values equally likely between 0 and 1. randn() = normal distribution: most values cluster near 0, with positive and negative values, rarely far from 0. Neural networks use randn() for weight initialisation because a centered distribution helps learning converge.`,
+     no:`❌ rand() → uniform 0 to 1. randn() → normal distribution (bell curve), mean=0, std=1. Both are random but with different value distributions. randn() can produce negative values; rand() cannot. For ML weight initialisation, randn() is standard.`}
+};
+function pz(n,opt,correct){
+  const opts=document.getElementById('pz'+n+'-opts').querySelectorAll('.popt');
+  opts.forEach(o=>o.classList.add('dis'));
+  event.currentTarget.classList.add(correct?'cor':'wrg');
+  if(!correct){opts.forEach(o=>{if(o.getAttribute('onclick')&&o.getAttribute('onclick').includes(',true)'))o.classList.add('cor');});}
+  const fb=document.getElementById('pz'+n+'-fb');fb.className='pz-fb show '+(correct?'ok':'no');
+  fb.textContent=correct?PZ_FB[n].ok:PZ_FB[n].no;
+  if(correct){setTimeout(()=>{const cr=document.getElementById('cr'+n);cr.classList.add('show');cr.scrollIntoView({behavior:'smooth',block:'nearest'});},350);}
+}
+
+// ── AI TUTOR ──
+const replies={
+  broadcast:`Broadcasting = NumPy's way to do operations on arrays of different sizes without copying data.\n\nThree rules (simplified):\n1. Compare shapes from RIGHT to LEFT\n2. If dims match (3==3) → compatible ✅\n3. If one is 1 → it stretches to match ✅\n4. Otherwise → Error ❌\n\nMost common in ML:\n\nX = shape (4, 3)   ← 4 students, 3 features\ncol_mean = shape (3,)  ← one mean per feature\n\nX - col_mean works because:\nRight-align: (4,3) and (3,)\nRightmost: 3==3 ✅\ncol_mean stretches to (4,3) → subtracted from each row\n\nResult: each student's scores have their feature means removed.\nThis IS mean-centering, used by StandardScaler.`,
+  matmul:`Matrix multiply = the engine of all neural networks.\n\nRule: (m, k) @ (k, n) → (m, n)\nInner dims (k) MUST match. Outer dims (m,n) = result shape.\n\nOne neuron example:\nweights = [0.4, 0.3, 0.3]  ← shape (3,)\ninputs  = [5, 80, 1]       ← shape (3,)\ndot = 0.4×5 + 0.3×80 + 0.3×1 = 26.3  ← one number\n\nMany neurons + many students:\nX = (4,3)   ← 4 students, 3 features\nW = (2,3)   ← 2 neurons, each takes 3 inputs\nW.T = (3,2) ← transpose to align inner dims\n\nZ = X @ W.T  →  (4,3) @ (3,2) = (4,2)\n= 4 students, each gets 2 neuron outputs\n\nAdd bias b(2,) via broadcasting: Z + b\nApply ReLU: A = np.maximum(0, Z)\n\nThat's a DENSE LAYER — what Keras.Dense(2) does!`,
+  relu:`ReLU = Rectified Linear Unit. The most common activation function.\n\nFormula:\n  If x > 0: keep x\n  If x ≤ 0: replace with 0\n\nIn NumPy:\n  A = np.maximum(0, Z)\n\nExample:\nZ = [-3.2, 5.1, -0.4, 8.7]\nA = np.maximum(0, Z)\n  = [0, 5.1, 0, 8.7]\n\nWhy is it needed?\nWithout activation, stacking layers does nothing useful:\n  Layer 1: Z1 = X @ W1\n  Layer 2: Z2 = Z1 @ W2 = X @ W1 @ W2 = X @ (W1@W2)\n  → You could replace 2 layers with 1 matrix. Useless!\n\nWith ReLU after layer 1:\n  Layer 1: A1 = ReLU(X @ W1)  ← introduces non-linearity!\n  Layer 2: Z2 = A1 @ W2\n  → Now the network can learn complex patterns.\n\nReLU is fast to compute (just max(0,x)) and avoids vanishing gradients.`,
+  transpose:`Transpose (A.T or np.transpose(A)) flips rows and columns.\n\nA = [[1, 2, 3],   shape (2,3)\n     [4, 5, 6]]\n\nA.T = [[1, 4],    shape (3,2)\n       [2, 5],\n       [3, 6]]\n\nWhy we need it in X @ W.T:\nX = (4, 3) — 4 students, 3 features\nW = (2, 3) — 2 neurons, each needs 3 weights\n\nMatrix multiply (m,k) @ (k,n): inner dims must match.\nX@W: (4,3) @ (2,3) — inner dims 3 ≠ 2 → ERROR!\nX@W.T: (4,3) @ (3,2) — inner dims 3 = 3 → OK ✅\nResult: (4,2) — 4 students, 2 neuron outputs\n\nRule: when you get a shape error in @, try printing\nboth shapes and think about which one needs .T`,
+  default:`Day 17 covers three big ideas:\n\n📡 BROADCASTING:\n  (4,3) - (3,) works because 3==3 (rightmost)\n  col_mean(3,) stretches across all 4 rows\n  This is how Z-score standardisation works\n\n✖️ MATRIX MULTIPLY (@):\n  Rule: (m,k) @ (k,n) = (m,n) — inner dims must match!\n  X(4,3) @ W.T(3,2) = (4,2) — 4 students, 2 neurons\n  Z = X @ W + b is a neural network layer!\n\n🔢 np.where():\n  np.where(cond, val_true, val_false) → values\n  np.where(cond)[0] → indices where True\n\n🧠 DENSE LAYER:\n  Z = X @ W + b  (linear transform)\n  A = np.maximum(0, Z)  (ReLU activation)\n  This is what Keras Dense(n, activation='relu') does!\n\nWhat would you like explained in more detail?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('broadcast'))r=replies.broadcast;
+    else if(lm.includes('matmul')||lm.includes('matrix')||lm.includes('multiply')||lm.includes('@')||lm.includes('shape'))r=replies.matmul;
+    else if(lm.includes('relu')||lm.includes('activation'))r=replies.relu;
+    else if(lm.includes('transpose')||lm.includes('.t')||lm.includes('w.t'))r=replies.transpose;
+    addMsg(r,'ai');},800+Math.random()*400);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ── FILL ──
+const fillData=[
+  {q:'1. np.where(scores >= 50, "Pass", "Fail") — what does this return?',ans:['array of labels','labels','array','pass fail','pass or fail'],hint:'An array with "Pass" or "Fail" for every element'},
+  {q:'2. Matrix multiply shape rule: (m, k) @ (k, n) → ___',ans:['(m,n)','(m, n)','m,n'],hint:'(m, n)'},
+  {q:'3. X is (4,3) and W is (2,3). To multiply X @ ___ to get shape (4,2):',ans:['w.t','w.T','W.T','W.t'],hint:'W.T'},
+  {q:'4. Z = X @ W + b is the ___ transform in a neural network layer.',ans:['linear','dense'],hint:'linear'},
+  {q:'5. np.maximum(0, Z) implements the ___ activation function.',ans:['relu','ReLU'],hint:'ReLU'},
+  {q:'6. np.random.___( 3, 3) generates values from a normal distribution (mean=0, std=1).',ans:['randn'],hint:'randn'},
+  {q:'7. Broadcasting works when rightmost dims ___, or one of them is 1.',ans:['match','equal','same'],hint:'match'},
+  {q:'8. To save a NumPy array: np.___(filename, array). To load: np.___(filename).',ans:['save','load'],hint:'save / load'},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+}
+function checkFill(){
+  fillS=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase();
+    const ok=q.ans.some(a=>v===a.toLowerCase()||v.includes(a.toLowerCase()));
+    if(ok){fillS++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Hint: '+q.hint;}
+  });
+  updateProg();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillS===8?'<span style="color:var(--green)">🎉 Perfect — 8/8!</span>':fillS>=6?`<span style="color:var(--amber)">${fillS}/8 — almost!</span>`:`<span style="color:var(--red)">${fillS}/8 — review the concepts above.</span>`;
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ── MCQ ──
+const mcqs=[
+  {q:'What does np.where(scores >= 50, "Pass", "Fail") return?',opts:['The count of passing scores','An array with "Pass" or "Fail" for EVERY element — a vectorised if/else','Only the indices where scores >= 50','True or False for the whole array'],ans:1,exp:'"np.where(condition, value_if_true, value_if_false)" applies element-wise. Every element gets a result: Pass if ≥50, Fail otherwise. Same length as input. This is NumPy\'s vectorised if/else — replaces [\'Pass\' if s>=50 else \'Fail\' for s in scores] but runs at C speed.'},
+  {q:'What shape does X @ W.T produce if X is (4, 3) and W is (2, 3)?',opts:['(4, 3)','(2, 3)','(4, 2)','(3, 4)'],ans:2,exp:'"(4, 2)" — matrix multiply rule: (m,k) @ (k,n) = (m,n). W.T flips W from (2,3) to (3,2). So X@W.T = (4,3) @ (3,2): inner dims 3==3 ✅. Outer dims: 4 and 2 → result (4,2). This means 4 students each got 2 neuron outputs.'},
+  {q:'Broadcasting: can you add a (3,3) array and a (3,1) array?',opts:['No — rows and columns must both match exactly','Yes! (3,1) broadcasts to (3,3) by repeating the column 3 times → row-wise addition','Only if both arrays have the same dtype','Yes but only with np.broadcast_to() first'],ans:1,exp:'"Yes!" — (3,1) has size 1 in the second dimension. Broadcasting stretches it to (3,3) by repeating the column 3 times. Each column of the result gets the same column added. Broadcasting rule: a dimension of 1 can be stretched to match any size.'},
+  {q:'In Z = X @ self.W + self.b, what is the role of + self.b?',opts:['It multiplies the bias into each neuron\'s output','It adds a constant offset (bias) to each neuron\'s output — broadcast across all samples','It prevents negative values in Z','It normalises Z to 0-1 range'],ans:1,exp:'b is the "bias" — like the y-intercept in y=mx+b. After matrix multiply, each neuron gets a fixed offset added. b has shape (n_neurons,) and is broadcast across all samples via broadcasting. This allows the network to shift its activation threshold up or down, making it more flexible.'},
+  {q:'np.maximum(0, Z) is the implementation of which activation function?',opts:['Sigmoid — maps values to 0-1 range','Tanh — maps to -1 to 1','ReLU (Rectified Linear Unit) — max(0, z): negative → 0, positive → unchanged','Softmax — converts to probability distribution'],ans:2,exp:'"ReLU" — the most used activation in deep learning. Negative values → 0, positive values stay. np.maximum(0, Z) applies this to every element of Z at once. Without ReLU (or any activation), stacking linear layers is useless — they collapse into one layer. ReLU introduces the non-linearity that makes deep networks powerful.'},
+  {q:'X is (4,3), W is (3,4). Can you compute X @ W?',opts:['No — too many dimensions','Yes! (4,3) @ (3,4) = (4,4). Inner dims 3==3 match.','Only if you transpose W first','Yes but the result is (3,3)'],ans:1,exp:'"Yes!" — (4,3) @ (3,4): inner dims are 3 and 3 — they match! Result: (4,4). This is different from the W.T case — when W is (3,4), no transpose is needed. When W is (2,3), you need W.T to flip it. Always check inner dims and whether they match.'},
+  {q:'np.random.rand(3,3) vs np.random.randn(3,3) — which do neural networks use for weights and why?',opts:['rand() — because weights should be between 0 and 1','randn() — because the normal distribution (mean=0) is better for weight initialisation: values are centered and symmetrical','Both are identical — it doesn\'t matter','Neither — weights start at exactly 0'],ans:1,exp:'"randn()" — normal distribution with mean=0. Starting weights near 0 (both positive and negative) helps the network learn. Starting all positive (rand) can bias learning. Starting all at 0 (zeros) makes all neurons identical — they never differentiate. randn() scaled by something (like Xavier init) is standard practice.'},
+  {q:'Which pairs of shapes CANNOT be broadcast together?',opts:['(3,4) and (4,) — rightmost 4==4','(5,3) and (3,) — rightmost 3==3','(4,3) and (4,) — rightmost 3≠4 and neither is 1, ERROR','(3,1) and (3,5) — 1 can stretch to 5'],ans:2,exp:'"(4,3) and (4,)" fail! Broadcasting compares from the right: rightmost dims are 3 and 4. They differ AND neither is 1 → Error. Compare: (5,3)+(3,) → 3==3 ✅. (3,1)+(3,5) → 1 stretches to 5 ✅. Remember: only fails when dims differ AND neither is 1.'},
+  {q:'What is the dot product of [0.4, 0.3, 0.3] and [5, 80, 1]?',opts:['11.5','26.3','24.0','Error — different lengths'],ans:1,exp:'"26.3" — 0.4×5 + 0.3×80 + 0.3×1 = 2.0 + 24.0 + 0.3 = 26.3. This is a single neuron computing a weighted sum of its inputs. The weights represent how much the neuron "cares" about each feature. The output (26.3) is the pre-activation value of that neuron for this input.'},
+  {q:'np.where(scores >= 50)[0] — what does the [0] do?',opts:['Gets the first score above 50','Gets the array of INDICES where condition is True (from the returned tuple)','Gets the first True value','Gets the count of True values'],ans:1,exp:'"Gets the indices!" — np.where(condition) with only one argument returns a TUPLE of arrays (one per dimension). For 1D arrays, the tuple has one element: the array of positions where condition is True. The [0] extracts that array from the tuple. Example: scores=[85,45,72], scores>=50=[T,F,T] → where()[0] = [0,2]'},
+  {q:'A DenseLayer is created with DenseLayer(3, 4). What are the shapes of W and b?',opts:['W: (4,3), b: (4,)','W: (3,4), b: (3,)','W: (3,4), b: (4,)','W: (4,), b: (3,4)'],ans:2,exp:'"W: (3,4), b: (4,)" — in the code: self.W = np.random.randn(in_features, out_features) * scale = randn(3,4). self.b = np.zeros(out_features) = zeros(4). W has shape (in_features, out_features) = (3,4). Then X(n,3) @ W(3,4) = (n,4). Bias b(4,) is added via broadcasting to each of the n rows.'},
+  {q:'What does np.linalg.norm(np.array([3, 4])) return?',opts:['7 — sum of elements','12 — product','5.0 — Euclidean magnitude: sqrt(3²+4²)','3.5 — average'],ans:2,exp:'"5.0" — Euclidean norm (L2 norm) = sqrt(3² + 4²) = sqrt(9+16) = sqrt(25) = 5. This is the Pythagorean theorem in 2D — the length of the vector [3,4]. In ML, this is used for L2 regularisation (penalising large weights) and distance calculations (e.g. K-nearest neighbours).'},
+  {q:'Which code correctly combines two arrays a=[1,2,3] and b=[4,5,6] into a 2-row matrix?',opts:['np.hstack([a,b]) → [1,2,3,4,5,6]','np.vstack([a,b]) → [[1,2,3],[4,5,6]]','np.concatenate([a,b]) → [[1,2,3],[4,5,6]]','np.stack([a,b], axis=1) → [[1,4],[2,5],[3,6]]'],ans:1,exp:'"np.vstack([a,b])" → shape (2,3). v = vertical, stacks rows. hstack → horizontal, joins flat: [1,2,3,4,5,6] shape (6,). column_stack → [[1,4],[2,5],[3,6]] shape (3,2). vstack is for adding more ROWS. hstack is for adding more COLUMNS (when already 2D) or joining 1D flat.'},
+  {q:'After training for 10 hours, how do you save NumPy weight arrays so you can reload them later?',opts:['np.print("weights.npy", W)','np.save("weights.npy", W) — then np.load("weights.npy") to reload','W.save("weights.npy")','np.write("weights.npy", W)'],ans:1,exp:'"np.save()" — saves as binary .npy format (compact and exact). np.load() reloads it. For human-readable CSV: np.savetxt("data.csv", X, delimiter=","). For loading CSV: np.loadtxt("data.csv", delimiter=","). The .npy format is preferred for model weights as it preserves exact float precision.'},
+  {q:'The Z-score formula (X - mean) / std is applied to a 2D array X(100,5). col_mean and col_std have shape (5,). Why does (X - col_mean) work?',opts:['NumPy converts col_mean to a list internally','Broadcasting: (100,5) and (5,) → rightmost 5==5 → col_mean stretches to (100,5), subtracting each feature\'s mean from every row','You need to reshape col_mean to (100,5) first','It only works if you specify axis=0 explicitly'],ans:1,exp:'"Broadcasting!" — (100,5) and (5,): rightmost dimensions 5==5 match. col_mean is treated as (1,5) and stretched to (100,5) — each row gets the same subtraction. This removes each feature\'s mean from every sample. Dividing by col_std(5,) works the same way. This IS what StandardScaler does internally.'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 15</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqSet.has(qi))return;mcqSet.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqS++;document.getElementById('live-sc').textContent=mcqS;}
+  if(mcqSet.size===15){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProg();
+}
+function showFinal(){
+  const pct=Math.round(mcqS/15*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--blue) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent Work!':pct>=60?'Good Effort!':'Keep Practising!';
+  document.getElementById('fin-msg').textContent=`Score: ${mcqS}/15 (${pct}%) — ${pct>=80?'NumPy Advanced mastered! You built a neural network from scratch. Day 18 starts Pandas!':pct>=60?'Good foundation. Re-read the shape rules and broadcasting section.':'Re-read the concept section, especially the matrix multiply visual, then retry.'}`;
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

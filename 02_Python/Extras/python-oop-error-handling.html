@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Blueprint Room — OOP &amp; Error Handling</title>
+<style>
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/fira-code/6.2.0/fira_code.css');
+
+  :root{
+    --paper: #F5F1E6;
+    --paper-raised: #FCFAF3;
+    --ink: #24271F;
+    --ink-soft: #565A4C;
+    --rule: #D9D2BC;
+    --brass: #8A6A2F;
+    --brass-deep: #6B5222;
+    --teal: #2A6660;
+    --teal-deep: #1D4A46;
+    --tab-1: #C9A66B;
+    --tab-2: #7FA69C;
+    --correct: #2F7A4F;
+    --wrong: #B14C3A;
+    --code-bg: #1F2A28;
+    --code-ink: #E9EFE9;
+    --shadow: 0 2px 0 rgba(36,39,31,0.06), 0 8px 20px rgba(36,39,31,0.08);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(180deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 28px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Iowan Old Style','Palatino Linotype', Georgia, 'Times New Roman', serif;
+    line-height:1.6;
+  }
+
+  .mono, code, pre, .kbd{ font-family:'Fira Code','JetBrains Mono', Consolas, monospace; }
+
+  header.hero{ padding:64px 24px 40px; max-width:980px; margin:0 auto; position:relative; }
+  .drawer-label{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--paper-raised); border:1px solid var(--rule);
+    padding:6px 14px; border-radius:3px;
+    font-family:'Fira Code',monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--brass-deep); box-shadow:var(--shadow);
+  }
+  .drawer-label::before{ content:""; width:8px;height:8px; background:var(--brass); border-radius:50%; }
+  h1.title{ font-size:clamp(34px, 5.4vw, 58px); margin:22px 0 6px; line-height:1.05; letter-spacing:-0.01em; font-weight:600; }
+  h1.title em{ font-style:italic; color:var(--teal-deep); }
+  .subtitle{ font-size:18px; color:var(--ink-soft); max-width:660px; margin:14px 0 0; }
+  .hero-card{
+    margin-top:36px; background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px;
+    box-shadow:var(--shadow); padding:22px 26px; display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:start;
+  }
+  .hero-card .catalog-icon{
+    width:52px;height:52px; flex-shrink:0; border-radius:4px;
+    background:linear-gradient(160deg, var(--tab-2), var(--teal));
+    display:flex;align-items:center;justify-content:center; color:#fff;font-family:'Fira Code',monospace;font-weight:700;font-size:18px;
+  }
+  .hero-card p{margin:0;color:var(--ink-soft);font-size:15px;}
+  .hero-card strong{color:var(--ink);}
+
+  nav.tabs{ position:sticky; top:0; z-index:50; background:var(--paper); border-bottom:1px solid var(--rule); padding:0 24px; backdrop-filter:blur(4px); }
+  .tabs-inner{ max-width:980px; margin:0 auto; display:flex; overflow-x:auto; scrollbar-width:none; gap:2px; padding-top:10px; }
+  .tabs-inner::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    flex:0 0 auto; font-family:'Fira Code',monospace; font-size:12.5px; letter-spacing:0.03em;
+    background:var(--paper-raised); border:1px solid var(--rule); border-bottom:none;
+    color:var(--ink-soft); padding:10px 16px 9px; border-radius:6px 6px 0 0; cursor:pointer; white-space:nowrap;
+    transition:background .15s, color .15s, transform .15s;
+  }
+  .tab-btn:hover{ color:var(--ink); transform:translateY(-2px); }
+  .tab-btn.active{ background:var(--paper); color:var(--teal-deep); font-weight:700; border-color:var(--rule); box-shadow:0 -2px 0 var(--teal) inset; }
+
+  main{ max-width:980px; margin:0 auto; padding:40px 24px 100px; }
+  section.card{ display:none; animation:fadeIn .35s ease; }
+  section.card.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .section-eyebrow{ font-family:'Fira Code',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.14em; color:var(--brass-deep); margin-bottom:6px; }
+  h2.section-title{ font-size:clamp(26px,3.6vw,34px); margin:0 0 18px; font-weight:600; }
+  h3.sub-title{ font-size:20px; margin:32px 0 10px; color:var(--teal-deep); font-weight:700; }
+  p{color:var(--ink);}
+  p.lead{font-size:16.5px;}
+
+  .analogy{
+    background:linear-gradient(180deg, #EFE9D6, #F2EEDF); border:1px solid var(--rule); border-left:4px solid var(--tab-1);
+    border-radius:4px; padding:16px 20px; margin:16px 0; font-size:15px;
+  }
+  .analogy .tag{ font-family:'Fira Code',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--brass-deep); font-weight:700; display:block; margin-bottom:6px; }
+
+  pre{ background:var(--code-bg); color:var(--code-ink); padding:18px 20px; border-radius:6px; overflow-x:auto; font-size:13.5px; line-height:1.65; margin:14px 0; box-shadow:var(--shadow); }
+  pre .c1{color:#8FBF9F;}
+  pre .kw{color:#E4B673;}
+  pre .st{color:#B7D4A4;}
+  pre .fn{color:#8FC5D6;}
+  code.inline{ background:#EAE3CC; border:1px solid var(--rule); padding:1px 6px; border-radius:3px; font-size:0.88em; color:var(--teal-deep); }
+
+  ul, ol{padding-left:22px;}
+  li{margin:6px 0;}
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0; }
+  @media(max-width:680px){ .grid-2{grid-template-columns:1fr;} }
+
+  .mini-card{ background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px; padding:16px 18px; box-shadow:var(--shadow); }
+  .mini-card h4{ margin:0 0 8px; font-size:15px; font-family:'Fira Code',monospace; color:var(--teal-deep); }
+  .mini-card p{ font-size:14px;color:var(--ink-soft);margin:0; }
+
+  .topic-map{ display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 8px; }
+  .topic-map span{ font-family:'Fira Code',monospace; font-size:11px; background:var(--paper-raised); border:1px solid var(--rule); padding:5px 10px; border-radius:12px; color:var(--ink-soft); }
+
+  .step{ display:grid; grid-template-columns:44px 1fr; gap:16px; margin:22px 0; }
+  .step-num{
+    width:44px;height:44px; border-radius:50%; background:var(--teal); color:#fff;
+    display:flex;align-items:center;justify-content:center; font-family:'Fira Code',monospace; font-weight:700; font-size:15px;
+    flex-shrink:0; box-shadow:var(--shadow);
+  }
+  .step-body h4{margin:6px 0 6px;font-size:17px;}
+  .step-body p{font-size:14.5px;color:var(--ink-soft);margin:4px 0 8px;}
+
+  .quiz-progress{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; font-family:'Fira Code',monospace; font-size:13px; color:var(--ink-soft); }
+  .quiz-bar{ height:6px; background:var(--rule); border-radius:4px; overflow:hidden; flex:1; margin:0 16px; }
+  .quiz-bar-fill{ height:100%; background:var(--teal); width:0%; transition:width .3s ease; }
+  .q-block{ background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px; padding:20px 22px; margin:16px 0; box-shadow:var(--shadow); }
+  .q-block .q-num{ font-family:'Fira Code',monospace; font-size:11px; color:var(--brass-deep); text-transform:uppercase; letter-spacing:0.1em; }
+  .q-block h4{margin:6px 0 14px;font-size:16.5px;font-weight:700;}
+  .q-block .opts{display:flex;flex-direction:column;gap:8px;}
+  .opt{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--rule); border-radius:5px;
+    cursor:pointer; font-size:14.5px; background:var(--paper); transition:background .15s, border-color .15s;
+  }
+  .opt:hover{background:#EFE9D6;}
+  .opt input{margin-top:3px;accent-color:var(--teal);}
+  .opt.correct{border-color:var(--correct); background:#E4F1E6;}
+  .opt.wrong{border-color:var(--wrong); background:#F5E4DF;}
+  .explain{ display:none; margin-top:12px; font-size:13.5px; color:var(--ink-soft); border-top:1px dashed var(--rule); padding-top:10px; }
+  .explain.show{display:block;}
+
+  .quiz-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:24px; gap:12px; flex-wrap:wrap; }
+  button.primary-btn{
+    font-family:'Fira Code',monospace; background:var(--teal); color:#fff; border:none; padding:12px 22px; border-radius:5px;
+    font-size:13.5px; cursor:pointer; letter-spacing:0.03em; box-shadow:var(--shadow); transition:background .15s, transform .15s;
+  }
+  button.primary-btn:hover{background:var(--teal-deep); transform:translateY(-1px);}
+  button.ghost-btn{
+    font-family:'Fira Code',monospace; background:transparent; color:var(--ink-soft); border:1px solid var(--rule);
+    padding:11px 18px; border-radius:5px; font-size:13px; cursor:pointer;
+  }
+  button.ghost-btn:hover{color:var(--ink); border-color:var(--ink-soft);}
+
+  #quizResult{ display:none; text-align:center; padding:40px 20px; }
+  #quizResult .score-big{ font-family:'Fira Code',monospace; font-size:56px; font-weight:700; color:var(--teal-deep); }
+  #quizResult p{color:var(--ink-soft);}
+
+  footer{ text-align:center; padding:30px; font-family:'Fira Code',monospace; font-size:12px; color:var(--ink-soft); border-top:1px solid var(--rule); }
+
+  button:focus-visible, .opt input:focus-visible, .tab-btn:focus-visible{ outline:2px solid var(--teal-deep); outline-offset:2px; }
+
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="drawer-label">room no. 5 &mdash; py / oop &amp; errors</span>
+  <h1 class="title">The Blueprint Room:<br><em>OOP &amp; Error Handling</em></h1>
+  <p class="subtitle">An architect draws one blueprint for a house, then builds as many actual houses from it as needed — that's Object-Oriented Programming. And every good building has a safety protocol for when something goes wrong on site — that's error handling. Together, they're how real, reliable software gets built.</p>
+
+  <div class="hero-card">
+    <div class="catalog-icon">class</div>
+    <p><strong>What you'll walk away with:</strong> what classes and objects really are, <code class="inline">__init__</code> and <code class="inline">self</code>, inheritance, encapsulation and polymorphism, what exceptions are, <code class="inline">try/except/else/finally</code>, raising and building custom exceptions, a full real-world build (a bank account system with custom errors), and a 15-question quiz.</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner" id="tabsInner">
+    <button class="tab-btn active" data-target="t-basics">01 · What is OOP</button>
+    <button class="tab-btn" data-target="t-class">02 · Classes &amp; Objects</button>
+    <button class="tab-btn" data-target="t-attr">03 · Attributes &amp; Methods</button>
+    <button class="tab-btn" data-target="t-inherit">04 · Inheritance</button>
+    <button class="tab-btn" data-target="t-poly">05 · Encapsulation &amp; Polymorphism</button>
+    <button class="tab-btn" data-target="t-errbasics">06 · What is Error Handling</button>
+    <button class="tab-btn" data-target="t-tryexcept">07 · try / except / finally</button>
+    <button class="tab-btn" data-target="t-raise">08 · Raising &amp; Custom Errors</button>
+    <button class="tab-btn" data-target="t-task">09 · Real-World Task</button>
+    <button class="tab-btn" data-target="t-quiz">10 · Quiz</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- 01 -->
+  <section class="card active" id="t-basics">
+    <div class="section-eyebrow">Topic 01</div>
+    <h2 class="section-title">What Object-Oriented Programming actually is</h2>
+    <p class="lead">OOP is a way of organizing code around <strong>things</strong> — objects that bundle together data (what they know) and behavior (what they can do), instead of scattering variables and functions loosely.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      A blueprint for a house isn't a house — it's a plan describing rooms, dimensions, and wiring. Once you build from it, you get an actual house you can live in. You can build many houses from one blueprint, each with its own address and paint color, but all following the same plan. In Python, the blueprint is called a <strong>class</strong>, and each built house is an <strong>object</strong> (or <em>instance</em>).
+    </div>
+
+    <pre><span class="c1"># the blueprint</span>
+<span class="kw">class</span> <span class="fn">House</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, color):
+        self.color = color
+
+<span class="c1"># building actual houses from the blueprint</span>
+house1 = <span class="fn">House</span>(<span class="st">"blue"</span>)
+house2 = <span class="fn">House</span>(<span class="st">"red"</span>)
+
+<span class="fn">print</span>(house1.color)   <span class="c1"># blue</span>
+<span class="fn">print</span>(house2.color)   <span class="c1"># red — separate house, separate paint</span></pre>
+
+    <h3 class="sub-title">Why bother with OOP</h3>
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>Bundling</h4>
+        <p>Data and the actions that work on it stay together, instead of passing variables between loose functions.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Reuse</h4>
+        <p>One blueprint, unlimited buildings — no rewriting the plan for every new house.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Modeling reality</h4>
+        <p>Cars, users, orders, accounts — real-world things map naturally onto objects.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Extending safely</h4>
+        <p>New blueprints can build on old ones (inheritance) without touching the original plan.</p>
+      </div>
+    </div>
+
+    <div class="topic-map">
+      <span>class = blueprint</span><span>object = built instance</span><span>self = this specific house</span><span>inheritance = family of blueprints</span>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section class="card" id="t-class">
+    <div class="section-eyebrow">Topic 02</div>
+    <h2 class="section-title">Classes and objects</h2>
+    <p class="lead">A class defines what every object of that kind will have and be able to do. An object is one specific instance actually built from that class.</p>
+
+    <pre><span class="kw">class</span> <span class="fn">Dog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, breed):
+        self.name = name
+        self.breed = breed
+
+    <span class="kw">def</span> <span class="fn">bark</span>(self):
+        <span class="kw">return</span> <span class="fn">f</span><span class="st">"{self.name} says woof!"</span>
+
+<span class="c1"># two separate dogs, built from the same blueprint</span>
+dog1 = <span class="fn">Dog</span>(<span class="st">"Rex"</span>, <span class="st">"Labrador"</span>)
+dog2 = <span class="fn">Dog</span>(<span class="st">"Milo"</span>, <span class="st">"Beagle"</span>)
+
+<span class="fn">print</span>(dog1.<span class="fn">bark</span>())    <span class="c1"># Rex says woof!</span>
+<span class="fn">print</span>(dog2.breed)     <span class="c1"># Beagle</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      "Dog" the concept is the blueprint. Rex and Milo are two actual dogs built from that same concept — same general shape (name, breed, the ability to bark), but each carrying its own specific details.
+    </div>
+
+    <h3 class="sub-title">What <code class="inline">__init__</code> does</h3>
+    <p><code class="inline">__init__</code> is the move-in checklist that runs automatically the moment a new object is built — it's where you fill in that object's specific details.</p>
+    <pre>dog1 = <span class="fn">Dog</span>(<span class="st">"Rex"</span>, <span class="st">"Labrador"</span>)
+<span class="c1"># the moment this line runs, __init__ fires:</span>
+<span class="c1">#   self.name = "Rex"</span>
+<span class="c1">#   self.breed = "Labrador"</span></pre>
+  </section>
+
+  <!-- 03 -->
+  <section class="card" id="t-attr">
+    <div class="section-eyebrow">Topic 03</div>
+    <h2 class="section-title">Attributes, methods, and <code class="inline">self</code></h2>
+    <p class="lead">An <strong>attribute</strong> is a piece of data an object holds (name, breed). A <strong>method</strong> is an action it can perform (bark). <code class="inline">self</code> is how a method refers back to "this particular object, not some other one."</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      If Rex and Milo can both bark, the "bark" instruction has to somehow know whose mouth to use. <code class="inline">self</code> is that pointer — when you call <code class="inline">dog1.bark()</code>, Python quietly hands the method "this is the dog you're working with," so it says "Rex says woof," not "Milo says woof."
+    </div>
+
+    <pre><span class="kw">class</span> <span class="fn">BankAccount</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, owner, balance=<span class="st">0</span>):
+        self.owner = owner
+        self.balance = balance      <span class="c1"># instance attribute — unique per object</span>
+
+    <span class="kw">def</span> <span class="fn">deposit</span>(self, amount):
+        self.balance += amount      <span class="c1"># self makes sure THIS account's balance changes</span>
+        <span class="kw">return</span> self.balance
+
+acc = <span class="fn">BankAccount</span>(<span class="st">"Maya"</span>, <span class="st">100</span>)
+acc.<span class="fn">deposit</span>(<span class="st">50</span>)
+<span class="fn">print</span>(acc.balance)    <span class="c1"># 150</span></pre>
+
+    <h3 class="sub-title">Class attributes vs. instance attributes</h3>
+    <pre><span class="kw">class</span> <span class="fn">Dog</span>:
+    species = <span class="st">"Canis familiaris"</span>   <span class="c1"># class attribute — shared by every dog</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name):
+        self.name = name              <span class="c1"># instance attribute — unique per dog</span>
+
+<span class="fn">print</span>(dog1.species)   <span class="c1"># same for every Dog object, like a shared species label</span>
+<span class="fn">print</span>(dog1.name)      <span class="c1"># unique to this one dog</span></pre>
+    <p>Class attributes are like a fact printed on every blueprint copy ("all dogs are Canis familiaris"). Instance attributes are like the details filled in on one specific house ("this house is painted blue").</p>
+  </section>
+
+  <!-- 04 -->
+  <section class="card" id="t-inherit">
+    <div class="section-eyebrow">Topic 04</div>
+    <h2 class="section-title">Inheritance</h2>
+    <p class="lead">Inheritance lets a new blueprint start from an existing one and only add or change what's different — instead of redrawing the whole plan from scratch.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      A "Bungalow" blueprint and a "Two-Story House" blueprint might both start from a general "House" blueprint (foundation, walls, roof), each adding their own specifics on top. Neither has to redraw the foundation from zero.
+    </div>
+
+    <pre><span class="kw">class</span> <span class="fn">Animal</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name):
+        self.name = name
+
+    <span class="kw">def</span> <span class="fn">speak</span>(self):
+        <span class="kw">return</span> <span class="fn">f</span><span class="st">"{self.name} makes a sound."</span>
+
+<span class="kw">class</span> <span class="fn">Dog</span>(Animal):              <span class="c1"># Dog inherits from Animal</span>
+    <span class="kw">def</span> <span class="fn">speak</span>(self):             <span class="c1"># overrides Animal's version</span>
+        <span class="kw">return</span> <span class="fn">f</span><span class="st">"{self.name} barks."</span>
+
+<span class="kw">class</span> <span class="fn">Cat</span>(Animal):
+    <span class="kw">def</span> <span class="fn">speak</span>(self):
+        <span class="kw">return</span> <span class="fn">f</span><span class="st">"{self.name} meows."</span>
+
+generic = <span class="fn">Animal</span>(<span class="st">"Some Creature"</span>)
+dog = <span class="fn">Dog</span>(<span class="st">"Rex"</span>)
+cat = <span class="fn">Cat</span>(<span class="st">"Momo"</span>)
+
+<span class="kw">for</span> creature <span class="kw">in</span> [generic, dog, cat]:
+    <span class="fn">print</span>(creature.<span class="fn">speak</span>())
+<span class="c1"># Some Creature makes a sound.</span>
+<span class="c1"># Rex barks.</span>
+<span class="c1"># Momo meows.</span></pre>
+
+    <h3 class="sub-title">Calling the parent's version with <code class="inline">super()</code></h3>
+    <pre><span class="kw">class</span> <span class="fn">Puppy</span>(Dog):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, age_months):
+        <span class="fn">super</span>().<span class="fn">__init__</span>(name)   <span class="c1"># reuse Animal's setup instead of rewriting it</span>
+        self.age_months = age_months</pre>
+    <p><code class="inline">super()</code> is like saying "build the foundation the same way the parent blueprint already does it, then I'll add my extra details on top."</p>
+  </section>
+
+  <!-- 05 -->
+  <section class="card" id="t-poly">
+    <div class="section-eyebrow">Topic 05</div>
+    <h2 class="section-title">Encapsulation &amp; polymorphism</h2>
+    <p class="lead">Two more ideas that make objects safer and more flexible to work with.</p>
+
+    <h3 class="sub-title">Encapsulation — protecting the internals</h3>
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      A house's wiring is inside the walls, not dangling in the living room — you interact with a light switch, not the bare wires. Encapsulation hides an object's messy internal details behind a clean, safe interface (its methods).
+    </div>
+    <pre><span class="kw">class</span> <span class="fn">BankAccount</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, balance):
+        self.__balance = balance     <span class="c1"># double underscore signals "internal, don't touch directly"</span>
+
+    <span class="kw">def</span> <span class="fn">get_balance</span>(self):
+        <span class="kw">return</span> self.__balance      <span class="c1"># controlled access through a method</span>
+
+    <span class="kw">def</span> <span class="fn">withdraw</span>(self, amount):
+        <span class="kw">if</span> amount > self.__balance:
+            <span class="kw">return</span> <span class="st">"Insufficient funds."</span>
+        self.__balance -= amount
+        <span class="kw">return</span> self.__balance</pre>
+    <p>The double underscore doesn't make it impossible to access, but it's a strong signal: "go through the light switch, don't grab the bare wire."</p>
+
+    <h3 class="sub-title">Polymorphism — same call, different behavior</h3>
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      "Open" means something different for a door, a jar, and a book — each object interprets the same instruction in its own way. That's polymorphism: calling <code class="inline">.speak()</code> on a Dog and a Cat runs different code, even though the call looks identical.
+    </div>
+    <pre><span class="kw">for</span> creature <span class="kw">in</span> [Dog(<span class="st">"Rex"</span>), Cat(<span class="st">"Momo"</span>)]:
+    <span class="fn">print</span>(creature.<span class="fn">speak</span>())   <span class="c1"># same method name, different result per object</span></pre>
+  </section>
+
+  <!-- 06 -->
+  <section class="card" id="t-errbasics">
+    <div class="section-eyebrow">Topic 06</div>
+    <h2 class="section-title">What error handling actually is</h2>
+    <p class="lead">Things go wrong on a job site — a delivery is late, a measurement is off. A good crew has a plan for handling that without the whole project collapsing. Error handling is that plan for your code.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      Imagine a construction site with no safety protocol — the moment one thing goes wrong (a dropped tool, a wrong measurement), the entire crew stops and the whole build halts. A site with a safety plan absorbs the problem, logs it, and keeps working. An <strong>exception</strong> is the "something went wrong" signal; <strong>handling</strong> it is having a plan ready instead of the whole program crashing.
+    </div>
+
+    <pre><span class="c1"># without handling — the whole program crashes here</span>
+number = <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Enter a number: "</span>))   <span class="c1"># crashes if the user types "abc"</span></pre>
+
+    <pre><span class="c1"># with handling — the problem is caught, the program keeps going</span>
+<span class="kw">try</span>:
+    number = <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Enter a number: "</span>))
+<span class="kw">except</span> ValueError:
+    <span class="fn">print</span>(<span class="st">"That wasn't a valid number — using 0 instead."</span>)
+    number = <span class="st">0</span></pre>
+
+    <h3 class="sub-title">Common built-in exceptions</h3>
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>ValueError</h4>
+        <p>Right type, wrong content — like int("abc").</p>
+      </div>
+      <div class="mini-card">
+        <h4>TypeError</h4>
+        <p>Wrong type entirely — like adding a string and a number.</p>
+      </div>
+      <div class="mini-card">
+        <h4>KeyError</h4>
+        <p>Looking up a dictionary key that doesn't exist.</p>
+      </div>
+      <div class="mini-card">
+        <h4>ZeroDivisionError</h4>
+        <p>Dividing by zero — undefined, and Python refuses.</p>
+      </div>
+      <div class="mini-card">
+        <h4>FileNotFoundError</h4>
+        <p>Trying to open a file that isn't there.</p>
+      </div>
+      <div class="mini-card">
+        <h4>IndexError</h4>
+        <p>Reaching for a list position that doesn't exist.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section class="card" id="t-tryexcept">
+    <div class="section-eyebrow">Topic 07</div>
+    <h2 class="section-title"><code class="inline">try</code> / <code class="inline">except</code> / <code class="inline">else</code> / <code class="inline">finally</code></h2>
+    <p class="lead">This is the full safety protocol structure: attempt the risky step, catch specific problems, celebrate if nothing went wrong, and always clean up at the end.</p>
+
+    <pre><span class="kw">try</span>:
+    result = <span class="st">10</span> / <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Divide 10 by: "</span>))
+<span class="kw">except</span> ZeroDivisionError:
+    <span class="fn">print</span>(<span class="st">"Can't divide by zero."</span>)
+<span class="kw">except</span> ValueError:
+    <span class="fn">print</span>(<span class="st">"That wasn't a number."</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Success: {result}"</span>)     <span class="c1"># runs only if try had NO problems</span>
+<span class="kw">finally</span>:
+    <span class="fn">print</span>(<span class="st">"Attempt finished."</span>)      <span class="c1"># always runs — success or failure</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      <code class="inline">try</code> is attempting the risky step. Each <code class="inline">except</code> is a specific contingency plan for a specific kind of problem — a different response for "wrong tool" versus "missing material." <code class="inline">else</code> is what happens when nothing went wrong at all. <code class="inline">finally</code> is the site cleanup that happens no matter what — successful build or not, you still lock up the tools at the end.
+    </div>
+
+    <h3 class="sub-title">Catching multiple exception types together</h3>
+    <pre><span class="kw">try</span>:
+    risky_operation()
+<span class="kw">except</span> (ValueError, TypeError) <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Something went wrong: {e}"</span>)</pre>
+
+    <h3 class="sub-title">Catching anything (use carefully)</h3>
+    <pre><span class="kw">try</span>:
+    risky_operation()
+<span class="kw">except</span> Exception <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Unexpected issue: {e}"</span>)</pre>
+    <p>A bare <code class="inline">except:</code> or overly broad <code class="inline">except Exception:</code> is like a safety plan that says "if anything at all happens, just shrug" — it can hide real bugs. Catch the specific problems you actually expect wherever possible.</p>
+  </section>
+
+  <!-- 08 -->
+  <section class="card" id="t-raise">
+    <div class="section-eyebrow">Topic 08</div>
+    <h2 class="section-title">Raising exceptions &amp; building your own</h2>
+    <p class="lead">Sometimes your own code needs to raise the alarm on purpose — flagging a problem before it causes something worse downstream.</p>
+
+    <h3 class="sub-title">Raising a built-in exception</h3>
+    <pre><span class="kw">def</span> <span class="fn">set_age</span>(age):
+    <span class="kw">if</span> age < <span class="st">0</span>:
+        <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="st">"Age cannot be negative."</span>)
+    <span class="kw">return</span> age
+
+<span class="fn">set_age</span>(-<span class="st">5</span>)   <span class="c1"># raises ValueError: Age cannot be negative.</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      <code class="inline">raise</code> is a foreman spotting a problem and sounding the alarm deliberately, before a bad measurement gets built into the wall — better to stop early with a clear reason than let it cause a collapse later.
+    </div>
+
+    <h3 class="sub-title">Custom exception classes</h3>
+    <p>Just like you can design your own blueprint (class) for a house, you can design your own exception — a specific, named alarm for a specific kind of problem in your program.</p>
+    <pre><span class="kw">class</span> <span class="fn">InsufficientFundsError</span>(Exception):
+    <span class="st">"""Raised when a withdrawal exceeds the account balance."""</span>
+    <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">BankAccount</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, balance):
+        self.balance = balance
+
+    <span class="kw">def</span> <span class="fn">withdraw</span>(self, amount):
+        <span class="kw">if</span> amount > self.balance:
+            <span class="kw">raise</span> <span class="fn">InsufficientFundsError</span>(
+                <span class="fn">f</span><span class="st">"Tried to withdraw {amount}, only {self.balance} available."</span>
+            )
+        self.balance -= amount
+        <span class="kw">return</span> self.balance
+
+acc = <span class="fn">BankAccount</span>(<span class="st">100</span>)
+<span class="kw">try</span>:
+    acc.<span class="fn">withdraw</span>(<span class="st">500</span>)
+<span class="kw">except</span> InsufficientFundsError <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Blocked: {e}"</span>)</pre>
+
+    <p>Custom exceptions make your alarms specific and self-explanatory — <code class="inline">InsufficientFundsError</code> tells you exactly what went wrong, instead of a generic error that leaves you guessing.</p>
+  </section>
+
+  <!-- 09 REAL WORLD TASK -->
+  <section class="card" id="t-task">
+    <div class="section-eyebrow">Topic 09 · Build something real</div>
+    <h2 class="section-title">Project: a safe bank account system</h2>
+    <p class="lead">We'll build a small banking system with classes, inheritance, and custom exceptions — the same foundational shape behind any real banking app's account logic.</p>
+
+    <div class="analogy">
+      <span class="tag">The brief</span>
+      Model a bank account as a class with safe deposit and withdrawal methods. Build a SavingsAccount that extends it with interest. Guard every risky operation with proper error handling, using custom exceptions for domain-specific problems.
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Design the custom exceptions first</h4>
+        <p>Decide what can specifically go wrong, and give each one a clear, named alarm.</p>
+        <pre><span class="kw">class</span> <span class="fn">InsufficientFundsError</span>(Exception):
+    <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">InvalidAmountError</span>(Exception):
+    <span class="kw">pass</span></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Build the base Account blueprint</h4>
+        <p>Encapsulate the balance, and guard both deposit and withdraw with validation.</p>
+        <pre><span class="kw">class</span> <span class="fn">Account</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, owner, balance=<span class="st">0</span>):
+        self.owner = owner
+        self.__balance = balance
+
+    <span class="kw">def</span> <span class="fn">get_balance</span>(self):
+        <span class="kw">return</span> self.__balance
+
+    <span class="kw">def</span> <span class="fn">deposit</span>(self, amount):
+        <span class="kw">if</span> amount <= <span class="st">0</span>:
+            <span class="kw">raise</span> <span class="fn">InvalidAmountError</span>(<span class="st">"Deposit must be positive."</span>)
+        self.__balance += amount
+        <span class="kw">return</span> self.__balance
+
+    <span class="kw">def</span> <span class="fn">withdraw</span>(self, amount):
+        <span class="kw">if</span> amount <= <span class="st">0</span>:
+            <span class="kw">raise</span> <span class="fn">InvalidAmountError</span>(<span class="st">"Withdrawal must be positive."</span>)
+        <span class="kw">if</span> amount > self.__balance:
+            <span class="kw">raise</span> <span class="fn">InsufficientFundsError</span>(
+                <span class="fn">f</span><span class="st">"{self.owner} has only {self.__balance}, tried to withdraw {amount}."</span>
+            )
+        self.__balance -= amount
+        <span class="kw">return</span> self.__balance</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Extend it with inheritance</h4>
+        <p>A SavingsAccount is still an Account — it just adds interest behavior on top, reusing everything from the parent blueprint.</p>
+        <pre><span class="kw">class</span> <span class="fn">SavingsAccount</span>(Account):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, owner, balance=<span class="st">0</span>, rate=<span class="st">0.02</span>):
+        <span class="fn">super</span>().<span class="fn">__init__</span>(owner, balance)
+        self.rate = rate
+
+    <span class="kw">def</span> <span class="fn">apply_interest</span>(self):
+        interest = self.<span class="fn">get_balance</span>() * self.rate
+        self.<span class="fn">deposit</span>(interest)
+        <span class="kw">return</span> self.<span class="fn">get_balance</span>()</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Use try/except/else/finally around every risky call</h4>
+        <p>Wrap the actual banking operations the way a teller would follow a safety checklist for every transaction.</p>
+        <pre>acc = <span class="fn">SavingsAccount</span>(<span class="st">"Maya"</span>, <span class="st">200</span>)
+
+<span class="kw">try</span>:
+    acc.<span class="fn">withdraw</span>(<span class="st">500</span>)
+<span class="kw">except</span> InsufficientFundsError <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Transaction blocked: {e}"</span>)
+<span class="kw">except</span> InvalidAmountError <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Invalid request: {e}"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"Withdrawal successful."</span>)
+<span class="kw">finally</span>:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Current balance: {acc.get_balance()}"</span>)</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Run the account through a realistic sequence</h4>
+        <p>Deposit, apply interest, and attempt a safe withdrawal — showing the whole system working together.</p>
+        <pre>acc.<span class="fn">deposit</span>(<span class="st">100</span>)
+acc.<span class="fn">apply_interest</span>()
+<span class="fn">print</span>(<span class="fn">f</span><span class="st">"Balance after interest: {acc.get_balance()}"</span>)
+
+<span class="kw">try</span>:
+    acc.<span class="fn">withdraw</span>(<span class="st">50</span>)
+<span class="kw">except</span> (InsufficientFundsError, InvalidAmountError) <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Error: {e}"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"Withdrawal went through cleanly."</span>)</pre>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">What you just practiced</span>
+      Class design, <code class="inline">__init__</code> and <code class="inline">self</code>, encapsulation with a private balance, inheritance with <code class="inline">super()</code>, custom exception classes, and the full <code class="inline">try / except / else / finally</code> structure — all working together in one coherent, realistic system.
+    </div>
+  </section>
+
+  <!-- 10 QUIZ -->
+  <section class="card" id="t-quiz">
+    <div class="section-eyebrow">Topic 10</div>
+    <h2 class="section-title">Check what stuck</h2>
+    <p class="lead">15 questions. Pick an answer to see if you're right — your score tallies as you go.</p>
+
+    <div class="quiz-progress">
+      <span id="qProgressText">0 / 15 answered</span>
+      <div class="quiz-bar"><div class="quiz-bar-fill" id="quizBarFill"></div></div>
+      <span id="qScoreText">Score: 0</span>
+    </div>
+
+    <div id="quizContainer"></div>
+
+    <div class="quiz-actions">
+      <button class="ghost-btn" id="resetBtn">Reset quiz</button>
+      <button class="primary-btn" id="finishBtn">See final score</button>
+    </div>
+
+    <div id="quizResult">
+      <div class="score-big" id="finalScore">0 / 15</div>
+      <p id="finalMsg">Fill in the quiz above to see how you did.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>blueprint no. 000-OOP-ERR — filed under python / classes-and-exceptions — end of room</footer>
+
+<script>
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const cards = document.querySelectorAll('section.card');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      cards.forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  });
+
+  const QUESTIONS = [
+    {
+      q: "In OOP terms, what is a class?",
+      opts: ["A specific built object", "A blueprint describing what objects of that kind will have and do", "A type of error", "A built-in Python function"],
+      correct: 1,
+      explain: "A class is the blueprint/plan; the actual built objects (instances) are separate things created from it."
+    },
+    {
+      q: "What is an object, relative to a class?",
+      opts: [
+        "The same thing as a class, just a different name",
+        "A specific instance built from the class's blueprint",
+        "A type of loop",
+        "A file that stores the class"
+      ],
+      correct: 1,
+      explain: "An object is a concrete instance created from a class — like an actual built house from a blueprint."
+    },
+    {
+      q: "What does __init__ do in a Python class?",
+      opts: [
+        "Deletes the object when it's no longer needed",
+        "Runs automatically when a new object is created, to set its initial details",
+        "Converts the object into a string",
+        "Checks whether the class has any errors"
+      ],
+      correct: 1,
+      explain: "__init__ is the constructor — it runs the moment an object is built, setting up its starting attributes."
+    },
+    {
+      q: "What does 'self' refer to inside a method?",
+      opts: [
+        "The class itself, not any particular object",
+        "The specific object the method is currently being called on",
+        "A built-in Python module",
+        "The parent class in an inheritance chain"
+      ],
+      correct: 1,
+      explain: "self is how a method knows which specific object's data to work with — like Rex's bark using Rex's own name, not some other dog's."
+    },
+    {
+      q: "What is the main purpose of inheritance?",
+      opts: [
+        "To let one class reuse and extend another class's structure and behavior",
+        "To permanently delete a class after use",
+        "To make all objects identical",
+        "To catch errors automatically"
+      ],
+      correct: 0,
+      explain: "Inheritance lets a new class build on an existing one, reusing its structure while adding or overriding specific behavior."
+    },
+    {
+      q: "What does calling super().__init__() inside a subclass typically do?",
+      opts: [
+        "Deletes the parent class",
+        "Runs the parent class's own __init__ setup before adding subclass-specific details",
+        "Creates a brand-new unrelated class",
+        "Skips initialization entirely"
+      ],
+      correct: 1,
+      explain: "super() lets a subclass call the parent's version of a method, reusing its setup instead of duplicating that logic."
+    },
+    {
+      q: "What is encapsulation mainly about?",
+      opts: [
+        "Making all methods run faster",
+        "Hiding an object's internal details behind a controlled, safe interface",
+        "Automatically fixing bugs in the code",
+        "Converting objects into dictionaries"
+      ],
+      correct: 1,
+      explain: "Encapsulation protects internal data (like a private balance) so it's only changed through controlled methods, not touched directly."
+    },
+    {
+      q: "What does polymorphism describe?",
+      opts: [
+        "Different objects responding differently to the same method call",
+        "A class that has no methods at all",
+        "An error that occurs during inheritance",
+        "A variable that can only hold one type of value"
+      ],
+      correct: 0,
+      explain: "Polymorphism means the same method call, like .speak(), can produce different behavior depending on which object it's called on."
+    },
+    {
+      q: "What is an 'exception' in Python?",
+      opts: [
+        "A comment in the code",
+        "A signal that something went wrong during execution",
+        "A special kind of class attribute",
+        "A type of loop that never ends"
+      ],
+      correct: 1,
+      explain: "An exception is Python's way of signaling that something unexpected happened while the program was running."
+    },
+    {
+      q: "Without any error handling, what happens when an exception occurs?",
+      opts: [
+        "Python silently ignores it and continues",
+        "The program crashes and stops running",
+        "Python automatically fixes the problem",
+        "The exception is saved for later review"
+      ],
+      correct: 1,
+      explain: "An unhandled exception stops the program immediately — this is exactly what try/except is meant to prevent."
+    },
+    {
+      q: "In a try/except/else/finally block, when does the 'else' block run?",
+      opts: [
+        "Only if an exception occurred",
+        "Only if the try block completed with no exceptions",
+        "Every single time, no matter what",
+        "Only if 'finally' is missing"
+      ],
+      correct: 1,
+      explain: "'else' runs only when the try block succeeds completely — it's the 'everything went fine' branch."
+    },
+    {
+      q: "When does the 'finally' block run?",
+      opts: [
+        "Only when an exception is caught",
+        "Only when no exception occurs",
+        "Always — whether an exception occurred or not",
+        "Never, unless explicitly called"
+      ],
+      correct: 2,
+      explain: "'finally' always executes, making it the right place for cleanup that must happen regardless of success or failure."
+    },
+    {
+      q: "Which keyword deliberately triggers an exception from within your own code?",
+      opts: ["catch", "raise", "throwError", "except"],
+      correct: 1,
+      explain: "'raise' is used to trigger an exception on purpose, like raising ValueError('Age cannot be negative.')."
+    },
+    {
+      q: "How do you define a custom exception in Python?",
+      opts: [
+        "By writing a function named 'exception'",
+        "By creating a class that inherits from Exception",
+        "By using the 'raise' keyword alone",
+        "Custom exceptions aren't possible in Python"
+      ],
+      correct: 1,
+      explain: "A custom exception is simply a class that inherits from Exception (or one of its subclasses), giving you a specifically named alarm."
+    },
+    {
+      q: "Why is catching a broad 'except Exception:' everywhere considered risky?",
+      opts: [
+        "It's not valid Python syntax",
+        "It can silently hide real, unexpected bugs instead of dealing with specific known problems",
+        "It only works with custom exceptions",
+        "It automatically deletes the object involved"
+      ],
+      correct: 1,
+      explain: "Catching everything indiscriminately can mask genuine bugs. It's usually better to catch the specific exceptions you actually expect."
+    }
+  ];
+
+  const container = document.getElementById('quizContainer');
+  const answered = new Array(QUESTIONS.length).fill(null);
+
+  function renderQuiz(){
+    container.innerHTML = '';
+    QUESTIONS.forEach((item, qi) => {
+      const block = document.createElement('div');
+      block.className = 'q-block';
+      block.innerHTML = `
+        <div class="q-num">Question ${qi + 1} of ${QUESTIONS.length}</div>
+        <h4>${item.q}</h4>
+        <div class="opts">
+          ${item.opts.map((opt, oi) => `
+            <label class="opt" data-qi="${qi}" data-oi="${oi}">
+              <input type="radio" name="q${qi}" value="${oi}">
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+        </div>
+        <div class="explain" id="explain-${qi}">${item.explain}</div>
+      `;
+      container.appendChild(block);
+    });
+
+    container.querySelectorAll('.opt').forEach(label => {
+      label.addEventListener('click', (e) => {
+        const qi = parseInt(label.dataset.qi);
+        const oi = parseInt(label.dataset.oi);
+        if (answered[qi] !== null) { e.preventDefault(); return; }
+        answered[qi] = oi;
+
+        const siblingOpts = document.querySelectorAll(`.opt[data-qi="${qi}"]`);
+        siblingOpts.forEach(sib => {
+          const sOi = parseInt(sib.dataset.oi);
+          if (sOi === QUESTIONS[qi].correct) sib.classList.add('correct');
+          else if (sOi === oi) sib.classList.add('wrong');
+        });
+        document.getElementById(`explain-${qi}`).classList.add('show');
+        updateProgress();
+      });
+    });
+  }
+
+  function updateProgress(){
+    const answeredCount = answered.filter(a => a !== null).length;
+    const score = answered.reduce((acc, a, i) => acc + (a === QUESTIONS[i].correct ? 1 : 0), 0);
+    document.getElementById('qProgressText').textContent = `${answeredCount} / ${QUESTIONS.length} answered`;
+    document.getElementById('qScoreText').textContent = `Score: ${score}`;
+    document.getElementById('quizBarFill').style.width = `${(answeredCount / QUESTIONS.length) * 100}%`;
+  }
+
+  document.getElementById('finishBtn').addEventListener('click', () => {
+    const score = answered.reduce((acc, a, i) => acc + (a === QUESTIONS[i].correct ? 1 : 0), 0);
+    const answeredCount = answered.filter(a => a !== null).length;
+    const resultBox = document.getElementById('quizResult');
+    resultBox.style.display = 'block';
+    document.getElementById('finalScore').textContent = `${score} / ${QUESTIONS.length}`;
+
+    let msg;
+    if (answeredCount < QUESTIONS.length) {
+      msg = `You answered ${answeredCount} of ${QUESTIONS.length} — finish the rest for your full score.`;
+    } else if (score === QUESTIONS.length) {
+      msg = "Perfect score — the blueprint room and the safety manual, both mastered.";
+    } else if (score >= QUESTIONS.length * 0.7) {
+      msg = "Solid grasp of OOP and error handling — a quick re-read of the missed topics will lock it in.";
+    } else {
+      msg = "Worth another pass through the tabs above, especially the ones you missed.";
+    }
+    document.getElementById('finalMsg').textContent = msg;
+    resultBox.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    for (let i = 0; i < answered.length; i++) answered[i] = null;
+    document.getElementById('quizResult').style.display = 'none';
+    renderQuiz();
+    updateProgress();
+  });
+
+  renderQuiz();
+  updateProgress();
+</script>
+
+</body>
+</html>

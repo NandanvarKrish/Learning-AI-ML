@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 8 — Clustering & Segmentation</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(94,53,177,0.05),transparent 65%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:540px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:var(--accent);box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov{font-size:14px;font-weight:700;}
+
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-warn{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+
+/* KMEANS STEPS */
+.km-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0;}
+@media(max-width:580px){.km-steps{grid-template-columns:1fr 1fr;}}
+.km-card{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center;box-shadow:var(--sh);}
+.km-num{font-family:var(--mono);font-size:22px;font-weight:900;color:var(--accent);line-height:1;}
+.km-title{font-size:13px;font-weight:700;margin:6px 0 4px;}
+.km-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+
+/* SEGMENT TABLE */
+.seg-table{width:100%;border-collapse:collapse;margin-top:10px;border-radius:8px;overflow:hidden;}
+.seg-table th{font-family:var(--mono);font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:1px;padding:9px 13px;text-align:left;background:var(--accent);}
+.seg-table td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;}
+.seg-table tr:last-child td{border-bottom:none;}
+.seg-table tr:nth-child(even) td{background:var(--card2);}
+.seg-table .ok{color:var(--green);font-weight:700;}.seg-table .bad{color:var(--red);}
+.seg-table code{font-family:var(--mono);font-size:11px;background:var(--al);padding:2px 6px;border-radius:4px;color:var(--accent);}
+
+/* CLUSTER BADGES */
+.cluster-badges{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;}
+.cbadge2{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;}
+.c1{background:#fff3e8;color:#b84f00;border:1.5px solid rgba(184,79,0,0.25);}
+.c2{background:#eaf1ff;color:#1558c0;border:1.5px solid rgba(21,88,192,0.25);}
+.c3{background:#e6faf4;color:#0d7a5f;border:1.5px solid rgba(13,122,95,0.25);}
+
+/* FORMULA GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.rb{display:flex;gap:10px;background:var(--rl);border:1px solid rgba(176,17,43,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+.tip{background:linear-gradient(135deg,var(--al),var(--pl));border:1.5px solid var(--ag);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:#0b6650;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 8 of 10</div>
+    <div class="db">DAY 8</div>
+  </div>
+  <h1>Clustering &amp;<br><span class="hl">Segmentation</span></h1>
+  <div class="tagline">Find hidden groups in your data — no labels required. Simulate K-Means from scratch, find the optimal K with the elbow method, profile customer segments, and build an RFM scoring model.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: Unsupervised ML</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●●</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">🌳 K-Means + RFM</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pd"></div><div class="pd"></div>
+    <div class="pl">Day 8 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">🌳</div><div class="ol2">Focus</div><div class="ov">K-Means Clustering</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Topics</div><div class="ov">8 Clustering Concepts</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Outcomes</div><div class="ov">4 Skills Mastered</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Capstone</div><div class="ov">RFM Scoring Model</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Topics Covered Today</div>
+<div class="tg">
+  <div class="ti"><div class="tn">01</div><div><div class="tt">Unsupervised Learning Concept</div><div class="ts">No labels needed — let the data reveal its own structure</div></div></div>
+  <div class="ti"><div class="tn">02</div><div><div class="tt">K-Means Algorithm</div><div class="ts">Assign → Update → Repeat — until centroids stabilise</div></div></div>
+  <div class="ti"><div class="tn">03</div><div><div class="tt">Euclidean Distance Matrix</div><div class="ts">Calculate distance from every point to every centroid</div></div></div>
+  <div class="ti"><div class="tn">04</div><div><div class="tt">Centroid Update Formula</div><div class="ts">AVERAGEIF to recalculate cluster centres each iteration</div></div></div>
+  <div class="ti"><div class="tn">05</div><div><div class="tt">Elbow Method</div><div class="ts">WCSS vs K chart — find the optimal number of clusters</div></div></div>
+  <div class="ti"><div class="tn">06</div><div><div class="tt">Cluster Profiling</div><div class="ts">Describe each cluster — name it, understand it, act on it</div></div></div>
+  <div class="ti"><div class="tn">07</div><div><div class="tt">Customer Segmentation</div><div class="ts">Apply K-Means to real business data — Age, Spend, Frequency</div></div></div>
+  <div class="ti"><div class="tn">08</div><div><div class="tt">RFM Analysis</div><div class="ts">Recency, Frequency, Monetary — the gold standard of segmentation</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sl">🧠 Key Concepts Deep Dive</div>
+
+<!-- K-Means Algorithm -->
+<div class="cc">
+  <div class="ct">🌀 The K-Means Algorithm — Step by Step <span class="cb cb-core">CORE ALGORITHM</span></div>
+  <div class="cd">K-Means is the most widely used clustering algorithm. It's simple, fast, and effective. The algorithm alternates between two steps until nothing changes: assign each point to the nearest centroid, then move each centroid to the mean of its assigned points.</div>
+  <div class="km-steps">
+    <div class="km-card"><div class="km-num">1</div><div class="km-title">Initialise</div><div class="km-desc">Place K centroids randomly (or pick K random data points)</div></div>
+    <div class="km-card"><div class="km-num">2</div><div class="km-title">Assign</div><div class="km-desc">Each point → nearest centroid (by Euclidean distance)</div></div>
+    <div class="km-card"><div class="km-num">3</div><div class="km-title">Update</div><div class="km-desc">Move each centroid to the mean of its assigned points</div></div>
+    <div class="km-card"><div class="km-num">4</div><div class="km-title">Converge</div><div class="km-desc">Repeat steps 2–3 until no point changes its cluster</div></div>
+  </div>
+  <div class="code" style="margin-top:14px;">
+<span class="cm">// Distance from point (x1,y1) to centroid (cx,cy)</span>
+=<span class="fn">SQRT</span>(([@Feature1]-cx)^<span class="num">2</span> + ([@Feature2]-cy)^<span class="num">2</span>)
+
+<span class="cm">// Assign each point to the nearest centroid (K=3)</span>
+<span class="cm">// Dist_C1, Dist_C2, Dist_C3 = distances to centroids 1, 2, 3</span>
+=<span class="fn">IF</span>(<span class="fn">MIN</span>([@Dist_C1],[@Dist_C2],[@Dist_C3])=[@Dist_C1],<span class="num">1</span>,
+  <span class="fn">IF</span>(<span class="fn">MIN</span>([@Dist_C1],[@Dist_C2],[@Dist_C3])=[@Dist_C2],<span class="num">2</span>,<span class="num">3</span>))
+
+<span class="cm">// Or use MATCH for cleaner code</span>
+=<span class="fn">MATCH</span>(<span class="fn">MIN</span>([@Dist_C1],[@Dist_C2],[@Dist_C3]), <span class="fn">CHOOSE</span>({<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>},[@Dist_C1],[@Dist_C2],[@Dist_C3]),<span class="num">0</span>)
+
+<span class="cm">// Update centroid (recalculate mean per cluster)</span>
+New_C1_Feature1 = <span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Feature1_col)
+New_C1_Feature2 = <span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Feature2_col)
+  </div>
+</div>
+
+<!-- Elbow Method -->
+<div class="cc">
+  <div class="ct">📐 The Elbow Method — Finding Optimal K <span class="cb cb-warn">CHOOSE K CORRECTLY</span></div>
+  <div class="cd">K-Means requires you to specify K upfront. Too few clusters = oversimplified segments. Too many = meaningless micro-groups. The Elbow Method plots Within-Cluster Sum of Squares (WCSS) for K=1 to 8. The "elbow" — where WCSS stops dropping steeply — is the optimal K.</div>
+  <div class="code">
+<span class="cm">// Within-Cluster Sum of Squares (WCSS) for one cluster</span>
+<span class="cm">// = sum of squared distances from each point to its centroid</span>
+WCSS_C1 = <span class="fn">SUMPRODUCT</span>((Cluster_col=<span class="num">1</span>)*[@Dist_C1]^<span class="num">2</span>)
+WCSS_C2 = <span class="fn">SUMPRODUCT</span>((Cluster_col=<span class="num">2</span>)*[@Dist_C2]^<span class="num">2</span>)
+WCSS_C3 = <span class="fn">SUMPRODUCT</span>((Cluster_col=<span class="num">3</span>)*[@Dist_C3]^<span class="num">2</span>)
+
+Total_WCSS = WCSS_C1 + WCSS_C2 + WCSS_C3
+
+<span class="cm">// Build elbow table: K | WCSS</span>
+<span class="cm">// K=1 → all points in one cluster → max WCSS</span>
+<span class="cm">// K=2 → big drop in WCSS</span>
+<span class="cm">// K=3 → another drop, but smaller</span>
+<span class="cm">// K=4 → marginal improvement — this might be the elbow</span>
+<span class="cm">// K=5+ → diminishing returns</span>
+
+<span class="cm">// Plot WCSS vs K as a line chart → look for the "kink"</span>
+<span class="cm">// Rule: K where the drop from K-1 to K is at least 2× the drop from K to K+1</span>
+  </div>
+</div>
+
+<!-- Scaling for Clustering -->
+<div class="cc">
+  <div class="ct">⚖️ Why You MUST Scale Before Clustering <span class="cb cb-pow">CRITICAL PRE-STEP</span></div>
+  <div class="cd">K-Means uses Euclidean distance. A feature with range 0–10,000 (Income) will completely dominate a feature with range 0–10 (Rating). Without scaling, K-Means clusters on Income alone and ignores everything else. Always Min-Max or Z-Score scale ALL features before clustering.</div>
+  <div class="code">
+<span class="cm">// BEFORE clustering — scale ALL features to same range</span>
+
+<span class="cm">// Min-Max scaling (0 to 1)</span>
+Age_scaled    = ([@Age] - <span class="fn">MIN</span>(Age_col)) / (<span class="fn">MAX</span>(Age_col) - <span class="fn">MIN</span>(Age_col))
+Income_scaled = ([@Income] - <span class="fn">MIN</span>(Income_col)) / (<span class="fn">MAX</span>(Income_col) - <span class="fn">MIN</span>(Income_col))
+Spend_scaled  = ([@Spend] - <span class="fn">MIN</span>(Spend_col)) / (<span class="fn">MAX</span>(Spend_col) - <span class="fn">MIN</span>(Spend_col))
+
+<span class="cm">// Run K-Means on SCALED features → get cluster labels</span>
+<span class="cm">// Profile clusters using ORIGINAL (unscaled) values</span>
+<span class="cm">// (Never interpret scaled values directly — meaningless to stakeholders)</span>
+
+<span class="cm">// Verify scaling worked</span>
+=<span class="fn">MIN</span>(Age_scaled)    <span class="cm">→ 0.000 ✓</span>
+=<span class="fn">MAX</span>(Age_scaled)    <span class="cm">→ 1.000 ✓</span>
+  </div>
+</div>
+
+<!-- RFM -->
+<div class="cc">
+  <div class="ct">📦 RFM Analysis — The Gold Standard of Customer Segmentation <span class="cb cb-tip">BUSINESS IMPACT</span></div>
+  <div class="cd">RFM stands for Recency (when did they last buy?), Frequency (how often do they buy?), and Monetary (how much do they spend?). It's the most used segmentation framework in e-commerce, banking, and retail — simple, interpretable, and directly actionable.</div>
+  <div class="cluster-badges">
+    <div class="cbadge2 c1">🏆 Champions — Low R, High F, High M</div>
+    <div class="cbadge2 c2">💤 At-Risk — High R, was High F/M</div>
+    <div class="cbadge2 c3">🌱 New Customers — Low R, Low F, Low M</div>
+  </div>
+  <div class="code">
+<span class="cm">// R = Recency: days since last purchase (LOWER = better)</span>
+Recency = <span class="fn">TODAY</span>() - LastPurchaseDate
+
+<span class="cm">// F = Frequency: total number of orders</span>
+Frequency = Order_Count
+
+<span class="cm">// M = Monetary: total amount spent</span>
+Monetary = Total_Spend
+
+<span class="cm">// Score each 1–5 using PERCENTILE (5 = best)</span>
+<span class="cm">// For Recency: LOWER is better → invert the scoring</span>
+R_Score = <span class="fn">IF</span>(Recency &lt;= <span class="fn">PERCENTILE</span>(R_col, <span class="num">0.2</span>), <span class="num">5</span>,
+          <span class="fn">IF</span>(Recency &lt;= <span class="fn">PERCENTILE</span>(R_col, <span class="num">0.4</span>), <span class="num">4</span>,
+          <span class="fn">IF</span>(Recency &lt;= <span class="fn">PERCENTILE</span>(R_col, <span class="num">0.6</span>), <span class="num">3</span>,
+          <span class="fn">IF</span>(Recency &lt;= <span class="fn">PERCENTILE</span>(R_col, <span class="num">0.8</span>), <span class="num">2</span>, <span class="num">1</span>))))
+
+<span class="cm">// For Frequency and Monetary: HIGHER is better</span>
+F_Score = <span class="fn">IF</span>(Frequency >= <span class="fn">PERCENTILE</span>(F_col, <span class="num">0.8</span>), <span class="num">5</span>,
+          <span class="fn">IF</span>(Frequency >= <span class="fn">PERCENTILE</span>(F_col, <span class="num">0.6</span>), <span class="num">4</span>, ...))
+
+<span class="cm">// RFM Segment label</span>
+RFM_Segment = <span class="fn">TEXTJOIN</span>(<span class="str">""</span>, <span class="kw">TRUE</span>, R_Score, F_Score, M_Score)  <span class="cm">→ e.g. "553"</span>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Simulate K-Means clustering step-by-step in Excel</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Find optimal K using the Elbow Method (WCSS chart)</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Profile and name clusters using descriptive statistics</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build a full RFM customer scoring model</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Task Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#b84f00;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:13"></div>
+  <div class="hs" style="background:#1558c0;flex:14"></div>
+  <div class="hs" style="background:#5e35b1;flex:12"></div>
+  <div class="hs" style="background:#0d7a5f;flex:6"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#0d7a5f"></div>Project</div>
+  <div class="li"><div class="ld" style="background:#5e35b1"></div>RFM Scoring</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>Practice</div>
+  <div class="li"><div class="ld" style="background:#b84f00"></div>Theory + Build</div>
+</div>
+
+<!-- ══ TASKS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bo">0 – 15 min</div>
+    <div class="tw"><div class="tm">📐 Distance Matrix + First K-Means Iteration</div><div class="ts2">Build the Euclidean distance engine and run the first assign-update cycle manually</div></div>
+    <div class="typ bo">Theory + Build</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">The best way to understand K-Means is to run it by hand — once. You'll calculate distances, assign clusters, and update centroids for K=3, then watch the clusters shift. After this, the automated iterations in Task 2 will make complete sense.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create <strong>Day8_Clustering.xlsx</strong>. In sheet "KMeans", build a 25-row customer dataset: <strong>CustomerID, Age, Annual_Spend, Purchase_Frequency</strong>. Make the data naturally group-able — e.g., young/low-spend, middle/medium-spend, older/high-spend clusters.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Scale all 3 features first (mandatory):</strong><br>
+        Age_s: <code>=([@Age]-MIN(Age_col))/(MAX(Age_col)-MIN(Age_col))</code><br>
+        Spend_s: <code>=([@Annual_Spend]-MIN(Spend_col))/(MAX(Spend_col)-MIN(Spend_col))</code><br>
+        Freq_s: <code>=([@Purchase_Frequency]-MIN(Freq_col))/(MAX(Freq_col)-MIN(Freq_col))</code><br>
+        Verify: MIN of each scaled column = 0, MAX = 1.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Set initial centroids</strong> (pick 3 random rows — rows 1, 9, and 17 work well). In a separate "Centroids" table, copy their scaled feature values as C1, C2, C3. These are your starting positions.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Calculate distances to each centroid:</strong><br>
+        Dist_C1: <code>=SQRT(([@Age_s]-$N$2)^2+([@Spend_s]-$O$2)^2+([@Freq_s]-$P$2)^2)</code><br>
+        Dist_C2: <code>=SQRT(([@Age_s]-$N$3)^2+([@Spend_s]-$O$3)^2+([@Freq_s]-$P$3)^2)</code><br>
+        Dist_C3: <code>=SQRT(([@Age_s]-$N$4)^2+([@Spend_s]-$O$4)^2+([@Freq_s]-$P$4)^2)</code><br>
+        ($N$2:$P$4 = your Centroids table with absolute refs)</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Assign each point to nearest centroid:</strong><br>
+        <code>=MATCH(MIN([@Dist_C1],[@Dist_C2],[@Dist_C3]),CHOOSE({1,2,3},[@Dist_C1],[@Dist_C2],[@Dist_C3]),0)</code><br>
+        This returns 1, 2, or 3 — the cluster number for each customer.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Update centroids</strong> (Iteration 1 → Iteration 2 values):<br>
+        New C1_Age_s: <code>=AVERAGEIF(Cluster_col, 1, Age_s_col)</code><br>
+        New C1_Spend_s: <code>=AVERAGEIF(Cluster_col, 1, Spend_s_col)</code><br>
+        New C1_Freq_s: <code>=AVERAGEIF(Cluster_col, 1, Freq_s_col)</code><br>
+        Repeat for C2 and C3. Paste these as the new centroid values. This completes Iteration 1.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Min-Max scale (do this FIRST, before any distances)</span>
+=(<span class="fn">[@Age]</span>-<span class="fn">MIN</span>(Age_col))/(<span class="fn">MAX</span>(Age_col)-<span class="fn">MIN</span>(Age_col))
+
+<span class="cm">// 3D Euclidean distance to centroid C1</span>
+=<span class="fn">SQRT</span>(([@Age_s]-$N$2)^<span class="num">2</span>+([@Spend_s]-$O$2)^<span class="num">2</span>+([@Freq_s]-$P$2)^<span class="num">2</span>)
+
+<span class="cm">// Assign cluster (1, 2, or 3)</span>
+=<span class="fn">MATCH</span>(<span class="fn">MIN</span>([@D1],[@D2],[@D3]),<span class="fn">CHOOSE</span>({<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>},[@D1],[@D2],[@D3]),<span class="num">0</span>)
+
+<span class="cm">// Update centroid C1 (mean of all points assigned to cluster 1)</span>
+=<span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Age_s_col)
+=<span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Spend_s_col)
+=<span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Freq_s_col)
+    </div>
+    <div class="wb"><div class="ni">⚠️</div><div><strong>Never skip scaling.</strong> Without it, Annual_Spend (range: £500–£50,000) completely overwhelms Age (range: 18–65). K-Means will effectively cluster only on spend and ignore age and frequency entirely. Scaled distances treat all features equally — this is non-negotiable.</div></div>
+    <div class="cks">
+      <div class="ck">3 features scaled (0–1)</div><div class="ck">MIN=0, MAX=1 verified</div>
+      <div class="ck">3 initial centroids set</div><div class="ck">3 distance columns built</div>
+      <div class="ck">Cluster assignments (1/2/3)</div><div class="ck">Centroids updated (Iter 1 done)</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bp">15 – 28 min</div>
+    <div class="tw"><div class="tm">🔄 K-Means Iterations Until Convergence</div><div class="ts2">Repeat assign-update 5 times and watch clusters stabilise</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">K-Means converges when no point changes cluster between iterations. For a 25-row dataset, this typically happens in 3–7 iterations. You'll track cluster assignments across iterations to see exactly when stability is reached — this is what "training" an unsupervised model looks like.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create a <strong>Convergence Tracker</strong> table: columns for Iteration 1, 2, 3, 4, 5. Each row = one customer. In Iteration 1, paste the cluster assignments from Task 1 as values (Ctrl+C → Paste Special → Values — freeze them so they don't change).</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Iteration 2:</strong> Paste the updated centroids from Task 1 into your Centroids table. The distance and cluster columns update automatically. Copy the new cluster assignments into the Iteration 2 column of your Convergence Tracker (paste as values again).</div></div>
+      <div class="si2"><div class="sn">3</div><div>Update centroids again using AVERAGEIF on the new cluster assignments. Paste → distances update → cluster assignments update. This is Iteration 3. Copy into Iteration 3 column.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Continue through Iterations 4 and 5. After each one, add a <strong>"Changes" row</strong> at the bottom of your tracker: <code>=SUMPRODUCT((B2:B26&lt;&gt;C2:C26)*1)</code> (compares Iteration n to Iteration n-1). When Changes = 0, K-Means has converged.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Apply <strong>conditional formatting</strong> to highlight cells that changed between iterations: Select Iteration 2 column → New Rule → Use formula → <code>=B2&lt;&gt;C2</code> → orange fill. This visually shows which customers "moved" clusters between iterations.</div></div>
+      <div class="si2"><div class="sn">6</div><div>Once converged, <strong>add cluster labels</strong> to your original data. Apply colour fills: Cluster 1 = orange row, Cluster 2 = blue row, Cluster 3 = green row. Build a cluster size summary: <code>=COUNTIF(Cluster_col, 1)</code> for each cluster. Are the clusters roughly balanced?</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Paste cluster assignments as values to freeze each iteration</span>
+<span class="cm">// Ctrl+C → Ctrl+Alt+V → Values → OK (prevents formula drift)</span>
+
+<span class="cm">// Count changes between consecutive iterations</span>
+=<span class="fn">SUMPRODUCT</span>((Iter1_col &lt;&gt; Iter2_col)*<span class="num">1</span>)   <span class="cm">→ 0 = converged ✓</span>
+
+<span class="cm">// Cluster size per cluster</span>
+=<span class="fn">COUNTIF</span>(Cluster_col, <span class="num">1</span>)   <span class="cm">→ count of customers in cluster 1</span>
+=<span class="fn">COUNTIF</span>(Cluster_col, <span class="num">2</span>)
+=<span class="fn">COUNTIF</span>(Cluster_col, <span class="num">3</span>)
+<span class="cm">// Should sum to 25 (total customers)</span>
+
+<span class="cm">// Conditional format cells that changed (Iteration 2 vs Iteration 1)</span>
+<span class="cm">// Formula: =B2&lt;&gt;C2 → orange fill on changed cells</span>
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>K-Means is not deterministic.</strong> Different random starting centroids can lead to different final clusters. Run it 3 times from different starting points and compare Total WCSS. The run with the lowest WCSS is the best solution — this is why sklearn's <code>n_init=10</code> default runs K-Means 10 times and picks the best.</div></div>
+    <div class="cks">
+      <div class="ck">Convergence Tracker table built</div><div class="ck">5 iterations recorded</div>
+      <div class="ck">Changes row shows 0 at convergence</div><div class="ck">Changed cells highlighted orange</div>
+      <div class="ck">Cluster sizes summarised</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bp">28 – 42 min</div>
+    <div class="tw"><div class="tm">📊 Elbow Method + Cluster Profiling</div><div class="ts2">Find the optimal K, then describe each cluster in business language</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Choosing K is as much art as science — and the Elbow Method provides the data-driven starting point. After finding the right K, profiling turns math into meaning: Cluster 2 isn't "centroid at (0.6, 0.4)" — it's "High-Value Loyal Customers aged 35–50 spending £3,200/year."</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "ElbowMethod". Build the WCSS for K=1 through K=6 manually. For K=1: centroid = mean of all points. WCSS = sum of squared distances from every point to the single centroid. For K=2 and K=3: run your K-Means from Tasks 1–2 and record WCSS. For K=4,5,6: set up 4/5/6 centroids and estimate (approximate values are fine for the elbow chart).</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>WCSS formula per cluster:</strong><br>
+        <code>=SUMPRODUCT((Cluster_col=1)*Dist_C1_col^2) + SUMPRODUCT((Cluster_col=2)*Dist_C2_col^2) + SUMPRODUCT((Cluster_col=3)*Dist_C3_col^2)</code><br>
+        This sums the squared distance of each point to its own centroid across all 3 clusters.</div></div>
+      <div class="si2"><div class="sn">3</div><div>Build the <strong>Elbow Chart:</strong> Select K (1–6) and WCSS columns → Insert → Line Chart → 2D Line. Title: "Elbow Method — Optimal K". Add data labels. The line should drop steeply from K=1 to K=2, then less steeply, then flatten. The "kink" is your optimal K.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Create sheet "ClusterProfile". For each cluster (1, 2, 3) build a profile using AVERAGEIF on the <strong>original unscaled values</strong>:<br>
+        Avg Age: <code>=AVERAGEIF(Cluster_col, 1, Age_col)</code><br>
+        Avg Spend: <code>=AVERAGEIF(Cluster_col, 1, Annual_Spend_col)</code><br>
+        Avg Frequency: <code>=AVERAGEIF(Cluster_col, 1, Frequency_col)</code><br>
+        Count: <code>=COUNTIF(Cluster_col, 1)</code></div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Name each cluster</strong> based on its profile. Use descriptive business names — not "Cluster 1":<br>
+        Example: Cluster 1: "🌱 Casual Shoppers — Young, low spend, infrequent"<br>
+        Cluster 2: "⭐ Core Customers — Mid-age, moderate spend, regular"<br>
+        Cluster 3: "💎 VIP Spenders — Older, high spend, very frequent"<br>
+        Write one sentence of recommended marketing strategy per cluster.</div></div>
+      <div class="si2"><div class="sn">6</div><div>Add a <strong>radar chart</strong> (spider chart) showing normalised averages per cluster. Insert → Other Charts → Radar. Each spoke = one feature. Each cluster = one series. This visually summarises the "shape" of each segment — more intuitive than a table of numbers for stakeholder presentations.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Total WCSS for K=3 model</span>
+=<span class="fn">SUMPRODUCT</span>((Cluster_col=<span class="num">1</span>)*Dist_C1^<span class="num">2</span>)
++<span class="fn">SUMPRODUCT</span>((Cluster_col=<span class="num">2</span>)*Dist_C2^<span class="num">2</span>)
++<span class="fn">SUMPRODUCT</span>((Cluster_col=<span class="num">3</span>)*Dist_C3^<span class="num">2</span>)
+
+<span class="cm">// Cluster profile using ORIGINAL values (not scaled)</span>
+Avg_Age_C1   = <span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Age_col)
+Avg_Spend_C1 = <span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Spend_col)
+Avg_Freq_C1  = <span class="fn">AVERAGEIF</span>(Cluster_col, <span class="num">1</span>, Freq_col)
+Count_C1     = <span class="fn">COUNTIF</span>(Cluster_col, <span class="num">1</span>)
+
+<span class="cm">// Max within cluster for range description</span>
+Max_Age_C1   = <span class="fn">MAXIFS</span>(Age_col, Cluster_col, <span class="num">1</span>)
+Min_Age_C1   = <span class="fn">MINIFS</span>(Age_col, Cluster_col, <span class="num">1</span>)
+    </div>
+    <div class="gb"><div class="ni">🎯</div><div><strong>The name is the deliverable.</strong> A data scientist's job isn't done when K-Means converges. It's done when the clusters have names that a marketing team can act on. "Cluster 1: mean Age=24, mean Spend=£420" is math. "Casual Young Shoppers: budget-conscious 18–28 year olds who buy once at Christmas" is insight. Always translate numbers into narratives.</div></div>
+    <div class="cks">
+      <div class="ck">WCSS calculated for K=1 to 6</div><div class="ck">Elbow chart built</div>
+      <div class="ck">Optimal K identified from elbow</div><div class="ck">3-cluster profile table built</div>
+      <div class="ck">All 3 clusters named</div><div class="ck">Marketing strategy per cluster</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bb">42 – 54 min</div>
+    <div class="tw"><div class="tm">📦 RFM Analysis — Customer Scoring Model</div><div class="ts2">Score every customer on Recency, Frequency, Monetary and map to actionable segments</div></div>
+    <div class="typ bb">RFM Scoring</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">RFM is the most actionable customer segmentation model ever built. Used by Amazon, Netflix, Spotify, and every serious e-commerce company. You score each customer 1–5 on three dimensions — then the combination tells you exactly who to target, retain, win back, or let go.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "RFM". Build a 30-row customer transaction table: <strong>CustomerID, LastPurchaseDate, OrderCount, TotalSpend</strong>. Make dates realistic — some customers bought last week, some 18 months ago. Convert to Table named <strong>RFMData</strong>.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Calculate R, F, M raw values:</strong><br>
+        Recency (days): <code>=TODAY()-[@LastPurchaseDate]</code> (lower = better — bought more recently)<br>
+        Frequency: <code>=[@OrderCount]</code><br>
+        Monetary: <code>=[@TotalSpend]</code></div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Score Recency 1–5</strong> (lower recency = higher score — 5 means bought very recently):<br>
+        <code>=IF([@Recency]&lt;=PERCENTILE(RFMData[Recency],0.2),5,IF([@Recency]&lt;=PERCENTILE(RFMData[Recency],0.4),4,IF([@Recency]&lt;=PERCENTILE(RFMData[Recency],0.6),3,IF([@Recency]&lt;=PERCENTILE(RFMData[Recency],0.8),2,1))))</code></div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Score Frequency 1–5</strong> (higher frequency = higher score):<br>
+        <code>=IF([@Frequency]>=PERCENTILE(RFMData[Frequency],0.8),5,IF([@Frequency]>=PERCENTILE(RFMData[Frequency],0.6),4,IF([@Frequency]>=PERCENTILE(RFMData[Frequency],0.4),3,IF([@Frequency]>=PERCENTILE(RFMData[Frequency],0.2),2,1))))</code><br>
+        Do the same for Monetary score.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Create RFM Segment String and Label:</strong><br>
+        RFM_String: <code>=TEXT([@R_Score],"0")&TEXT([@F_Score],"0")&TEXT([@M_Score],"0")</code> → e.g., "554"<br>
+        RFM_Segment: <code>=IF([@R_Score]>=4,"Champion",IF(AND([@R_Score]>=3,[@F_Score]>=3),"Loyal",IF([@R_Score]&lt;=2,"At Risk","Promising")))</code></div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Segment summary table:</strong> Count customers per segment using COUNTIF. Calculate avg Monetary per segment using AVERAGEIF. Format as a business report. The segment with highest avg Monetary = your VIP group. The "At Risk" group = priority for win-back campaigns.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Recency = days since last purchase (lower = better)</span>
+=<span class="fn">TODAY</span>() - [@LastPurchaseDate]
+
+<span class="cm">// R Score — 5 = bought most recently (bottom 20th percentile of recency days)</span>
+=<span class="fn">IF</span>([@Recency]&lt;=<span class="fn">PERCENTILE</span>(RFMData[Recency],<span class="num">0.2</span>),<span class="num">5</span>,
+ <span class="fn">IF</span>([@Recency]&lt;=<span class="fn">PERCENTILE</span>(RFMData[Recency],<span class="num">0.4</span>),<span class="num">4</span>,
+ <span class="fn">IF</span>([@Recency]&lt;=<span class="fn">PERCENTILE</span>(RFMData[Recency],<span class="num">0.6</span>),<span class="num">3</span>,
+ <span class="fn">IF</span>([@Recency]&lt;=<span class="fn">PERCENTILE</span>(RFMData[Recency],<span class="num">0.8</span>),<span class="num">2</span>,<span class="num">1</span>))))
+
+<span class="cm">// F Score — 5 = most frequent buyer (top 20th percentile)</span>
+=<span class="fn">IF</span>([@Frequency]>=<span class="fn">PERCENTILE</span>(RFMData[Frequency],<span class="num">0.8</span>),<span class="num">5</span>,
+ <span class="fn">IF</span>([@Frequency]>=<span class="fn">PERCENTILE</span>(RFMData[Frequency],<span class="num">0.6</span>),<span class="num">4</span>,
+ <span class="fn">IF</span>([@Frequency]>=<span class="fn">PERCENTILE</span>(RFMData[Frequency],<span class="num">0.4</span>),<span class="num">3</span>,
+ <span class="fn">IF</span>([@Frequency]>=<span class="fn">PERCENTILE</span>(RFMData[Frequency],<span class="num">0.2</span>),<span class="num">2</span>,<span class="num">1</span>))))
+
+<span class="cm">// RFM segment label</span>
+=<span class="fn">IF</span>([@R_Score]>=<span class="num">4</span>,<span class="str">"🏆 Champion"</span>,
+ <span class="fn">IF</span>(<span class="fn">AND</span>([@R_Score]>=<span class="num">3</span>,[@F_Score]>=<span class="num">3</span>),<span class="str">"⭐ Loyal"</span>,
+ <span class="fn">IF</span>([@R_Score]&lt;=<span class="num">2</span>,<span class="str">"⚠ At Risk"</span>,<span class="str">"🌱 Promising"</span>)))
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>RFM in the real world:</strong> Champions (high R, F, M) = reward with exclusive access. Loyal Customers = upsell and cross-sell. At-Risk = send win-back campaign with discount. New Customers (high R, low F, low M) = onboarding sequence. Can't Lose Them (was champion, now low R) = urgent personal outreach. Each segment demands a different action.</div></div>
+    <div class="cks">
+      <div class="ck">R, F, M raw values calculated</div><div class="ck">R Score 1–5 (inverted)</div>
+      <div class="ck">F Score 1–5</div><div class="ck">M Score 1–5</div>
+      <div class="ck">RFM string created</div><div class="ck">Segment labels assigned</div>
+      <div class="ck">Segment summary table built</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bg">54 – 60 min</div>
+    <div class="tw"><div class="tm">🏆 Segmentation Dashboard + RFM Action Plan</div><div class="ts2">Combine K-Means clusters and RFM segments into a single strategic dashboard</div></div>
+    <div class="typ bg">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Combine everything from today into an executive-ready segmentation dashboard. Stakeholders don't care about centroids — they care about: "Which customers do we focus on this month?" Your dashboard answers that question in one view with clear segment names, sizes, and recommended actions.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "SegmentDashboard". Title: "Customer Segmentation — Strategic Overview". Set up two panels: Left = K-Means Cluster Summary, Right = RFM Segment Summary.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>K-Means panel:</strong> For each cluster show: Name (your custom label), Customer Count, Avg Age, Avg Spend, Avg Frequency, and one recommended action. Use AVERAGEIF and COUNTIF referencing your KMeans sheet. Apply cluster colour coding (orange/blue/green per cluster).</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>RFM panel:</strong> For each RFM segment show: Segment Name (Champion/Loyal/At Risk/Promising), Count, Avg Monetary Value, % of total revenue (=SUMIF(segment,seg,monetary)/SUM(monetary)), and recommended campaign. The Champion segment likely generates 60–80% of total revenue despite being a small % of customers.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Donut chart for customer distribution:</strong> Insert → Doughnut chart using K-Means cluster counts. Colour each segment with its cluster colour. Add percentage labels. Title: "Customer Mix by Segment". This is the chart that goes on slide 1 of a stakeholder presentation.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Key Insights text box:</strong> Write 3 bullet-point insights:<br>
+        • "VIP Spenders (Cluster 3, n=7) represent 28% of customers but generate 61% of revenue — priority retention focus."<br>
+        • "Casual Shoppers (Cluster 1, n=12) are the largest group but lowest value — acquisition cost likely exceeds lifetime value."<br>
+        • "8 customers are 'At Risk' in RFM — immediate win-back campaign recommended within 14 days."</div></div>
+      <div class="si2"><div class="sn">6</div><div>Save as <strong>Day8_Complete.xlsx</strong>. Your segmentation model is complete — K-Means for behavioural clustering, RFM for purchase-based scoring, and a dashboard that translates both into business actions.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Revenue contribution per K-Means cluster</span>
+=<span class="fn">SUMIF</span>(KMeans_Cluster_col, <span class="num">1</span>, Annual_Spend_col) / <span class="fn">SUM</span>(Annual_Spend_col)
+
+<span class="cm">// RFM revenue per segment</span>
+=<span class="fn">SUMIF</span>(RFMData[RFM_Segment], <span class="str">"🏆 Champion"</span>, RFMData[TotalSpend])
+  / <span class="fn">SUM</span>(RFMData[TotalSpend])
+
+<span class="cm">// Count per segment</span>
+=<span class="fn">COUNTIF</span>(RFMData[RFM_Segment], <span class="str">"🏆 Champion"</span>)
+
+<span class="cm">// At-Risk count (flag for urgent action)</span>
+=<span class="fn">COUNTIF</span>(RFMData[RFM_Segment], <span class="str">"⚠ At Risk"</span>)
+
+<span class="cm">// Segment action lookup using SWITCH</span>
+=<span class="fn">SWITCH</span>([@RFM_Segment],
+  <span class="str">"🏆 Champion"</span>,    <span class="str">"Reward & retain — VIP programme"</span>,
+  <span class="str">"⭐ Loyal"</span>,       <span class="str">"Upsell & cross-sell campaign"</span>,
+  <span class="str">"⚠ At Risk"</span>,     <span class="str">"Win-back: personal outreach + discount"</span>,
+  <span class="str">"🌱 Promising"</span>,  <span class="str">"Onboarding sequence — nurture"</span>)
+    </div>
+    <div class="gb"><div class="ni">🎖️</div><div><strong>Segmentation is only valuable when it drives action.</strong> Every cluster and every RFM segment should map to a specific, different business response. If you'd treat Cluster 1 and Cluster 2 the same way — why did you cluster? The test of a good segmentation model: can marketing immediately use it to run different campaigns for different groups? If yes — your model has business value.</div></div>
+    <div class="cks">
+      <div class="ck">SegmentDashboard sheet built</div><div class="ck">K-Means panel with AVERAGEIF</div>
+      <div class="ck">RFM panel with % revenue</div><div class="ck">Donut chart by segment</div>
+      <div class="ck">3 key insights written</div><div class="ck">Day8_Complete.xlsx saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <div class="tpi">🌳</div>
+  <div>
+    <div class="tpt">Day 8 Pro Tip — Scale Before You Cluster. Name After You Cluster.</div>
+    <div class="tpd">Two rules that never fail: Always scale features before K-Means — un-scaled data gives numerically dominated, meaningless clusters. And always name your clusters in plain business language after K-Means — "Cluster 2" is not a deliverable, "High-Value Loyal Customers aged 35–50" is. The math gets you the groups. The names make the groups actionable. Both steps are equally important.</div>
+  </div>
+</div>
+
+<!-- QUICK REF -->
+<div class="sl">📋 Day 8 Formula Quick Reference</div>
+<div class="fg" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">SQRT((x1-cx)²+(y1-cy)²)</div><div class="fd">Euclidean distance to centroid (2 features)</div></div>
+  <div class="fr"><div class="ff">MATCH(MIN(d1,d2,d3),...)</div><div class="fd">Assign point to nearest centroid (1/2/3)</div></div>
+  <div class="fr"><div class="ff">AVERAGEIF(cluster,k,feat)</div><div class="fd">Update centroid — mean of cluster k's feature</div></div>
+  <div class="fr"><div class="ff">SUMPRODUCT((cl=k)*dist²)</div><div class="fd">WCSS for cluster k — for elbow method</div></div>
+  <div class="fr"><div class="ff">COUNTIF(cluster_col, k)</div><div class="fd">Size of cluster k</div></div>
+  <div class="fr"><div class="ff">SUMPRODUCT(changes)</div><div class="fd">Count cluster reassignments — 0 = converged</div></div>
+  <div class="fr"><div class="ff">TODAY()-LastPurchaseDate</div><div class="fd">Recency — days since last purchase</div></div>
+  <div class="fr"><div class="ff">PERCENTILE(col, 0.8)</div><div class="fd">80th percentile — for RFM scoring thresholds</div></div>
+  <div class="fr"><div class="ff">SUMIF(seg,label,monetary)</div><div class="fd">Revenue per RFM segment</div></div>
+  <div class="fr"><div class="ff">SWITCH(segment, …)</div><div class="fd">Map segment to recommended action</div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a class="nb2" href="Day7_Classification.html">← Day 7: Classification</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">Day 8 Complete ✓<br><span style="color:var(--accent);">Day 9: Model Evaluation →</span></div>
+  <a class="nb2 pr" href="#">Day 9: Model Evaluation →</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>

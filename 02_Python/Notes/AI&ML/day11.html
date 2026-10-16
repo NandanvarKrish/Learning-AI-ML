@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 11 — Bayes' Theorem</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.term-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+.term-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px 14px;}
+.term-box .name{font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:bold; margin-bottom:4px;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:220px;}
+.solver input[type=range]{flex:1; min-width:140px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:50px; text-align:center;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:14px; line-height:1.9;}
+.freq-box{background:#2a3442; border-radius:6px; padding:14px; margin-top:12px; font-size:14px;}
+.freq-box .line{margin:4px 0;}
+.big-result{font-size:22px; color:#e8a86b; font-weight:bold;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 11 of 210 · Phase 1: Statistics & Probability Week</span>
+    <h1>Bayes' Theorem</h1>
+    <div class="subtitle">~2 hours · The formula behind Naive Bayes, spam filters & medical AI</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Yesterday you saw that P(A|B) ≠ P(B|A). Bayes' Theorem is the formula that correctly converts one into the other. This single formula powers an entire ML algorithm (Naive Bayes, which you'll build by hand in Phase 3), and its core idea — <strong>updating a belief when new evidence arrives</strong> — is the philosophical foundation of how most ML models "learn" from data at all.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Deriving it from yesterday's formula</h2>
+  <p>Recall from Day 10: <code>P(A|B) = P(A and B) / P(B)</code> and also <code>P(B|A) = P(A and B) / P(A)</code>. Both equal the same joint probability P(A and B), just rearranged. Set them equal to each other and solve, and you get Bayes' Theorem:</p>
+  <div class="eq">P(A | B) = [ P(B | A) × P(A) ] / P(B)</div>
+  <p>This lets you calculate P(A|B) even when you only directly know P(B|A) — exactly the reversal problem from yesterday.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> The vocabulary</h2>
+  <div class="term-grid">
+    <div class="term-box"><div class="name">Prior — P(A)</div>What you believed before seeing new evidence</div>
+    <div class="term-box"><div class="name">Likelihood — P(B|A)</div>How probable the evidence is, if A is true</div>
+    <div class="term-box"><div class="name">Posterior — P(A|B)</div>Your updated belief after seeing evidence B</div>
+    <div class="term-box"><div class="name">Evidence — P(B)</div>Overall probability of observing B at all</div>
+  </div>
+  <p>The whole idea of Bayes' Theorem in one sentence: <strong>Posterior = (Likelihood × Prior) / Evidence.</strong> You start with a prior belief, see some evidence, and update to a posterior belief.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> The classic worked example (medical testing)</h2>
+  <div class="panel">
+    <p class="example-tag">The example every course uses — because it teaches the key lesson</p>
+    <p>A disease affects <strong>1% of the population</strong> (prior). A test correctly detects it <strong>90% of the time</strong> if you have it (likelihood, true positive rate), but also gives a <strong>false positive 5% of the time</strong> if you don't have it. You test positive. What's the actual probability you have the disease?</p>
+    <p><strong>Most people guess ~90%. The real answer is much lower — let's calculate it using natural frequencies (often more intuitive than the formula):</strong></p>
+    <p>Out of 10,000 people: 100 have the disease (1%), 9,900 don't.</p>
+    <p>Of the 100 with disease: 90 test positive (90% detection rate).</p>
+    <p>Of the 9,900 without disease: 5% false positive = 495 test positive anyway.</p>
+    <p>Total testing positive = 90 + 495 = 585. Of those, only 90 actually have the disease.</p>
+    <div class="eq">P(Disease | Positive) = 90 / 585 ≈ 0.154 (about 15.4%)</div>
+    <p><strong>Even with a "90% accurate" test, a positive result only means ~15% real probability of disease</strong> — because the disease is rare (low prior), false positives from the huge healthy population overwhelm the true positives from the tiny sick population. This is called the <strong>base rate fallacy</strong> when people ignore it, and it's one of the most important lessons in all of applied probability.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Second example (spam filter, reversed from Day 10)</h2>
+  <div class="panel">
+    <p class="example-tag">Reconnecting to yesterday's spam table</p>
+    <p>Suppose you only know: P(Spam) = 0.2 (prior), P("free" | Spam) = 0.9 (likelihood), and P("free" | Not Spam) = 0.075 (from Day 10's table: 60/800). Find P(Spam | "free") using Bayes:</p>
+    <p>First find P("free") overall = P("free"|Spam)×P(Spam) + P("free"|NotSpam)×P(NotSpam) = (0.9×0.2) + (0.075×0.8) = 0.18 + 0.06 = 0.24</p>
+    <div class="eq">P(Spam | "free") = (0.9 × 0.2) / 0.24 = 0.18 / 0.24 = 0.75</div>
+    <p>This matches exactly what you calculated directly from the table yesterday (180/240 = 0.75) — Bayes' Theorem just lets you get there even when you don't have the full table, only the prior and likelihoods. This is precisely how a real Naive Bayes spam classifier works internally.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Ignoring the prior (base rate fallacy).</strong> The medical example above is the textbook case — a rare condition means even a fairly accurate test produces mostly false alarms. Always factor in how common something is.</p>
+    <p><strong>Mistake 2 — Forgetting to calculate the full "evidence" term P(B).</strong> You need BOTH P(B|A) and P(B|not A) to correctly compute P(B) using the law of total probability shown above.</p>
+    <p><strong>Mistake 3 — Treating posterior as certainty.</strong> A posterior of 0.75 still means 25% chance you're wrong — Bayes' Theorem gives you an updated probability, not a guarantee.</p>
+    <p><strong>Mistake 4 — Assuming intuition beats the math.</strong> As the medical test example shows, gut feeling badly misjudges these problems — always compute it out, especially in low-prior situations.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Bayes' Theorem Calculator</h2>
+  <div class="solver">
+    <h3>Adjust the sliders and watch the posterior update</h3>
+    <div class="solver-row">
+      <label>Prior P(A) — how common is A?</label>
+      <input type="range" id="prior" min="0.01" max="0.99" step="0.01" value="0.01">
+      <span class="val" id="priorVal">0.01</span>
+    </div>
+    <div class="solver-row">
+      <label>P(B|A) — true positive rate</label>
+      <input type="range" id="tpr" min="0.01" max="0.99" step="0.01" value="0.90">
+      <span class="val" id="tprVal">0.90</span>
+    </div>
+    <div class="solver-row">
+      <label>P(B|not A) — false positive rate</label>
+      <input type="range" id="fpr" min="0.01" max="0.99" step="0.01" value="0.05">
+      <span class="val" id="fprVal">0.05</span>
+    </div>
+    <div class="solver-result" id="result"></div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Start with the default medical test values, then try dragging the prior way up (e.g., 0.5) — watch how much higher the posterior becomes for the exact same test accuracy. That's the base rate effect made visible.</p>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> In Phase 3, you'll build the Naive Bayes classifier — an algorithm that applies exactly this formula across many features at once (e.g., many words in an email) to classify things automatically. Everything you learned this week (mean/variance for continuous features, probability, conditional probability, and now Bayes) comes together in that one algorithm.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 11 of 210 · AI & ML Study Plan · Phase 1: Statistics & Probability Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "A rare disease affects 2% of people. A test is 95% accurate for true positives, 10% false positive rate. Out of 1,000 people, how many actually have the disease?", steps: "2% of 1000 = 20 people have the disease." },
+  { q: "Using the data above: how many of the 20 with disease test positive?", steps: "95% of 20 = 19 people" },
+  { q: "How many of the 980 without disease test positive (false positives)?", steps: "10% of 980 = 98 people" },
+  { q: "Find P(Disease | Positive) using natural frequencies from the previous 3 answers.", steps: "Total positives = 19+98 = 117. P(Disease|Positive) = 19/117 ≈ 0.162 (about 16%)" },
+  { q: "A factory: prior defect rate P(Defect) = 0.05. Inspection catches defects 98% of the time (P(Flag|Defect)=0.98), false-flags good items 3% of the time. Using Bayes, find P(B) = P(Flag) overall.", steps: "P(Flag) = 0.98×0.05 + 0.03×0.95 = 0.049 + 0.0285 = 0.0775" },
+  { q: "Using the previous answer, find P(Defect | Flag).", steps: "P(Defect|Flag) = (0.98×0.05)/0.0775 = 0.049/0.0775 ≈ 0.632" },
+  { q: "If the prior probability of an event is very low (rare event), what tends to happen to false positives relative to true positives, even with an accurate test?", steps: "False positives often outnumber true positives, because the large 'not A' population still produces some false alarms — this is the base rate effect." },
+  { q: "A weather model: P(Rain) = 0.3 (prior). P(Cloudy | Rain) = 0.9. P(Cloudy | No Rain) = 0.4. Find P(Cloudy) overall.", steps: "P(Cloudy) = 0.9×0.3 + 0.4×0.7 = 0.27 + 0.28 = 0.55" },
+  { q: "Using the previous answer, find P(Rain | Cloudy).", steps: "P(Rain|Cloudy) = (0.9×0.3)/0.55 = 0.27/0.55 ≈ 0.491" },
+  { q: "In your own words: why is a 90%-accurate medical test not the same as '90% chance you have the disease if you test positive'?", steps: "Test accuracy (P(Positive|Disease)) and the actual answer we want (P(Disease|Positive)) are different quantities — the prior (how rare the disease is) heavily affects the real answer, as Bayes' Theorem shows." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const priorSlider = document.getElementById('prior');
+const tprSlider = document.getElementById('tpr');
+const fprSlider = document.getElementById('fpr');
+const priorVal = document.getElementById('priorVal');
+const tprVal = document.getElementById('tprVal');
+const fprVal = document.getElementById('fprVal');
+const result = document.getElementById('result');
+
+function calcBayes(){
+  const prior = parseFloat(priorSlider.value);
+  const tpr = parseFloat(tprSlider.value);
+  const fpr = parseFloat(fprSlider.value);
+  priorVal.textContent = prior.toFixed(2);
+  tprVal.textContent = tpr.toFixed(2);
+  fprVal.textContent = fpr.toFixed(2);
+
+  const pB = tpr*prior + fpr*(1-prior);
+  const posterior = (tpr*prior)/pB;
+
+  const per10000 = 10000;
+  const withA = Math.round(per10000*prior);
+  const withoutA = per10000 - withA;
+  const truePos = Math.round(withA*tpr);
+  const falsePos = Math.round(withoutA*fpr);
+  const totalPos = truePos+falsePos;
+
+  result.innerHTML = `
+    <div class="freq-box">
+      <div class="line">Out of 10,000 people:</div>
+      <div class="line">→ ${withA} actually have A (${(prior*100).toFixed(1)}% prior)</div>
+      <div class="line">→ ${truePos} of them test positive (true positives)</div>
+      <div class="line">→ ${falsePos} of the ${withoutA} without A also test positive (false positives)</div>
+      <div class="line">→ Total testing positive: ${totalPos}</div>
+    </div>
+    <p style="margin-top:12px;">Posterior P(A | positive) = ${truePos} / ${totalPos} = <span class="big-result">${(posterior*100).toFixed(1)}%</span></p>
+  `;
+}
+[priorSlider, tprSlider, fprSlider].forEach(s => s.addEventListener('input', calcBayes));
+calcBayes();
+
+const quizData = [
+  { q: "Bayes' Theorem lets you calculate:", opts: ["P(A) from nothing","P(A|B) when you know P(B|A), P(A), and P(B)","The mean of a dataset","Whether two events are equal"], correct: 1, explain: "Bayes' formula reverses conditional probabilities using the prior and likelihoods." },
+  { q: "In Bayes' Theorem, the 'prior' refers to:", opts: ["The evidence you just observed","Your belief about A before seeing new evidence","The final updated probability","The test's accuracy"], correct: 1, explain: "Prior = P(A), your starting belief before the evidence B comes in." },
+  { q: "In the medical test example, why was the posterior probability (~15%) so much lower than the test's 90% accuracy?", opts: ["The math was done incorrectly","The disease is rare, so false positives from the large healthy population outweigh true positives","90% accuracy means only 10% are ever right","There's no real reason, it's a coincidence"], correct: 1, explain: "This is the base rate fallacy — a low prior means even a good test produces many false alarms relative to true detections." },
+  { q: "What is the 'posterior' in Bayes' Theorem?", opts: ["P(B)","P(A)","P(A|B) — your updated belief after evidence","P(B|A)"], correct: 2, explain: "Posterior is what you're solving for — the updated probability of A given the new evidence B." },
+  { q: "If P(A) = 0.5, P(B|A) = 0.8, P(B|not A) = 0.8, what happens to P(A|B)?", opts: ["It becomes very high","It stays about the same as the prior (0.5)","It becomes very low","It's undefined"], correct: 1, explain: "If the likelihood is the same whether A is true or false, the evidence B provides no useful information — posterior ≈ prior." },
+  { q: "A rare fraud pattern occurs in 0.1% of transactions. Even a 99%-accurate fraud detector will likely produce:", opts: ["Zero false positives ever", "Mostly false positives relative to true fraud caught, due to the tiny prior", "100% certainty on every flagged transaction", "No relationship to Bayes' Theorem"], correct: 1, explain: "Just like the medical test, an extremely rare event means the huge 'non-fraud' population still generates many false alarms." },
+  { q: "Why is Naive Bayes (an ML algorithm) named after this theorem?", opts: ["It's unrelated, just a coincidental name","It directly applies Bayes' formula to classify data based on prior class probabilities and feature likelihoods","It was invented by someone named Bayes","It only works on Bayesian statistics textbooks"], correct: 1, explain: "Naive Bayes literally computes P(class | features) using Bayes' Theorem, assuming features are independent (hence 'naive')." },
+  { q: "What's the key lesson of the base rate fallacy?", opts: [
+      "Test accuracy is the only thing that matters",
+      "You must factor in how common/rare the event is (the prior), not just the test's accuracy",
+      "Rare events should be ignored entirely",
+      "Bayes' Theorem doesn't apply to rare events"
+    ], correct: 1, explain: "Ignoring the prior (how rare something is) leads to wildly overconfident conclusions from positive test results." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 3 — Statistical Analysis & Descriptive Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(94,53,177,0.05),transparent 65%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+/* HERO */
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:540px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:var(--accent);box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+/* SECTION */
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+/* OV CARDS */
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov2{font-size:14px;font-weight:700;}
+
+/* TOPICS */
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;color:var(--text);}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+/* CONCEPT */
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-warn{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+.code .ok{color:var(--green);font-weight:700;}.code .bad{color:var(--red);}
+
+/* STAT TABLE */
+.st{width:100%;border-collapse:collapse;margin-top:10px;border-radius:8px;overflow:hidden;}
+.st th{font-family:var(--mono);font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:1px;padding:9px 13px;text-align:left;background:var(--accent);}
+.st td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;}
+.st tr:last-child td{border-bottom:none;}
+.st tr:nth-child(even) td{background:var(--card2);}
+.st code{font-family:var(--mono);font-size:11px;background:var(--al);padding:2px 6px;border-radius:4px;color:var(--accent);}
+.st .good{color:var(--green);font-weight:600;}.st .bad{color:var(--red);}
+
+/* FORMULA GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* VISUAL BOXES */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
+@media(max-width:540px){.stat-grid{grid-template-columns:1fr;}}
+.stat-box{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center;box-shadow:var(--sh);}
+.stat-val{font-size:1.8rem;font-weight:900;color:var(--accent);letter-spacing:-1px;line-height:1;}
+.stat-label{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:3px;}
+
+/* OUTCOMES */
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+/* HOUR BAR */
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+/* TASK CARDS */
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+/* TASK INTERNALS */
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+/* TIP */
+.tip{background:linear-gradient(135deg,var(--al),var(--pl));border:1.5px solid var(--ag);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+/* QUICK REF */
+.qr{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:38px;}
+@media(max-width:540px){.qr{grid-template-columns:1fr;}}
+
+/* NAV */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:#0b6650;}
+
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 3 of 10</div>
+    <div class="db">DAY 3</div>
+  </div>
+  <h1>Statistical <span class="hl">Analysis</span><br>&amp; Descriptive Stats</h1>
+  <div class="tagline">Understand your data before any model ever sees it. EDA is where 80% of your model's success is decided — long before training begins.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: Statistics</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●○</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">🔧 ToolPak Required</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pd"></div><div class="pd"></div><div class="pd"></div>
+    <div class="pd"></div><div class="pd"></div><div class="pd"></div><div class="pd"></div>
+    <div class="pl">Day 3 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">📐</div><div class="ol2">Focus</div><div class="ov2">Descriptive Stats</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Topics</div><div class="ov2">8 Stat Concepts</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Outcomes</div><div class="ov2">4 Skills Mastered</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Key Skill</div><div class="ov2">Outlier Detection</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Topics Covered Today</div>
+<div class="tg">
+  <div class="ti"><div class="tn">01</div><div><div class="tt">Central Tendency</div><div class="ts">AVERAGE, MEDIAN, MODE — when each one lies to you</div></div></div>
+  <div class="ti"><div class="tn">02</div><div><div class="tt">Spread & Variability</div><div class="ts">STDEV, VAR, SKEW, KURT — shape of your distribution</div></div></div>
+  <div class="ti"><div class="tn">03</div><div><div class="tt">Percentiles & IQR</div><div class="ts">PERCENTILE, QUARTILE — outlier detection with IQR method</div></div></div>
+  <div class="ti"><div class="tn">04</div><div><div class="tt">Correlation & Covariance</div><div class="ts">CORREL, COVARIANCE.S — feature relationship discovery</div></div></div>
+  <div class="ti"><div class="tn">05</div><div><div class="tt">Frequency Distributions</div><div class="ts">FREQUENCY array formula — build histograms from scratch</div></div></div>
+  <div class="ti"><div class="tn">06</div><div><div class="tt">Z-Score Normalization</div><div class="ts">(x − μ) / σ — standardize features for ML algorithms</div></div></div>
+  <div class="ti"><div class="tn">07</div><div><div class="tt">Min-Max Scaling</div><div class="ts">(x − min) / (max − min) — scale to 0–1 range</div></div></div>
+  <div class="ti"><div class="tn">08</div><div><div class="tt">ToolPak: Descriptive Statistics</div><div class="ts">Enable and use Data Analysis ToolPak for instant stats</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sl">🧠 Key Concepts Deep Dive</div>
+
+<!-- Central Tendency -->
+<div class="cc">
+  <div class="ct">📊 Central Tendency — Mean vs Median vs Mode <span class="cb cb-warn">CHOOSE WISELY</span></div>
+  <div class="cd">Mean is the most common — and the most misleading. A dataset of salaries {30k, 32k, 31k, 500k} has mean=148k but median=31.5k. The CEO's salary destroyed the mean. In ML, always check if your target variable is skewed before choosing a loss function.</div>
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-val">AVERAGE</div>
+      <div class="stat-label">Mean</div>
+      <div class="stat-sub">Use when: symmetric, no extreme outliers</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">MEDIAN</div>
+      <div class="stat-label">Middle Value</div>
+      <div class="stat-sub">Use when: skewed data, income, house prices</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val">MODE</div>
+      <div class="stat-label">Most Frequent</div>
+      <div class="stat-sub">Use when: categorical data, peak values</div>
+    </div>
+  </div>
+  <div class="code" style="margin-top:14px;">
+<span class="cm">// Central tendency — always run all three and compare</span>
+=<span class="fn">AVERAGE</span>(B2:B101)         <span class="cm">→ Arithmetic mean (sensitive to outliers)</span>
+=<span class="fn">MEDIAN</span>(B2:B101)          <span class="cm">→ Middle value (outlier-resistant)</span>
+=<span class="fn">MODE.SNGL</span>(B2:B101)       <span class="cm">→ Most frequent (single mode)</span>
+=<span class="fn">MODE.MULT</span>(B2:B101)       <span class="cm">→ Array of all modes (multimodal data)</span>
+
+<span class="cm">// If Mean >> Median → right-skewed (outliers pulling mean up)</span>
+<span class="cm">// If Mean << Median → left-skewed (outliers pulling mean down)</span>
+<span class="cm">// If Mean ≈ Median → roughly symmetric (can use either safely)</span>
+  </div>
+</div>
+
+<!-- Spread -->
+<div class="cc">
+  <div class="ct">📏 Spread &amp; Distribution Shape <span class="cb cb-core">CORE</span></div>
+  <div class="cd">Standard deviation tells you how spread out your data is. Skewness tells you which direction it leans. Kurtosis tells you how heavy the tails are. Together they describe the shape of your distribution — critical for choosing ML algorithms and loss functions.</div>
+  <div class="code">
+<span class="cm">// Spread — how wide is the distribution?</span>
+=<span class="fn">STDEV.S</span>(B2:B101)         <span class="cm">→ Sample std dev (use for samples, n-1)</span>
+=<span class="fn">STDEV.P</span>(B2:B101)         <span class="cm">→ Population std dev (use for full population)</span>
+=<span class="fn">VAR.S</span>(B2:B101)           <span class="cm">→ Sample variance = STDEV²</span>
+=<span class="fn">STDEV.S</span>(B2:B101)/<span class="fn">AVERAGE</span>(B2:B101)  <span class="cm">→ Coefficient of Variation (CV%)</span>
+
+<span class="cm">// Shape — is it symmetric and bell-curved?</span>
+=<span class="fn">SKEW</span>(B2:B101)            <span class="cm">→ 0=symmetric  >0=right-skew  <0=left-skew</span>
+=<span class="fn">KURT</span>(B2:B101)            <span class="cm">→ 0=normal  >0=heavy tails  <0=light tails</span>
+
+<span class="cm">// Rule of thumb for skewness:</span>
+<span class="cm">// |SKEW| < 0.5  → fairly symmetric, use mean</span>
+<span class="cm">// |SKEW| 0.5–1  → moderately skewed, consider log transform</span>
+<span class="cm">// |SKEW| > 1    → highly skewed, use median or log transform</span>
+  </div>
+</div>
+
+<!-- IQR Outliers -->
+<div class="cc">
+  <div class="ct">🎯 Percentiles &amp; IQR Outlier Detection <span class="cb cb-pow">ML CRITICAL</span></div>
+  <div class="cd">The IQR (Interquartile Range) method flags outliers without assumptions about distribution shape. Any value below Q1 − 1.5×IQR or above Q3 + 1.5×IQR is a potential outlier. This is the standard method used in box plots and data preprocessing pipelines.</div>
+  <div class="code">
+<span class="cm">// Quartiles and IQR</span>
+=<span class="fn">QUARTILE.INC</span>(B2:B101, <span class="num">1</span>)    <span class="cm">→ Q1 (25th percentile)</span>
+=<span class="fn">QUARTILE.INC</span>(B2:B101, <span class="num">3</span>)    <span class="cm">→ Q3 (75th percentile)</span>
+=<span class="fn">QUARTILE.INC</span>(B2:B101,<span class="num">3</span>)-<span class="fn">QUARTILE.INC</span>(B2:B101,<span class="num">1</span>)  <span class="cm">→ IQR</span>
+
+<span class="cm">// Outlier bounds (store Q1, Q3, IQR in cells first)</span>
+<span class="cm">// Lower bound = Q1 − 1.5 × IQR</span>
+<span class="cm">// Upper bound = Q3 + 1.5 × IQR</span>
+
+<span class="cm">// Flag outliers per row (assume Q1 in $E$2, IQR in $E$4)</span>
+=<span class="fn">IF</span>(<span class="fn">OR</span>(B2 < $E$2-1.5*$E$4, B2 > $E$3+1.5*$E$4), <span class="str">"OUTLIER"</span>, <span class="str">"Normal"</span>)
+
+<span class="cm">// Percentile lookup — any percentile</span>
+=<span class="fn">PERCENTILE.INC</span>(B2:B101, <span class="num">0.90</span>)  <span class="cm">→ 90th percentile value</span>
+=<span class="fn">PERCENTILE.INC</span>(B2:B101, <span class="num">0.05</span>)  <span class="cm">→ 5th percentile (bottom 5%)</span>
+
+<span class="cm">// Count outliers in dataset</span>
+=<span class="fn">COUNTIF</span>(C2:C101, <span class="str">"OUTLIER"</span>)
+  </div>
+</div>
+
+<!-- Correlation -->
+<div class="cc">
+  <div class="ct">🔗 Correlation Matrix — Feature Selection Tool <span class="cb cb-tip">FEATURE ENGINEERING</span></div>
+  <div class="cd">Correlation tells you two things: (1) which features are related to your target (high |r| = useful feature), and (2) which features are related to each other (multicollinearity — a model problem). Build a correlation matrix before ANY ML model.</div>
+  <div class="code">
+<span class="cm">// Pearson correlation between two columns</span>
+=<span class="fn">CORREL</span>(B2:B101, C2:C101)    <span class="cm">→ r value: -1 to +1</span>
+
+<span class="cm">// Interpreting r values:</span>
+<span class="cm">// |r| > 0.7  → Strong correlation (potential feature OR multicollinearity)</span>
+<span class="cm">// |r| 0.4–0.7→ Moderate correlation (likely useful feature)</span>
+<span class="cm">// |r| 0.2–0.4→ Weak correlation (marginal feature)</span>
+<span class="cm">// |r| < 0.2  → Very weak (probably not useful)</span>
+
+<span class="cm">// For 5 features, build a 5×5 correlation matrix:</span>
+<span class="cm">// Row/col headers: Feature1, Feature2, ..., Feature5</span>
+<span class="cm">// Cell [i,j] = =CORREL(feature_i_range, feature_j_range)</span>
+<span class="cm">// [i,i] diagonal = 1.0 always (a feature perfectly correlates with itself)</span>
+
+<span class="cm">// Apply 3-color scale conditional formatting:</span>
+<span class="cm">// Red = -1 (perfect negative)  White = 0  Green = +1 (perfect positive)</span>
+  </div>
+</div>
+
+<!-- Normalization -->
+<div class="cc">
+  <div class="ct">⚖️ Feature Scaling: Z-Score vs Min-Max <span class="cb cb-core">PRE-PROCESSING</span></div>
+  <div class="cd">Most ML algorithms (KNN, SVM, neural networks, logistic regression) are sensitive to feature scale. A feature ranging 0–1000 will dominate a feature ranging 0–1. Always scale before modeling — choose Z-Score for normally distributed data, Min-Max for bounded data.</div>
+  <table class="st">
+    <tr><th>Method</th><th>Formula</th><th>Output Range</th><th>Best For</th></tr>
+    <tr><td><strong>Z-Score</strong></td><td><code>=(x−mean)/stdev</code></td><td>Typically −3 to +3</td><td class="good">Normal distributions, most ML algos</td></tr>
+    <tr><td><strong>Min-Max</strong></td><td><code>=(x−min)/(max−min)</code></td><td>0 to 1 always</td><td class="good">Neural networks, image data, bounded</td></tr>
+    <tr><td><strong>Robust Scaling</strong></td><td><code>=(x−Q2)/(Q3−Q1)</code></td><td>Varies</td><td class="good">Data with many outliers</td></tr>
+    <tr><td><strong>Log Transform</strong></td><td><code>=LN(x)</code></td><td>Varies</td><td class="good">Right-skewed data (incomes, prices)</td></tr>
+  </table>
+  <div class="code" style="margin-top:14px;">
+<span class="cm">// Z-Score normalization (standardization)</span>
+=(B2-<span class="fn">AVERAGE</span>($B$2:$B$101))/<span class="fn">STDEV.S</span>($B$2:$B$101)
+<span class="cm">// Result: mean=0, stdev=1. Interpretable: Z=2 means 2 std devs above mean</span>
+
+<span class="cm">// Min-Max scaling</span>
+=(B2-<span class="fn">MIN</span>($B$2:$B$101))/(<span class="fn">MAX</span>($B$2:$B$101)-<span class="fn">MIN</span>($B$2:$B$101))
+<span class="cm">// Result: 0 to 1 range. Minimum becomes 0, maximum becomes 1</span>
+
+<span class="cm">// Log transform (fix right-skewed distributions)</span>
+=<span class="fn">LN</span>(B2)        <span class="cm">→ Natural log (B2 must be > 0)</span>
+=<span class="fn">LOG</span>(B2,10)    <span class="cm">→ Log base 10</span>
+=<span class="fn">LN</span>(B2+1)      <span class="cm">→ Log1p trick (safe for B2=0)</span>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Calculate and interpret full descriptive statistics</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Detect and flag outliers using the IQR method</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build a correlation matrix for feature selection</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Normalize features with Z-Score and Min-Max scaling</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Task Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#b84f00;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:13"></div>
+  <div class="hs" style="background:#1558c0;flex:14"></div>
+  <div class="hs" style="background:#1558c0;flex:10"></div>
+  <div class="hs" style="background:#0d7a5f;flex:8"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#0d7a5f"></div>Project</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>Practice</div>
+  <div class="li"><div class="ld" style="background:#b84f00"></div>Theory + Setup</div>
+</div>
+
+<!-- ══ TASK CARDS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bo">0 – 15 min</div>
+    <div class="tw"><div class="tm">📐 Descriptive Stats Dashboard with ToolPak</div><div class="ts2">Enable the ToolPak and generate instant stats — then understand every output</div></div>
+    <div class="typ bo">Theory + Setup</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">The Data Analysis ToolPak generates a complete stats summary in one click. Your job isn't just to run it — it's to understand every single number it produces and know what it means for your ML model.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div><strong>Enable ToolPak:</strong> File → Options → Add-ins → at the bottom, Manage: Excel Add-ins → Go → check ✓ Analysis ToolPak → OK. You only do this once per machine.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Create <strong>Day3_Stats.xlsx</strong>. In sheet "RawData", create a Table named <strong>SampleData</strong> with 100 rows and columns: <strong>StudentID, Score (40–100), StudyHours (1–10), Attendance (50–100%), Income (15k–200k)</strong>. Make Income deliberately right-skewed — add a few very high values (500k+).</div></div>
+      <div class="si2"><div class="sn">3</div><div>Run ToolPak: Data tab → Data Analysis → Descriptive Statistics → Input Range: Score column → check ✓ Summary Statistics → ✓ Output Range (pick empty area) → OK.</div></div>
+      <div class="si2"><div class="sn">4</div><div>For each metric in the output, write its meaning next to it in column C:<br>
+        • Mean — average, pulled by outliers<br>
+        • Standard Error — uncertainty of mean estimate<br>
+        • Median — middle value, outlier-resistant<br>
+        • Mode — most common value<br>
+        • Standard Deviation — typical distance from mean<br>
+        • Kurtosis — tail heaviness (0=normal)<br>
+        • Skewness — asymmetry (+= right tail)<br>
+        • Range — max − min<br>
+        • Count — number of rows</div></div>
+      <div class="si2"><div class="sn">5</div><div>Run ToolPak again on the <strong>Income</strong> column. Compare: Mean vs Median gap should be large (right-skewed). Skewness should be positive and > 1. This is income data behaving normally.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Manual equivalents of ToolPak output</span>
+=<span class="fn">AVERAGE</span>(SampleData[Score])     <span class="cm">→ Mean</span>
+=<span class="fn">MEDIAN</span>(SampleData[Score])      <span class="cm">→ Median</span>
+=<span class="fn">STDEV.S</span>(SampleData[Score])     <span class="cm">→ Std Dev</span>
+=<span class="fn">SKEW</span>(SampleData[Score])        <span class="cm">→ Skewness</span>
+=<span class="fn">KURT</span>(SampleData[Score])        <span class="cm">→ Kurtosis</span>
+=<span class="fn">MAX</span>(SampleData[Score])-<span class="fn">MIN</span>(SampleData[Score])  <span class="cm">→ Range</span>
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>ML Rule:</strong> If Mean − Median > 0.5 × Std Dev, your distribution is skewed. Apply log transform to the column before using it as a feature or target in linear models. Skewed targets violate regression assumptions.</div></div>
+    <div class="cks"><div class="ck">ToolPak enabled</div><div class="ck">Score stats generated</div><div class="ck">All metrics labelled</div><div class="ck">Income stats compared</div><div class="ck">Mean vs Median gap noted</div></div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bp">15 – 28 min</div>
+    <div class="tw"><div class="tm">🎯 Outlier Detection Lab — IQR Method</div><div class="ts2">Flag every outlier in the dataset using the industry-standard IQR approach</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Outliers silently destroy ML models. A single extreme value can pull regression coefficients, destroy normalization scales, and corrupt distance calculations in KNN. The IQR method flags them robustly — without assuming a distribution shape.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "OutlierLab". Copy your SampleData table here. In a separate area (say column H), compute the 5-number summary for Score:<br>
+        H1 = Min: <code>=MIN(SampleData[Score])</code><br>
+        H2 = Q1: <code>=QUARTILE.INC(SampleData[Score],1)</code><br>
+        H3 = Q2 (Median): <code>=QUARTILE.INC(SampleData[Score],2)</code><br>
+        H4 = Q3: <code>=QUARTILE.INC(SampleData[Score],3)</code><br>
+        H5 = Max: <code>=MAX(SampleData[Score])</code></div></div>
+      <div class="si2"><div class="sn">2</div><div>Calculate IQR and bounds:<br>
+        H6 = IQR: <code>=$H$4-$H$2</code><br>
+        H7 = Lower Bound: <code>=$H$2-1.5*$H$6</code><br>
+        H8 = Upper Bound: <code>=$H$4+1.5*$H$6</code></div></div>
+      <div class="si2"><div class="sn">3</div><div>Add column "Outlier_Score" to the table: <code>=IF(OR([@Score]&lt;$H$7, [@Score]>$H$8), "OUTLIER", "Normal")</code>. Count outliers: <code>=COUNTIF(SampleData[Outlier_Score],"OUTLIER")</code>.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Repeat the full IQR analysis for the <strong>Income</strong> column. Because Income is right-skewed, you should find MANY more outliers (values in the 300k+ range exceed the upper bound).</div></div>
+      <div class="si2"><div class="sn">5</div><div>Apply <strong>conditional formatting</strong> to the Outlier columns: red fill for "OUTLIER", green for "Normal". Home → Conditional Formatting → Highlight Cells Rules → Text that Contains → "OUTLIER" → red.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Think critically:</strong> Should you DELETE outliers or keep them? Add a note in the Notes sheet: In ML, outliers in training data can mean (a) data entry errors — fix them, (b) genuine rare events — keep them if they'll appear in production, (c) a different population — investigate.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// 5-number summary (store in cells, use as $absolute refs)</span>
+Q1 = <span class="fn">QUARTILE.INC</span>(SampleData[Score], <span class="num">1</span>)
+Q3 = <span class="fn">QUARTILE.INC</span>(SampleData[Score], <span class="num">3</span>)
+IQR = Q3 - Q1
+Lower = Q1 - <span class="num">1.5</span> * IQR
+Upper = Q3 + <span class="num">1.5</span> * IQR
+
+<span class="cm">// Flag outliers per row</span>
+=<span class="fn">IF</span>(<span class="fn">OR</span>([@Score]&lt;$H$7, [@Score]>$H$8), <span class="str">"OUTLIER"</span>, <span class="str">"Normal"</span>)
+
+<span class="cm">// Count and percentage</span>
+=<span class="fn">COUNTIF</span>(SampleData[Outlier_Score], <span class="str">"OUTLIER"</span>)
+=<span class="fn">COUNTIF</span>(SampleData[Outlier_Score], <span class="str">"OUTLIER"</span>)/<span class="fn">ROWS</span>(SampleData[Score])
+    </div>
+    <div class="wb"><div class="ni">⚠️</div><div><strong>Critical warning:</strong> NEVER blindly delete outliers. In fraud detection, the outlier IS the signal. In medical data, extreme values may indicate critical patients. Always investigate before removing. Document every outlier decision in your model card.</div></div>
+    <div class="cks"><div class="ck">5-number summary built</div><div class="ck">IQR and bounds calculated</div><div class="ck">Outlier flag column added</div><div class="ck">Income outliers found</div><div class="ck">Conditional formatting applied</div><div class="ck">Decision note written</div></div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bp">28 – 42 min</div>
+    <div class="tw"><div class="tm">🔗 Correlation Matrix &amp; Feature Selection</div><div class="ts2">Build a color-coded correlation matrix — your first ML feature selection tool</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Before training any ML model, you need to know which features correlate with your target and which features correlate with each other (multicollinearity). A correlation matrix answers both questions visually in seconds.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "CorrelLab". You have 4 numeric features: Score, StudyHours, Attendance, Income. Build a 4×4 correlation matrix. Set up row and column headers for all 4 features.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Fill each cell with CORREL: For row "Score" × col "StudyHours": <code>=CORREL(SampleData[Score], SampleData[StudyHours])</code>. The diagonal (Score×Score etc.) always = 1. The matrix is symmetric: [i,j] = [j,i].</div></div>
+      <div class="si2"><div class="sn">3</div><div>Apply a 3-color scale to the 4×4 matrix: Home → Conditional Formatting → Color Scales → Red–White–Green (or Red–Yellow–Green). Set: min value = −1 (red), midpoint = 0 (white), max = 1 (green). Now the heatmap is visible.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Now run ToolPak Correlation: Data → Data Analysis → Correlation → Input Range: all 4 columns with headers → Labels in first row → Output range. Compare output with your manual matrix — they should match.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Feature selection analysis:</strong> In a separate area, rank features by |correlation with Score|. Use ABS(CORREL()) for each. Which feature has the highest correlation with Score? That's your most predictive feature for a regression model.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Multicollinearity check:</strong> Are any two features correlated with each other at |r| > 0.7? If StudyHours and Attendance correlate at 0.85, that's multicollinearity — including both in a regression model hurts stability. Flag in Notes.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Individual correlation coefficient</span>
+=<span class="fn">CORREL</span>(SampleData[Score], SampleData[StudyHours])
+
+<span class="cm">// Absolute correlation for ranking features</span>
+=<span class="fn">ABS</span>(<span class="fn">CORREL</span>(SampleData[StudyHours], SampleData[Score]))
+
+<span class="cm">// Build 4×4 matrix — cell for row Feature_A, col Feature_B:</span>
+=<span class="fn">CORREL</span>(SampleData[Feature_A], SampleData[Feature_B])
+
+<span class="cm">// Interpretation rule:</span>
+<span class="cm">// |r| > 0.7 with target → Strong predictor (include in model)</span>
+<span class="cm">// |r| < 0.1 with target → Weak predictor (consider dropping)</span>
+<span class="cm">// |r| > 0.8 between features → Multicollinearity (drop one!)</span>
+    </div>
+    <div class="nb"><div class="ni">🧠</div><div><strong>ML insight:</strong> Correlation measures LINEAR relationships only. A feature with r=0 might still have a strong non-linear relationship (quadratic, exponential). Low correlation doesn't mean "useless feature" — it means "useless for linear models." Decision trees and neural networks can capture non-linear patterns regardless.</div></div>
+    <div class="cks"><div class="ck">4×4 manual matrix built</div><div class="ck">Color scale heatmap applied</div><div class="ck">ToolPak correlation run</div><div class="ck">Features ranked by |r|</div><div class="ck">Multicollinearity checked</div></div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bp">42 – 52 min</div>
+    <div class="tw"><div class="tm">⚖️ Normalization Columns — Z-Score &amp; Min-Max</div><div class="ts2">Pre-process features so every ML algorithm treats them fairly</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Un-scaled features destroy distance-based models (KNN), gradient descent convergence (neural nets), and regularization in linear models. Scaling is non-negotiable. Build both Z-Score and Min-Max columns and understand when to use each.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "NormLab". Copy SampleData here. You'll add 4 new columns: Z_Score, MinMax_Score, Z_Income, MinMax_Income — one scaled version per feature.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Z-Score for Score:</strong> <code>=([@Score]-AVERAGE(SampleData[Score]))/STDEV.S(SampleData[Score])</code>. Verify: AVERAGE of Z_Score column ≈ 0 (should be exactly 0). STDEV of Z_Score column ≈ 1.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Min-Max for Score:</strong> <code>=([@Score]-MIN(SampleData[Score]))/(MAX(SampleData[Score])-MIN(SampleData[Score]))</code>. Verify: MIN of MinMax column = 0, MAX = 1.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Repeat Z-Score and Min-Max for the <strong>Income</strong> column. Compare the Z-Score distribution of Income vs Score. Income's Z-Scores should extend much further (±5 or more) because of outliers — confirming it's skewed.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Log transform Income</strong>: Add column <code>=LN([@Income])</code>. Run SKEW on both original Income and log-transformed Income. The log version should have SKEW closer to 0 (more symmetric).</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Comparison summary table:</strong> Build a table showing for each feature: Original Mean, Original Std, Z-Score Mean (≈0), Z-Score Std (≈1), MinMax Min (=0), MinMax Max (=1). This is your pre-processing verification checklist.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Z-Score normalization — mean=0, std=1</span>
+=([@Score]-<span class="fn">AVERAGE</span>(SampleData[Score]))/<span class="fn">STDEV.S</span>(SampleData[Score])
+
+<span class="cm">// Min-Max scaling — range 0 to 1</span>
+=([@Score]-<span class="fn">MIN</span>(SampleData[Score]))/(<span class="fn">MAX</span>(SampleData[Score])-<span class="fn">MIN</span>(SampleData[Score]))
+
+<span class="cm">// Log transform — fix right-skewed distributions</span>
+=<span class="fn">LN</span>([@Income])           <span class="cm">→ Natural log (requires Income > 0)</span>
+=<span class="fn">LN</span>([@Income]+<span class="num">1</span>)        <span class="cm">→ Log1p: safe if Income can be 0</span>
+
+<span class="cm">// Verify Z-Score worked correctly</span>
+=<span class="fn">AVERAGE</span>(SampleData[Z_Score])    <span class="cm">→ Should equal ≈ 0</span>
+=<span class="fn">STDEV.S</span>(SampleData[Z_Score])    <span class="cm">→ Should equal ≈ 1</span>
+
+<span class="cm">// Verify Min-Max worked correctly</span>
+=<span class="fn">MIN</span>(SampleData[MinMax_Score])    <span class="cm">→ Should equal exactly 0</span>
+=<span class="fn">MAX</span>(SampleData[MinMax_Score])    <span class="cm">→ Should equal exactly 1</span>
+    </div>
+    <div class="gb"><div class="ni">✅</div><div><strong>When to use which:</strong> Z-Score → when distribution is roughly normal and you want to preserve outlier information. Min-Max → when you need a strict 0–1 range (neural networks, image pixels). Log → when data is right-skewed (incomes, prices, counts). Robust Scaling (median/IQR) → when outliers are extreme and you can't remove them.</div></div>
+    <div class="cks"><div class="ck">Z-Score column (mean≈0)</div><div class="ck">Min-Max column (0–1)</div><div class="ck">Income scaled both ways</div><div class="ck">Log transform applied</div><div class="ck">SKEW improved by log</div><div class="ck">Verification summary built</div></div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bg">52 – 60 min</div>
+    <div class="tw"><div class="tm">📊 Frequency Distribution &amp; Day 3 Capstone</div><div class="ts2">Build a histogram from scratch + full Stats Summary dashboard</div></div>
+    <div class="typ bg">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">A histogram reveals distribution shape that no number can — is it normal, bimodal, skewed? Build one from scratch using FREQUENCY(), then assemble a complete stats dashboard that tells the full data story.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "Histogram". Define 10 bins for Score (40–100): bin edges 40, 50, 55, 60, 65, 70, 75, 80, 85, 90, 100 in column A.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>FREQUENCY array formula:</strong> Select B1:B10 (same length as bins). Type <code>=FREQUENCY(SampleData[Score], A1:A10)</code>. Press <strong>Ctrl+Shift+Enter</strong> (legacy array formula). Each cell now shows count of scores in that bin.</div></div>
+      <div class="si2"><div class="sn">3</div><div>Verify: SUM(B1:B10) must equal 100 (total students). If not, check your bins cover the full range from MIN to MAX.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Select A1:B10 → Insert → 2D Column Chart → remove gaps (Format Data Series → Gap Width: 0%). Add chart title "Score Distribution". This is your histogram.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Describe the distribution shape:</strong> Is it bell-shaped (normal)? Skewed right? Bimodal (two peaks)? Add a text box to the chart with your assessment. This is the EDA write-up — required in every real ML project report.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Day 3 Stats Dashboard:</strong> Create sheet "StatsDashboard". Build a clean summary panel: for each feature (Score, StudyHours, Attendance, Income) show Mean, Median, Std Dev, Skew, Outlier Count, and Normalization type recommended. This is your pre-modeling checklist.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// FREQUENCY — array formula (Ctrl+Shift+Enter)</span>
+{=<span class="fn">FREQUENCY</span>(SampleData[Score], BinEdges)}
+<span class="cm">// BinEdges: the upper boundary of each bin</span>
+<span class="cm">// Returns n+1 values: last cell = count above last bin edge</span>
+
+<span class="cm">// Verify total count</span>
+=<span class="fn">SUM</span>(B1:B10)    <span class="cm">→ Must equal ROWS(SampleData) = 100</span>
+
+<span class="cm">// % per bin (for relative frequency histogram)</span>
+=B1/<span class="fn">SUM</span>($B$1:$B$10)   <span class="cm">→ Proportion in each bin</span>
+
+<span class="cm">// Excel 365 dynamic array version (no Ctrl+Shift+Enter)</span>
+=<span class="fn">FREQUENCY</span>(SampleData[Score], A1:A10)
+    </div>
+    <div class="nb"><div class="ni">🎯</div><div><strong>Distribution shapes and their ML implications:</strong> Normal → use linear models, Z-Score scaling. Right-skewed → log transform, use median-based metrics. Bimodal → consider splitting into two groups, may indicate two populations. Uniform → no strong central tendency, tree-based models often work best.</div></div>
+    <div class="cks"><div class="ck">Bins defined correctly</div><div class="ck">FREQUENCY array formula works</div><div class="ck">Sum = 100 verified</div><div class="ck">Histogram chart built</div><div class="ck">Distribution described</div><div class="ck">Stats Dashboard complete</div></div>
+  </div>
+</div>
+
+<!-- TIP BOX -->
+<div class="tip">
+  <div class="tpi">📐</div>
+  <div>
+    <div class="tpt">Day 3 Pro Tip — Stats First, Models Second. Always.</div>
+    <div class="tpd">Professional ML practitioners spend 30–50% of their project time on EDA and statistics — before writing a single line of model code. Skewed features, undiscovered outliers, and correlated features will silently destroy your model's accuracy. The statistics you ran today are not a formality — they are the most important step in the entire ML pipeline. A 10-minute stats review prevents hours of debugging mysterious model failures.</div>
+  </div>
+</div>
+
+<!-- QUICK REF -->
+<div class="sl">📋 Day 3 Formula Quick Reference</div>
+<div class="qr" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">AVERAGE / MEDIAN</div><div class="fd">Central tendency — compare both for skew detection</div></div>
+  <div class="fr"><div class="ff">STDEV.S / STDEV.P</div><div class="fd">Sample vs population std dev (use .S for samples)</div></div>
+  <div class="fr"><div class="ff">SKEW(range)</div><div class="fd">Asymmetry: 0=symmetric, >1=highly right-skewed</div></div>
+  <div class="fr"><div class="ff">KURT(range)</div><div class="fd">Tail weight: 0=normal, >0=heavy tails</div></div>
+  <div class="fr"><div class="ff">QUARTILE.INC(r,1/3)</div><div class="fd">Q1 and Q3 for IQR outlier detection</div></div>
+  <div class="fr"><div class="ff">PERCENTILE.INC(r,p)</div><div class="fd">Any percentile — e.g., 0.95 for 95th pct</div></div>
+  <div class="fr"><div class="ff">CORREL(arr1, arr2)</div><div class="fd">Pearson correlation: -1 to +1</div></div>
+  <div class="fr"><div class="ff">FREQUENCY(data, bins)</div><div class="fd">Array formula — Ctrl+Shift+Enter (legacy)</div></div>
+  <div class="fr"><div class="ff">Z-Score formula</div><div class="fd">=(x − AVERAGE) / STDEV.S — standardize to mean=0, σ=1</div></div>
+  <div class="fr"><div class="ff">Min-Max formula</div><div class="fd">=(x − MIN) / (MAX − MIN) — scale to 0–1</div></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <a class="nb2" href="Day2_Power_Formulas.html">← Day 2: Formulas</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">Day 3 Complete ✓<br><span style="color:var(--accent);">Day 4: Data Cleaning →</span></div>
+  <a class="nb2 pr" href="#">Day 4: Data Cleaning →</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>

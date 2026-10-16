@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 10 — Conditional Probability</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+table{width:100%; border-collapse:collapse; margin:12px 0; font-family:var(--font-mono); font-size:14px;}
+th,td{border:1px solid var(--line); padding:8px 10px; text-align:center;}
+th{background:var(--accent-soft); color:var(--accent);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.ctable{width:100%; border-collapse:collapse; margin:14px 0; font-family:var(--font-mono);}
+.ctable th, .ctable td{border:1px solid #3a4658; padding:8px; text-align:center;}
+.ctable th{background:#2a3442; color:#f0dcc8;}
+.ctable input{width:60px; padding:6px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono); text-align:center;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:14px; line-height:2;}
+.stat-badge{display:inline-block; background:#2a3442; padding:6px 12px; border-radius:4px; margin-right:8px; margin-bottom:8px;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 10 of 210 · Phase 1: Statistics & Probability Week</span>
+    <h1>Conditional Probability</h1>
+    <div class="subtitle">~2 hours · Sets up Bayes' Theorem tomorrow — pay close attention today</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Spam filters, medical diagnosis models, and recommendation engines all answer some version of: <strong>"given that I already know X happened, what's the probability Y also happens?"</strong> That's exactly what conditional probability formalizes. It's also the single building block behind Naive Bayes, an entire classification algorithm you'll build from scratch in Phase 3.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> What is conditional probability?</h2>
+  <p>Conditional probability asks: <strong>given that event B has already happened, what's the probability of event A?</strong> Written as:</p>
+  <div class="eq">P(A | B) = P(A and B) / P(B)</div>
+  <p>Read "P(A | B)" as "the probability of A, given B." The key idea: <strong>knowing B happened shrinks your sample space</strong> — you're no longer looking at all possible outcomes, only the ones where B is true.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Worked example (email spam)</h2>
+  <div class="panel">
+    <p><strong>1,000 emails, categorized:</strong></p>
+    <table>
+      <tr><th></th><th>Contains "free"</th><th>Doesn't contain "free"</th><th>Total</th></tr>
+      <tr><th>Spam</th><td>180</td><td>20</td><td>200</td></tr>
+      <tr><th>Not spam</th><td>60</td><td>740</td><td>800</td></tr>
+      <tr><th>Total</th><td>240</td><td>760</td><td>1000</td></tr>
+    </table>
+    <p><strong>Question:</strong> Given an email contains the word "free," what's the probability it's spam? P(Spam | "free")</p>
+    <p>We restrict our attention ONLY to the "contains free" column (240 emails total) — that's our new, shrunk sample space.</p>
+    <p>P(Spam | "free") = 180 / 240 = <strong>0.75</strong></p>
+    <p>Compare this to the overall P(Spam) = 200/1000 = 0.2 — knowing the email contains "free" massively increases the estimated spam probability, from 20% to 75%. That shift is the entire point of conditional probability.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Real-world example (cross-selling)</h2>
+  <div class="panel">
+    <p class="example-tag">Business example — market basket analysis</p>
+    <p>A store's transaction data over 500 purchases:</p>
+    <table>
+      <tr><th></th><th>Bought Bread</th><th>Didn't buy Bread</th><th>Total</th></tr>
+      <tr><th>Bought Butter</th><td>150</td><td>30</td><td>180</td></tr>
+      <tr><th>Didn't buy Butter</th><td>50</td><td>270</td><td>320</td></tr>
+      <tr><th>Total</th><td>200</td><td>300</td><td>500</td></tr>
+    </table>
+    <p>P(Butter | Bread) = 150/200 = <strong>0.75</strong> — 75% of customers who buy bread also buy butter. This is exactly the logic behind "customers who bought this also bought..." recommendations you see on e-commerce sites — it's conditional probability computed at massive scale across millions of transactions.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> The order matters — P(A|B) ≠ P(B|A)</h2>
+  <div class="panel">
+    <p>From the spam table: P(Spam | "free") = 0.75 (75% of "free" emails are spam).</p>
+    <p>But P("free" | Spam) = 180/200 = <strong>0.9</strong> (90% of spam emails contain "free").</p>
+    <p>These are two completely different numbers answering two completely different questions. <strong>This exact confusion — mixing up P(A|B) with P(B|A) — is the single most common mistake in probability, and it's precisely what tomorrow's Bayes' Theorem exists to correctly untangle.</strong></p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Independence</h2>
+  <p>Two events are <strong>independent</strong> if knowing one happened tells you nothing about the other — mathematically, P(A|B) = P(A).</p>
+  <div class="panel">
+    <p><strong>Example:</strong> Does the weather today affect a coin flip result? No — P(Heads | Raining) = P(Heads) = 0.5. Weather and coin flips are independent.</p>
+    <p>Compare this to the bread/butter example: P(Butter | Bread) = 0.75, while overall P(Butter) = 180/500 = 0.36. Since these differ, buying bread and buying butter are <strong>NOT independent</strong> — they're related purchase behaviors.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Confusing P(A|B) with P(B|A).</strong> Always double-check which event is the "given" condition — it changes the denominator entirely.</p>
+    <p><strong>Mistake 2 — Using the full total instead of the restricted total.</strong> Once you condition on B, your denominator becomes the count of B only, not the grand total.</p>
+    <p><strong>Mistake 3 — Assuming independence without checking.</strong> Many real-world events look independent but aren't (or vice versa) — always compare P(A|B) to P(A) before assuming.</p>
+    <p><strong>Mistake 4 — Forgetting conditional probability requires P(B) &gt; 0.</strong> You can't condition on an event that never happens — the formula breaks (division by zero).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Two-Way Table Calculator</h2>
+  <div class="solver">
+    <h3>Edit the table, get every conditional probability instantly</h3>
+    <table class="ctable">
+      <tr><th></th><th>Condition B: Yes</th><th>Condition B: No</th></tr>
+      <tr><th>Event A: Yes</th><td><input type="number" id="ab" value="150"></td><td><input type="number" id="anb" value="30"></td></tr>
+      <tr><th>Event A: No</th><td><input type="number" id="nab" value="50"></td><td><input type="number" id="nanb" value="270"></td></tr>
+    </table>
+    <button onclick="calcConditional()">Calculate All Probabilities</button>
+    <div class="solver-result" id="result"></div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Default values are the bread/butter example — change them to any 2x2 scenario you like (e.g., smoker vs. disease, ad clicked vs. purchase made).</p>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Tomorrow you'll learn Bayes' Theorem — the formula that lets you correctly flip P(A|B) into P(B|A) when you only know one direction. It's arguably the single most important formula in all of ML for handling uncertainty, and today's foundation makes it click immediately.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 10 of 210 · AI & ML Study Plan · Phase 1: Statistics & Probability Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "200 students: 120 study Math, 80 study Science, 50 study both. Find P(Science | Math).", steps: "P(Science and Math) = 50/200 = 0.25. P(Math) = 120/200 = 0.6. P(Science|Math) = 0.25/0.6 ≈ 0.417" },
+  { q: "From a deck of 52 cards, find P(King | card is a face card). (12 face cards: 4 Kings, 4 Queens, 4 Jacks)", steps: "P(King and face card) = 4/52. P(face card) = 12/52. P(King|face) = (4/52)/(12/52) = 4/12 ≈ 0.333" },
+  { q: "A table: 300 customers, 90 bought Product A, 45 of those also bought Product B. Find P(B | A).", steps: "P(B|A) = 45/90 = 0.5" },
+  { q: "Using the table above, if 60 total customers bought Product B, is buying A and B independent? (P(B)=60/300=0.2, P(B|A)=0.5)", steps: "No — P(B|A)=0.5 ≠ P(B)=0.2, so buying A makes buying B far more likely. Not independent." },
+  { q: "500 patients tested: 50 have a disease, of those 45 tested positive. 450 don't have disease, 27 falsely tested positive. Find P(positive test | has disease).", steps: "P(positive|disease) = 45/50 = 0.9" },
+  { q: "Using the same data, find P(has disease | positive test). Total positives = 45+27 = 72", steps: "P(disease|positive) = 45/72 ≈ 0.625 — notice this is a DIFFERENT number from the previous question!" },
+  { q: "A survey: 400 people, 250 are employed, 180 of the employed have a credit card. Find P(credit card | employed).", steps: "P(card|employed) = 180/250 = 0.72" },
+  { q: "If P(A|B) = P(A) exactly, what does that tell you about events A and B?", steps: "They are independent — knowing B happened doesn't change the probability of A at all." },
+  { q: "2000 website visitors: 300 clicked an ad, 45 of those made a purchase. Find P(purchase | clicked ad).", steps: "P(purchase|clicked) = 45/300 = 0.15" },
+  { q: "Why is P(A|B) generally NOT equal to P(B|A)? Explain using the spam/'free' example from today.", steps: "They condition on different sample spaces — P(Spam|'free')=0.75 restricts to 'free' emails, while P('free'|Spam)=0.9 restricts to spam emails. Different denominators, different questions." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+function calcConditional(){
+  const ab = parseFloat(document.getElementById('ab').value) || 0;
+  const anb = parseFloat(document.getElementById('anb').value) || 0;
+  const nab = parseFloat(document.getElementById('nab').value) || 0;
+  const nanb = parseFloat(document.getElementById('nanb').value) || 0;
+
+  const total = ab+anb+nab+nanb;
+  const totalB = ab+nab;
+  const totalNotB = anb+nanb;
+  const totalA = ab+anb;
+  const totalNotA = nab+nanb;
+
+  const pA = totalA/total;
+  const pB = totalB/total;
+  const pAgivenB = totalB>0 ? ab/totalB : NaN;
+  const pBgivenA = totalA>0 ? ab/totalA : NaN;
+  const pNotAgivenB = totalB>0 ? nab/totalB : NaN;
+
+  const res = document.getElementById('result');
+  res.innerHTML = `
+    <div class="stat-badge">P(A) = ${pA.toFixed(3)}</div>
+    <div class="stat-badge">P(B) = ${pB.toFixed(3)}</div>
+    <div class="stat-badge">P(A | B) = ${pAgivenB.toFixed(3)}</div>
+    <div class="stat-badge">P(B | A) = ${pBgivenA.toFixed(3)}</div>
+    <div class="stat-badge">P(not A | B) = ${pNotAgivenB.toFixed(3)}</div>
+    <br>
+    <span style="color:${Math.abs(pAgivenB-pA) < 0.02 ? '#2f6d4f' : '#e8a86b'}">
+    ${Math.abs(pAgivenB-pA) < 0.02 ? 'A and B appear roughly independent (P(A|B) ≈ P(A))' : 'A and B appear related (P(A|B) ≠ P(A)) — not independent'}
+    </span>
+  `;
+}
+calcConditional();
+
+const quizData = [
+  { q: "P(A|B) means:", opts: ["Probability of A and B both happening","Probability of A, given that B has already happened","Probability of B, given A","Probability of A or B"], correct: 1, explain: "P(A|B) restricts the sample space to only cases where B is true, then asks about A within that space." },
+  { q: "The formula for conditional probability is:", opts: ["P(A|B) = P(A) × P(B)","P(A|B) = P(A and B) / P(B)","P(A|B) = P(B) / P(A)","P(A|B) = P(A) + P(B)"], correct: 1, explain: "You divide the joint probability by the probability of the condition." },
+  { q: "In the spam example, P(Spam|'free') = 0.75 while P('free'|Spam) = 0.9. What does this show?", opts: ["A calculation error was made","P(A|B) and P(B|A) are usually the same","P(A|B) and P(B|A) answer different questions and are usually different","Spam emails never contain 'free'"], correct: 2, explain: "They condition on different denominators (all 'free' emails vs. all spam emails) so they're generally different numbers." },
+  { q: "If P(A|B) = P(A), events A and B are:", opts: ["Dependent","Independent","Impossible","Identical"], correct: 1, explain: "This is the definition of independence — B tells you nothing new about A." },
+  { q: "80 people surveyed: 30 exercise regularly, 20 of those also eat healthy. Find P(eat healthy | exercise).", opts: ["0.20","0.25","0.375","0.667"], correct: 3, explain: "20/30 ≈ 0.667." },
+  { q: "Which is the correct denominator for P(A|B)?", opts: ["Total sample size","Count of event A only","Count of event B only","Count of neither A nor B"], correct: 2, explain: "Conditioning on B means restricting to the count of B — that becomes your new denominator." },
+  { q: "Why is conditional probability essential for spam filters?", opts: [
+      "It isn't used in spam filters",
+      "Because they estimate P(Spam | words in the email) using patterns learned from past labeled emails",
+      "Spam filters only use random guessing",
+      "It's only used for sorting emails alphabetically"
+    ], correct: 1, explain: "Spam filters compute conditional probabilities of spam given the presence of certain words/patterns, learned from historical data." },
+  { q: "What must be true for P(A|B) to even be calculable?", opts: ["P(A) must be 0","P(B) must be greater than 0","A and B must be independent","A and B must be the same event"], correct: 1, explain: "You divide by P(B), so P(B) = 0 would make the formula undefined (division by zero)." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

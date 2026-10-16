@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 39 — Return Values & Default Arguments</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:220px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 39 of 210 · Phase 2: Python & Core AI Foundation</span>
+    <h1>Return Values & Default Arguments</h1>
+    <div class="subtitle">~2 hours · Making functions hand back results instead of just printing</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Yesterday's functions could only print. That's fine for a final display, but useless if you want to <strong>use</strong> the result — feed it into another calculation, store it in a list, or pass it to a second function. <code>return</code> is what makes functions truly composable, which is exactly how real ML pipelines chain steps together (load → clean → train → predict, each function handing its output to the next).</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> The return statement</h2>
+  <div class="code">def square(n):
+    return n * n
+
+result = square(5)
+print(result)   # 25</div>
+  <p><strong>print() just displays a value on screen — it doesn't give you anything back to use in code.</strong> <code>return</code> sends a value back to wherever the function was called, so you can capture it in a variable, use it in a larger expression, or pass it straight into another function.</p>
+  <p><code>return</code> also immediately ends the function — any code after a return statement inside that same execution path never runs.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Functions with no explicit return</h2>
+  <div class="code">def greet(name):
+    print("Hello " + name)
+    # no return statement
+
+x = greet("Asha")
+print(x)   # None — since greet() never explicitly returns a value</div>
+  <p>If a function never hits a <code>return</code> statement, calling it produces <strong><code>None</code></strong> by default. This is exactly why yesterday's print-only functions couldn't have their "result" meaningfully captured — there was never anything to capture.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Default arguments</h2>
+  <div class="code">def apply_discount(price, discount_percent=10):
+    return price - (price * discount_percent / 100)
+
+print(apply_discount(1000))       # 900.0 — uses the default 10%
+print(apply_discount(1000, 25))   # 750.0 — overrides the default</div>
+  <p>A default argument lets a parameter be optional — if the caller doesn't supply it, the default value is used instead. This is genuinely common in real libraries (including ones you'll use in Phase 3) where most function calls only need to specify a couple of the available options, letting sensible defaults handle the rest.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (composable discount calculator)</h2>
+  <div class="panel">
+    <p class="example-tag">Now genuinely reusable in a bigger calculation</p>
+    <div class="code">def apply_discount(price, discount_percent=10):
+    return price - (price * discount_percent / 100)
+
+cart_prices = [500, 1200, 300]
+total = 0
+for i in range(len(cart_prices)):
+    discounted = apply_discount(cart_prices[i])
+    total = total + discounted
+
+print(total)   # 1800.0 — sum of all discounted prices</div>
+    <p>Because <code>apply_discount</code> RETURNS a value instead of printing it, you can feed that result directly into a running total — this simply wasn't possible with yesterday's print-only version. This is the difference between a function that just displays something and one that actually contributes to further computation.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (break-even, now returning a value)</h2>
+  <div class="panel">
+    <p class="example-tag">Reconnects to Day 38's break-even function</p>
+    <div class="code">def units_to_breakeven(fixed_cost, price_per_unit, cost_per_unit=40):
+    profit_per_unit = price_per_unit - cost_per_unit
+    return fixed_cost / profit_per_unit
+
+units = units_to_breakeven(4000, 90)          # uses default cost_per_unit=40
+print(units)                                   # 80.0
+
+units2 = units_to_breakeven(4000, 90, 50)     # overrides the default
+print(units2)                                  # 100.0</div>
+    <p>Now the result can be used in further code — compared against a target, added to a report, plotted — instead of only ever being printed directly.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Using print() inside a function, then trying to use its "result" elsewhere.</strong> <code>x = my_function()</code> where the function only prints (no return) gives you <code>x = None</code>, not the printed value.</p>
+    <p><strong>Mistake 2 — Forgetting return ends the function immediately.</strong> Any code written after a reached <code>return</code> statement (at the same execution path) never executes.</p>
+    <p><strong>Mistake 3 — Putting a default argument before a non-default one.</strong> <code>def f(x=5, y):</code> is a syntax error — parameters with defaults must come AFTER all parameters without defaults.</p>
+    <p><strong>Mistake 4 — Assuming a function must always return the same type.</strong> Python doesn't enforce this, but it's a real source of bugs (e.g., a function returning a number in one path and None in another) — good practice is to make sure every path through a function returns something sensible.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now supports return & defaults)</h2>
+  <div class="solver">
+    <h3>Function calls can now be used inside expressions and assignments</h3>
+    <textarea id="codeInput">def apply_discount(price, discount_percent=10):
+    return price - (price * discount_percent / 100)
+
+cart_prices = [500, 1200, 300]
+total = 0
+for i in range(len(cart_prices)):
+    discounted = apply_discount(cart_prices[i])
+    total = total + discounted
+
+print(total)
+print(apply_discount(1000, 25))</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 40 covers *args and **kwargs — ways to write functions that accept a flexible, variable number of arguments, closing out this stretch of core function skills.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 39 of 210 · AI & ML Study Plan · Phase 2: Python & Core AI Foundation</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Write a function 'cube' that RETURNS the cube of a number (not prints).", steps: "def cube(n):\n    return n ** 3" },
+  { q: "x = cube(3) using the function above. What is x?", steps: "27" },
+  { q: "def greet(name): print('Hi ' + name). What does y = greet('Sam') set y to?", steps: "None — greet() never returns a value, only prints" },
+  { q: "Write a function 'get_area' with parameters (length, width=1) that returns length*width.", steps: "def get_area(length, width=1):\n    return length * width" },
+  { q: "Using the function above, what does get_area(5) return? (no width given)", steps: "5 — uses the default width=1, so 5*1=5" },
+  { q: "What does get_area(5, 4) return?", steps: "20 — overrides the default: 5*4=20" },
+  { q: "def f(x=1, y): return x+y — is this valid Python? Why or why not?", steps: "No — this is a SyntaxError. Parameters with defaults must come after all non-default parameters, not before." },
+  { q: "def check(n):\n    if n > 0:\n        return 'positive'\n    return 'not positive'\nWhat does check(-3) return?", steps: "'not positive' — the if-condition (n>0) is False for -3, so execution falls through to the final return statement." },
+  { q: "prices=[100,200,300]. Using apply_discount(price, discount_percent=10) which returns price-(price*discount_percent/100), write a loop summing all discounted prices.", steps: "total = 0\nfor i in range(len(prices)):\n    total = total + apply_discount(prices[i])" },
+  { q: "In your own words: why couldn't yesterday's print-only functions contribute to further calculations, while today's return-based ones can?", steps: "print() only displays text on screen — it hands nothing back to the calling code. return actually produces a usable value that can be stored in a variable, added to a total, or passed into another function." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with return + default arguments ---
+let funcs = {};
+const RETURN_SIGNAL_TAG = '__return__';
+
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val instanceof Map){
+    const parts = [...val.entries()].map(([k,v]) => `${typeof k==='string'?`'${k}'`:pyRepr(k)}: ${typeof v==='string'?`'${v}'`:pyRepr(v)}`);
+    return '{' + parts.join(', ') + '}';
+  }
+  if(val instanceof Set){
+    if(val.size === 0) return 'set()';
+    return '{' + [...val].map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v)).join(', ') + '}';
+  }
+  if(Array.isArray(val)){
+    const items = val.map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v));
+    if(val.__isTuple){ if(val.length===1) return '('+items[0]+',)'; return '('+items.join(', ')+')'; }
+    return '[' + items.join(', ') + ']';
+  }
+  return String(val);
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))){
+    return value.slice(1,-1);
+  }
+  if(!isNaN(parseFloat(value)) && isFinite(value)){
+    return value.includes('.') ? parseFloat(value) : parseInt(value);
+  }
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pyIndex(arr, idx){
+  let i = idx;
+  if(i < 0) i = arr.length + i;
+  if(i < 0 || i >= arr.length) throw new Error('IndexError');
+  return arr[i];
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || v instanceof Set || v instanceof Map) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/\bstr\(/g, 'String(').replace(/\bint\(/g, 'Math.trunc(').replace(/\bfloat\(/g, 'Number(');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+
+  const callMatch = arg.match(/^(\w+)\((.*)\)$/);
+  if(callMatch && funcs[callMatch[1]]){
+    return callFunction(callMatch[1], callMatch[2], vars);
+  }
+  const idxMatch = arg.match(/^(\w+)\[(.*)\]$/);
+  if(idxMatch && (vars[idxMatch[1]] instanceof Map || Array.isArray(vars[idxMatch[1]]))){
+    const container = vars[idxMatch[1]];
+    if(container instanceof Map){
+      const key = resolveSimple(idxMatch[2], vars);
+      if(!container.has(key)) throw new Error('KeyError');
+      return container.get(key);
+    }
+    return pyIndex(container, evalGeneral(idxMatch[2], vars));
+  }
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p=>resolveSimple(p, vars));
+  }
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch){ const v = vars[lenMatch[1]]; return (v instanceof Map || v instanceof Set) ? v.size : v.length; }
+
+  // handle expressions containing a function call as a sub-part, e.g. print(apply_discount(1000, 25))
+  // by substituting call results first
+  let substituted = arg;
+  let found = true;
+  let guard = 0;
+  while(found && guard < 10){
+    found = false;
+    substituted = substituted.replace(/(\w+)\(([^()]*)\)/, (whole, fname, argsInner) => {
+      if(funcs[fname]){
+        found = true;
+        const val = callFunction(fname, argsInner, vars);
+        return typeof val === 'string' ? JSON.stringify(val) : pyRepr(val) === 'None' ? 'null' : (typeof val === 'boolean' ? (val?'true':'false') : String(val));
+      }
+      return whole;
+    });
+    guard++;
+  }
+  return evalGeneral(substituted, vars);
+}
+
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+
+function execLine(line, vars, output){
+  if(line.match(/^return(\s|$)/)){
+    const exprPart = line.replace(/^return\s*/, '').trim();
+    const val = exprPart === '' ? null : evalComplex(exprPart, vars);
+    const sig = new Error(RETURN_SIGNAL_TAG);
+    sig.__return = true;
+    sig.value = val;
+    throw sig;
+  }
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  const bareCall = line.match(/^(\w+)\((.*)\)$/);
+
+  if(printMatch){
+    output.push(pyRepr(evalComplex(printMatch[1], vars)));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars);
+  } else if(bareCall && funcs[bareCall[1]]){
+    callFunction(bareCall[1], bareCall[2], vars);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+
+function callFunction(fname, argsStr, callerVars){
+  const fn = funcs[fname];
+  const argExprs = splitTopLevel(argsStr, ',').filter(s=>s.trim()!=='');
+  const localVars = Object.assign({}, callerVars);
+  for(let idx=0; idx<fn.params.length; idx++){
+    const p = fn.params[idx];
+    if(idx < argExprs.length){
+      localVars[p.name] = evalComplex(argExprs[idx], callerVars);
+    } else if(p.hasDefault){
+      localVars[p.name] = resolveSimple(p.defaultExpr, callerVars);
+    } else {
+      throw new Error(`TypeError: ${fname}() missing required argument: '${p.name}'`);
+    }
+  }
+  const output = [];
+  let returnValue = null;
+  try{
+    execBlock(fn.lines, fn.bStart, fn.bodyIndent, localVars, output, {count:0});
+  } catch(sig){
+    if(sig && sig.__return){ returnValue = sig.value; }
+    else throw sig;
+  }
+  return returnValue;
+}
+
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+
+    const defMatch = trimmed.match(/^def (\w+)\((.*)\):$/);
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+
+    if(defMatch){
+      const fname = defMatch[1];
+      const paramStrs = defMatch[2].split(',').map(s=>s.trim()).filter(s=>s!=='');
+      const params = paramStrs.map(p => {
+        if(p.includes('=')){
+          const [name, def] = p.split('=');
+          return {name: name.trim(), hasDefault: true, defaultExpr: def.trim()};
+        }
+        return {name: p, hasDefault: false};
+      });
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      funcs[fname] = {params, bStart, bEnd, bodyIndent: baseIndent+4, lines};
+      i = bEnd;
+      continue;
+    } else if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else {
+      execLine(trimmed, vars, output);
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  funcs = {};
+  const output = [];
+  try{
+    execBlock(lines, 0, 0, vars, output, {count:0});
+  } catch(err){
+    if(!(err && err.__return)) output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "What does return do that print() does not?", opts: [
+      "Displays text on screen",
+      "Hands a value back to the calling code so it can be stored or reused",
+      "Nothing, they're identical",
+      "Deletes the function"
+    ], correct: 1, explain: "print() only displays; return actually gives back a usable value." },
+  { q: "def f(n): return n+1 (no print anywhere). What does print(f(4)) output?", opts: ["Nothing","4","5","Error"], correct: 2, explain: "f(4) returns 5, which print() then displays." },
+  { q: "def g(name): print('hi ' + name) — no return. What is x = g('Sam') equal to?", opts: ["'hi Sam'","Sam","None","Error"], correct: 2, explain: "Without an explicit return, calling a function always yields None." },
+  { q: "def area(l, w=2): return l*w. What does area(5) return?", opts: ["5","10","7","Error"], correct: 1, explain: "Uses the default w=2: 5*2=10." },
+  { q: "What does area(5, 3) return, using the same function?", opts: ["10","15","8","Error"], correct: 1, explain: "The default is overridden: 5*3=15." },
+  { q: "Is 'def f(x=1, y): return x+y' valid Python?", opts: ["Yes, always valid","No — default parameters must come after all non-default ones","Only if x and y are numbers","Only inside a class"], correct: 1, explain: "Non-default parameters cannot follow a default parameter in the definition." },
+  { q: "Once a function hits a return statement, what happens to any code written after it (same path)?", opts: ["It still runs","It's skipped — the function exits immediately","It causes an error","It runs twice"], correct: 1, explain: "return immediately ends the function's execution." },
+  { q: "Why are default arguments useful in real libraries you'll use later (like scikit-learn)?", opts: [
+      "They aren't actually used in real libraries",
+      "They let most function calls specify only the few options that matter, while sensible defaults handle the rest",
+      "They make functions run faster",
+      "They're required by Python syntax for every function"
+    ], correct: 1, explain: "Real-world functions often have many optional settings — defaults keep everyday usage simple." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

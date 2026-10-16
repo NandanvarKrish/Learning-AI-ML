@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matplotlib – Day 2 | Styling, Subplots & Customisation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F5F3FF;--surface:#FFFFFF;--border:#DDD6FE;--accent:#6D28D9;--accent2:#3B0764;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--teal:#0891B2;--orange:#EA580C;
+    --text:#1E0B3A;--muted:#7C3AED;--code-bg:#160A2E;--code-text:#DDD6FE;--tag-bg:#EDE9FE;--tag-text:#3B0764;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(109,40,217,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#6D28D9 0%,#3B0764 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#DDD6FE;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#8B5CF6;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#C4B5FD;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#4C1D95;font-style:italic;} .op{color:#DDD6FE;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.green .callout-title{color:var(--green);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.teal .callout-title{color:var(--teal);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:14px 0;}
+  .swatch{border-radius:8px;height:50px;display:flex;align-items:flex-end;padding:6px;font-size:10px;color:#fff;font-family:'JetBrains Mono',monospace;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.4);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#3B0764,#6D28D9);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#6D28D9,#3B0764);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#6D28D9,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">📊 Matplotlib</div><span class="sep">|</span><span class="day-label">Day 2 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">40%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:40%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Matplotlib Full Course · Day 2</div>
+  <h1>Styling, Subplots &amp; <span>Customisation</span></h1>
+  <p>Transform default charts into polished, professional visuals — styles, colormaps, complex layouts with GridSpec, and full typography control.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🎨 Styles &amp; Themes</span>
+    <span class="hero-pill">🌈 Colormaps</span>
+    <span class="hero-pill">🧩 GridSpec Layouts</span>
+    <span class="hero-pill">🔤 Typography</span>
+    <span class="hero-pill">📐 Shared Axes</span>
+    <span class="hero-pill">🖼️ Insets &amp; Zoom</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🎨</div>
+    <div><h2>Styles &amp; Themes — Instant Visual Overhaul</h2><p>Built-in style sheets that transform your chart's entire look in one line</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Matplotlib ships with dozens of built-in <strong>style sheets</strong> that change fonts, colors, gridlines, and backgrounds all at once. Instead of manually styling every element, apply a theme globally.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="cm"># See all available styles</span>
+<span class="fn">print</span>(<span class="op">plt</span>.style.available)
+<span class="cm"># ['default', 'classic', 'ggplot', 'seaborn-v0_8', 'seaborn-v0_8-darkgrid',
+#  'fivethirtyeight', 'bmh', 'dark_background', 'tableau-colorblind10', ...]</span>
+
+<span class="cm"># Apply a style GLOBALLY — affects every plot after this line</span>
+<span class="op">plt</span>.style.<span class="fn">use</span>(<span class="st">'ggplot'</span>)
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>()
+ax.<span class="fn">plot</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>], [<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>])
+
+<span class="cm"># Reset to default</span>
+<span class="op">plt</span>.style.<span class="fn">use</span>(<span class="st">'default'</span>)
+
+<span class="cm"># Apply a style TEMPORARILY, only within the 'with' block</span>
+<span class="kw">with</span> <span class="op">plt</span>.style.<span class="fn">context</span>(<span class="st">'dark_background'</span>):
+    fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>()
+    ax.<span class="fn">plot</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>], [<span class="nm">1</span>,<span class="nm">4</span>,<span class="nm">9</span>])
+<span class="cm"># Style reverts back automatically after the 'with' block</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Style</th><th>Look</th></tr>
+        <tr><td><code>'default'</code></td><td>Matplotlib's standard modern look</td></tr>
+        <tr><td><code>'ggplot'</code></td><td>R's ggplot2 style — gray background, white gridlines</td></tr>
+        <tr><td><code>'seaborn-v0_8-darkgrid'</code></td><td>Seaborn's clean grid style</td></tr>
+        <tr><td><code>'fivethirtyeight'</code></td><td>FiveThirtyEight.com's bold journalism style</td></tr>
+        <tr><td><code>'bmh'</code></td><td>Bayesian Methods for Hackers book style</td></tr>
+        <tr><td><code>'dark_background'</code></td><td>Dark theme for presentations</td></tr>
+        <tr><td><code>'tableau-colorblind10'</code></td><td>Colorblind-safe palette</td></tr>
+      </table>
+    </div>
+
+    <h3>rcParams — Global Default Settings</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># rcParams controls EVERY default setting Matplotlib uses</span>
+<span class="op">plt</span>.rcParams[<span class="st">'figure.figsize'</span>] = (<span class="nm">10</span>, <span class="nm">6</span>)     <span class="cm"># default size for ALL figures</span>
+<span class="op">plt</span>.rcParams[<span class="st">'font.size'</span>] = <span class="nm">12</span>              <span class="cm"># default font size</span>
+<span class="op">plt</span>.rcParams[<span class="st">'axes.grid'</span>] = <span class="kw">True</span>              <span class="cm"># gridlines on by default</span>
+<span class="op">plt</span>.rcParams[<span class="st">'lines.linewidth'</span>] = <span class="nm">2</span>          <span class="cm"># default line thickness</span>
+<span class="op">plt</span>.rcParams[<span class="st">'axes.spines.top'</span>] = <span class="kw">False</span>       <span class="cm"># hide top border by default</span>
+<span class="op">plt</span>.rcParams[<span class="st">'axes.spines.right'</span>] = <span class="kw">False</span>     <span class="cm"># hide right border by default</span>
+
+<span class="cm"># Reset all rcParams back to Matplotlib defaults</span>
+<span class="op">plt</span>.rcdefaults()
+
+<span class="cm"># Set multiple at once</span>
+<span class="op">plt</span>.rcParams.<span class="fn">update</span>({
+    <span class="st">'font.family'</span>: <span class="st">'sans-serif'</span>,
+    <span class="st">'axes.titlesize'</span>: <span class="nm">16</span>,
+    <span class="st">'axes.labelsize'</span>: <span class="nm">12</span>,
+    <span class="st">'legend.fontsize'</span>: <span class="nm">10</span>
+})</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">🌈</div>
+    <div><h2>Colors &amp; Colormaps</h2><p>Choosing colors that communicate meaning, not just decoration</p></div>
+  </div>
+  <div class="section-body">
+
+    <h3>Specifying Colors — 5 Ways</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># 1. Named colors</span>
+ax.<span class="fn">plot</span>(x, y, color=<span class="st">'steelblue'</span>)
+
+<span class="cm"># 2. Hex codes</span>
+ax.<span class="fn">plot</span>(x, y, color=<span class="st">'#3B82F6'</span>)
+
+<span class="cm"># 3. RGB tuple (0-1 scale)</span>
+ax.<span class="fn">plot</span>(x, y, color=(<span class="nm">0.2</span>, <span class="nm">0.4</span>, <span class="nm">0.9</span>))
+
+<span class="cm"># 4. RGBA tuple (with transparency)</span>
+ax.<span class="fn">plot</span>(x, y, color=(<span class="nm">0.2</span>, <span class="nm">0.4</span>, <span class="nm">0.9</span>, <span class="nm">0.5</span>))
+
+<span class="cm"># 5. Grayscale as a string of a number 0-1</span>
+ax.<span class="fn">plot</span>(x, y, color=<span class="st">'0.5'</span>)   <span class="cm"># mid-gray</span>
+
+<span class="cm"># Get colors from the current style cycle</span>
+colors = <span class="op">plt</span>.rcParams[<span class="st">'axes.prop_cycle'</span>].<span class="fn">by_key</span>()[<span class="st">'color'</span>]
+<span class="fn">print</span>(colors)   <span class="cm"># ['#1f77b4', '#ff7f0e', '#2ca02c', ...] default matplotlib cycle</span></pre>
+    </div>
+
+    <h3>Colormap Categories — Choose the Right One</h3>
+    <div class="swatch-grid">
+      <div class="swatch" style="background:linear-gradient(90deg,#440154,#3B528B,#21908C,#5DC863,#FDE725)">viridis (sequential)</div>
+      <div class="swatch" style="background:linear-gradient(90deg,#67001F,#F7F7F7,#053061)">RdBu (diverging)</div>
+      <div class="swatch" style="background:linear-gradient(90deg,#E41A1C,#377EB8,#4DAF4A,#984EA3,#FF7F00)">Set1 (qualitative)</div>
+      <div class="swatch" style="background:linear-gradient(90deg,#FFF7EC,#FDBB84,#B30000)">OrRd (sequential)</div>
+      <div class="swatch" style="background:linear-gradient(90deg,#00429D,#FFFFE0,#93003A)">coolwarm (diverging)</div>
+      <div class="swatch" style="background:linear-gradient(90deg,#000004,#3B0F70,#8C2981,#DE4968,#FE9F6D,#FCFDBF)">magma (sequential)</div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Category</th><th>When to Use</th><th>Examples</th></tr>
+        <tr><td><strong>Sequential</strong></td><td>Data that goes from low → high (one direction)</td><td>viridis, plasma, Blues, OrRd</td></tr>
+        <tr><td><strong>Diverging</strong></td><td>Data with a meaningful midpoint (e.g., 0, average)</td><td>RdBu, coolwarm, PiYG, seismic</td></tr>
+        <tr><td><strong>Qualitative</strong></td><td>Distinct unordered categories</td><td>Set1, Set2, tab10, Pastel1</td></tr>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Applying colormaps</span>
+sc = ax.<span class="fn">scatter</span>(x, y, c=values, cmap=<span class="st">'viridis'</span>)
+fig.<span class="fn">colorbar</span>(sc, ax=ax, label=<span class="st">'Value'</span>)
+
+<span class="cm"># Reversed colormap — append '_r'</span>
+ax.<span class="fn">scatter</span>(x, y, c=values, cmap=<span class="st">'viridis_r'</span>)
+
+<span class="cm"># Get discrete colors from a colormap for categorical data</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+cmap = <span class="op">plt</span>.<span class="fn">get_cmap</span>(<span class="st">'tab10'</span>)
+categories = [<span class="st">'A'</span>,<span class="st">'B'</span>,<span class="st">'C'</span>,<span class="st">'D'</span>]
+<span class="kw">for</span> i, cat <span class="kw">in</span> <span class="fn">enumerate</span>(categories):
+    ax.<span class="fn">bar</span>(cat, <span class="nm">10</span>+i, color=cmap(i))   <span class="cm"># cmap(i) returns an RGBA tuple</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Avoid 'jet' and Rainbow Colormaps</div>
+      Rainbow colormaps like <code>'jet'</code> are perceptually non-uniform — they create false visual boundaries and are not colorblind-friendly. Prefer <strong>viridis</strong>, <strong>plasma</strong>, or <strong>cividis</strong>, which are perceptually uniform and accessible.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🧩</div>
+    <div><h2>GridSpec — Complex Subplot Layouts</h2><p>Beyond simple grids — plots that span multiple rows or columns</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Regular <code>plt.subplots(nrows, ncols)</code> only creates uniform grids. <strong>GridSpec</strong> lets you build irregular layouts — like a large main chart with smaller supporting charts around it.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> matplotlib.gridspec <span class="kw">as</span> gridspec
+
+fig = <span class="op">plt</span>.<span class="fn">figure</span>(figsize=(<span class="nm">12</span>, <span class="nm">8</span>))
+gs = fig.<span class="fn">add_gridspec</span>(<span class="nm">3</span>, <span class="nm">3</span>)   <span class="cm"># 3 rows, 3 columns of "cells"</span>
+
+<span class="cm"># A big chart spanning the top 2 rows, all 3 columns</span>
+ax_main = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">0</span>:<span class="nm">2</span>, :])
+ax_main.<span class="fn">plot</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>], [<span class="nm">1</span>,<span class="nm">4</span>,<span class="nm">9</span>])
+ax_main.<span class="fn">set_title</span>(<span class="st">'Main Chart (spans top, all columns)'</span>)
+
+<span class="cm"># 3 small charts in the bottom row</span>
+ax1 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">2</span>, <span class="nm">0</span>])
+ax2 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">2</span>, <span class="nm">1</span>])
+ax3 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">2</span>, <span class="nm">2</span>])
+ax1.<span class="fn">bar</span>([<span class="st">'A'</span>,<span class="st">'B'</span>], [<span class="nm">3</span>,<span class="nm">5</span>])
+ax2.<span class="fn">hist</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">3</span>,<span class="nm">3</span>])
+ax3.<span class="fn">scatter</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>], [<span class="nm">3</span>,<span class="nm">1</span>,<span class="nm">2</span>])
+
+fig.<span class="fn">tight_layout</span>()
+
+<span class="cm"># Custom row/column size ratios</span>
+gs2 = fig.<span class="fn">add_gridspec</span>(<span class="nm">2</span>, <span class="nm">2</span>,
+                        width_ratios=[<span class="nm">2</span>, <span class="nm">1</span>],    <span class="cm"># left column 2x wider than right</span>
+                        height_ratios=[<span class="nm">1</span>, <span class="nm">2</span>],   <span class="cm"># bottom row 2x taller than top</span>
+                        hspace=<span class="nm">0.3</span>, wspace=<span class="nm">0.3</span>)   <span class="cm"># spacing between cells</span>
+
+<span class="cm"># mosaic — an even simpler modern way (Matplotlib 3.3+)</span>
+fig, axes = <span class="op">plt</span>.<span class="fn">subplot_mosaic</span>(<span class="st">"""
+    AAB
+    AAC
+    DEF
+"""</span>, figsize=(<span class="nm">10</span>,<span class="nm">7</span>))
+axes[<span class="st">'A'</span>].<span class="fn">set_title</span>(<span class="st">'Large plot A'</span>)
+axes[<span class="st">'B'</span>].<span class="fn">set_title</span>(<span class="st">'B'</span>)
+axes[<span class="st">'F'</span>].<span class="fn">set_title</span>(<span class="st">'F'</span>)</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 subplot_mosaic — The Modern Approach</div>
+      <code>plt.subplot_mosaic()</code> uses an ASCII-art-like string to define layout — repeated letters mean "this Axes spans these cells". It's often more intuitive than GridSpec's slice notation for complex dashboards.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🔤</div>
+    <div><h2>Typography &amp; Text Styling</h2><p>Fonts, sizes, weights, and mathematical notation</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Full font control on any text element</span>
+ax.<span class="fn">set_title</span>(<span class="st">'Sales Report'</span>,
+             fontsize=<span class="nm">18</span>,
+             fontweight=<span class="st">'bold'</span>,        <span class="cm"># 'normal', 'bold', 'light'</span>
+             fontstyle=<span class="st">'italic'</span>,       <span class="cm"># 'normal', 'italic', 'oblique'</span>
+             fontfamily=<span class="st">'serif'</span>,       <span class="cm"># 'serif', 'sans-serif', 'monospace'</span>
+             color=<span class="st">'#1E3A8A'</span>,
+             loc=<span class="st">'left'</span>)               <span class="cm"># 'left', 'center', 'right'</span>
+
+<span class="cm"># LaTeX-style mathematical notation (enclose in $...$)</span>
+ax.<span class="fn">set_xlabel</span>(<span class="st">r'$x$ (radians)'</span>)
+ax.<span class="fn">set_ylabel</span>(<span class="st">r'$\sin(\theta)$'</span>)
+ax.<span class="fn">set_title</span>(<span class="st">r'$y = \frac{1}{2}at^2 + v_0t$'</span>)
+
+<span class="cm"># Text with background box</span>
+ax.<span class="fn">text</span>(<span class="nm">0.5</span>, <span class="nm">0.9</span>, <span class="st">'Important Note'</span>,
+        transform=ax.transAxes,      <span class="cm"># coordinates as 0-1 fraction of axes, not data values</span>
+        fontsize=<span class="nm">12</span>,
+        bbox=<span class="fn">dict</span>(boxstyle=<span class="st">'round'</span>, facecolor=<span class="st">'wheat'</span>, alpha=<span class="nm">0.5</span>))
+
+<span class="cm"># Global font settings for the whole figure</span>
+<span class="op">plt</span>.rcParams[<span class="st">'font.family'</span>] = <span class="st">'DejaVu Sans'</span>
+<span class="op">plt</span>.rcParams[<span class="st">'font.size'</span>] = <span class="nm">11</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>transform=</th><th>Coordinate System</th></tr>
+        <tr><td><code>ax.transData</code> (default)</td><td>Actual data values on the axes</td></tr>
+        <tr><td><code>ax.transAxes</code></td><td>0 to 1 fraction of the Axes (0,0=bottom-left, 1,1=top-right)</td></tr>
+        <tr><td><code>fig.transFigure</code></td><td>0 to 1 fraction of the entire Figure</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">📐</div>
+    <div><h2>Shared Axes &amp; Advanced Subplot Options</h2><p>Aligning multiple charts for easy comparison</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Shared x-axis — great for stacked time series (e.g., price + volume)</span>
+fig, (ax1, ax2) = <span class="op">plt</span>.<span class="fn">subplots</span>(<span class="nm">2</span>, <span class="nm">1</span>, figsize=(<span class="nm">8</span>,<span class="nm">6</span>), sharex=<span class="kw">True</span>)
+ax1.<span class="fn">plot</span>(dates, prices)
+ax1.<span class="fn">set_ylabel</span>(<span class="st">'Price'</span>)
+ax2.<span class="fn">bar</span>(dates, volumes)
+ax2.<span class="fn">set_ylabel</span>(<span class="st">'Volume'</span>)
+<span class="cm"># Only the bottom chart shows x-axis tick labels — cleaner look</span>
+fig.<span class="fn">subplots_adjust</span>(hspace=<span class="nm">0</span>)   <span class="cm"># no vertical gap between them</span>
+
+<span class="cm"># Shared y-axis — useful for comparing distributions side by side</span>
+fig, axes = <span class="op">plt</span>.<span class="fn">subplots</span>(<span class="nm">1</span>, <span class="nm">3</span>, figsize=(<span class="nm">12</span>,<span class="nm">4</span>), sharey=<span class="kw">True</span>)
+axes[<span class="nm">0</span>].<span class="fn">hist</span>(class_a)
+axes[<span class="nm">1</span>].<span class="fn">hist</span>(class_b)
+axes[<span class="nm">2</span>].<span class="fn">hist</span>(class_c)
+<span class="cm"># All 3 share the same y-scale for direct visual comparison</span>
+
+<span class="cm"># Iterate over axes cleanly with flatten() for a grid</span>
+fig, axes = <span class="op">plt</span>.<span class="fn">subplots</span>(<span class="nm">2</span>, <span class="nm">3</span>, figsize=(<span class="nm">14</span>,<span class="nm">8</span>))
+data_sets = [d1, d2, d3, d4, d5, d6]
+<span class="kw">for</span> ax, data, title <span class="kw">in</span> <span class="fn">zip</span>(axes.<span class="fn">flatten</span>(), data_sets, titles):
+    ax.<span class="fn">hist</span>(data)
+    ax.<span class="fn">set_title</span>(title)
+fig.<span class="fn">tight_layout</span>()</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🖼️</div>
+    <div><h2>Inset Axes &amp; Zoomed Views</h2><p>Adding a mini chart inside a larger chart</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Add a small inset axes INSIDE the main plot — great for zoomed-in detail</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">6</span>))
+ax.<span class="fn">plot</span>(x, y)
+ax.<span class="fn">set_title</span>(<span class="st">'Full View with Zoomed Inset'</span>)
+
+<span class="cm"># inset position: [left, bottom, width, height] as fraction of parent axes</span>
+ax_inset = ax.<span class="fn">inset_axes</span>([<span class="nm">0.6</span>, <span class="nm">0.6</span>, <span class="nm">0.35</span>, <span class="nm">0.35</span>])
+ax_inset.<span class="fn">plot</span>(x, y)
+ax_inset.<span class="fn">set_xlim</span>(<span class="nm">2</span>, <span class="nm">4</span>)     <span class="cm"># zoom into a specific x-range</span>
+ax_inset.<span class="fn">set_ylim</span>(-<span class="nm">1</span>, <span class="nm">1</span>)
+ax_inset.<span class="fn">set_title</span>(<span class="st">'Zoomed'</span>, fontsize=<span class="nm">9</span>)
+
+<span class="cm"># Draw a box on the main plot showing what area is zoomed</span>
+ax.<span class="fn">indicate_inset_zoom</span>(ax_inset, edgecolor=<span class="st">'gray'</span>)</pre>
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">plt.style.use()</div><div class="mc-desc">Apply global theme</div><div class="mc-ex">'ggplot', 'dark_background'</div></div>
+      <div class="mini-card"><div class="mc-name">plt.rcParams</div><div class="mc-desc">Fine-grained default settings</div><div class="mc-ex">figsize, font.size</div></div>
+      <div class="mini-card"><div class="mc-name">fig.add_gridspec()</div><div class="mc-desc">Irregular grid layouts</div><div class="mc-ex">gs[0:2, :]</div></div>
+      <div class="mini-card"><div class="mc-name">plt.subplot_mosaic()</div><div class="mc-desc">ASCII-art layout definition</div><div class="mc-ex">"AAB\\nCCB"</div></div>
+      <div class="mini-card"><div class="mc-name">sharex / sharey</div><div class="mc-desc">Align scales across subplots</div><div class="mc-ex">plt.subplots(2,1,sharex=True)</div></div>
+      <div class="mini-card"><div class="mc-name">ax.inset_axes()</div><div class="mc-desc">Mini chart inside a chart</div><div class="mc-ex">[left,bottom,w,h]</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>Styles, colormaps, GridSpec, typography, shared axes. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#6D28D9">🏆</div>
+    <div><h2>Real-World Task — Styled Investor Presentation Deck</h2><p>Estimated time: 80–95 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Data Visualization Specialist</strong> at <em>Nimbus Analytics</em>. The CEO needs a visually polished, presentation-ready chart pack for investors — using consistent branding, custom layouts, and professional typography. No default Matplotlib look allowed.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#6D28D9">1</div><h4>Phase 1 — Brand Setup</h4><span class="phase-time">~15 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Define a Brand Color Palette &amp; Global Style</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># Nimbus Analytics brand colors</span>
+BRAND = {
+    <span class="st">'primary'</span>  : <span class="st">'#6D28D9'</span>,
+    <span class="st">'secondary'</span>: <span class="st">'#0891B2'</span>,
+    <span class="st">'accent'</span>   : <span class="st">'#F59E0B'</span>,
+    <span class="st">'dark'</span>     : <span class="st">'#1E1B4B'</span>,
+    <span class="st">'light'</span>    : <span class="st">'#F5F3FF'</span>
+}
+
+<span class="cm"># Global rcParams setup</span>
+<span class="op">plt</span>.rcParams.<span class="fn">update</span>({
+    <span class="st">'figure.figsize'</span>: (<span class="nm">10</span>,<span class="nm">6</span>),
+    <span class="st">'font.family'</span>: <span class="st">'sans-serif'</span>,
+    <span class="st">'font.size'</span>: <span class="nm">11</span>,
+    <span class="st">'axes.spines.top'</span>: <span class="kw">False</span>,
+    <span class="st">'axes.spines.right'</span>: <span class="kw">False</span>,
+    <span class="st">'axes.edgecolor'</span>: BRAND[<span class="st">'dark'</span>],
+    <span class="st">'axes.titlesize'</span>: <span class="nm">15</span>,
+    <span class="st">'axes.titleweight'</span>: <span class="st">'bold'</span>,
+    <span class="st">'axes.grid'</span>: <span class="kw">True</span>,
+    <span class="st">'grid.alpha'</span>: <span class="nm">0.25</span>
+})
+
+<span class="cm"># Sample business data</span>
+np.random.seed(5)
+quarters = [<span class="st">'Q1'</span>,<span class="st">'Q2'</span>,<span class="st">'Q3'</span>,<span class="st">'Q4'</span>]
+arr_revenue = [<span class="nm">120</span>,<span class="nm">145</span>,<span class="nm">168</span>,<span class="nm">210</span>]
+segments = [<span class="st">'Enterprise'</span>,<span class="st">'SMB'</span>,<span class="st">'Startup'</span>]
+segment_rev = [<span class="nm">95</span>,<span class="nm">70</span>,<span class="nm">45</span>]
+users_daily = np.random.<span class="fn">poisson</span>(<span class="nm">500</span>, <span class="nm">90</span>) + np.<span class="fn">arange</span>(<span class="nm">90</span>)*<span class="nm">3</span></pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Build the Mosaic Dashboard</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Design the Layout with subplot_mosaic</h5>
+          <p>Build a dashboard with: a large user growth line chart (top, full width), a revenue bar chart (bottom-left), and a segment pie/bar chart (bottom-right).</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STRUCTURE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>fig, axes = <span class="op">plt</span>.<span class="fn">subplot_mosaic</span>(<span class="st">"""
+    AA
+    BC
+"""</span>, figsize=(<span class="nm">13</span>,<span class="nm">8</span>), height_ratios=[<span class="nm">1.2</span>,<span class="nm">1</span>])
+
+fig.<span class="fn">suptitle</span>(<span class="st">'Nimbus Analytics — Q4 Investor Update'</span>,
+             fontsize=<span class="nm">18</span>, fontweight=<span class="st">'bold'</span>, color=BRAND[<span class="st">'dark'</span>])
+
+<span class="cm"># Panel A: user growth over 90 days</span>
+axes[<span class="st">'A'</span>].<span class="fn">plot</span>(<span class="fn">range</span>(<span class="nm">90</span>), users_daily, color=BRAND[<span class="st">'primary'</span>], linewidth=<span class="nm">2</span>)
+axes[<span class="st">'A'</span>].<span class="fn">fill_between</span>(<span class="fn">range</span>(<span class="nm">90</span>), users_daily, alpha=<span class="nm">0.15</span>, color=BRAND[<span class="st">'primary'</span>])
+axes[<span class="st">'A'</span>].<span class="fn">set_title</span>(<span class="st">'Daily Active Users (90-Day Trend)'</span>)
+
+<span class="cm"># Panel B: quarterly revenue</span>
+bars = axes[<span class="st">'B'</span>].<span class="fn">bar</span>(quarters, arr_revenue, color=BRAND[<span class="st">'secondary'</span>])
+axes[<span class="st">'B'</span>].<span class="fn">set_title</span>(<span class="st">'Quarterly Revenue (₹L)'</span>)
+
+<span class="cm"># Panel C: segment breakdown</span>
+axes[<span class="st">'C'</span>].<span class="fn">barh</span>(segments, segment_rev, color=[BRAND[<span class="st">'primary'</span>],BRAND[<span class="st">'secondary'</span>],BRAND[<span class="st">'accent'</span>]])
+axes[<span class="st">'C'</span>].<span class="fn">set_title</span>(<span class="st">'Revenue by Segment (₹L)'</span>)
+
+fig.<span class="fn">tight_layout</span>()</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Add a Zoomed Inset on the User Growth Chart</h5>
+          <p>Add an inset axes on Panel A zooming into the last 14 days, so investors can see recent momentum clearly. Use <code>indicate_inset_zoom()</code> to connect it visually.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Add Data Labels &amp; Annotations</h5>
+          <p>On the revenue bar chart, add the exact ₹ value above each bar. On the user growth chart, annotate the final data point with the current user count.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">3</div><h4>Phase 3 — Two Theme Variants</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build Light and Dark Presentation Versions</h5>
+          <p>Using <code>plt.style.context('dark_background')</code>, regenerate the exact same dashboard for a dark-mode slide deck version. Save BOTH as high-res PNGs: <code>dashboard_light.png</code> and <code>dashboard_dark.png</code>.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">4</div><h4>Phase 4 — Export &amp; Finalise</h4><span class="phase-time">~10 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Final Export Checklist</h5>
+          <p>Export both versions at 200+ DPI with <code>bbox_inches='tight'</code>. Verify no titles or labels are clipped. Confirm brand colors are used consistently across all 3 panels.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Defined a brand color dictionary and applied it consistently</li>
+        <li>Set global rcParams for figure size, fonts, spines, and grid</li>
+        <li>Built a subplot_mosaic layout with 3 panels of different sizes</li>
+        <li>Used height_ratios to control panel proportions</li>
+        <li>Applied fig.suptitle() with brand styling</li>
+        <li>Added fill_between() for area shading on the trend chart</li>
+        <li>Added a zoomed inset_axes on the user growth panel</li>
+        <li>Used indicate_inset_zoom() to connect the zoom visually</li>
+        <li>Added value labels/annotations to at least 2 charts</li>
+        <li>Built both light and dark themed versions</li>
+        <li>Exported both at 200+ DPI with tight bounding box</li>
+      </ul>
+    </div>
+
+    <div class="callout green" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 20 min)</div>
+      Create a reusable function <code>apply_brand_style()</code> that sets all rcParams in one call, and a <code>style_axes(ax)</code> helper that applies consistent spine/grid/color styling to any Axes object passed to it — turning your one-off styling into a reusable internal design system.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Matplotlib Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Figure &amp; Basic Plots</span>
+    <span class="day-pill done active">Day 2 · Styling &amp; Subplots</span>
+    <span class="day-pill">Day 3 · Statistical Charts</span>
+    <span class="day-pill">Day 4 · Animation</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What does `plt.style.use('ggplot')` do?",opts:["Imports the ggplot2 R library","Applies a built-in style sheet globally, changing colors, gridlines, and fonts to match the ggplot2 aesthetic","Only works for scatter plots","Requires a separate installation"],ans:1,explain:"Matplotlib ships with built-in style sheets that mimic other popular plotting libraries' looks. 'ggplot' applies R's ggplot2 visual style (gray background, white gridlines) to all subsequent plots globally."},
+  {code:"with plt.style.context('dark_background'):\n    fig, ax = plt.subplots()\n    ax.plot(x, y)",q:"What happens to the style AFTER this 'with' block ends?",opts:["Stays dark_background permanently","Automatically reverts back to whatever style was active before the block","Causes an error","Resets to 'default' specifically"],ans:1,explain:"plt.style.context() as a context manager applies the style temporarily, only within the 'with' block. Once the block exits, the style automatically reverts to whatever was active before — unlike plt.style.use() which changes it permanently."},
+  {q:"What is the purpose of `plt.rcParams`?",opts:["Only controls random number generation","A dictionary-like object controlling ALL default settings Matplotlib uses (figure size, fonts, colors, spines, etc.)","Only affects the current figure","Deprecated in modern Matplotlib"],ans:1,explain:"rcParams (runtime configuration parameters) is Matplotlib's global settings dictionary. Changing plt.rcParams['font.size']=12 sets the DEFAULT font size for every subsequent plot, avoiding repetitive per-chart styling."},
+  {q:"Why should you generally avoid the 'jet' rainbow colormap?",opts:["It's not available in modern Matplotlib","It's perceptually non-uniform — creates false visual boundaries and isn't colorblind-friendly; viridis/plasma are better alternatives","It only works with scatter plots","It's the slowest colormap to render"],ans:1,explain:"'jet' has been widely criticized in data visualization research because equal steps in data don't correspond to equal perceived color steps — this can mislead viewers into seeing patterns that aren't there. Viridis and similar perceptually-uniform colormaps are the modern recommendation."},
+  {q:"What is the difference between a sequential and diverging colormap?",opts:["No difference — same thing","Sequential goes from low to high in ONE direction; diverging has a meaningful MIDPOINT with two directions of change (e.g., negative to positive)","Sequential is for categorical data only","Diverging only works in 3D plots"],ans:1,explain:"Sequential colormaps (viridis, Blues) suit data that increases in one direction (e.g., 0 to 100). Diverging colormaps (RdBu, coolwarm) suit data with a meaningful center point, like temperature anomalies (negative=blue, zero=white, positive=red)."},
+  {code:"gs = fig.add_gridspec(3, 3)\nax_main = fig.add_subplot(gs[0:2, :])",q:"What does gs[0:2, :] select?",opts:["A single cell at row 0, column 2","Rows 0 and 1 (all 2 of them), spanning ALL columns — creating one large Axes area","Only column 0 through 2","An error — invalid slice"],ans:1,explain:"GridSpec uses NumPy-style slicing. gs[0:2, :] means 'rows 0 through 1 (2 exclusive), all columns (:)' — this creates one large subplot area spanning the top two rows and full width, useful for a prominent main chart."},
+  {q:"What is `plt.subplot_mosaic()` and why might you prefer it over GridSpec?",opts:["It's identical to plt.subplots()","It lets you define complex layouts using an ASCII-art-like string where repeated letters indicate spanning cells — often more intuitive than GridSpec slice notation","It only works with 3D plots","It requires a paid Matplotlib license"],ans:1,explain:"subplot_mosaic() takes a multi-line string like \"AAB\\nCCB\" where each letter represents a named Axes region. Repeated letters spanning multiple positions create larger merged regions — many find this more readable than GridSpec's numeric slicing."},
+  {code:"ax.set_xlabel(r'$\\sin(\\theta)$')",q:"What does the 'r' prefix and $ symbols accomplish here?",opts:["Nothing special — just plain text","The r prefix makes it a raw string (avoiding escape issues), and $ ... $ triggers Matplotlib's LaTeX-style math rendering for proper mathematical notation","Makes the text red","Rotates the text 90 degrees"],ans:1,explain:"Text between $ symbols is rendered using Matplotlib's mathtext engine, producing properly formatted mathematical notation (like italic theta, proper fraction bars, etc). The 'r' prefix creates a raw string so backslashes (like \\sin, \\theta) aren't misinterpreted as escape sequences."},
+  {q:"What does `transform=ax.transAxes` mean when placing text with `ax.text()`?",opts:["Coordinates refer to actual data values on the axes","Coordinates are given as a 0-to-1 fraction of the Axes area, regardless of the data range (0,0=bottom-left, 1,1=top-right)","Coordinates are in pixels","This transforms the text into 3D"],ans:1,explain:"transAxes maps coordinates to (0,0) at the bottom-left and (1,1) at the top-right of the Axes, REGARDLESS of what data values are plotted. This is useful for placing labels/annotations at a consistent relative position even if the data range changes."},
+  {q:"What does `sharex=True` in `plt.subplots(2, 1, sharex=True)` accomplish?",opts:["Makes both subplots identical","Both subplots share the same x-axis scale/limits, and typically only the bottom subplot shows x-tick labels — useful for stacked time series comparisons","Merges both subplots into one","Removes the x-axis entirely"],ans:1,explain:"sharex=True links the x-axis scale across subplots — zooming or panning one affects both. It's commonly used for stacked charts (like price on top, volume below) sharing the same time axis, giving a cleaner combined look."},
+  {q:"What is the purpose of `ax.inset_axes([0.6, 0.6, 0.35, 0.35])`?",opts:["Creates a completely separate figure","Creates a smaller Axes positioned INSIDE the parent Axes, at 60% across/up with 35% width/height — commonly used for zoomed-in detail views","Removes 60% of the plot","Rotates the axes by 60 degrees"],ans:1,explain:"inset_axes() places a mini Axes within the parent plot's coordinate space (values are fractions: [left, bottom, width, height]). It's commonly used to show a zoomed-in view of part of the data without needing a separate figure."},
+  {code:"fig, axes = plt.subplots(2, 3, figsize=(14,8))\nfor ax, data in zip(axes.flatten(), datasets):\n    ax.hist(data)",q:"Why use axes.flatten() here?",opts:["To sort the data","axes from a 2×3 grid is a 2D array; flatten() converts it to 1D so it can be paired directly with a simple list of datasets using zip()","To remove empty subplots","flatten() is required syntax for hist()"],ans:1,explain:"plt.subplots(2,3) returns axes as a 2D array (2 rows, 3 cols). To loop through all 6 Axes with a simple for loop and zip(), you need a flat 1D sequence — axes.flatten() converts the 2D array into a 1D array of 6 Axes objects."},
+  {q:"Which colormap category would be MOST appropriate for showing temperature anomaly data (negative = cooler than average, positive = warmer)?",opts:["Sequential (e.g., viridis)","Diverging (e.g., RdBu, coolwarm) — has a meaningful midpoint at zero","Qualitative (e.g., Set1)","Any colormap works equally well"],ans:1,explain:"Diverging colormaps are specifically designed for data with a meaningful center point (here, zero anomaly). They use two different color hues diverging from a neutral middle color, making it easy to distinguish 'above average' from 'below average' at a glance."},
+  {code:"plt.rcParams.update({'axes.spines.top': False, 'axes.spines.right': False})",q:"What effect does this global setting have?",opts:["Removes all axes from every plot","Every new plot created afterward will automatically have its top and right border lines hidden, without needing to set it per-chart","Only affects the current figure","Deletes the top and right 25% of data"],ans:1,explain:"Once set globally via rcParams, this styling choice (hiding top/right spines for a cleaner modern look) applies automatically to every Axes created afterward — no need to repeat ax.spines['top'].set_visible(False) on each individual chart."},
+  {q:"What does `cmap(i)` return when cmap is a Matplotlib colormap object (e.g., `plt.get_cmap('tab10')`)?",opts:["A string color name","An RGBA tuple representing the color at that index/position in the colormap","An integer","A hex code string"],ans:1,explain:"Calling a colormap object with a value (like cmap(i) for a discrete colormap, or cmap(0.5) for continuous) returns an RGBA tuple (r,g,b,a) with values 0-1, which can be passed directly to color= parameters."},
+  {q:"What is a key advantage of using `plt.style.context()` over `plt.style.use()` when generating both light and dark themed versions of the same dashboard?",opts:["context() is faster to execute","context() automatically reverts after use, so you can generate the dark version inside a 'with' block without permanently affecting subsequent plots (like the next chart you build)","use() doesn't support dark themes","There's no functional difference"],ans:1,explain:"If you use plt.style.use('dark_background') to make one version, that style change is permanent for the rest of your session unless manually reset. Using plt.style.context() as a 'with' block scopes the style change ONLY to that block, making it safer for generating multiple themed versions in sequence."},
+  {q:"In `fig.add_gridspec(2, 2, height_ratios=[1.2, 1])`, what does height_ratios control?",opts:["The colors of each row","The relative HEIGHT proportion of each row — here row 0 will be 1.2x taller than row 1","The number of subplots","The spacing between columns"],ans:1,explain:"height_ratios (and width_ratios) let you control the proportional size of grid rows/columns rather than forcing them all equal. [1.2, 1] means the first row gets 1.2 parts of height for every 1 part the second row gets — useful for a prominent main chart with smaller supporting panels."},
+  {q:"What does `ax.fill_between(x, y, alpha=0.15)` typically add to a line chart?",opts:["A second line","Shaded area fill underneath/around the line, at low opacity — commonly used to add visual weight to a trend line or show a confidence band","Removes the line entirely","Adds gridlines only"],ans:1,explain:"fill_between() shades the area between a curve and a baseline (default y=0), or between two curves. With low alpha (transparency), it adds a subtle visual emphasis to trend lines, and is also used for confidence intervals/uncertainty bands."},
+  {q:"Why is it good practice to define a brand color dictionary (like BRAND = {'primary':'#6D28D9', ...}) at the start of a dashboard script?",opts:["It's required by Matplotlib","It centralizes color choices so all charts stay visually consistent, and changing the palette later only requires editing one place instead of every individual chart call","It makes the code run faster","It's only useful for pie charts"],ans:1,explain:"A centralized color dictionary is a maintainability best practice: consistent branding across all charts, and if the brand palette changes, you update it in ONE place rather than hunting through every ax.plot(color='...') call throughout the script."},
+  {q:"What is the main visual purpose of adding an inset_axes zoom to a trend chart in a business presentation?",opts:["To make the chart bigger overall","To highlight recent/specific detail (e.g., the last 14 days) that would be hard to see clearly on the full-range chart, without losing the full context","To remove data points","To change the chart type"],ans:1,explain:"An inset zoom lets viewers see both the big-picture trend (in the main chart) AND fine detail in a specific region (in the inset) simultaneously — very effective for showing 'look at this recent momentum' within a longer historical context."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review styles, colormaps, and GridSpec, then try again! 📚"],[50,75,"Good progress! Focus on subplot_mosaic and typography. 💪"],[75,90,"Strong Day 2! Styling skills are solid. 🎉"],[90,101,"Excellent! Day 2 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

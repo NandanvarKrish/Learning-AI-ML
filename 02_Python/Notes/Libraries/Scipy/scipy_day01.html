@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SciPy – Day 1 | Introduction & Statistical Distributions</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#EEF2FF;--surface:#FFFFFF;--border:#C7D2FE;--accent:#4338CA;--accent2:#312E81;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;
+    --text:#1E1B4B;--muted:#4338CA;--code-bg:#0F0B2E;--code-text:#C7D2FE;--tag-bg:#E0E7FF;--tag-text:#312E81;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(67,56,202,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#4338CA 0%,#312E81 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#C7D2FE;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#818CF8;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#A5B4FC;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#312E81;font-style:italic;} .op{color:#C7D2FE;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.teal .callout-title{color:var(--teal);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#312E81,#4338CA);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .dist-visual{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;}
+  .dist-card{flex:1;min-width:140px;border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--bg);text-align:center;}
+  .dist-shape{height:50px;display:flex;align-items:flex-end;justify-content:center;gap:2px;margin-bottom:8px;}
+  .dist-bar{width:4px;background:var(--accent);border-radius:2px 2px 0 0;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#4338CA,#312E81);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#4338CA,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔬 SciPy</div><span class="sep">|</span><span class="day-label">Day 1 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">20%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:20%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">SciPy Full Course · Day 1</div>
+  <h1>Introduction &amp; <span>Statistical Distributions</span></h1>
+  <p>SciPy extends NumPy with scientific computing tools. Start with scipy.stats — probability distributions, descriptive statistics, and fitting real data to theoretical models.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔬 What is SciPy</span>
+    <span class="hero-pill">📊 scipy.stats Module</span>
+    <span class="hero-pill">🔔 Continuous Distributions</span>
+    <span class="hero-pill">🎲 Discrete Distributions</span>
+    <span class="hero-pill">📈 Descriptive Statistics</span>
+    <span class="hero-pill">🎯 Distribution Fitting</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔬</div>
+    <div><h2>What is SciPy?</h2><p>NumPy's scientific computing companion</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>SciPy</strong> ("Scientific Python") builds on NumPy's array foundation to provide algorithms for optimization, integration, interpolation, linear algebra, signal processing, and statistics — the tools of scientific and engineering computation.</p>
+
+    <div class="fbox">
+      <div class="ft">🔬 SciPy's Submodules</div>
+      <div class="fm">scipy.stats       → probability distributions, hypothesis tests</div>
+      <div class="fm">scipy.optimize    → root finding, curve fitting, minimization</div>
+      <div class="fm">scipy.interpolate → filling gaps between known data points</div>
+      <div class="fm">scipy.linalg      → advanced linear algebra (beyond numpy.linalg)</div>
+      <div class="fm">scipy.signal      → filtering, spectral analysis, convolution</div>
+      <div class="fm">scipy.integrate   → numerical integration, differential equations</div>
+      <div class="fnote">Each submodule must be imported explicitly — `import scipy` alone does NOT give you access to scipy.stats.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Install</span>
+pip install scipy
+
+<span class="cm"># CORRECT — import the specific submodule you need</span>
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">from</span> scipy <span class="kw">import</span> optimize
+<span class="kw">from</span> scipy <span class="kw">import</span> interpolate
+
+<span class="cm"># INCORRECT — this does NOT give you scipy.stats automatically</span>
+<span class="kw">import</span> scipy
+scipy.stats.<span class="fn">norm</span>   <span class="cm"># ❌ AttributeError in many scipy versions!</span>
+
+<span class="cm"># Standard combo for statistical work</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+<span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Always Import Submodules Explicitly</div>
+      Unlike some libraries, plain <code>import scipy</code> does NOT automatically expose all submodules like <code>scipy.stats</code> or <code>scipy.optimize</code>. Always use <code>from scipy import stats</code> or <code>import scipy.stats as stats</code> to guarantee access.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>scipy.stats — The Statistics Powerhouse</h2><p>Every distribution follows the same consistent interface</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Every distribution object in <code>scipy.stats</code> (normal, binomial, Poisson, etc.) shares the SAME set of methods — learn the pattern once, apply it to 100+ distributions.</p>
+
+    <div class="fbox">
+      <div class="ft">📊 The Universal Distribution Interface</div>
+      <div class="fm">.pdf(x)    → Probability Density Function (continuous) — height of the curve at x</div>
+      <div class="fm">.pmf(x)    → Probability Mass Function (discrete) — exact probability at x</div>
+      <div class="fm">.cdf(x)    → Cumulative Distribution — P(X ≤ x)</div>
+      <div class="fm">.ppf(q)    → Percent Point Function — the INVERSE of cdf (given probability, get x)</div>
+      <div class="fm">.rvs(size) → Random Variates — generate random samples</div>
+      <div class="fm">.mean(), .std(), .var() → summary statistics of the theoretical distribution</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># Create a normal distribution object: mean=100, std=15 (like IQ scores)</span>
+dist = stats.<span class="fn">norm</span>(loc=<span class="nm">100</span>, scale=<span class="nm">15</span>)   <span class="cm"># loc=mean, scale=std for norm</span>
+
+<span class="cm"># PDF — height of the bell curve at a specific point</span>
+<span class="fn">print</span>(dist.<span class="fn">pdf</span>(<span class="nm">100</span>))    <span class="cm"># peak density, at the mean</span>
+
+<span class="cm"># CDF — what fraction of the distribution is ≤ 115?</span>
+<span class="fn">print</span>(dist.<span class="fn">cdf</span>(<span class="nm">115</span>))    <span class="cm"># ~0.841 → about 84.1% of people score ≤ 115</span>
+
+<span class="cm"># PPF — the INVERSE question: what score is the 90th percentile?</span>
+<span class="fn">print</span>(dist.<span class="fn">ppf</span>(<span class="nm">0.90</span>))   <span class="cm"># ~119.2 → 90% of scores fall below ~119.2</span>
+
+<span class="cm"># RVS — generate 1000 random samples from this distribution</span>
+sample = dist.<span class="fn">rvs</span>(size=<span class="nm">1000</span>, random_state=<span class="nm">42</span>)
+
+<span class="cm"># Distribution's theoretical properties</span>
+<span class="fn">print</span>(dist.<span class="fn">mean</span>(), dist.<span class="fn">std</span>(), dist.<span class="fn">var</span>())   <span class="cm"># 100.0  15.0  225.0</span></pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 CDF vs PPF — Inverses of Each Other</div>
+      <code>cdf(x)</code> answers <em>"given a value, what's the probability of being ≤ it?"</em>. <code>ppf(q)</code> answers the OPPOSITE: <em>"given a probability, what value corresponds to it?"</em>. If <code>cdf(115) = 0.841</code>, then <code>ppf(0.841) = 115</code> — they undo each other.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🔔</div>
+    <div><h2>Continuous Distributions</h2><p>Normal, uniform, exponential — modeling real-valued data</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="dist-visual">
+      <div class="dist-card">
+        <div class="dist-shape">
+          <div class="dist-bar" style="height:8px"></div><div class="dist-bar" style="height:16px"></div><div class="dist-bar" style="height:28px"></div><div class="dist-bar" style="height:42px"></div><div class="dist-bar" style="height:48px"></div><div class="dist-bar" style="height:42px"></div><div class="dist-bar" style="height:28px"></div><div class="dist-bar" style="height:16px"></div><div class="dist-bar" style="height:8px"></div>
+        </div>
+        <strong>Normal</strong><br><span style="font-size:11px;color:var(--muted)">stats.norm</span>
+      </div>
+      <div class="dist-card">
+        <div class="dist-shape">
+          <div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div><div class="dist-bar" style="height:36px"></div>
+        </div>
+        <strong>Uniform</strong><br><span style="font-size:11px;color:var(--muted)">stats.uniform</span>
+      </div>
+      <div class="dist-card">
+        <div class="dist-shape">
+          <div class="dist-bar" style="height:48px"></div><div class="dist-bar" style="height:38px"></div><div class="dist-bar" style="height:30px"></div><div class="dist-bar" style="height:22px"></div><div class="dist-bar" style="height:16px"></div><div class="dist-bar" style="height:11px"></div><div class="dist-bar" style="height:7px"></div><div class="dist-bar" style="height:4px"></div><div class="dist-bar" style="height:2px"></div>
+        </div>
+        <strong>Exponential</strong><br><span style="font-size:11px;color:var(--muted)">stats.expon</span>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># NORMAL — the bell curve, for naturally symmetric data (heights, measurement errors)</span>
+norm_dist = stats.<span class="fn">norm</span>(loc=<span class="nm">0</span>, scale=<span class="nm">1</span>)   <span class="cm"># standard normal: mean=0, std=1</span>
+
+<span class="cm"># UNIFORM — equal probability across a range (random number generators, fair dice-like continuous data)</span>
+uniform_dist = stats.<span class="fn">uniform</span>(loc=<span class="nm">0</span>, scale=<span class="nm">10</span>)   <span class="cm"># range [0, 10] — NOTE: scale = WIDTH, not the max value</span>
+
+<span class="cm"># EXPONENTIAL — time between independent events (customer arrivals, equipment failure)</span>
+expon_dist = stats.<span class="fn">expon</span>(scale=<span class="nm">5</span>)   <span class="cm"># scale = 1/rate, mean wait time = 5</span>
+
+<span class="cm"># Plotting a distribution's PDF</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+x = <span class="op">np</span>.<span class="fn">linspace</span>(-<span class="nm">4</span>, <span class="nm">4</span>, <span class="nm">200</span>)
+<span class="op">plt</span>.<span class="fn">plot</span>(x, norm_dist.<span class="fn">pdf</span>(x))
+<span class="op">plt</span>.<span class="fn">title</span>(<span class="st">'Standard Normal PDF'</span>)
+
+<span class="cm"># T-distribution — like normal but heavier tails, used for small-sample inference</span>
+t_dist = stats.<span class="fn">t</span>(df=<span class="nm">10</span>)   <span class="cm"># df = degrees of freedom; lower df = heavier tails</span>
+
+<span class="cm"># Chi-squared — sum of squared normal variables, used in variance tests and goodness-of-fit</span>
+chi2_dist = stats.<span class="fn">chi2</span>(df=<span class="nm">5</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🎲</div>
+    <div><h2>Discrete Distributions</h2><p>Binomial, Poisson — modeling counts and successes</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># BINOMIAL — number of successes in n independent trials (coin flips, A/B test conversions)</span>
+binom_dist = stats.<span class="fn">binom</span>(n=<span class="nm">20</span>, p=<span class="nm">0.3</span>)    <span class="cm"># 20 trials, 30% success probability each</span>
+
+<span class="fn">print</span>(binom_dist.<span class="fn">pmf</span>(<span class="nm">5</span>))     <span class="cm"># P(exactly 5 successes out of 20)</span>
+<span class="fn">print</span>(binom_dist.<span class="fn">cdf</span>(<span class="nm">8</span>))     <span class="cm"># P(8 or fewer successes)</span>
+<span class="fn">print</span>(<span class="nm">1</span> - binom_dist.<span class="fn">cdf</span>(<span class="nm">10</span>))   <span class="cm"># P(MORE than 10 successes)</span>
+
+<span class="cm"># POISSON — number of events in a fixed interval (calls per hour, defects per batch)</span>
+poisson_dist = stats.<span class="fn">poisson</span>(mu=<span class="nm">4</span>)     <span class="cm"># average rate = 4 events per interval</span>
+
+<span class="fn">print</span>(poisson_dist.<span class="fn">pmf</span>(<span class="nm">0</span>))    <span class="cm"># P(exactly 0 events)</span>
+<span class="fn">print</span>(poisson_dist.<span class="fn">pmf</span>(<span class="nm">6</span>))    <span class="cm"># P(exactly 6 events)</span>
+
+<span class="cm"># BERNOULLI — single trial, special case of binomial with n=1</span>
+bernoulli_dist = stats.<span class="fn">bernoulli</span>(p=<span class="nm">0.5</span>)   <span class="cm"># fair coin flip</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Distribution</th><th>Models</th><th>Key Parameter</th></tr>
+        <tr><td>Normal</td><td>Continuous, symmetric natural data</td><td>loc (mean), scale (std)</td></tr>
+        <tr><td>Uniform</td><td>Equal likelihood across a range</td><td>loc (start), scale (width)</td></tr>
+        <tr><td>Exponential</td><td>Time between random events</td><td>scale (mean wait time)</td></tr>
+        <tr><td>Binomial</td><td>Successes in n fixed trials</td><td>n (trials), p (success prob)</td></tr>
+        <tr><td>Poisson</td><td>Event counts in fixed interval</td><td>mu (average rate)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 PMF vs PDF</div>
+      Discrete distributions (binomial, Poisson) use <code>.pmf()</code> — Probability MASS Function — since exact values have real, nonzero probability. Continuous distributions (normal, exponential) use <code>.pdf()</code> — Probability DENSITY Function — since any exact single value has technically zero probability; only ranges (via cdf) have meaningful probability.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">📈</div>
+    <div><h2>Descriptive Statistics with scipy.stats</h2><p>Beyond NumPy's basics — skewness, kurtosis, and more</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>data = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">23</span>,<span class="nm">45</span>,<span class="nm">12</span>,<span class="nm">67</span>,<span class="nm">34</span>,<span class="nm">89</span>,<span class="nm">21</span>,<span class="nm">56</span>,<span class="nm">78</span>,<span class="nm">90</span>,<span class="nm">15</span>,<span class="nm">44</span>])
+
+<span class="cm"># One call, ALL the key descriptive stats at once</span>
+result = stats.<span class="fn">describe</span>(data)
+<span class="fn">print</span>(result)
+<span class="cm"># DescribeResult(nobs=12, minmax=(12,90), mean=47.83, variance=..., skewness=..., kurtosis=...)</span>
+
+<span class="cm"># Individual measures</span>
+<span class="fn">print</span>(stats.<span class="fn">skew</span>(data))       <span class="cm"># asymmetry: 0=symmetric, >0=right-tailed, <0=left-tailed</span>
+<span class="fn">print</span>(stats.<span class="fn">kurtosis</span>(data))   <span class="cm"># "tailedness": 0=normal-like, >0=heavier tails, <0=lighter tails</span>
+
+<span class="cm"># Mode — most frequent value</span>
+<span class="fn">print</span>(stats.<span class="fn">mode</span>(data, keepdims=<span class="kw">True</span>))
+
+<span class="cm"># Z-scores — how many std devs each point is from the mean</span>
+z_scores = stats.<span class="fn">zscore</span>(data)
+<span class="fn">print</span>(z_scores)
+
+<span class="cm"># Percentile / IQR helpers</span>
+<span class="fn">print</span>(stats.<span class="fn">iqr</span>(data))         <span class="cm"># interquartile range (Q3 - Q1) in one call</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">percentile</span>(data, [<span class="nm">25</span>,<span class="nm">50</span>,<span class="nm">75</span>]))</pre>
+    </div>
+
+    <div class="fbox">
+      <div class="ft">📈 Reading Skewness &amp; Kurtosis</div>
+      <div class="fm">Skewness > 0  → right tail longer (e.g., income distribution)</div>
+      <div class="fm">Skewness < 0  → left tail longer (e.g., age at retirement)</div>
+      <div class="fm">Kurtosis > 0  → heavier tails than normal (more extreme outliers)</div>
+      <div class="fm">Kurtosis < 0  → lighter tails than normal (fewer extreme values)</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🎯</div>
+    <div><h2>Fitting Distributions to Real Data</h2><p>Which theoretical distribution best matches your sample?</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Generate some sample data (pretend this is real, unknown-distribution data)</span>
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">1</span>)
+sample_data = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">50</span>, <span class="nm">10</span>, <span class="nm">500</span>)
+
+<span class="cm"># .fit() estimates the BEST parameters for a given distribution shape to match your data</span>
+mu_fit, std_fit = stats.<span class="fn">norm</span>.<span class="fn">fit</span>(sample_data)
+<span class="fn">print</span>(<span class="st">f"Fitted normal: mean={mu_fit:.2f}, std={std_fit:.2f}"</span>)
+
+<span class="cm"># Visualize the fit against the actual data histogram</span>
+<span class="op">plt</span>.<span class="fn">hist</span>(sample_data, bins=<span class="nm">30</span>, density=<span class="kw">True</span>, alpha=<span class="nm">0.6</span>, label=<span class="st">'Data'</span>)
+x = <span class="op">np</span>.<span class="fn">linspace</span>(sample_data.<span class="fn">min</span>(), sample_data.<span class="fn">max</span>(), <span class="nm">200</span>)
+<span class="op">plt</span>.<span class="fn">plot</span>(x, stats.<span class="fn">norm</span>.<span class="fn">pdf</span>(x, mu_fit, std_fit), <span class="st">'r-'</span>, linewidth=<span class="nm">2</span>, label=<span class="st">'Fitted Normal'</span>)
+<span class="op">plt</span>.<span class="fn">legend</span>()
+
+<span class="cm"># Goodness-of-fit test: does the data ACTUALLY look normal? (Day 2 covers this deeper)</span>
+statistic, p_value = stats.<span class="fn">shapiro</span>(sample_data)
+<span class="fn">print</span>(<span class="st">f"Shapiro-Wilk p-value: {p_value:.4f}"</span>)
+<span class="cm"># p > 0.05 typically suggests data is CONSISTENT with normality</span>
+
+<span class="cm"># Q-Q plot — visual check of normality (points should follow the diagonal line)</span>
+stats.<span class="fn">probplot</span>(sample_data, dist=<span class="st">'norm'</span>, plot=plt)</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Q-Q Plots — A Visual Normality Check</div>
+      A Quantile-Quantile (Q-Q) plot compares your data's quantiles against a theoretical distribution's quantiles. If points fall roughly along the diagonal reference line, the data matches that distribution well. Systematic curves or S-shapes indicate deviations (skewness, heavy tails).
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">stats.norm(loc,scale)</div><div class="mc-desc">Normal distribution object</div><div class="mc-ex">.pdf/.cdf/.ppf/.rvs</div></div>
+      <div class="mini-card"><div class="mc-name">stats.binom(n,p)</div><div class="mc-desc">Binomial discrete distribution</div><div class="mc-ex">.pmf/.cdf</div></div>
+      <div class="mini-card"><div class="mc-name">stats.poisson(mu)</div><div class="mc-desc">Event count distribution</div><div class="mc-ex">.pmf</div></div>
+      <div class="mini-card"><div class="mc-name">stats.describe()</div><div class="mc-desc">All descriptive stats at once</div><div class="mc-ex">mean, variance, skew</div></div>
+      <div class="mini-card"><div class="mc-name">stats.norm.fit()</div><div class="mc-desc">Estimate best-fit parameters</div><div class="mc-ex">returns (mu, sigma)</div></div>
+      <div class="mini-card"><div class="mc-name">stats.probplot()</div><div class="mc-desc">Q-Q plot for normality check</div><div class="mc-ex">dist='norm', plot=plt</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>SciPy basics, distribution interface, continuous/discrete, fitting. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#4338CA">🏆</div>
+    <div><h2>Real-World Task — Call Center Staffing Model</h2><p>Estimated time: 75–90 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are an <strong>Operations Analyst</strong> at a customer service center. Use SciPy's statistical distributions to model call arrival patterns, wait times, and staffing requirements.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#4338CA">1</div><h4>Phase 1 — Model Call Arrivals with Poisson</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Set Up the Poisson Model</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="cm"># Historical data: call center averages 12 calls per 10-minute window</span>
+calls_per_window = stats.<span class="fn">poisson</span>(mu=<span class="nm">12</span>)
+
+<span class="cm"># Q1: What's the probability of EXACTLY 12 calls in a window?</span>
+<span class="fn">print</span>(<span class="st">"P(exactly 12):"</span>, calls_per_window.<span class="fn">pmf</span>(<span class="nm">12</span>))
+
+<span class="cm"># Q2: What's the probability of MORE THAN 20 calls (a surge)?</span>
+<span class="fn">print</span>(<span class="st">"P(more than 20):"</span>, <span class="nm">1</span> - calls_per_window.<span class="fn">cdf</span>(<span class="nm">20</span>))
+
+<span class="cm"># Q3: What call volume represents the 95th percentile (staffing safety margin)?</span>
+<span class="fn">print</span>(<span class="st">"95th percentile:"</span>, calls_per_window.<span class="fn">ppf</span>(<span class="nm">0.95</span>))</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Model Wait Times with Exponential</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Analyze Customer Wait Times</h5>
+          <p>Historical average wait time is 3.5 minutes. Model this with stats.expon(scale=3.5). Calculate: P(wait &lt; 2 min), P(wait &gt; 10 min), and the median wait time.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Visualize the Wait Time Distribution</h5>
+          <p>Plot the exponential PDF from 0 to 20 minutes, and shade the area representing "customers who wait more than 10 minutes" using plt.fill_between().</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Fit Real Sample Data</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Generate and Fit "Historical" Call Duration Data</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">99</span>)
+<span class="cm"># Simulate 300 call durations (minutes) — realistically right-skewed</span>
+call_durations = <span class="op">np</span>.random.<span class="fn">gamma</span>(shape=<span class="nm">2</span>, scale=<span class="nm">2.5</span>, size=<span class="nm">300</span>)
+
+<span class="cm"># Fit both a normal AND an exponential to see which describes it better</span>
+norm_params = stats.<span class="fn">norm</span>.<span class="fn">fit</span>(call_durations)
+expon_params = stats.<span class="fn">expon</span>.<span class="fn">fit</span>(call_durations)
+
+<span class="cm"># Use stats.describe() to check skewness — will reveal normal is a poor fit</span>
+<span class="fn">print</span>(stats.<span class="fn">describe</span>(call_durations))</pre></div>
+          <p>Build a histogram of call_durations with BOTH fitted curves (normal and exponential) overlaid. Use the skewness value from describe() to justify which fit is visually and statistically more appropriate.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Build a Q-Q Plot</h5>
+          <p>Create a Q-Q plot of call_durations against a normal distribution to visually confirm the deviation from normality.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Modeled call arrivals with Poisson distribution</li>
+        <li>Computed exact probability, tail probability, and percentile using pmf/cdf/ppf</li>
+        <li>Modeled wait times with exponential distribution</li>
+        <li>Calculated probability ranges and visualized with fill_between</li>
+        <li>Generated realistic skewed call duration data</li>
+        <li>Fit both normal and exponential distributions to the data</li>
+        <li>Used stats.describe() to check skewness</li>
+        <li>Built comparison histogram with both fitted curves overlaid</li>
+        <li>Built a Q-Q plot confirming non-normality</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 15 min)</div>
+      Use the Poisson model to determine: how many agents are needed if each agent can handle 3 calls per 10-minute window, and management wants to cover the 99th percentile of call volume (not just the average)?
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">SciPy Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done active">Day 1 · Intro &amp; Distributions</span>
+    <span class="day-pill">Day 2 · Hypothesis Testing</span>
+    <span class="day-pill">Day 3 · Optimization &amp; Interpolation</span>
+    <span class="day-pill">Day 4 · Linear Algebra &amp; Signal Processing</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"Why must you use `from scipy import stats` rather than relying on plain `import scipy`?",opts:["There is no difference","Plain import scipy does NOT automatically expose submodules like scipy.stats or scipy.optimize; each submodule must be explicitly imported to guarantee access","import scipy is faster","scipy.stats doesn't exist"],ans:1,explain:"Unlike some libraries, SciPy's submodules aren't automatically loaded with a bare 'import scipy'. You must explicitly import the specific submodule you need, e.g., 'from scipy import stats' or 'import scipy.stats as stats', to reliably access its functions."},
+  {code:"dist = stats.norm(loc=100, scale=15)\ndist.cdf(115)",q:"What does this specific call compute?",opts:["The height of the PDF curve at x=115","The probability that a randomly drawn value from this distribution is LESS THAN OR EQUAL TO 115","A random sample of size 115","The 115th percentile"],ans:1,explain:"cdf() (Cumulative Distribution Function) returns P(X ≤ x) — the probability that a random variable from this distribution falls at or below the given value. For a normal(100,15), cdf(115) tells you what fraction of the distribution lies at or below 115."},
+  {code:"dist.ppf(0.90)",q:"What does ppf (Percent Point Function) compute, and how does it relate to cdf?",opts:["It's identical to cdf()","ppf is the INVERSE of cdf — given a probability (0.90), it returns the corresponding x-value such that cdf(x) = 0.90 (i.e., the value at the 90th percentile)","It generates 90 random samples","It computes the 90th power of the distribution"],ans:1,explain:"ppf() answers the inverse question compared to cdf(). While cdf(x) tells you the probability for a given value, ppf(q) tells you the VALUE corresponding to a given probability/quantile. ppf(0.90) returns the value below which 90% of the distribution's probability mass lies."},
+  {q:"What is the key difference between .pdf() and .pmf() in scipy.stats distribution objects?",opts:["They are interchangeable and identical","pdf() (Probability Density Function) is used for CONTINUOUS distributions like normal; pmf() (Probability Mass Function) is used for DISCRETE distributions like binomial or Poisson, since discrete outcomes have actual nonzero probabilities at exact values","pdf() is for discrete, pmf() is for continuous","pmf() only works with negative numbers"],ans:1,explain:"Continuous distributions (normal, exponential) technically have ZERO probability at any single exact point — pdf() gives density, not probability, and you need cdf() for actual probabilities over a range. Discrete distributions (binomial, Poisson) have real nonzero probability at each specific integer outcome — pmf() gives that exact probability directly."},
+  {code:"binom_dist = stats.binom(n=20, p=0.3)\nbinom_dist.pmf(5)",q:"What does this specific calculation return?",opts:["The mean of the distribution","The exact probability of getting PRECISELY 5 successes out of 20 independent trials, each with a 30% success probability","The probability of 5 or fewer successes","The standard deviation"],ans:1,explain:"pmf(5) for a binomial(n=20, p=0.3) gives the EXACT probability of observing exactly 5 successes in 20 trials with 30% success chance each — this is a specific point probability, distinct from cdf(5) which would give the cumulative probability of 5 OR FEWER successes."},
+  {q:"Which distribution is most appropriate for modeling 'the number of customer service calls received in a fixed 10-minute window', assuming calls arrive independently at a steady average rate?",opts:["Uniform distribution","Poisson distribution — specifically designed for modeling counts of independent events occurring within a fixed interval, given an average rate", "Normal distribution only","Exponential distribution"],ans:1,explain:"The Poisson distribution is the standard model for counting the number of independent events (like calls, defects, arrivals) occurring within a fixed time/space interval, given a known average rate (mu). This is different from the exponential distribution, which models the TIME BETWEEN such events rather than the count."},
+  {q:"Which distribution is most appropriate for modeling 'the time until the next customer call arrives', assuming calls arrive independently at a steady average rate?",opts:["Poisson distribution","Exponential distribution — models the WAITING TIME between independent, randomly occurring events, closely related to (but distinct from) the Poisson distribution which counts EVENTS in an interval", "Binomial distribution","Uniform distribution"],ans:1,explain:"While Poisson counts HOW MANY events occur in a fixed interval, the exponential distribution models the continuous TIME gap between consecutive independent events. These two distributions are mathematically linked (both arise from the same underlying random process) but answer different questions — count vs. waiting time."},
+  {code:"stats.uniform(loc=0, scale=10)",q:"What range does this uniform distribution actually cover?",opts:["0 to 10, since scale directly represents the maximum value","0 to 10 — but note that scale represents the WIDTH of the range added to loc (the starting point), not the maximum value directly; here loc=0 and scale=10 gives range [0, 0+10] = [0,10]","-10 to 10","0 to 1 only"],ans:1,explain:"For stats.uniform, loc is the START of the range and scale is the WIDTH (not the endpoint). The actual range is [loc, loc+scale]. Here, loc=0 and scale=10 gives [0, 10] — but if loc were 5, the range would shift to [5, 15], a common point of confusion."},
+  {code:"stats.describe(data)",q:"What does this single function call provide?",opts:["Only the mean","A comprehensive summary in ONE call including: number of observations, min/max, mean, variance, skewness, and kurtosis — combining several individual statistics into one convenient result object","Only the standard deviation","A histogram plot"],ans:1,explain:"stats.describe() is a convenience function that computes several key descriptive statistics simultaneously (count, min/max, mean, variance, skewness, kurtosis) and returns them as a single named-tuple-like result object, saving you from calling multiple separate functions."},
+  {q:"What does a POSITIVE skewness value indicate about a distribution's shape?",opts:["The distribution is perfectly symmetric","The distribution has a longer/heavier tail extending toward HIGHER (right/positive) values — like income distributions where most people earn moderate amounts but a few earn very high amounts, pulling the tail rightward","The distribution has a longer tail toward lower values","Skewness has no relationship to distribution shape"],ans:1,explain:"Positive (right) skewness means the distribution has a longer tail on the right/high-value side — common in income, wait times, or call durations where most values cluster at lower amounts but occasional very high values pull the tail to the right. Negative skewness would indicate the opposite: a longer tail toward lower values."},
+  {q:"What does a positive KURTOSIS value indicate compared to a normal distribution?",opts:["The data has fewer outliers than normal","The distribution has HEAVIER TAILS than a normal distribution — meaning MORE extreme values/outliers occur than would be expected under normality, a phenomenon sometimes called 'leptokurtic'", "The distribution is perfectly normal","Kurtosis only applies to discrete distributions"],ans:1,explain:"Kurtosis measures the 'tailedness' of a distribution relative to normal. Excess kurtosis > 0 (the scipy default reports EXCESS kurtosis, where normal=0) indicates heavier tails than normal — more probability mass in extreme values — while kurtosis < 0 indicates lighter tails (fewer extreme outliers than normal)."},
+  {code:"mu_fit, std_fit = stats.norm.fit(sample_data)",q:"What does .fit() accomplish here?",opts:["Generates new random data","Estimates the BEST-FITTING parameters (mean and standard deviation) for a normal distribution that would most closely match the given sample_data, using maximum likelihood estimation", "Tests whether the data is normally distributed","Removes outliers from sample_data"],ans:1,explain:".fit() takes your actual observed data and estimates the parameters of a chosen distribution family (here, normal's mean and std) that BEST match that data — typically via maximum likelihood estimation. This gives you a calibrated theoretical distribution that approximates your real sample."},
+  {q:"What is the purpose of a Q-Q (Quantile-Quantile) plot, as created by stats.probplot()?",opts:["To show a histogram of the data","To VISUALLY compare your data's quantiles against a theoretical distribution's quantiles (commonly normal) — if points fall along the diagonal reference line, the data closely matches that distribution; systematic deviations reveal skewness or heavy tails", "To calculate the mean of the data","To generate random samples"],ans:1,explain:"A Q-Q plot plots your sample's sorted quantiles against the theoretical quantiles of a reference distribution (typically normal). Points following the diagonal line indicate a good match to that distribution; curves or S-shapes reveal specific deviations like skewness (curved pattern) or heavy/light tails (S-shape at the ends)."},
+  {code:"1 - poisson_dist.cdf(20)",q:"What probability does this expression calculate?",opts:["P(exactly 20 events)","P(MORE THAN 20 events) — since cdf(20) gives P(X ≤ 20), subtracting from 1 gives the complementary probability of exceeding that threshold, useful for modeling 'surge' or extreme scenarios", "P(fewer than 20 events)","P(exactly 0 events)"],ans:1,explain:"cdf(20) returns P(X ≤ 20). Subtracting from 1 gives the complementary probability P(X > 20) — the chance of exceeding 20 events. This 'tail probability' calculation is common when assessing risk of extreme/surge scenarios, like unusually high call volumes."},
+  {q:"In a call center staffing scenario, why might an analyst use `poisson_dist.ppf(0.95)` rather than just `poisson_dist.mean()` to determine staffing levels?",opts:["ppf(0.95) and mean() always return the same value","ppf(0.95) gives the call volume that covers 95% of typical scenarios (a safety margin above the average), ensuring adequate staffing even during above-average demand periods — using just the mean would understaff during roughly half of all periods where demand exceeds average", "mean() is more accurate for staffing decisions","ppf() cannot be used for staffing calculations"],ans:1,explain:"Using just the average (mean()) would mean staffing is exactly adequate only for a 'typical' period — but by definition, ~50% of periods will have ABOVE-average demand, leading to frequent understaffing. Using ppf(0.95) instead targets a value that covers 95% of scenarios, providing a buffer against typical demand fluctuations rather than being calibrated only to the average case."},
+  {q:"Why would a Gamma-distributed dataset (like realistic call durations, which are often right-skewed) fit POORLY when forced into a Normal distribution model?",opts:["Gamma and Normal distributions always look identical","A Normal distribution is inherently SYMMETRIC, while Gamma-distributed data (with positive skewness) has a longer right tail; forcing a symmetric model onto asymmetric data will systematically misrepresent the data's true shape, especially in the tails", "Normal distributions cannot be fit to any data","This mismatch never actually occurs in real data"],ans:1,explain:"The Normal distribution assumes symmetry around its mean. Real-world durations (call times, wait times, etc.) are frequently right-skewed (many short durations, few very long ones) — fitting a symmetric Normal model to such data will poorly capture the actual shape, particularly underestimating the probability of unusually long durations in the right tail."},
+  {code:"stats.expon(scale=3.5)",q:"What does the scale parameter represent for an exponential distribution?",opts:["The variance of the distribution","The MEAN (average) of the exponential distribution — for stats.expon, scale directly equals the expected/mean value, unlike some other parameterizations that use a 'rate' parameter instead", "The maximum possible value","The number of trials"],ans:1,explain:"In SciPy's parameterization, stats.expon's scale parameter directly represents the MEAN of the distribution (equivalent to 1/rate in the alternative rate-based parameterization used in some other statistical contexts). scale=3.5 means the average wait time modeled is 3.5 time units."},
+  {q:"If two engineers independently calculate cdf(50) = 0.7 for the same normal distribution, what should ppf(0.7) return for that same distribution?",opts:["A completely unrelated value","Approximately 50 — since ppf is the mathematical INVERSE of cdf, if cdf(x)=q then ppf(q) should return x (allowing for floating-point precision), confirming the two functions undo each other", "0.7 exactly","The mean of the distribution regardless of input"],ans:1,explain:"cdf() and ppf() are inverse functions of each other by definition. If cdf(50) = 0.7 for a given distribution, then ppf(0.7) should return approximately 50 (subject to floating point precision) — this relationship is a good way to verify your understanding/usage of these two functions is correct."},
+  {q:"Why is it good practice to set `random_state=42` (or any fixed integer) when calling `.rvs(size=1000, random_state=42)` to generate random samples from a SciPy distribution?",opts:["It makes the random numbers more truly random","Setting a fixed random_state ensures REPRODUCIBILITY — running the same code again will generate the EXACT SAME 'random' sample, which is essential for debugging, sharing reproducible analysis, and consistent educational examples", "random_state has no effect on the output","It's required syntax and has no functional purpose"],ans:1,explain:"Computers generate 'pseudo-random' numbers using deterministic algorithms seeded by a starting value. Fixing random_state to a specific integer ensures the SAME sequence of 'random' numbers is generated every time the code runs — critical for reproducible research, debugging, verifying tutorial code, and sharing analysis that others can exactly replicate."},
+  {q:"Why does scipy.stats provide over 100 different distribution objects (norm, expon, binom, poisson, gamma, beta, etc.) rather than just one general-purpose distribution?",opts:["It's unnecessary redundancy with no practical value","Different real-world random processes have fundamentally DIFFERENT underlying shapes and behaviors (symmetric vs skewed, continuous vs discrete, bounded vs unbounded) — having distribution-specific models with tailored parameters lets analysts choose the mathematical model that best matches their actual data-generating process, rather than forcing all data into one ill-fitting shape", "All distributions are mathematically identical anyway", "This is a legacy design flaw scipy is trying to remove"],ans:1,explain:"Real-world phenomena arise from genuinely different underlying processes: symmetric measurement errors (normal), waiting times between random events (exponential), counts of rare events (Poisson), success counts in fixed trials (binomial), and many more specialized shapes (gamma, beta, Weibull, etc.). Having distribution-specific tools with appropriate parameterizations lets analysts select and fit the model that genuinely matches their data's generating mechanism, leading to more accurate inference than forcing a one-size-fits-all approach."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review the distribution interface (pdf/cdf/ppf/rvs), then try again! 📚"],[50,75,"Good progress! Focus on distribution selection and fitting. 💪"],[75,90,"Strong Day 1! SciPy stats foundations are solid. 🎉"],[90,101,"Excellent! Day 1 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

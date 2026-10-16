@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 43 — File Handling</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+.mode-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:14px 0; font-family:var(--font-mono); font-size:13px;}
+.mode-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:10px 12px; text-align:center;}
+.mode-box .m{color:var(--accent); font-weight:bold; display:block; margin-bottom:4px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:220px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.note-box{background:#fdf6ea; border:1px solid var(--accent-soft); border-radius:6px; padding:14px 18px; margin:14px 0; font-size:14px;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 43 of 210 · Phase 2: Python & Core AI Foundation</span>
+    <h1>File Handling</h1>
+    <div class="subtitle">~2 hours · Reading and writing real files — where every dataset starts</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Before you can train any model, you have to load data — and that data lives in files. Every CSV dataset you'll open with Pandas in a few weeks is, underneath, exactly this: a text file being read line by line. Understanding file handling directly demystifies what <code>pd.read_csv()</code> is actually doing for you later.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Opening a file</h2>
+  <div class="code">file = open("data.txt", "r")
+content = file.read()
+print(content)
+file.close()</div>
+  <div class="mode-grid">
+    <div class="mode-box"><span class="m">"r"</span>Read (default) — file must exist</div>
+    <div class="mode-box"><span class="m">"w"</span>Write — creates new or ERASES existing content</div>
+    <div class="mode-box"><span class="m">"a"</span>Append — adds to the end, keeps existing content</div>
+  </div>
+  <p><strong>The mode matters enormously.</strong> Opening an existing file in <code>"w"</code> mode instantly erases everything already in it — a genuinely costly mistake if you meant to append instead.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> The `with` statement — the correct way to open files</h2>
+  <div class="code">with open("data.txt", "r") as file:
+    content = file.read()
+    print(content)
+# file is automatically closed here, even if an error happened above</div>
+  <p><strong>Always prefer <code>with</code> over manually calling <code>open()</code> and <code>.close()</code>.</strong> The <code>with</code> block guarantees the file gets closed properly the moment the block ends — even if an error occurs partway through. Forgetting <code>.close()</code> with the manual approach is a real, common bug (it can leave files locked or changes unsaved) — <code>with</code> eliminates that risk entirely and is considered standard best practice.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Reading — three ways</h2>
+  <div class="code">with open("data.txt", "r") as file:
+    whole_thing = file.read()        # one big string, entire file
+
+with open("data.txt", "r") as file:
+    all_lines = file.readlines()     # a list, one string per line
+
+with open("data.txt", "r") as file:
+    for line in file:                # loop through line by line
+        print(line.strip())          # .strip() removes the trailing newline</div>
+  <p><strong>Note:</strong> each line read this way keeps its trailing newline character (<code>\n</code>) attached — this is why you'll almost always see <code>.strip()</code> called immediately after reading a line, using exactly Day 42's string method.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Writing</h2>
+  <div class="code">with open("output.txt", "w") as file:
+    file.write("Hello, file!\n")
+    file.write("Second line\n")</div>
+  <p><strong>You must add <code>\n</code> yourself</strong> — unlike <code>print()</code>, <code>.write()</code> does NOT automatically add a newline after each call. Forgetting this results in all your text running together on one line.</p>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Real-world example (saving processed results)</h2>
+  <div class="panel">
+    <p class="example-tag">A genuinely common real task</p>
+    <div class="code">clean_names = ["Asha", "Rohan", "Priya", "Meera"]
+
+with open("clean_names.txt", "w") as file:
+    for i in range(len(clean_names)):
+        file.write(clean_names[i] + "\n")</div>
+    <p>This is precisely how you'd save cleaned/processed data (from Day 42's cleaning example) back to disk — a completely ordinary step in any real data pipeline, before or after using a tool like Pandas.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Second example (reading and parsing a data file)</h2>
+  <div class="panel">
+    <p class="example-tag">Directly extends yesterday's line-splitting skill</p>
+    <div class="code">with open("customers.txt", "r") as file:
+    for line in file:
+        fields = line.strip().split(",")
+        name = fields[0]
+        age = int(fields[1])
+        print(f"{name} is {age} years old")</div>
+    <p>Read line by line, strip the trailing newline, split on commas, convert types — this exact sequence is, structurally, a hand-built CSV reader. It's precisely what a library function does automatically, just visible step by step here.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Opening in "w" mode when you meant "a".</strong> This silently destroys existing file content — always double check the mode before writing.</p>
+    <p><strong>Mistake 2 — Forgetting to add "\n" when writing lines.</strong> Without it, every <code>.write()</code> call runs together into one unreadable line.</p>
+    <p><strong>Mistake 3 — Forgetting .strip() when reading lines.</strong> Each line read via a loop keeps its trailing newline — comparing or printing without stripping it can cause subtle bugs.</p>
+    <p><strong>Mistake 4 — Manually managing open()/close() instead of using `with`.</strong> If an error happens between open() and close(), the file may never get properly closed — `with` handles this safety automatically.</p>
+  </div>
+  <div class="note-box">
+    <strong>Note:</strong> a file that doesn't exist (opened in "r" mode) raises a <code>FileNotFoundError</code> — handling that gracefully is exactly what tomorrow's exception handling (try/except) covers.
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Try it yourself — Practice Console (simulated file system)</h2>
+  <div class="solver">
+    <h3>A virtual file store — write, then read it back</h3>
+    <textarea id="codeInput">clean_names = ["Asha", "Rohan", "Priya", "Meera"]
+
+with open("names.txt", "w") as file:
+    for i in range(len(clean_names)):
+        file.write(clean_names[i] + "\n")
+
+with open("names.txt", "r") as file:
+    content = file.read()
+    print(content)
+
+with open("names.txt", "r") as file:
+    for line in file:
+        print("Line: " + line.strip())</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">This simulates a real file system in memory (files persist between with-blocks within one run) — the exact same code patterns work identically against real files on your computer.</p>
+</section>
+
+<section>
+  <h2><span class="num">11</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 44 covers exception handling (try/except) — gracefully handling errors like a missing file, instead of letting your whole program crash.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 43 of 210 · AI & ML Study Plan · Phase 2: Python & Core AI Foundation</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Which mode opens a file for reading?", steps: '"r" (also the default if no mode is specified)' },
+  { q: "Which mode ERASES existing content before writing new content?", steps: '"w" (write mode overwrites/erases)' },
+  { q: "Which mode adds new content WITHOUT erasing what's already there?", steps: '"a" (append mode)' },
+  { q: "Write the `with` statement to open 'report.txt' for reading, as a variable called f.", steps: 'with open("report.txt", "r") as f:' },
+  { q: "Why is `with open(...) as f:` preferred over manually calling open() and close()?", steps: "It guarantees the file is properly closed automatically, even if an error occurs inside the block — removing a common source of bugs." },
+  { q: "file.write(\"hello\") then file.write(\"world\") — without any \\n — what ends up in the file?", steps: "\"helloworld\" all run together on one line, since .write() never adds a newline automatically." },
+  { q: "Why does a line read from a file usually need .strip() before comparing or printing it?", steps: "Each line read from a file keeps its trailing newline character (\\n) attached — .strip() removes it, avoiding subtle bugs when comparing values." },
+  { q: "What error occurs if you try to open a file that doesn't exist in 'r' mode?", steps: "A FileNotFoundError" },
+  { q: "Write code to save a list of numbers [10,20,30] to 'nums.txt', one per line.", steps: 'with open("nums.txt", "w") as f:\n    for i in range(len([10,20,30])):\n        f.write(str([10,20,30][i]) + "\\n")' },
+  { q: "How does today's line.strip().split(',') pattern relate to what Pandas' read_csv() does internally?", steps: "read_csv() automates exactly this — reading each line, splitting on the delimiter, and converting each field to the correct type — just implemented for you inside the library instead of written by hand." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with simulated file system ---
+let virtualFS = {};
+
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(Array.isArray(val)){
+    const items = val.map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v));
+    return '[' + items.join(', ') + ']';
+  }
+  return String(val);
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))){
+    return value.slice(1,-1);
+  }
+  if(!isNaN(parseFloat(value)) && isFinite(value)){
+    return value.includes('.') ? parseFloat(value) : parseInt(value);
+  }
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || (v && v.__isFile)) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/\bstr\(/g, 'String(').replace(/\bint\(/g, 'Math.trunc(').replace(/\bfloat\(/g, 'Number(');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function evalFString(inner, vars){
+  return inner.replace(/\{([^}]+)\}/g, (whole, expr) => {
+    const val = evalComplex(expr.trim(), vars);
+    return typeof val === 'boolean' ? (val ? 'True':'False') : (val===null?'None':String(val));
+  });
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+  let m = arg.match(/^f(["'])([\s\S]*)\1$/);
+  if(m) return evalFString(m[2], vars);
+
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p => evalComplex(p, vars));
+  }
+
+  m = arg.match(/^(\w+)\.(read|readlines|strip|split)\((.*)\)$/);
+  if(m){
+    const target = vars[m[1]];
+    const method = m[2];
+    const inner = m[3];
+    if(target && target.__isFile){
+      if(method === 'read') return target.content;
+      if(method === 'readlines') return target.content.split('\n').filter((l,idx,arr)=> !(idx===arr.length-1 && l==='')).map(l=>l+'\n');
+    } else if(typeof target === 'string'){
+      if(method === 'strip') return target.trim();
+      if(method === 'split'){
+        const args = splitTopLevel(inner, ',').map(a=>resolveSimple(a,vars));
+        return args.length===0 ? target.trim().split(/\s+/) : target.split(args[0]);
+      }
+    }
+  }
+
+  const idxMatch = arg.match(/^(\w+)\[(.*)\]$/);
+  if(idxMatch && Array.isArray(vars[idxMatch[1]])){
+    const arr = vars[idxMatch[1]];
+    let i = evalGeneral(idxMatch[2], vars);
+    if(i<0) i = arr.length+i;
+    if(i<0||i>=arr.length) throw new Error('IndexError');
+    return arr[i];
+  }
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch){ return vars[lenMatch[1]].length; }
+  const intMatch = arg.match(/^int\((.+)\)$/);
+  if(intMatch) return Math.trunc(evalComplex(intMatch[1], vars));
+  const strMatch = arg.match(/^str\((.+)\)$/);
+  if(strMatch) return pyRepr(evalComplex(strMatch[1], vars)).replace(/^'(.*)'$/, '$1');
+
+  return evalGeneral(arg, vars);
+}
+
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+
+function execLine(line, vars, output){
+  const writeMatch = line.match(/^(\w+)\.write\((.*)\)$/);
+  if(writeMatch && vars[writeMatch[1]] && vars[writeMatch[1]].__isFile){
+    const text = evalComplex(writeMatch[2], vars);
+    vars[writeMatch[1]].content += (typeof text === 'string' ? text : pyRepr(text));
+    return;
+  }
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  if(printMatch){
+    const partsAtTop = splitTopLevel(printMatch[1], ',');
+    output.push(partsAtTop.map(p => {
+      const v = evalComplex(p, vars);
+      return typeof v === 'string' ? v : pyRepr(v);
+    }).join(' '));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+
+    const withMatch = trimmed.match(/^with open\((.+),\s*(["'][rwa]["'])\)\s+as\s+(\w+):$/);
+    const forRangeMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+    const forInMatch = trimmed.match(/^for (\w+) in (\w+):$/);
+
+    if(withMatch){
+      const filenameExpr = withMatch[1].trim();
+      const mode = resolveSimple(withMatch[2], vars);
+      const varName = withMatch[3];
+      const filename = evalComplex(filenameExpr, vars);
+
+      let existing = virtualFS.hasOwnProperty(filename) ? virtualFS[filename] : null;
+      if(mode === 'r' && existing === null){
+        output.push(`<span class="error">FileNotFoundError: [Errno 2] No such file or directory: '${escapeHtml(filename)}'</span>`);
+        const bEnd = findBlockExtent(lines, i+1, baseIndent);
+        i = bEnd; continue;
+      }
+      const fileObj = {
+        __isFile: true,
+        name: filename,
+        content: mode === 'a' ? (existing || '') : (mode === 'w' ? '' : existing)
+      };
+      const localVars = Object.assign({}, vars);
+      localVars[varName] = fileObj;
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      execBlock(lines, bStart, baseIndent+4, localVars, output, guard);
+      virtualFS[filename] = fileObj.content; // "close" - persist back
+      i = bEnd;
+      continue;
+    } else if(forRangeMatch){
+      const loopVar = forRangeMatch[1];
+      const args = forRangeMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else if(forInMatch){
+      const loopVar = forInMatch[1];
+      const iterableVal = vars[forInMatch[2]];
+      let items = [];
+      if(iterableVal && iterableVal.__isFile){
+        items = iterableVal.content.split('\n').filter((l,idx,arr)=> !(idx===arr.length-1 && l==='')).map(l=>l+'\n');
+      } else if(Array.isArray(iterableVal)){
+        items = iterableVal;
+      } else if(typeof iterableVal === 'string'){
+        items = iterableVal.split('');
+      }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      for(const item of items){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = item;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+      }
+      i = bEnd;
+      continue;
+    } else {
+      try{ execLine(trimmed, vars, output); }
+      catch(err){ output.push(`<span class="error">${escapeHtml(err.message || 'Error')}</span>`); }
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  virtualFS = {};
+  const output = [];
+  try{ execBlock(lines, 0, 0, vars, output, {count:0}); }
+  catch(err){ output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`); }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "Which file mode should you use to ADD content to a file without erasing what's there?", opts: ['"r"','"w"','"a"','"x"'], correct: 2, explain: '"a" (append) preserves existing content and adds to the end.' },
+  { q: "Why is `with open(...) as f:` preferred over open()/close()?", opts: [
+      "It's not actually preferred, they're identical",
+      "It automatically closes the file, even if an error occurs inside the block",
+      "It's the only way to read a file",
+      "It makes files open faster"
+    ], correct: 1, explain: "with guarantees proper cleanup (closing the file) automatically." },
+  { q: 'file.write("abc"); file.write("def") — with no newlines. What ends up in the file?', opts: ['"abc\\ndef"','"abcdef"','Two separate files','Error'], correct: 1, explain: ".write() never adds newlines automatically — you must include \\n yourself." },
+  { q: "Why do lines read via 'for line in file:' usually need .strip()?", opts: [
+      "They don't need it",
+      "Each line keeps its trailing newline character, which strip() removes",
+      "strip() converts text to numbers",
+      "Only needed for the last line"
+    ], correct: 1, explain: "The newline character is included with each line read this way." },
+  { q: "Opening an EXISTING file in 'w' mode does what to its current content?", opts: ["Preserves it completely","Erases it immediately","Only erases the first line","Nothing happens until you write"], correct: 1, explain: "'w' mode erases/overwrites existing content the moment the file is opened." },
+  { q: "What error occurs when trying to read ('r' mode) a file that doesn't exist?", opts: ["IndexError","TypeError","FileNotFoundError","No error, it creates an empty file"], correct: 2, explain: "Reading a nonexistent file raises FileNotFoundError." },
+  { q: "file.read() returns:", opts: ["A list of lines","The entire file content as one single string","Only the first line","The file's name"], correct: 1, explain: "read() reads and returns the whole file's content as one string." },
+  { q: "How does 'line.strip().split(\",\")' (reading a file line by line) relate to what Pandas does internally when reading a CSV?", opts: [
+      "It's completely unrelated",
+      "It's essentially a hand-built version of exactly what pd.read_csv() automates for you",
+      "Pandas never reads files this way",
+      "Only used for Excel files, not CSV"
+    ], correct: 1, explain: "This manual pattern is precisely the mechanism a CSV-reading library automates under the hood." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

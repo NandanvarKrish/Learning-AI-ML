@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 03 — AI Task: Conditions & Decision Logic</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6ff;
+  --paper:#ffffff;
+  --paper2:#edf0ff;
+  --ink:#080f2a;
+  --ink2:#1a2550;
+  --ink3:#5565a0;
+  --rule:#d4dcf5;
+  --blue:#0369a1;
+  --bs:#e0f0fb;
+  --bb:#93c5fd;
+  --green:#15803d;
+  --gs:#f0fdf4;
+  --gb:#86efac;
+  --amber:#b45309;
+  --as2:#fffbeb;
+  --ab2:#fde68a;
+  --purple:#6d28d9;
+  --ps:#f5f3ff;
+  --pb:#c4b5fd;
+  --red:#be123c;
+  --rs:#fff1f2;
+  --rb:#fecdd3;
+  --shadow:0 1px 4px rgba(8,15,42,.07),0 4px 18px rgba(8,15,42,.08);
+  --shadowlg:0 8px 32px rgba(8,15,42,.12);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 92% 4%,#c7d2fe50 0%,transparent 42%),radial-gradient(circle at 4% 94%,#bfdbfe40 0%,transparent 38%);
+  min-height:100vh}
+
+/* NAV */
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(8,15,42,.06)}
+.bar-in{max-width:840px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar-l{display:flex;align-items:center;gap:10px}
+.badge{background:var(--blue);color:#fff;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.bar-title{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.timer{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink3);background:var(--paper2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.timer.on{background:var(--gs);border-color:var(--gb);color:var(--green)}
+
+/* LAYOUT */
+.page{max-width:840px;margin:0 auto;padding:40px 20px 90px}
+
+/* HERO */
+.hero{margin-bottom:28px}
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px;letter-spacing:.04em}
+.hero h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+.hero h1 em{font-style:italic;color:var(--blue)}
+.hero-sub{font-size:.92rem;color:var(--ink2);max-width:580px;line-height:1.75;margin-bottom:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.74rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+
+/* PROGRESS */
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:14px 20px;margin-bottom:24px;box-shadow:var(--shadow)}
+.prog-row{display:flex;justify-content:space-between;font-size:.7rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--blue),#38bdf8);border-radius:99px;transition:width .7s ease}
+
+/* RECAP */
+.recap{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--blue);border-radius:var(--r);padding:13px 18px;margin-bottom:22px;font-size:.87rem;color:var(--ink2);line-height:1.8}
+.recap strong{color:var(--ink)}
+.recap code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--paper2);padding:1px 6px;border-radius:4px;color:var(--blue)}
+
+/* SECTION HEADERS */
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-title{font-family:'Fraunces',Georgia,serif;font-size:1.25rem;font-weight:700}
+.sh-sub{font-size:.74rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-badge{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--paper2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+
+/* CARDS */
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:24px 28px;margin-bottom:16px;box-shadow:var(--shadow)}
+.ctag{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:.64rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tb{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.ta{background:var(--as2);color:var(--amber);border:1px solid var(--ab2)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.15rem;font-weight:700;margin-bottom:10px;line-height:1.35}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+.card p strong{color:var(--ink);font-weight:600}
+h4.sh2{font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;color:var(--ink);margin:14px 0 7px}
+
+/* CALLOUT BOXES */
+.cb{border-radius:10px;padding:12px 16px;font-size:.86rem;line-height:1.7;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.cb-i{flex-shrink:0;margin-top:1px}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cba{background:var(--as2);border:1px solid var(--ab2);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* CODE */
+.code-wrap{background:#0d1117;border-radius:10px;margin:14px 0;overflow:hidden}
+.code-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#161b22;border-bottom:1px solid #21262d}
+.code-dots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}
+.cdr{background:#ef4444}.cdy{background:#f59e0b}.cdg{background:#22c55e}
+.code-lang{font-family:'DM Mono',monospace;font-size:.65rem;color:#6e7681;letter-spacing:.1em;text-transform:uppercase}
+.code-body{padding:18px;font-family:'DM Mono',monospace;font-size:.83rem;line-height:2;overflow-x:auto;color:#e6edf3}
+.cm{color:#6e7681;font-style:italic}.kw{color:#ff7b72}.fn2{color:#79c0ff}.st{color:#a5d6ff}.nm{color:#ffa657}.vr{color:#e6edf3}.op{color:#8b9fc1}
+
+/* TASK CHECKLIST */
+.task-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.task-item{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;background:var(--bg);border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;transition:all .2s;user-select:none}
+.task-item:hover{border-color:var(--bb);background:var(--bs)}
+.task-item.done{background:var(--gs);border-color:var(--gb)}
+.task-cb{width:20px;height:20px;border:2px solid #a0b0d0;border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700}
+.task-item.done .task-cb{background:var(--green);border-color:var(--green)}
+.task-lbl{font-size:.88rem;color:var(--ink2);line-height:1.55}
+.task-item.done .task-lbl{color:var(--green);text-decoration:line-through}
+.task-hint{font-size:.75rem;color:var(--ink3);margin-top:2px;display:block}
+
+/* PLAYGROUND */
+.pg{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.pg-head{background:#f0f4ff;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pg-name{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink2);font-weight:500;letter-spacing:.07em}
+.pg-btns{display:flex;gap:7px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#025a87}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--paper2)}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#116630}
+.pg-ed{padding:14px 18px;background:#fafbff}
+.pg-ed textarea{width:100%;border:1.5px solid var(--rule);border-radius:8px;padding:11px 14px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:120px;transition:border-color .2s;line-height:1.8}
+.pg-ed textarea:focus{border-color:var(--blue)}
+.out-label{font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:4px;font-family:'DM Mono',monospace}
+.pg-out{border-top:1px solid var(--rule);padding:12px 18px;background:#f7f9ff;font-family:'DM Mono',monospace;font-size:.82rem;min-height:44px;white-space:pre-wrap;line-height:1.8;color:var(--ink2)}
+.pg-out.ok{color:var(--green)}
+.pg-out.err{color:var(--red)}
+
+/* DECISION TREE BUILDER */
+.dt-wrap{background:var(--paper2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.dt-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.dt-label{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--ink2);min-width:110px}
+.dt-inp{border:1.5px solid var(--rule);border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:.82rem;background:var(--paper);color:var(--ink);outline:none;width:130px;transition:border-color .2s}
+.dt-inp:focus{border-color:var(--blue)}
+.dt-result{background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:14px 18px;margin-top:14px;font-family:'DM Mono',monospace;font-size:.84rem;line-height:1.9;color:var(--ink2);min-height:60px;white-space:pre-wrap}
+.dt-result.pass{border-color:var(--gb);background:var(--gs);color:var(--green)}
+.dt-result.warn{border-color:var(--ab2);background:var(--as2);color:var(--amber)}
+.dt-result.fail{border-color:var(--rb);background:var(--rs);color:var(--red)}
+
+/* TRACE TABLE */
+.trace-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.84rem}
+.trace-table th{background:var(--paper2);font-weight:600;padding:9px 13px;text-align:left;border:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.trace-table td{padding:9px 13px;border:1px solid var(--rule);color:var(--ink2)}
+.trace-table tr:nth-child(even) td{background:#f8f9ff}
+.trace-table td.green{color:var(--green);font-weight:600;background:var(--gs)}
+.trace-table td.red{color:var(--red);font-weight:600;background:var(--rs)}
+.trace-table td.amber{color:var(--amber);font-weight:600;background:var(--as2)}
+
+/* SCENARIOS */
+.scenario{background:var(--paper2);border:1.5px solid var(--rule);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.sc-q{font-size:.92rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5}
+.sc-opts{display:flex;flex-direction:column;gap:7px}
+.sc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.sc-opt:hover:not(.done){background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.sc-opt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.sc-opt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.sc-opt.done{cursor:default}
+.sc-ltr{width:22px;height:22px;border-radius:6px;background:var(--paper2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.68rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.sc-opt.cor .sc-ltr{background:var(--green);border-color:var(--green);color:#fff}
+.sc-opt.wrg .sc-ltr{background:var(--red);border-color:var(--red);color:#fff}
+.sc-exp{margin-top:9px;padding:9px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.sc-exp.show{display:block}
+.sc-exp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.sc-exp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* AI CHAT */
+.ai-chat{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.ai-head{background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px}
+.ai-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.ai-nm{font-weight:600;font-size:.88rem}
+.ai-st{font-size:.7rem;opacity:.8;margin-top:1px}
+.ai-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:340px;overflow-y:auto;background:#fafbff}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bubble{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65}
+.msg.ai .bubble{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bubble{background:var(--blue);color:#fff;border-radius:12px 12px 3px 12px}
+.msg-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .msg-av{background:var(--bs);border:1px solid var(--bb)}
+.msg.user .msg-av{background:var(--paper2);border:1px solid var(--rule)}
+.ai-inp-row{border-top:1px solid var(--rule);padding:12px 16px;display:flex;gap:8px;background:var(--paper)}
+.ai-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.ai-inp:focus{border-color:var(--blue)}
+.ai-send{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+.ai-send:hover{background:#025a87}
+.dots{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dot-t{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dot-t:nth-child(2){animation-delay:.15s}
+.dot-t:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* FILL BLANKS */
+.fq{margin-bottom:14px}
+.fq label{font-size:.9rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fq label code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--paper2);padding:1px 6px;border-radius:4px;color:var(--blue)}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.86rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:360px;transition:border-color .2s}
+.fi:focus{border-color:var(--blue)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+
+/* SHORT ANSWER */
+.sq{margin-bottom:16px}
+.sq label{font-size:.9rem;font-weight:500;display:block;margin-bottom:7px;color:var(--ink2);line-height:1.6}
+.sq textarea{width:100%;border:1.5px solid var(--rule);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.7}
+.sq textarea:focus{border-color:var(--blue)}
+.cc{font-size:.7rem;color:var(--ink3);text-align:right;margin-top:3px;font-family:'DM Mono',monospace}
+
+/* MCQ */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.86rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--paper2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.68rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* SCOREBOARD */
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--paper2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--ink3)}
+
+/* FINAL */
+.final{background:linear-gradient(135deg,#080f2a,#1e3a7a);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.final-emoji{font-size:2.5rem;margin-bottom:10px}
+.final-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.final-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.final-cta{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 22px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.final-cta:hover{background:rgba(255,255,255,.25)}
+
+/* FLOW DIAGRAM */
+.flow{display:flex;flex-direction:column;align-items:center;gap:4px;margin:16px 0;font-size:.83rem;font-family:'DM Mono',monospace}
+.flow-box{padding:10px 22px;border-radius:8px;font-weight:600;text-align:center;min-width:200px}
+.flow-if{background:var(--bs);border:2px solid var(--bb);color:var(--blue)}
+.flow-true{background:var(--gs);border:2px solid var(--gb);color:var(--green)}
+.flow-false{background:var(--rs);border:2px solid var(--rb);color:var(--red)}
+.flow-elif{background:var(--as2);border:2px solid var(--ab2);color:var(--amber)}
+.flow-else{background:var(--ps);border:2px solid var(--pb);color:var(--purple)}
+.flow-arrow{font-size:1.1rem;color:var(--ink3)}
+.flow-split{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.flow-branch{display:flex;flex-direction:column;align-items:center;gap:4px}
+.flow-lbl{font-size:.7rem;color:var(--ink3);margin-bottom:2px}
+
+/* FOOTER */
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+
+@media(max-width:600px){
+  .card{padding:18px 16px}
+  .dt-row{flex-direction:column;align-items:flex-start}
+  .dt-inp{width:100%}
+  .ai-msgs{max-height:260px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bar-l">
+      <div class="badge">📅 Day 03</div>
+      <div class="bar-title">AI Task — if / elif / else · Conditions · Decision Logic</div>
+    </div>
+    <div class="timer" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="bc">AI/ML 15-Month · Month 1 · Week 1 · Day 03 Task</div>
+  <h1>Your AI Task:<br><em>Decision Logic & Conditions</em></h1>
+  <p class="hero-sub">Today you learned how programs make decisions — <strong>if / elif / else</strong>, comparison operators, <strong>and / or / not</strong>, and Python indentation. These are the <strong>brain of every AI model</strong>. Every classifier, spam filter, and recommendation engine runs on conditional logic.</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">🐍 Python</span>
+    <span class="pill">🤖 AI Decision Systems</span>
+    <span class="pill">🧠 20 MCQs</span>
+    <span class="pill">💬 AI Chat</span>
+    <span class="pill">🌳 Decision Trees</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- RECAP -->
+<div class="recap">
+  ✅ <strong>What you learned today:</strong>
+  <code>if</code> checks a condition — runs the block if True.
+  <code>elif</code> = "else if" — checked only when the previous condition was False.
+  <code>else</code> runs when ALL conditions above are False.
+  Comparison operators: <code>== != > < >= <=</code>.
+  Logical operators: <code>and</code> (both must be True) · <code>or</code> (at least one True) · <code>not</code> (inverts True/False).
+  <strong>Indentation is not optional</strong> — Python uses 4 spaces to define blocks.
+  Real AI uses: grade calculators · loan approvers · spam filters · recommendation engines.
+</div>
+
+<!-- ===== SECTION 1: HOW IF/ELIF/ELSE FLOWS ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--bs)">🌳</div>
+  <div><div class="sh-title">Part 1 — Visual: How Conditions Flow</div><div class="sh-sub">Understand the logic before writing code</div></div>
+  <div class="sh-badge">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">📊 Decision Flow</div>
+  <h2>How Python Reads if / elif / else</h2>
+  <p>Python reads conditions <strong>top to bottom</strong> and stops at the FIRST one that is True. All others below it are completely skipped — even if they are also true.</p>
+  <div class="flow">
+    <div class="flow-box flow-if">if marks >= 90:</div>
+    <div class="flow-split">
+      <div class="flow-branch"><div class="flow-lbl">✅ True</div><div class="flow-box flow-true">print("A") → STOP</div></div>
+      <div class="flow-branch"><div class="flow-lbl">❌ False → check next</div><div class="flow-box flow-elif">elif marks >= 70:</div></div>
+    </div>
+    <div class="flow-split" style="margin-top:4px">
+      <div class="flow-branch"><div class="flow-lbl">✅ True</div><div class="flow-box flow-true">print("B") → STOP</div></div>
+      <div class="flow-branch"><div class="flow-lbl">❌ False → check next</div><div class="flow-box flow-elif">elif marks >= 50:</div></div>
+    </div>
+    <div class="flow-split" style="margin-top:4px">
+      <div class="flow-branch"><div class="flow-lbl">✅ True</div><div class="flow-box flow-true">print("C") → STOP</div></div>
+      <div class="flow-branch"><div class="flow-lbl">❌ All False</div><div class="flow-box flow-else">else: print("F")</div></div>
+    </div>
+  </div>
+  <div class="cb cbb"><span class="cb-i">💡</span><span><strong>Key insight:</strong> Once Python finds a True condition, it runs that block and JUMPS PAST all remaining elif/else. This is why order matters — put the most specific condition first!</span></div>
+  <h4 class="sh2">Trace Table — What prints for each mark?</h4>
+  <table class="trace-table">
+    <thead><tr><th>marks value</th><th>marks >= 90?</th><th>marks >= 70?</th><th>marks >= 50?</th><th>Output</th></tr></thead>
+    <tbody>
+      <tr><td>95</td><td class="green">True ✓</td><td>— skipped</td><td>— skipped</td><td class="green">A</td></tr>
+      <tr><td>75</td><td class="red">False</td><td class="green">True ✓</td><td>— skipped</td><td class="green">B</td></tr>
+      <tr><td>55</td><td class="red">False</td><td class="red">False</td><td class="green">True ✓</td><td class="amber">C</td></tr>
+      <tr><td>30</td><td class="red">False</td><td class="red">False</td><td class="red">False</td><td class="red">F</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== SECTION 2: CHECKLIST ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--as2)">📋</div>
+  <div><div class="sh-title">Part 2 — IDLE Checklist</div><div class="sh-sub">Complete each task in Python IDLE — tick when done</div></div>
+  <div class="sh-badge">⏱ 45 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✅ Checklist</div>
+  <h2>8 Hands-On Tasks — Do These in Python IDLE</h2>
+  <ul class="task-list" id="tlist">
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Build the full Grade Calculator: ask for marks, print A / B / C / D / F using if/elif/else</span>
+      <span class="task-hint">💡 if marks >= 90: print("A") elif marks >= 80: print("B") ... else: print("F")</span></div>
+    </li>
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Add a combined condition: student passes ONLY if marks >= 50 AND attendance >= 75 (use and)</span>
+      <span class="task-hint">💡 if marks >= 50 and attendance >= 75: print("Pass") else: print("Fail")</span></div>
+    </li>
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Build the Bank Loan Approver: age >= 21 AND income >= 50000 AND credit_score >= 650 → Approved, elif credit_score >= 600 AND income >= 40000 → Conditional, else → Rejected</span>
+      <span class="task-hint">💡 Use multiple and conditions. This is how real banking AI works!</span></div>
+    </li>
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Build a Temperature Advisor: ask for temp in Celsius — Freezing (below 0), Cold (0–14), Warm (15–29), Hot (30+)</span>
+      <span class="task-hint">💡 if temp < 0: elif temp < 15: elif temp < 30: else:</span></div>
+    </li>
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Build a BMI Calculator: ask weight (kg) and height (m), calculate BMI = weight / (height ** 2), classify as Underweight / Normal / Overweight / Obese</span>
+      <span class="task-hint">💡 bmi = weight / (height ** 2) then if bmi < 18.5: "Underweight" elif bmi < 25: "Normal" ...</span></div>
+    </li>
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Build an AI Spam Classifier: check if the email contains "free", "win", "click", "urgent" — classify as SPAM or NOT SPAM using or and .lower()</span>
+      <span class="task-hint">💡 if "free" in email.lower() or "win" in email.lower() or ...: print("SPAM")</span></div>
+    </li>
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Use not: build a login checker — if username is NOT "admin" or password is NOT "1234", print "Access Denied", else print "Welcome Admin"</span>
+      <span class="task-hint">💡 if not (username == "admin" and password == "1234"): print("Denied")</span></div>
+    </li>
+    <li class="task-item" onclick="tick(this)">
+      <div class="task-cb"></div>
+      <div><span class="task-lbl">Fix this indentation bug on purpose: remove the indent from print("Pass") and observe the IndentationError — then fix it. Screenshot the error!</span>
+      <span class="task-hint">💡 Seeing the error yourself is the best way to remember the indentation rule forever</span></div>
+    </li>
+  </ul>
+</div>
+
+<!-- ===== SECTION 3: INTERACTIVE SIMULATORS ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--as2)">⚙️</div>
+  <div><div class="sh-title">Part 3 — Interactive Simulators</div><div class="sh-sub">Write logic — simulators show results instantly</div></div>
+  <div class="sh-badge">⏱ 50 min</div>
+</div>
+
+<!-- SIMULATOR 1: GRADE CALC -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 1</div>
+  <h2>Grade Calculator Simulator</h2>
+  <p>Enter a marks value. The simulator runs the if/elif/else logic and shows exactly which branch Python would take — and the f-string output it would print.</p>
+  <div class="dt-wrap">
+    <div class="dt-row">
+      <span class="dt-label">marks =</span>
+      <input class="dt-inp" id="gc-marks" type="number" placeholder="0 – 100" min="0" max="100" oninput="runGradeCalc()"/>
+    </div>
+    <div id="gc-result" class="dt-result">Enter a marks value above to see the result...</div>
+  </div>
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="code-lang">Python — Grade Calculator</div></div>
+    <div class="code-body">
+<span class="cm"># AI systems use this logic for classification!</span>
+<span class="vr">marks</span> = <span class="fn2">int</span>(<span class="fn2">input</span>(<span class="st">"Enter marks: "</span>))
+
+<span class="kw">if</span> <span class="vr">marks</span> <span class="op">>=</span> <span class="nm">90</span>:
+    <span class="fn2">print</span>(<span class="st">f"Grade: A — Distinction ({marks}/100)"</span>)
+<span class="kw">elif</span> <span class="vr">marks</span> <span class="op">>=</span> <span class="nm">80</span>:
+    <span class="fn2">print</span>(<span class="st">f"Grade: B — Merit ({marks}/100)"</span>)
+<span class="kw">elif</span> <span class="vr">marks</span> <span class="op">>=</span> <span class="nm">70</span>:
+    <span class="fn2">print</span>(<span class="st">f"Grade: C — Pass ({marks}/100)"</span>)
+<span class="kw">elif</span> <span class="vr">marks</span> <span class="op">>=</span> <span class="nm">50</span>:
+    <span class="fn2">print</span>(<span class="st">f"Grade: D — Borderline ({marks}/100)"</span>)
+<span class="kw">else</span>:
+    <span class="fn2">print</span>(<span class="st">f"Grade: F — Fail ({marks}/100)"</span>)
+    </div>
+  </div>
+</div>
+
+<!-- SIMULATOR 2: LOAN APPROVER -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 2</div>
+  <h2>Bank Loan Approver — Real AI Decision System</h2>
+  <p>Banks use <strong>conditional logic exactly like this</strong> to approve or reject loans automatically. Enter the values and see the decision instantly.</p>
+  <div class="cb cbb"><span class="cb-i">💡</span><span>This is how AI credit scoring works. Real systems use the same logic but with hundreds of conditions and machine learning weights — but it all starts with if/elif/else thinking!</span></div>
+  <div class="dt-wrap">
+    <div class="dt-row">
+      <span class="dt-label">age =</span>
+      <input class="dt-inp" id="loan-age" type="number" placeholder="e.g. 25" oninput="runLoan()"/>
+    </div>
+    <div class="dt-row">
+      <span class="dt-label">income =</span>
+      <input class="dt-inp" id="loan-inc" type="number" placeholder="e.g. 55000" oninput="runLoan()"/>
+    </div>
+    <div class="dt-row">
+      <span class="dt-label">credit_score =</span>
+      <input class="dt-inp" id="loan-cs" type="number" placeholder="e.g. 680" oninput="runLoan()"/>
+    </div>
+    <div id="loan-result" class="dt-result">Fill in all 3 values to see the loan decision...</div>
+  </div>
+</div>
+
+<!-- SIMULATOR 3: SPAM CLASSIFIER -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 3</div>
+  <h2>AI Spam Classifier — NLP + Conditions</h2>
+  <p>This combines Day 02 string methods (<code>.lower()</code>, <code>in</code>) with Day 03 conditional logic (<code>or</code>). This is the exact logic used in email spam filters before ML models were used — and still used today as a first pass!</p>
+  <div class="dt-wrap">
+    <div class="dt-row" style="flex-direction:column;align-items:flex-start;gap:7px">
+      <span class="dt-label">Email text:</span>
+      <textarea id="spam-text" style="width:100%;border:1.5px solid var(--rule);border-radius:8px;padding:10px 13px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:70px;transition:border-color .2s;line-height:1.7" placeholder="Type an email here e.g. 'Congratulations! You WIN a FREE iPhone — click now!'" oninput="runSpam()"></textarea>
+    </div>
+    <div id="spam-result" class="dt-result" style="margin-top:12px">Type some email text above...</div>
+  </div>
+  <div class="code-wrap" style="margin-top:14px">
+    <div class="code-bar"><div class="code-dots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="code-lang">Python — Spam Classifier Logic</div></div>
+    <div class="code-body">
+<span class="vr">email</span> = <span class="fn2">input</span>(<span class="st">"Enter email: "</span>).<span class="fn2">lower</span>()  <span class="cm"># Day 02 + Day 03!</span>
+<span class="vr">spam_words</span> = [<span class="st">"free"</span>, <span class="st">"win"</span>, <span class="st">"click"</span>, <span class="st">"urgent"</span>, <span class="st">"congratulations"</span>, <span class="st">"prize"</span>]
+<span class="vr">found</span> = []
+
+<span class="kw">for</span> <span class="vr">word</span> <span class="kw">in</span> <span class="vr">spam_words</span>:
+    <span class="kw">if</span> <span class="vr">word</span> <span class="kw">in</span> <span class="vr">email</span>:
+        <span class="vr">found</span>.<span class="fn2">append</span>(<span class="vr">word</span>)
+
+<span class="kw">if</span> <span class="fn2">len</span>(<span class="vr">found</span>) <span class="op">>=</span> <span class="nm">2</span>:
+    <span class="fn2">print</span>(<span class="st">f"🚨 HIGH SPAM — {len(found)} spam words: {found}"</span>)
+<span class="kw">elif</span> <span class="fn2">len</span>(<span class="vr">found</span>) <span class="op">==</span> <span class="nm">1</span>:
+    <span class="fn2">print</span>(<span class="st">f"⚠️ SUSPICIOUS — contains: {found}"</span>)
+<span class="kw">else</span>:
+    <span class="fn2">print</span>(<span class="st">"✅ CLEAN — no spam words detected"</span>)
+    </div>
+  </div>
+</div>
+
+<!-- SIMULATOR 4: CODE DEBUGGER -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 4 — Bug Hunt</div>
+  <h2>Find and Fix the 4 Bugs</h2>
+  <p>The code below has <strong>4 bugs</strong>. Some are indentation errors, some are logic errors, one is a syntax error. Fix them all in the editor — then click Check.</p>
+  <div class="code-wrap">
+    <div class="code-bar"><div class="code-dots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="code-lang">Buggy Code — Fix It!</div></div>
+    <div class="code-body">
+<span class="cm"># BMI Classifier — 4 bugs below</span>
+<span class="vr">weight</span> = <span class="fn2">float</span>(<span class="fn2">input</span>(<span class="st">"Weight (kg): "</span>))
+<span class="vr">height</span> = <span class="fn2">float</span>(<span class="fn2">input</span>(<span class="st">"Height (m): "</span>))
+<span class="vr">bmi</span> = <span class="vr">weight</span> <span class="op">/</span> <span class="vr">height</span> <span class="op">*</span> <span class="nm">2</span>   <span class="cm" style="color:#ef4444">  # Bug 1: wrong formula</span>
+
+<span class="kw">if</span> <span class="vr">bmi</span> <span class="op">&lt;</span> <span class="nm">18.5</span>             <span class="cm" style="color:#ef4444">  # Bug 2: missing colon</span>
+<span class="fn2">    print</span>(<span class="st">"Underweight"</span>)   <span class="cm" style="color:#ef4444">  # Bug 3: wrong indent level</span>
+<span class="kw">elif</span> <span class="vr">bmi</span> <span class="op">&lt;</span> <span class="nm">25.0</span>:
+    <span class="fn2">print</span>(<span class="st">"Normal"</span>)
+<span class="kw">elif</span> <span class="vr">bmi</span> <span class="op">&lt;</span> <span class="nm">30.0</span>:
+    <span class="fn2">print</span>(<span class="st">"Overweight"</span>)
+<span class="kw">if</span> <span class="vr">bmi</span> <span class="op">>=</span> <span class="nm">30.0</span>:           <span class="cm" style="color:#ef4444">  # Bug 4: should be elif/else</span>
+    <span class="fn2">print</span>(<span class="st">"Obese"</span>)
+    </div>
+  </div>
+  <div class="pg">
+    <div class="pg-head">
+      <span class="pg-name">🐍 Write the FIXED version here</span>
+      <div class="pg-btns">
+        <button class="btn btn-b" onclick="runBugFix()">▶ Simulate</button>
+        <button class="btn btn-o" onclick="clearBF()">Clear</button>
+      </div>
+    </div>
+    <div class="pg-ed">
+      <textarea id="bf-code" spellcheck="false" placeholder="# Write the fixed code here&#10;weight = 70.0  # use any value to test&#10;height = 1.75&#10;bmi = ...  # fix formula: weight / (height ** 2)&#10;&#10;if bmi < 18.5:  # add the colon&#10;    print(...)  # correct indent = 4 spaces&#10;elif ..."></textarea>
+    </div>
+    <div style="padding:8px 18px 0;background:#f7f9ff">
+      <div class="out-label">Output</div>
+      <div class="pg-out" id="bf-out">Click ▶ Simulate to check...</div>
+    </div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkBugFix()">✓ Check All 4 Fixes</button></div>
+  <div id="bf-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- ===== SECTION 4: SCENARIOS ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--gs)">🌍</div>
+  <div><div class="sh-title">Part 4 — Real AI Scenarios</div><div class="sh-sub">Choose the correct Python approach for each AI situation</div></div>
+  <div class="sh-badge">⏱ 20 min</div>
+</div>
+
+<div id="sc-wrap"></div>
+<div id="sc-score" style="display:none;margin-top:12px;font-size:.9rem;font-weight:600"></div>
+
+<!-- ===== SECTION 5: AI TUTOR ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--ps)">💬</div>
+  <div><div class="sh-title">Part 5 — Ask Your AI Tutor</div><div class="sh-sub">Stuck on conditions? Ask the AI tutor anything about Day 03</div></div>
+  <div class="sh-badge">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Chat With Your Conditions Tutor</h2>
+  <p>Ask anything about <strong>if / elif / else</strong>, comparison operators, <strong>and / or / not</strong>, indentation, or how AI uses decision logic. Try: <em>"When do I use elif instead of a new if?"</em> or <em>"Explain and vs or with examples"</em></p>
+  <div class="ai-chat">
+    <div class="ai-head">
+      <div class="ai-av">🤖</div>
+      <div><div class="ai-nm">Python AI Tutor</div><div class="ai-st">Day 03 Specialist · if/elif/else · Conditions · Decision Logic</div></div>
+    </div>
+    <div class="ai-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="msg-av">🤖</div><div class="bubble">Hello! I am your Day 03 tutor. I specialise in <strong>if / elif / else</strong>, comparison operators, and logical operators (and / or / not). What would you like to understand better?</div></div>
+      <div class="msg ai"><div class="msg-av">🤖</div><div class="bubble">💡 <strong>Quick reminder:</strong> The most common Day 03 mistake is using multiple separate <code>if</code> statements instead of <code>elif</code>. With separate ifs, Python checks ALL of them. With elif, Python STOPS after finding the first True one. This matters a lot for performance in AI systems!</div></div>
+    </div>
+    <div class="ai-inp-row">
+      <input class="ai-inp" id="chat-in" placeholder="Ask about if/elif/else, and/or/not, indentation, comparisons..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="ai-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: FILL IN BLANKS ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--as2)">✏️</div>
+  <div><div class="sh-title">Part 6 — Fill in the Blanks</div><div class="sh-sub">Complete each Python statement from memory — no scrolling up!</div></div>
+  <div class="sh-badge">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Complete the Code</div>
+  <h2>Fill in the Missing Parts</h2>
+  <div id="fill-wrap"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-b" onclick="checkFill()">Check All Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- ===== SECTION 7: DEEP THINKING ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--bs)">🧠</div>
+  <div><div class="sh-title">Part 7 — Deep Thinking Questions</div><div class="sh-sub">These build your AI engineering mindset — write detailed answers</div></div>
+  <div class="sh-badge">⏱ 30 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">🧠 Think Deeply</div>
+  <h2>5 Questions — Write Your Best Answers</h2>
+  <div class="sq">
+    <label>Q1. What is the difference between using multiple <code>if</code> statements vs using <code>if/elif/else</code>? Give a concrete example where using separate <code>if</code>s would produce the WRONG result for a grade calculator.</label>
+    <textarea id="dq1" placeholder="Explain with a specific example..." oninput="cc(this,'dc1')"></textarea>
+    <div class="cc" id="dc1">0 chars</div>
+  </div>
+  <div class="sq">
+    <label>Q2. Explain the difference between <code>and</code> and <code>or</code> in plain English. Then write two real AI examples — one that needs <code>and</code> and one that needs <code>or</code>.</label>
+    <textarea id="dq2" placeholder="Plain English explanation + 2 AI examples..." oninput="cc(this,'dc2')"></textarea>
+    <div class="cc" id="dc2">0 chars</div>
+  </div>
+  <div class="sq">
+    <label>Q3. Why does Python use indentation to define code blocks instead of curly braces {} like most other languages? What is the advantage? What is the risk?</label>
+    <textarea id="dq3" placeholder="Think about readability, discipline, and common errors..." oninput="cc(this,'dc3')"></textarea>
+    <div class="cc" id="dc3">0 chars</div>
+  </div>
+  <div class="sq">
+    <label>Q4. The spam classifier you built uses simple keyword matching. Name 3 specific ways this approach can FAIL — and for each failure, suggest how a more advanced AI system would handle it better.</label>
+    <textarea id="dq4" placeholder="Think of edge cases: capitalisation, abbreviations, context, new words..." oninput="cc(this,'dc4')"></textarea>
+    <div class="cc" id="dc4">0 chars</div>
+  </div>
+  <div class="sq">
+    <label>Q5. Design an AI content rating system for a video platform. What conditions would you check? Write the Python if/elif/else structure (as pseudocode or actual code) that classifies content as: G / PG / PG-13 / R / Blocked.</label>
+    <textarea id="dq5" placeholder="Design your conditions — what variables would you check? Age rating, violence level, language, etc..." oninput="cc(this,'dc5')"></textarea>
+    <div class="cc" id="dc5">0 chars</div>
+  </div>
+  <button class="btn btn-g" onclick="saveDQ()">✓ Save All Answers</button>
+  <div id="dq-msg" style="display:none;margin-top:10px;font-size:.84rem"></div>
+</div>
+
+<!-- ===== SECTION 8: MCQ ===== -->
+<div class="sh">
+  <div class="sh-icon" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-title">Part 8 — MCQ Quiz (20 Questions)</div><div class="sh-sub">No scrolling up — answer from memory! Every answer shows explanation.</div></div>
+  <div class="sh-badge">📝 20 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 20</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 16/20 (80%). Read each explanation carefully — it builds your understanding.</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="final-emoji" id="fin-emoji">🎉</div>
+  <div class="final-title" id="fin-title">—</div>
+  <div class="final-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">Day 04 tomorrow: <strong>For Loops &amp; While Loops</strong> — how AI models repeat operations millions of times!</p>
+  <button class="final-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+</div><!-- end .page -->
+
+<footer>
+  Day 03 of 300+ · AI/ML 15-Month Curriculum · Month 1, Week 1<br>
+  if / elif / else · Comparison Operators · and / or / not · Indentation · Decision Logic
+</footer>
+
+<script>
+// ===== TIMER =====
+let sec=0,timerOn=false,timerIv;
+function toggleTimer(){
+  const b=document.getElementById('tmr');
+  if(!timerOn){timerOn=true;b.classList.add('on');timerIv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}
+  else{timerOn=false;b.classList.remove('on');clearInterval(timerIv);}
+}
+
+// ===== PROGRESS =====
+let tasksDone=0,mcqScore=0,fillScore=0,mcqDone=new Set();
+function updateProgress(){
+  const t=Math.min(Math.round((tasksDone/8)*30+(mcqScore/20)*50+(fillScore/10)*20),100);
+  document.getElementById('prog-fill').style.width=t+'%';
+  document.getElementById('prog-pct').textContent=t+'%';
+}
+
+// ===== TASK CHECKLIST =====
+function tick(el){
+  const done=el.classList.toggle('done');
+  el.querySelector('.task-cb').textContent=done?'✓':'';
+  tasksDone=document.querySelectorAll('.task-item.done').length;
+  updateProgress();
+}
+
+// ===== GRADE CALCULATOR SIM =====
+function runGradeCalc(){
+  const m=parseInt(document.getElementById('gc-marks').value);
+  const r=document.getElementById('gc-result');
+  if(isNaN(m)||m<0||m>100){r.textContent='Enter a valid mark between 0 and 100';r.className='dt-result';return;}
+  let grade,label,branch,cls;
+  if(m>=90){grade='A';label='Distinction';branch='if marks >= 90 ✅ True → runs';cls='pass';}
+  else if(m>=80){grade='B';label='Merit';branch='if marks >= 90 ❌ False → elif marks >= 80 ✅ True → runs';cls='pass';}
+  else if(m>=70){grade='C';label='Pass';branch='if ❌ → elif >= 80 ❌ → elif marks >= 70 ✅ True → runs';cls='pass';}
+  else if(m>=50){grade='D';label='Borderline';branch='if ❌ → elif ❌ → elif ❌ → elif marks >= 50 ✅ True → runs';cls='warn';}
+  else{grade='F';label='Fail';branch='ALL conditions False → else runs';cls='fail';}
+  r.textContent='Python trace:\n'+branch+'\n\nOutput: Grade: '+grade+' — '+label+' ('+m+'/100)';
+  r.className='dt-result '+(cls==='pass'?'pass':cls==='warn'?'warn':'fail');
+}
+
+// ===== LOAN APPROVER SIM =====
+function runLoan(){
+  const age=parseInt(document.getElementById('loan-age').value);
+  const inc=parseInt(document.getElementById('loan-inc').value);
+  const cs=parseInt(document.getElementById('loan-cs').value);
+  const r=document.getElementById('loan-result');
+  if(isNaN(age)||isNaN(inc)||isNaN(cs)){r.textContent='Fill in all 3 values to see the loan decision...';r.className='dt-result';return;}
+  let result,trace,cls;
+  if(age>=21&&inc>=50000&&cs>=650){
+    result='✅ LOAN APPROVED';
+    trace='age >= 21: '+(age>=21?'✅':'❌')+' AND income >= 50000: '+(inc>=50000?'✅':'❌')+' AND credit_score >= 650: '+(cs>=650?'✅':'❌')+'\nAll True → if block runs';
+    cls='pass';
+  } else if(cs>=600&&inc>=40000){
+    result='⚠️ CONDITIONALLY APPROVED — needs a guarantor';
+    trace='First if: some condition False\nelif credit_score >= 600: '+(cs>=600?'✅':'❌')+' AND income >= 40000: '+(inc>=40000?'✅':'❌')+'\nTrue → elif block runs';
+    cls='warn';
+  } else {
+    result='❌ LOAN REJECTED';
+    trace='if: '+(age>=21&&inc>=50000&&cs>=650?'True':'False')+' | elif: '+(cs>=600&&inc>=40000?'True':'False')+'\nAll conditions False → else block runs';
+    cls='fail';
+  }
+  r.textContent='Python trace:\n'+trace+'\n\nDecision: '+result;
+  r.className='dt-result '+(cls==='pass'?'pass':cls==='warn'?'warn':'fail');
+}
+
+// ===== SPAM CLASSIFIER SIM =====
+const SPAM_WORDS=['free','win','click','urgent','congratulations','prize','cash','offer','limited','buy now','act now','earn money'];
+function runSpam(){
+  const text=document.getElementById('spam-text').value.toLowerCase();
+  const r=document.getElementById('spam-result');
+  if(!text.trim()){r.textContent='Type some email text above...';r.className='dt-result';return;}
+  const found=SPAM_WORDS.filter(w=>text.includes(w));
+  const wc=text.trim().split(/\s+/).length;
+  let result,cls;
+  if(found.length>=2){result='🚨 HIGH SPAM — '+found.length+' spam words found: ['+found.join(', ')+']\n\nPython trace: len(found) = '+found.length+' >= 2 → if block runs';cls='fail';}
+  else if(found.length===1){result='⚠️ SUSPICIOUS — 1 spam word: "'+found[0]+'"\n\nPython trace: len(found) = 1 → elif block runs';cls='warn';}
+  else{result='✅ CLEAN — no spam words detected\nWord count: '+wc+'\n\nPython trace: len(found) = 0 → else block runs';cls='pass';}
+  r.textContent=result;
+  r.className='dt-result '+(cls==='pass'?'pass':cls==='warn'?'warn':'fail');
+}
+
+// ===== BUG FIX SIM =====
+function runBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const out=document.getElementById('bf-out');
+  if(!code.trim()){out.textContent='Write the fixed code first!';out.className='pg-out';return;}
+  const hasPow=code.includes('**');
+  const hasColon=code.match(/if\s+bmi\s*<\s*18\.5\s*:/);
+  const hasElif=code.includes('elif');
+  const noExtraIf=!code.match(/\nif\s+bmi\s*>=\s*30/);
+  const weightM=code.match(/weight\s*=\s*([\d.]+)/);
+  const heightM=code.match(/height\s*=\s*([\d.]+)/);
+  if(hasPow&&hasColon&&hasElif&&noExtraIf){
+    const w=weightM?parseFloat(weightM[1]):70;
+    const h=heightM?parseFloat(heightM[1]):1.75;
+    const bmi=w/(h*h);
+    let cat=bmi<18.5?'Underweight':bmi<25?'Normal':bmi<30?'Overweight':'Obese';
+    out.textContent='BMI = '+bmi.toFixed(1)+'\nCategory: '+cat;
+    out.className='pg-out ok';
+  } else {
+    let errs=[];
+    if(!hasPow)errs.push('Bug 1 not fixed: use height ** 2 not height * 2');
+    if(!hasColon)errs.push('Bug 2 not fixed: add colon after: if bmi < 18.5:');
+    if(!hasElif)errs.push('Bug 3/4: use elif not another if for remaining conditions');
+    out.textContent=errs.join('\n')||'Some bugs remain — check carefully!';
+    out.className='pg-out err';
+  }
+}
+function clearBF(){document.getElementById('bf-code').value='';document.getElementById('bf-out').textContent='Click ▶ Simulate to check...';document.getElementById('bf-out').className='pg-out';document.getElementById('bf-fb').style.display='none';}
+function checkBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const fb=document.getElementById('bf-fb');fb.style.display='block';
+  const b1=code.includes('**');
+  const b2=!!code.match(/if\s+bmi\s*<\s*18\.5\s*:/);
+  const b3=!code.match(/^\s*\s{8,}print/m);// rough check
+  const b4=!code.match(/\nif\s+bmi\s*>=\s*30/);
+  const fixes=[b1,b2,b3||code.includes('    print'),b4];
+  const msgs=[
+    fixes[0]?'✅ Bug 1 fixed: height ** 2 (power) not height * 2 (multiply)':'❌ Bug 1: change height * 2 to height ** 2',
+    fixes[1]?'✅ Bug 2 fixed: colon after if condition':'❌ Bug 2: add colon — if bmi < 18.5:',
+    fixes[2]?'✅ Bug 3 fixed: correct 4-space indentation':'❌ Bug 3: print() inside if must have exactly 4 spaces indent',
+    fixes[3]?'✅ Bug 4 fixed: last condition uses elif/else not if':'❌ Bug 4: the last condition must be elif or else — not a new if',
+  ];
+  const sc=fixes.filter(Boolean).length;
+  fb.innerHTML='<div style="background:var(--paper2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>'<div style="font-size:.84rem;margin-bottom:6px">'+m+'</div>').join('')+'<div style="margin-top:8px;font-weight:600;color:'+(sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)')+'">'+  (sc===4?'🎉 All 4 bugs fixed! Perfect debugging!':sc>=2?sc+'/4 bugs fixed — keep going!':'Only '+sc+'/4 fixed — review the bug hints above')+'</div></div>';
+}
+
+// ===== SCENARIOS =====
+const scData=[
+  {q:'1. An AI content moderator checks: user must be 18+ AND their account must be verified. Which Python code is correct?',opts:['if age >= 18: or if verified == True:','if age >= 18 and verified == True:','if age >= 18 or verified:','if age > 18:'],ans:1,exp:'and requires BOTH conditions to be True simultaneously. "or" would allow unverified 18-year-olds OR verified minors — which is wrong for a safety check. Use and when ALL conditions must be met together.'},
+  {q:'2. What is the output of this code?\nmarks = 75\nif marks >= 90:\n    print("A")\nif marks >= 70:\n    print("B")\nif marks >= 50:\n    print("C")',opts:['B','B and C','C only','A, B and C'],ans:1,exp:'Using separate if statements, Python checks ALL of them independently. marks=75 satisfies both ">=70" AND ">=50", so it prints BOTH "B" and "C". This is why elif is used for grade calculators — it stops after the first match!'},
+  {q:'3. A login system should reject access if the username is NOT "admin". Which code is correct?',opts:['if username = "admin":','if username == "admin":     pass\nif not:','if username != "admin":\n    print("Access Denied")','if not username:'],ans:2,exp:'"!=" means "not equal to". So if username != "admin": catches everyone who is NOT admin and prints Access Denied. You could also write: if not (username == "admin"):. The = sign is assignment; == is comparison!'},
+  {q:'4. In Python, what happens if you forget to indent the code inside an if block?',opts:['Python ignores it and runs anyway','Python throws an IndentationError and stops completely','Only the first line runs','Python uses 0 indentation as default'],ans:1,exp:'IndentationError is fatal — Python cannot run at all. Python uses indentation (4 spaces) to know which code belongs inside a block. Without it, Python has no way to know what is inside the if. This is unlike JavaScript/C which use {} braces.'},
+  {q:'5. An AI recommendation engine suggests a movie if: genre is "action" OR genre is "comedy" AND rating > 7. What is the Python priority issue here?',opts:['No issue — it works perfectly','and has HIGHER priority than or — so Python reads it as: genre=="action" OR (genre=="comedy" AND rating>7)','or has higher priority — so both conditions apply together','Python reads left to right with equal priority'],ans:1,exp:'In Python (and most languages), "and" has higher precedence than "or". So: A or B and C means A or (B and C). To force left-to-right: use brackets: (genre=="action" or genre=="comedy") and rating>7. This is a critical bug source in AI decision systems!'},
+];
+let scDone=new Set(),scScore=0;
+function buildScenarios(){
+  document.getElementById('sc-wrap').innerHTML=scData.map((s,i)=>`
+    <div class="scenario">
+      <div class="sc-q" style="white-space:pre-wrap">${s.q}</div>
+      <div class="sc-opts">${s.opts.map((o,j)=>`<div class="sc-opt" id="ss${i}_${j}" onclick="pickSc(${i},${j})"><div class="sc-ltr">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div>
+      <div class="sc-exp" id="sexp${i}"></div>
+    </div>`).join('');
+}
+function pickSc(qi,oi){
+  if(scDone.has(qi))return;scDone.add(qi);
+  const s=scData[qi];
+  for(let j=0;j<s.opts.length;j++){const el=document.getElementById('ss'+qi+'_'+j);el.classList.add('done');if(j===s.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('sexp'+qi);exp.textContent=s.exp;exp.classList.add('show',oi===s.ans?'ok':'no');
+  if(oi===s.ans)scScore++;
+  if(scDone.size===scData.length){const sc=document.getElementById('sc-score');sc.style.display='block';sc.innerHTML=scScore===5?'<span style="color:var(--green)">🎉 Perfect — 5/5 scenarios correct!</span>':'<span style="color:var(--amber)">'+scScore+'/5 — read the explanations above for the ones you missed.</span>';}
+}
+buildScenarios();
+
+// ===== AI TUTOR CHAT =====
+const replies={
+  'elif':`elif = "else if". It checks a NEW condition but ONLY when all previous if/elif conditions were False.\n\nKey difference:\n\nWith separate ifs:\nif marks >= 90: print("A")   # checks this\nif marks >= 70: print("B")   # checks this TOO\nif marks >= 50: print("C")   # and this!\n\nFor marks=95, all three would print: A, B, C!\n\nWith elif:\nif marks >= 90: print("A")    # True → runs\nelif marks >= 70: print("B")  # SKIPPED\nelif marks >= 50: print("C")  # SKIPPED\n\nOnly A prints. Python STOPS after first True!`,
+  'and':`"and" requires ALL conditions to be True.\n"or" requires AT LEAST ONE condition to be True.\n\nTruth table:\nTrue and True  → True\nTrue and False → False   ← either False = False\nFalse and True → False\n\nTrue or True   → True\nTrue or False  → True    ← either True = True  \nFalse or False → False   ← only both False = False\n\nReal AI examples:\n"and" → bank loan: age >= 21 AND income >= 50000 AND credit >= 650\n"or"  → spam filter: "free" in email OR "win" in email OR "click" in email`,
+  'or':`"or" runs the block if AT LEAST ONE condition is True.\n\nif x == 1 or x == 2 or x == 3:\n    print("x is 1, 2, or 3")\n\nIn AI spam detection:\nif "free" in email or "win" in email or "urgent" in email:\n    flag_as_spam()\n\nImportant: "and" has HIGHER priority than "or"!\nSo: A or B and C = A or (B and C)\n\nAlways use brackets when mixing and/or:\n(condition1 or condition2) and condition3`,
+  'not':`"not" inverts a boolean: True → False, False → True\n\nExamples:\nnot True  → False\nnot False → True\nnot (5 > 3) → not True → False\n\nUse cases:\n# Check if user is NOT admin:\nif not (username == "admin"):\n    print("Access denied")\n\n# Same as:\nif username != "admin":\n    print("Access denied")\n\n# Check if list is NOT empty:\nif not words_list:\n    print("No words found")`,
+  'indent':`Python uses indentation (4 spaces) to define code blocks. This replaces the {} curly braces used in most other languages.\n\nCORRECT:\nif marks >= 50:\n    print("Pass")    # 4 spaces indent\n    print("Congrats")  # still inside if\nprint("Done")        # outside if (0 indent)\n\nWRONG — IndentationError:\nif marks >= 50:\nprint("Pass")    # NO indent → error!\n\nCRITICAL RULE: Every line inside a block MUST have the same indentation. Python is very strict about this!`,
+  'comparison':`Python comparison operators:\n\n==   equal to          (5 == 5 → True)\n!=   not equal         (5 != 3 → True)\n>    greater than       (7 > 5  → True)\n<    less than          (3 < 7  → True)\n>=   greater or equal  (5 >= 5 → True)\n<=   less or equal     (4 <= 5 → True)\n\nCRITICAL: = is ASSIGNMENT, == is COMPARISON!\n\nWRONG:  if marks = 50:    # SyntaxError!\nCORRECT: if marks == 50:  # comparison\n\nIn AI: every condition in a classifier uses these operators to compare a value against a threshold.`,
+  'default':`Good question! For Day 03 the key concepts are:\n\n1. if/elif/else: Python checks TOP to BOTTOM, stops at first True\n2. elif vs separate if: elif stops early, separate ifs check ALL\n3. and: BOTH must be True | or: AT LEAST ONE True\n4. not: inverts True/False\n5. Indentation: 4 spaces, not optional!\n6. Operators: == != > < >= <=\n\nRemember: every AI classifier (spam filter, loan approver, content moderator) is built from these exact conditions. Master them now and you understand the logic of AI decision systems!\n\nWhat specific part would you like me to explain with more examples?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');
+  const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';
+  const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{
+    removeTyping(tid);
+    const lm=msg.toLowerCase();
+    let r=replies.default;
+    if(lm.includes('elif')||lm.includes('else if'))r=replies.elif;
+    else if(lm.includes(' or '))r=replies.or;
+    else if(lm.includes('and'))r=replies.and;
+    else if(lm.includes('not'))r=replies.not;
+    else if(lm.includes('indent'))r=replies.indent;
+    else if(lm.includes('==')|| lm.includes('operator')||lm.includes('compar'))r=replies.comparison;
+    addMsg(r,'ai');
+  },700+Math.random()*500);
+}
+function addMsg(text,role){
+  const wrap=document.getElementById('chat-msgs');
+  const d=document.createElement('div');d.className='msg '+role;
+  d.innerHTML='<div class="msg-av">'+(role==='ai'?'🤖':'👤')+'</div><div class="bubble" style="white-space:pre-wrap">'+text+'</div>';
+  wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;
+}
+function addTyping(id){
+  const wrap=document.getElementById('chat-msgs');
+  const d=document.createElement('div');d.className='msg ai';d.id=id;
+  d.innerHTML='<div class="msg-av">🤖</div><div class="bubble"><div class="dots"><div class="dot-t"></div><div class="dot-t"></div><div class="dot-t"></div></div></div>';
+  wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;
+}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ===== FILL BLANKS =====
+const fillData=[
+  {q:'1. The keyword that checks "else if — only if previous was False": ___',ans:['elif']},
+  {q:'2. Python uses ___ spaces for indentation inside a code block.',ans:['4']},
+  {q:'3. The operator that means "not equal to": ___',ans:['!=']},
+  {q:'4. "and" requires ___ conditions to be True.',ans:['both','all','2']},
+  {q:'5. "or" requires at least ___ condition(s) to be True.',ans:['one','1']},
+  {q:'6. The block that runs when ALL if/elif conditions are False: ___',ans:['else']},
+  {q:'7. What is wrong with: if marks = 50: — the operator should be: ___',ans:['==']},
+  {q:'8. not True evaluates to: ___',ans:['false','False']},
+  {q:'9. In if age >= 18 and income >= 30000 — if age is 17, the whole condition is: ___',ans:['false','False']},
+  {q:'10. The keyword that INVERTS a boolean value: ___',ans:['not']},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`
+    <div class="fq">
+      <label>${q.q}</label>
+      <input class="fi" id="fi${i}" placeholder="Your answer..."/>
+      <div class="ff" id="ff${i}"></div>
+    </div>`).join('');
+}
+function checkFill(){
+  fillScore=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase();
+    const ok=q.ans.some(a=>v===a.toLowerCase());
+    if(ok){fillScore++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.ans[0];}
+  });
+  updateProgress();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillScore===10?'<span style="color:var(--green)">🎉 Perfect — 10/10!</span>':fillScore>=7?'<span style="color:var(--amber)">'+fillScore+'/10 — great! Check the incorrect ones above.</span>':'<span style="color:var(--red)">'+fillScore+'/10 — re-read the Day 03 lesson and retry.</span>';
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent='';}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ===== DEEP Q =====
+function cc(el,id){document.getElementById(id).textContent=(el.value||'').length+' chars';}
+function saveDQ(){
+  const empty=['dq1','dq2','dq3','dq4','dq5'].some(id=>!(document.getElementById(id).value||'').trim());
+  const m=document.getElementById('dq-msg');m.style.display='block';
+  if(empty){m.style.color='var(--red)';m.textContent='⚠️ Please answer all 5 questions before saving.';}
+  else{m.style.color='var(--green)';m.textContent='✅ All 5 deep-thinking answers saved! Now tackle the MCQ Quiz to complete Day 03.';}
+}
+
+// ===== MCQ =====
+const mcqs=[
+  {q:'What is printed?\nmarks = 85\nif marks >= 90: print("A")\nelif marks >= 80: print("B")\nelif marks >= 70: print("C")\nelse: print("F")',opts:['A','B','C and B','F'],ans:1,exp:'marks=85 fails the first condition (>=90). It passes the second (>=80). Python prints "B" and STOPS — the remaining elif and else are all skipped. This is the core behaviour of if/elif/else.'},
+  {q:'What is the difference between using separate "if" statements vs "elif"?',opts:['No difference — they work identically','elif stops after finding the first True condition; separate ifs check ALL of them','elif is faster to type only','if is for numbers, elif is for strings'],ans:1,exp:'Critical difference! Separate ifs ALL run independently. elif stops at the first True match. For marks=85: with separate ifs you would get both "B" and "C" printed. With elif you get only "B". Use elif for mutually exclusive categories (grades, categories, ratings).'},
+  {q:'What does "and" do in: if age >= 18 and income >= 30000:',opts:['Either condition being True is enough','BOTH conditions must be True for the block to run','It adds the two numbers together','It is optional syntax'],ans:1,exp:'"and" requires ALL conditions to be True simultaneously. If age=17 (False) and income=50000 (True), the whole condition is False because one part is False. Truth table: False and True = False.'},
+  {q:'What does "or" do in: if email_verified or phone_verified:',opts:['Both must be verified','At least one being True is enough to run the block','Neither needs to be True','It checks them in sequence'],ans:1,exp:'"or" runs the block if AT LEAST ONE condition is True. So if email is verified but phone is not, the condition is still True. Only when BOTH are False does "or" give False.'},
+  {q:'What ERROR does Python throw when you forget to indent code inside an if block?',opts:['SyntaxError','TypeError','IndentationError','ValueError'],ans:2,exp:'IndentationError is specifically for missing or incorrect indentation. Python uses indentation as its block syntax — without it, Python cannot determine what code belongs inside the if. This is unlike C, Java, JavaScript which use {} braces.'},
+  {q:'What is the output of: print(not True)?',opts:['True','False','not True','Error'],ans:1,exp:'"not" inverts a boolean. not True → False. not False → True. It is used to write more readable conditions: if not is_admin: instead of if is_admin == False:'},
+  {q:'Which comparison operator checks if two values are EQUAL?',opts:['=','==','===','equals'],ans:1,exp:'== is the equality comparison operator. = is the assignment operator (give a variable a value). Using = inside an if condition causes a SyntaxError in Python. Always use == to compare values.'},
+  {q:'What is wrong with this code?\nif temperature > 30\n    print("Hot")',opts:['The indent is wrong','Missing colon (:) after the condition','temperature should be a string','print is misspelled'],ans:1,exp:'Every if/elif/else line MUST end with a colon (:). The colon tells Python "a block follows". Missing it causes SyntaxError: expected ":"'},
+  {q:'An AI loan system needs: age >= 21 AND income >= 50000 AND credit_score >= 700. If age=25, income=45000, credit=750 — what is the result?',opts:['Approved — 2 of 3 conditions pass','Rejected — ALL three must be True with "and"','Conditionally approved','Error'],ans:1,exp:'With "and", ALL conditions must be True. income=45000 fails the income>=50000 check. Even though age and credit_score pass, the entire "and" chain is False. Result: the else/rejected branch runs.'},
+  {q:'What is the output?\nx = 10\nif x > 5:\n    print("Big")\nif x > 8:\n    print("Bigger")\nif x > 15:\n    print("Huge")',opts:['Big','Big and Bigger','Bigger only','Big, Bigger and Huge'],ans:1,exp:'These are separate if statements — ALL are checked independently. x=10 satisfies x>5 (True→Big) AND x>8 (True→Bigger) but NOT x>15 (False). So "Big" and "Bigger" both print. This is why elif is used for mutually exclusive categories!'},
+  {q:'In Python, what is the correct indentation for code inside an if block?',opts:['2 spaces','4 spaces (standard)','1 tab — always','Any amount as long as it is consistent'],ans:1,exp:'Python\'s official style guide (PEP 8) specifies 4 spaces. While any consistent indentation technically works within one file, 4 spaces is the universal standard used in all professional Python code including AI/ML libraries.'},
+  {q:'What does != mean in Python?',opts:['Greater than','Not equal to','Less than or equal','Assignment'],ans:1,exp:'!= means "not equal to". if username != "admin": runs when username is anything other than "admin". It is the opposite of ==. In AI: if prediction != actual_label: count_error += 1'},
+  {q:'Which line correctly checks if a number is between 10 and 20 (inclusive)?',opts:['if num > 10 and num < 20:','if 10 <= num <= 20:','if num >= 10 or num <= 20:','if num is between 10 and 20:'],ans:1,exp:'Python uniquely supports chained comparisons: 10 <= num <= 20 is valid and means num>=10 AND num<=20. Option A is close but excludes 10 and 20 (uses > not >=). Option C is wrong — "or" would match almost everything!'},
+  {q:'An AI system has: if score >= 80 and score >= 60: print("Pass"). What is the problem?',opts:['Perfect — both conditions needed','Redundant — if score >= 80, then score >= 60 is always True too','Missing colon','score cannot use and'],ans:1,exp:'If score >= 80 is True, then score >= 60 is ALWAYS also True (since 80 > 60). The second condition is redundant and misleading. Just write: if score >= 80: print("Pass"). Always think about whether each condition actually adds information!'},
+  {q:'What is the output?\nage = 20\nif age >= 18:\n    print("Adult")\nelse:\n    print("Minor")',opts:['Minor','Adult','Adult and Minor','Nothing'],ans:1,exp:'age=20 satisfies age >= 18 (True). Python runs the if block: prints "Adult". The else block is SKIPPED. If age were 15, the if would be False and else would run printing "Minor".'},
+  {q:'Which code correctly uses "not" to deny access to non-admins?',opts:['if username = not "admin":','if not username == "admin": print("Denied")','if username !== "admin":','if username not "admin":'],ans:1,exp:'"not" inverts the boolean result of the comparison. "not username == admin" → runs when username is NOT admin. You could also write: if username != "admin":. Note: !== does not exist in Python (that is JavaScript syntax)!'},
+  {q:'An elif block runs when:',opts:['Always — regardless of previous conditions','Only when all PREVIOUS if/elif conditions were False','When the if condition is True','Only at the end of the program'],ans:1,exp:'elif (else if) is ONLY evaluated when all previous conditions in the chain were False. If a previous if or elif was True and ran, Python skips ALL remaining elif and else blocks. This is the chain-stopping behaviour of if/elif/else.'},
+  {q:'What is the output?\nif False:\n    print("One")\nelif True:\n    print("Two")\nelse:\n    print("Three")',opts:['One','Two','Three','One and Two'],ans:1,exp:'The if condition is False → skip. The elif condition is True → print "Two" and STOP. The else is skipped. When you use literal True/False in conditions you can predict the flow exactly — this is how Python evaluates all conditions.'},
+  {q:'In AI spam detection: if "free" in email or "win" in email or "prize" in email — if "prize" is in the email but "free" and "win" are not, what happens?',opts:['Nothing — all three must be present','The spam block runs — "or" only needs one True','An error — too many conditions','The email is marked as clean'],ans:1,exp:'"or" only needs ONE condition to be True. "prize" in email is True, so the entire "or" chain is True. The spam block runs. This is correct — one spam word is enough to flag an email as suspicious.'},
+  {q:'What is the correct Python syntax for an if/elif/else structure?',opts:['if(x > 0){ ... } elif(x < 0){ ... } else{ ... }','if x > 0:\n    ...\nelif x < 0:\n    ...\nelse:\n    ...','if x > 0 then\n    ...\nend if','if x > 0:\n    ...\nelse if x < 0:\n    ...\nelse:\n    ...'],ans:1,exp:'Python uses: colon after the condition, 4-space indentation for the block, and "elif" (not "else if"). No brackets around conditions, no curly braces, no "then" keyword. Option D uses "else if" which is JavaScript/other languages syntax — in Python it must be "elif".'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`
+    <div class="mcq">
+      <div class="qnum">Question ${i+1} of 20</div>
+      <div class="qtext" style="white-space:pre-wrap">${q.q}</div>
+      <div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="white-space:pre-wrap;font-family:'DM Mono',monospace;font-size:.82rem">${o}</span></div>`).join('')}</div>
+      <div class="qexp" id="mex${i}"></div>
+    </div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqDone.has(qi))return;mcqDone.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqScore++;document.getElementById('live-sc').textContent=mcqScore;}
+  if(mcqDone.size===20){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProgress();
+}
+function showFinal(){
+  const pct=Math.round(mcqScore/20*100);
+  const ring=document.getElementById('sb-ring');
+  ring.style.background=`conic-gradient(var(--blue) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent Work!':pct>=60?'Good Effort!':'Keep Practising!';
+  document.getElementById('fin-msg').textContent='Score: '+mcqScore+'/20 ('+pct+'%) — '+(pct>=80?'You have mastered Day 03 decision logic! Ready for Day 04 Loops.':pct>=60?'Solid start. Review the incorrect answers above before moving on.':'Re-read the Day 03 lesson carefully and try again tomorrow.');
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+
+// init progress
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

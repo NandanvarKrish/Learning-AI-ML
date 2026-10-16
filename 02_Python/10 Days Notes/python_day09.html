@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Python – Day 9 | Concurrency</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FEF2F2;--surface:#FFFFFF;--border:#FECACA;--accent:#B91C1C;--accent2:#7F1D1D;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;
+    --text:#450A0A;--muted:#B91C1C;--code-bg:#1C0505;--code-text:#FECACA;--tag-bg:#FEE2E2;--tag-text:#7F1D1D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#B91C1C 0%,#7F1D1D 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#FECACA;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#F87171;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FCA5A5;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FDE68A;} .cm{color:#7F1D1D;font-style:italic;} .op{color:#FECACA;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .fbox{background:linear-gradient(135deg,#7F1D1D,#B91C1C);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B91C1C,#7F1D1D);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#B91C1C,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐍 Python</div><span class="sep">|</span><span class="day-label">Day 9 of 10</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">90%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:90%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Python Full Course · Day 9</div>
+  <h1>Concurrency — <span>Doing Things at Once</span></h1>
+  <p>The GIL, threading for I/O-bound work, multiprocessing for CPU-bound work, and asyncio for handling thousands of concurrent I/O tasks efficiently.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔒 The GIL Explained</span>
+    <span class="hero-pill">🧵 threading</span>
+    <span class="hero-pill">⚙️ multiprocessing</span>
+    <span class="hero-pill">⚡ asyncio &amp; async/await</span>
+    <span class="hero-pill">🔀 concurrent.futures</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔒</div>
+    <div><h2>The GIL — Python's Global Interpreter Lock</h2><p>Why "concurrency" in Python is more nuanced than you'd expect</p></div>
+  </div>
+  <div class="section-body">
+    <p>The <strong>GIL</strong> ensures only ONE thread executes Python bytecode at a time, even on a multi-core machine. This is the single most important concept for understanding WHY Python offers 3 different concurrency tools instead of one.</p>
+
+    <div class="fbox">
+      <div class="ft">🔒 The GIL's Practical Impact</div>
+      <div class="fm">CPU-bound work (heavy computation)  → threading does NOT speed this up (GIL blocks true parallelism)</div>
+      <div class="fm">I/O-bound work (waiting on network/disk) → threading DOES help (GIL is released during I/O waits)</div>
+      <div class="fm">Need TRUE parallel CPU work?          → use multiprocessing (separate processes, separate GILs)</div>
+      <div class="fnote">This single distinction — I/O-bound vs CPU-bound — determines which of today's three tools you should reach for.</div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 I/O-Bound vs CPU-Bound — The Key Question</div>
+      Ask: "Is my program mostly WAITING (for a network response, disk read, user input) or mostly CALCULATING (crunching numbers, image processing)?" Waiting → threading/asyncio. Calculating → multiprocessing.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🧵</div>
+    <div><h2>threading — Concurrent I/O-Bound Work</h2><p>Multiple threads sharing memory, useful when waiting on I/O</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> threading
+<span class="kw">import</span> time
+
+<span class="kw">def</span> <span class="fn">download_file</span>(name, delay):
+    <span class="fn">print</span>(<span class="st">f"Starting {name}..."</span>)
+    time.<span class="fn">sleep</span>(delay)   <span class="cm"># simulates waiting on a network request</span>
+    <span class="fn">print</span>(<span class="st">f"Finished {name}"</span>)
+
+<span class="cm"># Sequential — takes 3+2+1 = 6 seconds total</span>
+start = time.<span class="fn">time</span>()
+download_file(<span class="st">"A"</span>, <span class="nm">3</span>); download_file(<span class="st">"B"</span>, <span class="nm">2</span>); download_file(<span class="st">"C"</span>, <span class="nm">1</span>)
+<span class="fn">print</span>(<span class="st">f"Sequential took {time.time()-start:.1f}s"</span>)
+
+<span class="cm"># Threaded — all three run CONCURRENTLY, total ≈ 3 seconds (the longest one)</span>
+start = time.<span class="fn">time</span>()
+threads = [
+    threading.<span class="fn">Thread</span>(target=download_file, args=(<span class="st">"A"</span>, <span class="nm">3</span>)),
+    threading.<span class="fn">Thread</span>(target=download_file, args=(<span class="st">"B"</span>, <span class="nm">2</span>)),
+    threading.<span class="fn">Thread</span>(target=download_file, args=(<span class="st">"C"</span>, <span class="nm">1</span>)),
+]
+<span class="kw">for</span> t <span class="kw">in</span> threads: t.<span class="fn">start</span>()
+<span class="kw">for</span> t <span class="kw">in</span> threads: t.<span class="fn">join</span>()   <span class="cm"># wait for ALL threads to finish</span>
+<span class="fn">print</span>(<span class="st">f"Threaded took {time.time()-start:.1f}s"</span>)
+
+<span class="cm"># Race conditions — when threads modify SHARED data unsafely</span>
+counter = <span class="nm">0</span>
+lock = threading.<span class="fn">Lock</span>()
+
+<span class="kw">def</span> <span class="fn">increment</span>():
+    <span class="kw">global</span> counter
+    <span class="kw">with</span> lock:              <span class="cm"># ensures only ONE thread modifies counter at a time</span>
+        counter += <span class="nm">1</span></pre>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Race Conditions Are Real, Even With the GIL</div>
+      The GIL prevents two threads from running Python bytecode SIMULTANEOUSLY, but operations like <code>counter += 1</code> actually involve MULTIPLE bytecode steps — a thread can be interrupted mid-operation, causing lost updates. Always use a <code>threading.Lock()</code> when multiple threads modify shared state.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">⚙️</div>
+    <div><h2>multiprocessing — True Parallel CPU Work</h2><p>Separate processes, separate memory, separate GILs</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> multiprocessing <span class="kw">import</span> Process, Pool
+<span class="kw">import</span> time
+
+<span class="kw">def</span> <span class="fn">cpu_heavy_task</span>(n):
+    <span class="kw">return</span> <span class="fn">sum</span>(i*i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n))   <span class="cm"># genuinely CPU-intensive work</span>
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:   <span class="cm"># REQUIRED guard for multiprocessing on Windows/macOS</span>
+
+    <span class="cm"># Manual Process approach</span>
+    p1 = <span class="fn">Process</span>(target=cpu_heavy_task, args=(<span class="nm">10_000_000</span>,))
+    p2 = <span class="fn">Process</span>(target=cpu_heavy_task, args=(<span class="nm">10_000_000</span>,))
+    p1.<span class="fn">start</span>(); p2.<span class="fn">start</span>()
+    p1.<span class="fn">join</span>(); p2.<span class="fn">join</span>()   <span class="cm"># these TRULY run in parallel on separate CPU cores</span>
+
+    <span class="cm"># Pool — easier way to parallelize the SAME function over many inputs</span>
+    <span class="kw">with</span> <span class="fn">Pool</span>(processes=<span class="nm">4</span>) <span class="kw">as</span> pool:
+        results = pool.<span class="fn">map</span>(cpu_heavy_task, [<span class="nm">1_000_000</span>]*<span class="nm">8</span>)   <span class="cm"># 8 tasks across 4 processes</span>
+        <span class="fn">print</span>(results)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Feature</th><th>threading</th><th>multiprocessing</th></tr>
+        <tr><td>True CPU parallelism?</td><td>❌ No (blocked by GIL)</td><td>✅ Yes (separate processes)</td></tr>
+        <tr><td>Memory</td><td>Shared between threads</td><td>Separate per process (more overhead)</td></tr>
+        <tr><td>Best for</td><td>I/O-bound (network, disk, waiting)</td><td>CPU-bound (heavy computation)</td></tr>
+        <tr><td>Startup cost</td><td>Lightweight</td><td>Heavier (new process/interpreter)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout red" style="border-left-color:#EF233C;background:#FFF1F2;">
+      <div class="callout-title" style="color:#EF233C;">⚠️ The if __name__ == "__main__" Guard is Mandatory</div>
+      On Windows (and sometimes macOS), multiprocessing RE-IMPORTS your script in each new process. Without the guard, this causes infinite recursive process spawning. ALWAYS wrap multiprocessing code that starts new processes in this guard.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">⚡</div>
+    <div><h2>asyncio — Cooperative Concurrency</h2><p>Handling thousands of I/O tasks in a single thread</p></div>
+  </div>
+  <div class="section-body">
+    <p><strong>asyncio</strong> uses a single thread but switches between many tasks COOPERATIVELY — each task voluntarily yields control (via <code>await</code>) whenever it's waiting, letting other tasks run. Ideal for thousands of concurrent network requests.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> asyncio
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">download_file</span>(name, delay):
+    <span class="fn">print</span>(<span class="st">f"Starting {name}..."</span>)
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(delay)   <span class="cm"># non-blocking "wait" — lets OTHER tasks run meanwhile</span>
+    <span class="fn">print</span>(<span class="st">f"Finished {name}"</span>)
+    <span class="kw">return</span> <span class="st">f"{name} done"</span>
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">main</span>():
+    <span class="cm"># asyncio.gather runs multiple coroutines CONCURRENTLY</span>
+    results = <span class="kw">await</span> asyncio.<span class="fn">gather</span>(
+        download_file(<span class="st">"A"</span>, <span class="nm">3</span>),
+        download_file(<span class="st">"B"</span>, <span class="nm">2</span>),
+        download_file(<span class="st">"C"</span>, <span class="nm">1</span>),
+    )
+    <span class="fn">print</span>(results)   <span class="cm"># total time ≈ 3s, not 6s — same concurrency benefit as threading, single thread</span>
+
+asyncio.<span class="fn">run</span>(main())   <span class="cm"># the entry point that starts the event loop</span></pre>
+    </div>
+
+    <div class="fbox">
+      <div class="ft">⚡ async/await Vocabulary</div>
+      <div class="fm">async def   → defines a COROUTINE function (doesn't run immediately when called)</div>
+      <div class="fm">await       → pauses THIS coroutine, letting other tasks run, until the awaited thing completes</div>
+      <div class="fm">asyncio.run() → the top-level entry point that starts the event loop</div>
+      <div class="fm">asyncio.gather() → runs multiple coroutines concurrently, waits for all to finish</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 threading vs asyncio for I/O-Bound Work</div>
+      Both achieve similar concurrency for I/O-bound tasks. asyncio uses a SINGLE thread with cooperative task-switching (lower overhead, scales to THOUSANDS of tasks, but requires "async-aware" libraries). threading uses OS-level threads (works with any existing blocking code, but has more per-thread overhead and only scales to hundreds, not thousands).
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🔀</div>
+    <div><h2>concurrent.futures — A Unified, Simpler Interface</h2><p>ThreadPoolExecutor and ProcessPoolExecutor</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> concurrent.futures <span class="kw">import</span> ThreadPoolExecutor, ProcessPoolExecutor
+
+<span class="kw">def</span> <span class="fn">fetch_url</span>(url):
+    <span class="cm"># simulate a network call</span>
+    <span class="kw">import</span> time; time.<span class="fn">sleep</span>(<span class="nm">1</span>)
+    <span class="kw">return</span> <span class="st">f"Fetched {url}"</span>
+
+urls = [<span class="st">"site1.com"</span>, <span class="st">"site2.com"</span>, <span class="st">"site3.com"</span>, <span class="st">"site4.com"</span>]
+
+<span class="cm"># ThreadPoolExecutor — for I/O-bound tasks, higher-level than manual threading.Thread</span>
+<span class="kw">with</span> <span class="fn">ThreadPoolExecutor</span>(max_workers=<span class="nm">4</span>) <span class="kw">as</span> executor:
+    results = <span class="fn">list</span>(executor.<span class="fn">map</span>(fetch_url, urls))
+    <span class="fn">print</span>(results)   <span class="cm"># all 4 urls "fetched" concurrently, ~1s total instead of 4s</span>
+
+<span class="cm"># ProcessPoolExecutor — for CPU-bound tasks, same interface as ThreadPoolExecutor</span>
+<span class="kw">def</span> <span class="fn">square</span>(n):
+    <span class="kw">return</span> n * n
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    <span class="kw">with</span> <span class="fn">ProcessPoolExecutor</span>(max_workers=<span class="nm">4</span>) <span class="kw">as</span> executor:
+        results = <span class="fn">list</span>(executor.<span class="fn">map</span>(square, <span class="fn">range</span>(<span class="nm">10</span>)))
+        <span class="fn">print</span>(results)</pre>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">✅ concurrent.futures is Often the Best Starting Point</div>
+      It offers the SAME simple <code>.map()</code> and <code>.submit()</code> interface for BOTH threads and processes — just swap <code>ThreadPoolExecutor</code> for <code>ProcessPoolExecutor</code> depending on whether your task is I/O-bound or CPU-bound. More convenient than manually managing raw <code>Thread</code>/<code>Process</code> objects.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">GIL</div><div class="mc-desc">One thread runs Python bytecode at a time</div></div>
+      <div class="mini-card"><div class="mc-name">threading.Lock()</div><div class="mc-desc">Prevent race conditions</div></div>
+      <div class="mini-card"><div class="mc-name">multiprocessing.Pool</div><div class="mc-desc">True CPU parallelism</div></div>
+      <div class="mini-card"><div class="mc-name">async def / await</div><div class="mc-desc">Cooperative single-thread concurrency</div></div>
+      <div class="mini-card"><div class="mc-name">asyncio.gather()</div><div class="mc-desc">Run coroutines concurrently</div></div>
+      <div class="mini-card"><div class="mc-name">ThreadPoolExecutor</div><div class="mc-desc">Simplified thread management</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>GIL, threading, multiprocessing, asyncio. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#B91C1C">🏆</div>
+    <div><h2>Real-World Task — Concurrent Web Scraper &amp; Image Processor</h2><p>Estimated time: 85–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>Build TWO mini-tools that demonstrate choosing the RIGHT concurrency tool: an I/O-bound "URL fetcher" using threading/asyncio, and a CPU-bound "number cruncher" using multiprocessing — then benchmark all approaches.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#B91C1C">1</div><h4>Phase 1 — I/O-Bound: Simulated URL Fetcher</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Benchmark Sequential vs Threaded vs Async</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> time, threading, asyncio
+<span class="kw">from</span> concurrent.futures <span class="kw">import</span> ThreadPoolExecutor
+
+<span class="kw">def</span> <span class="fn">fetch_sync</span>(url):
+    time.<span class="fn">sleep</span>(<span class="nm">1</span>)   <span class="cm"># simulate 1s network latency</span>
+    <span class="kw">return</span> <span class="st">f"Fetched {url}"</span>
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_async</span>(url):
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(<span class="nm">1</span>)
+    <span class="kw">return</span> <span class="st">f"Fetched {url}"</span>
+
+urls = [<span class="st">f"site{i}.com"</span> <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">10</span>)]
+
+<span class="cm"># Time all 3 approaches: sequential loop, ThreadPoolExecutor, asyncio.gather</span></pre></div>
+          <p>Implement and time: (1) a plain sequential for-loop calling fetch_sync 10 times, (2) ThreadPoolExecutor with 10 workers calling fetch_sync, (3) asyncio.gather calling fetch_async 10 times. Print all 3 timings and confirm threading/async are ~10x faster.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — CPU-Bound: Prime Number Counter</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Compare threading vs multiprocessing for Real Computation</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">count_primes</span>(n):
+    count = <span class="nm">0</span>
+    <span class="kw">for</span> num <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">2</span>, n):
+        <span class="kw">if</span> <span class="fn">all</span>(num % i != <span class="nm">0</span> <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">2</span>, <span class="fn">int</span>(num**<span class="nm">0.5</span>)+<span class="nm">1</span>)):
+            count += <span class="nm">1</span>
+    <span class="kw">return</span> count
+
+<span class="cm"># Run count_primes(500000) FOUR times, using:
+# (a) sequential, (b) threading (expect little/no speedup),
+# (c) multiprocessing.Pool (expect real speedup on multi-core machines)</span></pre></div>
+          <p>Confirm and explain in a comment WHY threading fails to speed up this CPU-bound task, while multiprocessing succeeds.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Thread-Safe Shared Counter</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Demonstrate and Fix a Race Condition</h5>
+          <p>Write code with 10 threads each incrementing a shared counter 100,000 times WITHOUT a lock — show the final count is WRONG (less than 1,000,000). Then fix it using threading.Lock() and confirm the count is now correct.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Benchmarked sequential vs threaded vs async I/O-bound fetching</li>
+        <li>Confirmed threading/async both give ~10x speedup for I/O-bound work</li>
+        <li>Built a CPU-bound prime counting function</li>
+        <li>Confirmed threading provides little/no speedup for CPU-bound work</li>
+        <li>Confirmed multiprocessing DOES provide real speedup for CPU-bound work</li>
+        <li>Demonstrated a race condition with an unprotected shared counter</li>
+        <li>Fixed the race condition using threading.Lock()</li>
+        <li>Used the if __name__ == "__main__" guard for all multiprocessing code</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge</div>
+      Rewrite Phase 2's multiprocessing solution using ProcessPoolExecutor instead of Pool, and compare code readability between the two approaches.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Python Full Course — 10-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Basics</span>
+    <span class="day-pill">Day 2 · Control Flow &amp; Functions</span>
+    <span class="day-pill">Day 3 · Data Structures</span>
+    <span class="day-pill">Day 4 · OOP</span>
+    <span class="day-pill">Day 5 · Files &amp; Exceptions</span>
+    <span class="day-pill">Day 6 · Modules &amp; Packages</span>
+    <span class="day-pill done">Day 7 · Iterators, Generators &amp; Decorators</span>
+    <span class="day-pill done">Day 8 · Advanced OOP</span>
+    <span class="day-pill done active">Day 9 · Concurrency</span>
+    <span class="day-pill">Day 10 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What does the GIL (Global Interpreter Lock) fundamentally restrict?",opts:["It prevents any use of multiple threads entirely","It ensures only ONE thread can execute Python BYTECODE at any given instant, even on a multi-core CPU — meaning threading alone cannot achieve TRUE parallel computation for CPU-bound Python code", "It only affects multiprocessing, not threading","It restricts network access from Python programs"],ans:1,explain:"The GIL is a mutex that allows only one thread to execute Python bytecode at a time within a single process, regardless of how many CPU cores are available. This is why pure threading in Python does NOT achieve true parallel speedup for CPU-bound (computation-heavy) work, even though it can still help with I/O-bound work."},
+  {q:"Why can threading still provide REAL speedup for I/O-bound tasks despite the GIL's restriction?",opts:["The GIL doesn't apply to I/O operations at all in any way","When a thread is WAITING on I/O (network response, disk read, etc.), it RELEASES the GIL, allowing OTHER threads to run Python code during that wait — since I/O-bound tasks spend most of their time waiting rather than computing, this GIL-release mechanism enables genuine concurrency benefits", "Threading only works for I/O-bound tasks by pure coincidence with no underlying reason","I/O-bound tasks don't actually use the GIL because they're written in C"],ans:1,explain:"During I/O operations (waiting for a network response, reading a file from disk, etc.), a thread voluntarily RELEASES the GIL since it's not actively executing Python bytecode — just waiting. This allows OTHER threads to acquire the GIL and make progress during that wait time, which is exactly why threading helps I/O-bound (but not CPU-bound) work."},
+  {code:"p1 = Process(target=cpu_heavy_task, args=(10_000_000,))\np2 = Process(target=cpu_heavy_task, args=(10_000_000,))",q:"Why can multiprocessing achieve TRUE parallel speedup for CPU-bound tasks, unlike threading?",opts:["multiprocessing doesn't actually run tasks in parallel either","Each Process runs in its OWN separate operating system process, with its OWN separate Python interpreter and OWN separate GIL — since each process has an independent GIL, multiple processes CAN genuinely execute Python bytecode simultaneously on different CPU cores", "Processes are just a different name for threads with identical behavior","multiprocessing only works for I/O-bound tasks, not CPU-bound ones"],ans:1,explain:"Unlike threads (which share ONE process and thus ONE GIL), each Process created via multiprocessing runs as a genuinely separate OS-level process with its OWN independent Python interpreter and OWN independent GIL. Since each process's GIL only restricts THAT process's threads, multiple processes CAN truly run Python code in parallel across different CPU cores."},
+  {q:"Why is `if __name__ == \"__main__\":` considered mandatory when using multiprocessing (especially on Windows)?",opts:["This guard is purely optional stylistic preference with no functional necessity","On some platforms, multiprocessing works by RE-IMPORTING the main script in each new child process; without this guard, the re-import would attempt to spawn ANOTHER new process, leading to infinite recursive process creation — the guard ensures process-spawning code only runs in the ORIGINAL main process, not in re-imported copies", "This guard only affects import speed, with no functional consequences", "This guard is required syntax for ALL Python scripts, not specific to multiprocessing"],ans:1,explain:"On Windows (and in some configurations on macOS), creating a new process via multiprocessing involves re-importing the main script as a module in the new child process. Without the __name__ == '__main__' guard, this re-import would itself execute the process-creation code again, spawning yet another process, which would ALSO re-import and spawn another — resulting in uncontrolled, infinite process creation. The guard ensures process-spawning logic only executes in the original, top-level script run, not in re-imported copies."},
+  {code:"counter = 0\ndef increment():\n    global counter\n    counter += 1",q:"Why can running this function from MULTIPLE threads simultaneously (without a lock) produce an INCORRECT final counter value?",opts:["counter += 1 is guaranteed to always be a single, uninterruptible atomic operation","counter += 1 actually involves MULTIPLE underlying steps (read current value, add 1, write back) — a thread can be INTERRUPTED between these steps by another thread, causing both threads to read the SAME initial value and each independently add 1, resulting in only ONE net increment being effectively recorded instead of two (a 'lost update')", "This code would never actually run with multiple threads", "Python automatically prevents this specific type of error without any locks needed"],ans:1,explain:"Even though the GIL prevents simultaneous BYTECODE execution, a single Python statement like counter += 1 compiles to MULTIPLE bytecode instructions (load counter, add 1, store back to counter). A thread can be switched out mid-sequence, allowing another thread to also read the OLD value before the first thread's update is stored — causing a 'lost update' where two increments only net a single +1 instead of +2. This is a classic race condition requiring a Lock to prevent."},
+  {code:"with lock:\n    counter += 1",q:"What does wrapping the increment in `with lock:` accomplish?",opts:["It makes the increment operation run faster","It ensures only ONE thread can execute the code inside the 'with' block AT A TIME — any other thread attempting to enter must WAIT until the lock is released, preventing the race condition where multiple threads interleave their read-modify-write steps on the shared counter", "Locks only work with multiprocessing, not threading","This syntax has no functional effect on thread safety"],ans:1,explain:"A threading.Lock() acts as a mutual exclusion mechanism — only ONE thread can hold the lock (and thus execute the code inside the 'with lock:' block) at any given moment. Other threads attempting to acquire the same lock must WAIT until it's released, ensuring the read-modify-write sequence of counter += 1 completes atomically from the perspective of other threads, preventing the race condition."},
+  {q:"What does `async def` define in Python?",opts:["A regular function that runs immediately when defined","A COROUTINE FUNCTION — calling it does NOT immediately execute the function body; instead it returns a coroutine object that must be awaited or run through the asyncio event loop to actually execute", "A function that automatically runs on a separate thread","A deprecated syntax replaced by regular functions"],ans:1,explain:"async def defines a coroutine function, which behaves differently from a regular function when called — instead of immediately executing and returning a result, calling an async function returns a COROUTINE OBJECT that represents the not-yet-executed computation. This coroutine must be driven forward using await (within another async function) or passed to something like asyncio.run() to actually execute its code."},
+  {code:"async def download(url):\n    await asyncio.sleep(2)\n    return f\"Done: {url}\"",q:"What does the `await` keyword accomplish here?",opts:["It blocks the ENTIRE program, including all other tasks, for 2 seconds","It PAUSES this specific coroutine at this point (without blocking the entire program/event loop), allowing OTHER coroutines/tasks to run during this wait — when the awaited operation (asyncio.sleep here) completes, THIS coroutine resumes from where it left off", "await has no functional effect and is purely decorative", "await can only be used with asyncio.sleep, no other functions"],ans:1,explain:"await is the key mechanism enabling asyncio's cooperative concurrency: it pauses the CURRENT coroutine at that point, YIELDING CONTROL back to the event loop, which can then run OTHER pending coroutines/tasks during this wait. Crucially, this does NOT block the entire program — other tasks continue making progress — and when the awaited operation completes, execution resumes in THIS coroutine from exactly where it paused."},
+  {code:"results = await asyncio.gather(\n    download(\"url1\"),\n    download(\"url2\"),\n    download(\"url3\"),\n)",q:"If each download() call awaits asyncio.sleep(2), roughly how long does this gather() call take in total?",opts:["6 seconds (2+2+2, sequential)","Approximately 2 seconds — asyncio.gather() runs all three coroutines CONCURRENTLY; since each one spends its 2 seconds just WAITING (not computing), they can all be 'in progress' simultaneously, so the total time is roughly the LONGEST individual wait (2s), not the SUM of all waits", "0 seconds — gather() skips execution entirely", "It depends entirely on the number of CPU cores available"],ans:1,explain:"asyncio.gather() runs multiple coroutines CONCURRENTLY within the single-threaded event loop. Since each download() coroutine spends its time simply WAITING (via asyncio.sleep, representing simulated I/O), the event loop can interleave/overlap all three waits simultaneously — the total elapsed time is roughly the DURATION OF THE LONGEST individual wait (~2s), not the sum of all three waits (6s) as would occur with purely sequential execution."},
+  {q:"What is the key architectural difference between threading and asyncio for achieving I/O-bound concurrency?",opts:["They are functionally and architecturally identical with different names","threading uses MULTIPLE OS-level threads (with the OS scheduler switching between them, and the GIL still restricting bytecode execution to one thread at a time); asyncio uses a SINGLE thread with COOPERATIVE task-switching (each coroutine voluntarily yields control via await) — asyncio generally has lower per-task overhead and can scale to far more concurrent tasks, but requires 'async-aware' code throughout", "asyncio always requires multiple CPU cores to function at all","threading can handle more concurrent tasks than asyncio in all scenarios"],ans:1,explain:"threading relies on the operating system's thread scheduler to switch between multiple OS-level threads (still constrained by the single GIL for bytecode execution). asyncio instead uses a SINGLE thread running an event loop, where coroutines cooperatively yield control at each await point. asyncio's lower per-task overhead lets it scale to potentially THOUSANDS of concurrent tasks (e.g., many simultaneous network connections), while requiring your code to be written in an 'async-aware' style (using async/await) throughout, rather than working with arbitrary existing blocking code as threading can."},
+  {code:"with ThreadPoolExecutor(max_workers=4) as executor:\n    results = list(executor.map(fetch_url, urls))",q:"What does ThreadPoolExecutor provide compared to manually creating and managing individual threading.Thread objects?",opts:["No practical difference — purely a stylistic alternative","A HIGHER-LEVEL, more convenient interface: it automatically manages a POOL of reusable worker threads, handles distributing work across them via .map() (similar to the built-in map() function), and automatically handles thread startup/cleanup — reducing the manual bookkeeping (creating Thread objects, calling .start()/.join() on each) required with raw threading.Thread usage", "ThreadPoolExecutor can only run exactly one thread at a time", "ThreadPoolExecutor is only usable for CPU-bound tasks, not I/O-bound ones"],ans:1,explain:"ThreadPoolExecutor (from concurrent.futures) provides a higher-level, more convenient abstraction over raw threading.Thread management: it maintains a POOL of worker threads (up to max_workers), and its familiar .map() method (similar in spirit to the built-in map()) distributes work across the pool automatically, handling much of the manual thread creation/start/join bookkeeping that raw threading.Thread usage requires."},
+  {q:"How would you convert code using ThreadPoolExecutor for I/O-bound work into code appropriate for CPU-bound work, using the SAME concurrent.futures interface style?",opts:["This conversion is not possible; ThreadPoolExecutor only works for one task type","Simply swap ThreadPoolExecutor for ProcessPoolExecutor — both share the SAME basic interface (.map(), .submit(), context manager usage), but ProcessPoolExecutor uses separate OS PROCESSES (bypassing the GIL entirely, enabling true CPU parallelism) instead of threads", "You would need to completely rewrite the code using an entirely unrelated library", "ThreadPoolExecutor automatically detects and adapts to the workload type"],ans:1,explain:"concurrent.futures deliberately provides a CONSISTENT interface between ThreadPoolExecutor and ProcessPoolExecutor — both support the same .map(), .submit(), and context manager (with...) usage patterns. This design lets you switch between thread-based (I/O-bound, GIL-limited) and process-based (CPU-bound, true parallelism) execution largely by just swapping which Executor class you instantiate, without needing to restructure your overall code logic."},
+  {q:"In the Phase 2 real-world task, why would running the CPU-bound count_primes() function using THREADING show little to NO speedup compared to running it sequentially?",opts:["threading always provides speedup regardless of the workload type","Since count_primes() is a pure CPU-bound computation (no I/O waiting involved), the GIL prevents multiple threads from actually executing this Python bytecode SIMULTANEOUSLY — even with multiple threads 'running' the function, only one thread's bytecode executes at any given instant, so the total computational work still effectively happens sequentially, providing no real speedup (and potentially even slight overhead from thread management)", "count_primes() contains a bug that specifically prevents threading from working", "This function is actually I/O-bound, not CPU-bound, despite appearances"],ans:1,explain:"Because count_primes() involves ONLY computation (checking divisibility) with NO I/O waiting at any point, there's never an opportunity for a thread to release the GIL and let another thread make progress. All the threads end up competing for the SAME single GIL, effectively serializing their execution at the bytecode level — providing essentially the same total computation time as running sequentially (possibly slightly worse due to thread-switching overhead), clearly illustrating why threading fails to help genuinely CPU-bound work."},
+  {q:"Conversely, why WOULD multiprocessing.Pool successfully speed up the same count_primes() CPU-bound function?",opts:["multiprocessing doesn't actually use separate Python interpreters", "Each worker process in the Pool runs as a fully SEPARATE operating system process with its OWN independent Python interpreter and OWN independent GIL; since these GILs are entirely separate from each other, MULTIPLE processes CAN simultaneously execute Python bytecode on DIFFERENT CPU cores, achieving genuine parallel computation that threading (constrained by a single shared GIL) cannot provide", "multiprocessing only works for I/O-bound tasks, making this scenario impossible", "Pool() automatically converts CPU-bound code into I/O-bound code"],ans:1,explain:"Unlike threads (which all share ONE process and thus ONE GIL), each worker in a multiprocessing.Pool is a genuinely SEPARATE OS process, each with its own independent Python interpreter instance and independent GIL. Since these GILs don't interact with or block each other, multiple worker processes CAN simultaneously execute Python bytecode on different CPU cores — providing REAL parallel speedup for CPU-bound work like count_primes(), unlike threading which remains bottlenecked by the single shared GIL."},
+  {q:"What is a practical DOWNSIDE of multiprocessing compared to threading, even though multiprocessing achieves true CPU parallelism?",opts:["multiprocessing has no downsides whatsoever compared to threading","multiprocessing has HIGHER OVERHEAD — creating a new OS process (with its own separate memory space and Python interpreter) is more expensive than creating a lightweight thread (which shares memory with other threads in the same process); additionally, sharing data BETWEEN processes requires explicit inter-process communication mechanisms (like Pool's automatic serialization), unlike threads which can directly share memory/variables", "multiprocessing can only be used on Linux systems, not Windows or macOS","multiprocessing is always slower than threading regardless of the workload"],ans:1,explain:"While multiprocessing achieves genuine CPU parallelism unavailable to threading, this comes with real costs: creating a new OS-level PROCESS (with its own separate memory space, requiring a full new Python interpreter instance) is considerably more expensive/slower than creating a lightweight thread within an EXISTING process. Additionally, since separate processes don't share memory directly, passing data between them requires explicit serialization/communication mechanisms (which Pool handles automatically but which still adds overhead), unlike threads which can directly read/write shared variables (with appropriate locking)."},
+  {q:"Why does the lesson emphasize asking 'is my program mostly WAITING or mostly CALCULATING?' as the key question for choosing a concurrency approach?",opts:["This question has no practical bearing on which tool to choose","This question DIRECTLY determines whether the GIL will be a limiting factor: 'mostly WAITING' (I/O-bound) means the GIL gets released frequently during those waits, so threading/asyncio can provide genuine concurrency benefit; 'mostly CALCULATING' (CPU-bound) means the GIL is held almost continuously during computation, so ONLY multiprocessing (with its separate per-process GILs) can achieve real speedup", "The answer to this question is always 'calculating' for any real-world program", "This question only matters for programs written in languages other than Python"],ans:1,explain:"This single question cuts directly to the heart of the GIL's practical impact: I/O-bound work involves lots of WAITING, during which the GIL gets released, allowing threading (or asyncio) to provide genuine concurrency benefit. CPU-bound work involves near-continuous COMPUTATION, during which a thread holds the GIL almost the entire time, blocking other threads from making progress — meaning only multiprocessing (using separate processes with independent GILs) can achieve TRUE parallel speedup for this type of workload. Correctly diagnosing which category your task falls into is the essential first step in choosing the appropriate concurrency tool."},
+  {q:"Why might a real-world application (like a web server handling both database queries AND heavy image processing) potentially benefit from using DIFFERENT concurrency tools for DIFFERENT parts of its workload?",opts:["Using multiple different concurrency tools within one application is never appropriate or beneficial","Different parts of the SAME application can have genuinely different characteristics — database queries and network calls are typically I/O-bound (well-suited to asyncio/threading), while heavy image processing is typically CPU-bound (requiring multiprocessing for true parallelism); correctly matching EACH specific workload to its MOST APPROPRIATE concurrency tool (rather than forcing everything through one single approach) can yield significantly better overall performance", "All parts of any single application always share identical I/O vs CPU characteristics", "Mixing concurrency approaches within one application always causes immediate crashes"],ans:1,explain:"Real applications frequently contain a MIX of different workload types — network/database calls are typically I/O-bound, while tasks like image processing, complex calculations, or data compression are typically CPU-bound. Recognizing that DIFFERENT parts of the same application may benefit from DIFFERENT concurrency strategies (e.g., asyncio for handling many simultaneous database queries, but multiprocessing for CPU-intensive image resizing) — rather than dogmatically forcing the ENTIRE application through just one single concurrency approach — often yields meaningfully better overall performance by matching each specific workload to its most appropriate tool."},
+  {q:"What does it mean that asyncio provides 'cooperative' concurrency, as opposed to threading's 'preemptive' concurrency (where the OS can interrupt a thread at any point)?",opts:["Cooperative and preemptive concurrency are functionally identical concepts with different names", "In asyncio's COOPERATIVE model, a coroutine voluntarily YIELDS control at explicit await points — it is NEVER forcibly interrupted mid-execution by the system; in threading's PREEMPTIVE model, the OS scheduler CAN interrupt a running thread at essentially ANY point (even mid-statement) to switch to another thread, which is part of why race conditions can occur even in seemingly simple operations like counter += 1", "Cooperative concurrency means coroutines physically communicate with each other via network messages", "Preemptive concurrency means threads must explicitly ask permission before running at all"],ans:1,explain:"This is a fundamental architectural distinction: asyncio's coroutines run to completion between await points — they are NEVER interrupted by the system at an arbitrary point; the coroutine itself chooses exactly when to yield control (at each await). Threading, by contrast, uses PREEMPTIVE scheduling — the OS can interrupt a running thread at essentially ANY point (even in the middle of a single Python statement's underlying bytecode operations) to switch to another thread, which is precisely why unprotected shared-state modifications (like counter += 1) can be interrupted mid-operation, causing race conditions that require explicit locks to prevent."},
+  {q:"Reflecting on all three approaches covered today (threading, multiprocessing, asyncio), what is the single most important high-level lesson for choosing a concurrency strategy in Python?",opts:["Always default to multiprocessing for everything, since it provides true parallelism", "There is NO single 'best' concurrency tool — the right choice depends entirely on your WORKLOAD'S CHARACTERISTICS (I/O-bound vs CPU-bound) and SCALE (few vs many thousands of concurrent tasks); understanding the GIL's practical implications is the essential foundation for correctly diagnosing which of these three fundamentally different tools will actually provide genuine performance benefit for your specific situation, rather than blindly reaching for whichever tool seems most familiar or trendy", "Always default to asyncio for everything, since it has the lowest overhead", "Concurrency tool choice in Python is arbitrary and any of the three approaches always work equally well"],ans:1,explain:"The overarching lesson from today's material is that Python's THREE distinct concurrency tools exist precisely BECAUSE no single approach optimally serves all scenarios — threading suits moderate-scale I/O-bound work using existing blocking code; asyncio suits massive-scale I/O-bound work but requires async-aware code; multiprocessing is the ONLY option providing true parallelism for CPU-bound work, at the cost of higher overhead. Correctly diagnosing your specific workload's characteristics (I/O vs CPU-bound, and expected scale) — grounded in genuine understanding of WHY the GIL creates these different tradeoffs — is essential for choosing the tool that will actually deliver real performance benefits, rather than defaulting to whichever approach happens to be most familiar or currently fashionable."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review the GIL and threading vs multiprocessing, then try again! 📚"],[50,75,"Good progress! Focus on asyncio and race conditions. 💪"],[75,90,"Strong Day 9! Concurrency skills are solid. 🎉"],[90,101,"Excellent! Day 9 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

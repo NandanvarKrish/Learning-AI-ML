@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NumPy – Day 5 | Capstone</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+
+  :root {
+    --bg:        #FFF5F5;
+    --surface:   #FFFFFF;
+    --border:    #FECACA;
+    --accent:    #DC2626;
+    --accent2:   #7F1D1D;
+    --green:     #059669;
+    --blue:      #3B82F6;
+    --yellow:    #F59E0B;
+    --purple:    #7C3AED;
+    --teal:      #0891B2;
+    --gold:      #D97706;
+    --text:      #1C0A0A;
+    --muted:     #B91C1C;
+    --code-bg:   #1A0505;
+    --code-text: #FECACA;
+    --tag-bg:    #FEF2F2;
+    --tag-text:  #7F1D1D;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(220,38,38,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;}
+  .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;}
+  .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;}
+
+  .hero{background:linear-gradient(135deg,#DC2626 0%,#7F1D1D 50%,#D97706 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🎓';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;}
+  .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+
+  /* graduation banner */
+  .grad-banner{background:linear-gradient(135deg,#D97706,#F59E0B);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner .gb-icon{font-size:28px;}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;}
+  .grad-banner strong{font-weight:700;}
+
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;}
+  .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);}
+  h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;}
+  ul,ol{padding-left:22px;margin-bottom:10px;}
+  li{margin-bottom:5px;}
+  strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B91C1C;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#F9A8D4;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FDBA74;} .cm{color:#4A1A1A;font-style:italic;} .op{color:#FECACA;} .hl{color:#FFFFFF;font-weight:600;}
+
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.gold{border-color:var(--gold);background:#FFFBEB;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout       .callout-title{color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);}
+  .callout.blue  .callout-title{color:var(--blue);}
+  .callout.gold  .callout-title{color:var(--gold);}
+  .callout.purple .callout-title{color:var(--purple);}
+  .callout.teal  .callout-title{color:var(--teal);}
+
+  .tbl-wrap{overflow-x:auto;margin:14px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:var(--bg);}
+
+  .fbox{background:linear-gradient(135deg,#7F1D1D,#DC2626);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:500;line-height:2;}
+  .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+
+  /* QUIZ */
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);}
+  .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);}
+  .q-card.wrong{border-color:var(--accent);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;}
+  .opt.wrong-ans{border-color:var(--accent);background:#FEF2F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;}
+  .opt.correct-ans .opt-letter{background:var(--green);color:#fff;}
+  .opt.wrong-ans .opt-letter{background:var(--accent);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
+  .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;}
+  .q-explain.exp-wrong{background:#FEF2F2;border-left:3px solid var(--accent);color:#7F1D1D;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);}
+  .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#DC2626,#7F1D1D,#D97706);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;}
+  .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;}
+  .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;}
+  .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+
+  /* CAPSTONE */
+  .cap-hero{background:linear-gradient(135deg,#DC2626,#D97706);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;}
+  .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;}
+  .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;}
+  .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;}
+  .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;}
+  .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;}
+  .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+
+  /* CERTIFICATE */
+  .certificate{border:3px solid var(--gold);border-radius:16px;padding:40px;text-align:center;background:linear-gradient(135deg,#FFFBEB,#FFF5F5);margin-top:32px;position:relative;overflow:hidden;}
+  .certificate::before{content:'🏅';font-size:200px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;}
+  .certificate .cert-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+  .certificate h2{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);margin-bottom:8px;}
+  .certificate .cert-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin:16px 0;}
+  .certificate p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto 20px;}
+  .cert-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;}
+  .cert-skill{background:var(--accent);color:#fff;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;}
+
+  /* FOOTER */
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔢 NumPy</div>
+  <span class="sep">|</span>
+  <span class="day-label">Day 5 of 5 · Final</span>
+  <div class="spacer"></div>
+  <span class="progress-label" style="margin-right:8px">100%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">NumPy Full Course · Day 5 · Capstone</div>
+  <h1>File I/O, Power Tools<br>&amp; <span>Capstone Project</span></h1>
+  <p>The final day. Master file operations, einsum, meshgrid, structured arrays, memory tricks — then build a complete Machine Learning pipeline from scratch using only NumPy.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">💾 File I/O</span>
+    <span class="hero-pill">🏗️ Structured Arrays</span>
+    <span class="hero-pill">⚡ np.einsum</span>
+    <span class="hero-pill">🕸️ Meshgrid</span>
+    <span class="hero-pill">🧠 Memory &amp; Speed</span>
+    <span class="hero-pill">🌉 Library Bridge</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 ML Capstone</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <div class="gb-icon">🎓</div>
+  <p><strong>Final Day!</strong> You've covered Arrays → Math → Broadcasting → Linear Algebra. Today closes the loop with professional tools and a full capstone that unites everything.</p>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════
+     SECTION 1 — FILE I/O
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">💾</div>
+    <div>
+      <h2>File I/O — Saving &amp; Loading Arrays</h2>
+      <p>Persist, share, and reload NumPy data in binary and text formats</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>Binary Format — .npy and .npz</h3>
+    <p>NumPy's native binary format is <strong>fast, lossless, and preserves dtype</strong>. Always prefer this over text when you only need NumPy to read the file.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+arr = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1.5</span>, <span class="nm">2.7</span>, <span class="nm">3.1</span>],
+               [<span class="nm">4.0</span>, <span class="nm">5.8</span>, <span class="nm">6.2</span>]])
+
+<span class="cm"># ── Single array ──────────────────────────────</span>
+<span class="op">np</span>.<span class="fn">save</span>(<span class="st">'data.npy'</span>, arr)           <span class="cm"># save</span>
+loaded = <span class="op">np</span>.<span class="fn">load</span>(<span class="st">'data.npy'</span>)       <span class="cm"># load</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">array_equal</span>(arr, loaded))   <span class="cm"># True ✅</span>
+
+<span class="cm"># ── Multiple arrays in one file (.npz) ─────────</span>
+X = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">100</span>, <span class="nm">5</span>)
+y = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">randint</span>(<span class="nm">0</span>, <span class="nm">3</span>, <span class="nm">100</span>)
+
+<span class="op">np</span>.<span class="fn">savez</span>(<span class="st">'dataset.npz'</span>, features=X, labels=y)    <span class="cm"># named arrays</span>
+data = <span class="op">np</span>.<span class="fn">load</span>(<span class="st">'dataset.npz'</span>)
+<span class="fn">print</span>(<span class="fn">list</span>(data.keys()))     <span class="cm"># ['features', 'labels']</span>
+<span class="fn">print</span>(data[<span class="st">'features'</span>].shape)  <span class="cm"># (100, 5)</span>
+<span class="fn">print</span>(data[<span class="st">'labels'</span>].shape)    <span class="cm"># (100,)</span>
+
+<span class="cm"># ── Compressed version (smaller file) ─────────</span>
+<span class="op">np</span>.<span class="fn">savez_compressed</span>(<span class="st">'dataset_compressed.npz'</span>, features=X, labels=y)</pre>
+    </div>
+
+    <h3>Text Format — .csv and .txt</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Save as CSV (human-readable)</span>
+<span class="op">np</span>.<span class="fn">savetxt</span>(<span class="st">'data.csv'</span>, arr,
+           delimiter=<span class="st">','</span>,
+           header=<span class="st">'col1,col2,col3'</span>,
+           fmt=<span class="st">'%.4f'</span>,       <span class="cm"># 4 decimal places</span>
+           comments=<span class="st">''</span>)       <span class="cm"># don't prefix header with #</span>
+
+<span class="cm"># Load from CSV</span>
+loaded_csv = <span class="op">np</span>.<span class="fn">loadtxt</span>(<span class="st">'data.csv'</span>,
+                          delimiter=<span class="st">','</span>,
+                          skiprows=<span class="nm">1</span>)   <span class="cm"># skip header row</span>
+<span class="fn">print</span>(loaded_csv)
+
+<span class="cm"># genfromtxt — handles missing values, varied dtypes</span>
+<span class="kw">import</span> io
+csv_data = <span class="st">"""name,age,score
+Alice,25,92.5
+Bob,,88.0
+Carol,30,
+Dave,22,79.3"""</span>
+
+data = <span class="op">np</span>.<span class="fn">genfromtxt</span>(io.<span class="fn">StringIO</span>(csv_data),
+                      delimiter=<span class="st">','</span>,
+                      names=<span class="kw">True</span>,          <span class="cm"># first row = column names</span>
+                      dtype=<span class="kw">None</span>,           <span class="cm"># auto-detect dtype per column</span>
+                      encoding=<span class="st">'utf-8'</span>,
+                      filling_values={<span class="st">'age'</span>: <span class="nm">0</span>, <span class="st">'score'</span>: <span class="op">np</span>.nan})
+<span class="fn">print</span>(data[<span class="st">'name'</span>])    <span class="cm"># [b'Alice' b'Bob' b'Carol' b'Dave']</span>
+<span class="fn">print</span>(data[<span class="st">'age'</span>])     <span class="cm"># [25.  0. 30. 22.]  ← Bob's age filled with 0</span>
+<span class="fn">print</span>(data[<span class="st">'score'</span>])  <span class="cm"># [92.5 88.  nan 79.3] ← Carol's score is NaN</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Function</th><th>Format</th><th>Use When</th></tr>
+        <tr><td><code>np.save / np.load</code></td><td>.npy binary</td><td>Fast, lossless, single array</td></tr>
+        <tr><td><code>np.savez / np.load</code></td><td>.npz binary</td><td>Multiple arrays, stays fast</td></tr>
+        <tr><td><code>np.savez_compressed</code></td><td>.npz zip</td><td>Large arrays, save disk space</td></tr>
+        <tr><td><code>np.savetxt / np.loadtxt</code></td><td>.txt/.csv</td><td>Human-readable, share with others</td></tr>
+        <tr><td><code>np.genfromtxt</code></td><td>.txt/.csv</td><td>Messy data with missing values, headers</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 2 — STRUCTURED ARRAYS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🏗️</div>
+    <div>
+      <h2>Structured Arrays — Typed Records in NumPy</h2>
+      <p>Store mixed data types in a single array — like a lightweight database table</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>A structured array has a <strong>compound dtype</strong> with named fields, each with its own type. Think of it as a NumPy equivalent of a simple table or C struct.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Define a structured dtype</span>
+student_dtype = <span class="op">np</span>.<span class="fn">dtype</span>([
+    (<span class="st">'name'</span>,  <span class="st">'U20'</span>),     <span class="cm"># Unicode string, max 20 chars</span>
+    (<span class="st">'age'</span>,   <span class="op">np</span>.int16),   <span class="cm"># 16-bit integer</span>
+    (<span class="st">'score'</span>, <span class="op">np</span>.float32), <span class="cm"># 32-bit float</span>
+    (<span class="st">'grade'</span>, <span class="st">'U2'</span>)       <span class="cm"># 2-char grade string</span>
+])
+
+<span class="cm"># Create structured array</span>
+students = <span class="op">np</span>.<span class="fn">array</span>([
+    (<span class="st">'Alice'</span>, <span class="nm">20</span>, <span class="nm">92.5</span>, <span class="st">'A+'</span>),
+    (<span class="st">'Bob'</span>,   <span class="nm">22</span>, <span class="nm">78.3</span>, <span class="st">'B'</span>),
+    (<span class="st">'Carol'</span>, <span class="nm">19</span>, <span class="nm">85.1</span>, <span class="st">'A'</span>),
+    (<span class="st">'Dave'</span>,  <span class="nm">21</span>, <span class="nm">61.0</span>, <span class="st">'C'</span>),
+    (<span class="st">'Eve'</span>,   <span class="nm">23</span>, <span class="nm">95.8</span>, <span class="st">'A+'</span>)
+], dtype=student_dtype)
+
+<span class="cm"># Access by field name</span>
+<span class="fn">print</span>(students[<span class="st">'name'</span>])    <span class="cm"># ['Alice' 'Bob' 'Carol' 'Dave' 'Eve']</span>
+<span class="fn">print</span>(students[<span class="st">'score'</span>])   <span class="cm"># [92.5 78.3 85.1 61.  95.8]</span>
+
+<span class="cm"># Access specific record</span>
+<span class="fn">print</span>(students[<span class="nm">0</span>])          <span class="cm"># ('Alice', 20, 92.5, 'A+')</span>
+<span class="fn">print</span>(students[<span class="nm">0</span>][<span class="st">'name'</span>])  <span class="cm"># Alice</span>
+
+<span class="cm"># Boolean indexing on fields</span>
+top_students = students[students[<span class="st">'score'</span>] >= <span class="nm">85</span>]
+<span class="fn">print</span>(top_students[<span class="st">'name'</span>])  <span class="cm"># ['Alice' 'Carol' 'Eve']</span>
+
+<span class="cm"># Sort by score descending</span>
+sorted_students = <span class="op">np</span>.<span class="fn">sort</span>(students, order=<span class="st">'score'</span>)[::-<span class="nm">1</span>]
+<span class="fn">print</span>(sorted_students[<span class="st">'name'</span>])  <span class="cm"># ['Eve' 'Alice' 'Carol' 'Bob' 'Dave']</span>
+
+<span class="cm"># Statistics on a field</span>
+<span class="fn">print</span>(<span class="st">f"Class avg: {students['score'].mean():.1f}"</span>)   <span class="cm"># 82.5</span>
+<span class="fn">print</span>(<span class="st">f"Oldest: {students['name'][students['age'].argmax()]}"</span>)  <span class="cm"># Eve</span></pre>
+    </div>
+
+    <div class="callout teal">
+      <div class="callout-title">💡 When to Use Structured Arrays</div>
+      Use structured arrays when you need to work in pure NumPy with mixed types (names + numbers). For most real data work, Pandas DataFrames are more convenient — but structured arrays use less memory and have no Pandas overhead.
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 3 — NP.EINSUM
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">⚡</div>
+    <div>
+      <h2>np.einsum — Einstein Summation</h2>
+      <p>The single most powerful NumPy function — replaces dot, matmul, trace, outer, transpose and more</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p><code>np.einsum</code> uses <strong>Einstein summation notation</strong> to express any tensor operation with a concise string. Repeated indices mean "sum over that dimension". It's often the <em>fastest</em> way to write complex operations.</p>
+
+    <div class="fbox">
+      <div class="ft">⚡ Einsum Notation</div>
+      <div class="fm">np.einsum('ij,jk→ik', A, B)  ← matrix multiply</div>
+      <div class="fm">np.einsum('ii→',   A)         ← trace</div>
+      <div class="fm">np.einsum('ij→ji', A)         ← transpose</div>
+      <div class="fnote">Left of → = input indices. Right of → = output indices. Missing = summed away.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>],[<span class="nm">3</span>,<span class="nm">4</span>]])   <span class="cm"># (2,2)</span>
+B = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">5</span>,<span class="nm">6</span>],[<span class="nm">7</span>,<span class="nm">8</span>]])   <span class="cm"># (2,2)</span>
+v = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>])           <span class="cm"># (2,)</span>
+
+<span class="cm"># ── What each notation does ──────────────────────────</span>
+
+<span class="cm"># 1. Transpose</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ij->ji'</span>, A))     <span class="cm"># [[1 3] [2 4]]  same as A.T</span>
+
+<span class="cm"># 2. Matrix-vector multiply (A @ v)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ij,j->i'</span>, A, v)) <span class="cm"># [5 11]  same as A @ v</span>
+
+<span class="cm"># 3. Matrix-matrix multiply (A @ B)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ij,jk->ik'</span>, A, B)) <span class="cm"># [[19 22] [43 50]]  same as A @ B</span>
+
+<span class="cm"># 4. Dot product of two vectors</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'i,i->'</span>, v, v))    <span class="cm"># 5  same as np.dot(v,v)</span>
+
+<span class="cm"># 5. Outer product</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'i,j->ij'</span>, v, v))  <span class="cm"># [[1 2] [2 4]]  same as np.outer(v,v)</span>
+
+<span class="cm"># 6. Trace (sum of diagonal)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ii->'</span>, A))         <span class="cm"># 5  same as np.trace(A)</span>
+
+<span class="cm"># 7. Element-wise multiply then sum all (like np.sum(A*B))</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ij,ij->'</span>, A, B))   <span class="cm"># 70  = 1×5+2×6+3×7+4×8</span>
+
+<span class="cm"># 8. Row sums (like A.sum(axis=1))</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ij->i'</span>, A))        <span class="cm"># [3 7]</span>
+
+<span class="cm"># 9. Column sums (like A.sum(axis=0))</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ij->j'</span>, A))        <span class="cm"># [4 6]</span>
+
+<span class="cm"># 10. Batch matrix multiply — 3D tensors (n matrices at once)</span>
+batch_A = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">10</span>, <span class="nm">3</span>, <span class="nm">4</span>)   <span class="cm"># 10 matrices of (3,4)</span>
+batch_B = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">10</span>, <span class="nm">4</span>, <span class="nm">5</span>)   <span class="cm"># 10 matrices of (4,5)</span>
+batch_C = <span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'bij,bjk->bik'</span>, batch_A, batch_B)
+<span class="fn">print</span>(batch_C.shape)                    <span class="cm"># (10, 3, 5)  ← 10 results of (3,5)</span></pre>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">✅ Why Use einsum?</div>
+      <ul>
+        <li><strong>Clarity</strong> — one line clearly expresses complex tensor contractions</li>
+        <li><strong>Speed</strong> — NumPy optimises the order of operations internally</li>
+        <li><strong>Generalises</strong> — works with any number of arrays and dimensions</li>
+        <li>Used heavily in <strong>deep learning</strong> — attention mechanisms, transformers</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 4 — MESHGRID & ADVANCED TOOLS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🕸️</div>
+    <div>
+      <h2>Meshgrid, fromfunction &amp; Advanced Tools</h2>
+      <p>Create coordinate grids, generate arrays from formulas, and more power tools</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>np.meshgrid — Coordinate Grids</h3>
+    <p>Meshgrid creates 2D coordinate arrays from 1D axes — essential for plotting functions of two variables, distance maps, and heatmaps.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Create coordinate grid for a 4×4 region</span>
+x = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>])
+y = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>])
+
+XX, YY = <span class="op">np</span>.<span class="fn">meshgrid</span>(x, y)
+<span class="fn">print</span>(XX)   <span class="cm"># x values at every grid point (3 rows, 4 cols)</span>
+<span class="cm"># [[1 2 3 4]
+#  [1 2 3 4]
+#  [1 2 3 4]]</span>
+<span class="fn">print</span>(YY)   <span class="cm"># y values at every grid point</span>
+<span class="cm"># [[10 10 10 10]
+#  [20 20 20 20]
+#  [30 30 30 30]]</span>
+
+<span class="cm"># Compute a function at every grid point — no loops!</span>
+Z = <span class="op">np</span>.<span class="fn">sqrt</span>(XX**<span class="nm">2</span> + YY**<span class="nm">2</span>)   <span class="cm"># distance from origin</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(Z, <span class="nm">2</span>))
+
+<span class="cm"># High-resolution grid for maths (like plotting sin wave surface)</span>
+x_fine = <span class="op">np</span>.<span class="fn">linspace</span>(-<span class="op">np</span>.pi, <span class="op">np</span>.pi, <span class="nm">100</span>)
+y_fine = <span class="op">np</span>.<span class="fn">linspace</span>(-<span class="op">np</span>.pi, <span class="op">np</span>.pi, <span class="nm">100</span>)
+XX, YY = <span class="op">np</span>.<span class="fn">meshgrid</span>(x_fine, y_fine)
+Z = <span class="op">np</span>.<span class="fn">sin</span>(XX) * <span class="op">np</span>.<span class="fn">cos</span>(YY)   <span class="cm"># 100×100 surface — ready for Matplotlib!</span>
+<span class="fn">print</span>(<span class="st">f"Surface shape: {Z.shape}"</span>)   <span class="cm"># (100, 100)</span>
+
+<span class="cm"># Decision boundary grid (for classifiers)</span>
+xx, yy = <span class="op">np</span>.<span class="fn">meshgrid</span>(<span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">0.1</span>),
+                      <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">0.1</span>))
+grid_points = <span class="op">np</span>.<span class="fn">column_stack</span>([xx.<span class="fn">ravel</span>(), yy.<span class="fn">ravel</span>()])
+<span class="fn">print</span>(<span class="st">f"Grid points: {grid_points.shape}"</span>)  <span class="cm"># (10000, 2)</span></pre>
+    </div>
+
+    <h3>np.fromfunction — Arrays from Mathematical Formulas</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># fromfunction(f, shape) — passes i,j,... indices to function</span>
+
+<span class="cm"># Multiplication table (indices ARE the values)</span>
+mult_table = <span class="op">np</span>.<span class="fn">fromfunction</span>(<span class="kw">lambda</span> i, j: (i+<span class="nm">1</span>) * (j+<span class="nm">1</span>),
+                               shape=(<span class="nm">10</span>, <span class="nm">10</span>), dtype=<span class="fn">int</span>)
+<span class="fn">print</span>(mult_table[:<span class="nm">3</span>, :<span class="nm">3</span>])
+<span class="cm"># [[1 2 3]
+#  [2 4 6]
+#  [3 6 9]]</span>
+
+<span class="cm"># Distance matrix from origin</span>
+dist = <span class="op">np</span>.<span class="fn">fromfunction</span>(<span class="kw">lambda</span> i, j: <span class="op">np</span>.<span class="fn">sqrt</span>(i**<span class="nm">2</span> + j**<span class="nm">2</span>),
+                         (<span class="nm">5</span>, <span class="nm">5</span>), dtype=<span class="fn">float</span>)
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(dist, <span class="nm">2</span>))</pre>
+    </div>
+
+    <h3>Other Essential Power Tools</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># np.indices — all index arrays for a given shape</span>
+r, c = <span class="op">np</span>.<span class="fn">indices</span>((<span class="nm">3</span>, <span class="nm">4</span>))   <span class="cm"># r[i,j]=i, c[i,j]=j</span>
+
+<span class="cm"># np.triu / np.tril — triangular masks</span>
+A = <span class="op">np</span>.<span class="fn">ones</span>((<span class="nm">4</span>, <span class="nm">4</span>))
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">triu</span>(A))    <span class="cm"># upper triangular (zeros below diagonal)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">triu</span>(A, k=<span class="nm">1</span>)) <span class="cm"># k=1 means one above diagonal</span>
+
+<span class="cm"># np.roll — shift elements cyclically</span>
+arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span>])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">roll</span>(arr, <span class="nm">2</span>))    <span class="cm"># [4 5 1 2 3]  shift right by 2</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">roll</span>(arr, -<span class="nm">1</span>))   <span class="cm"># [2 3 4 5 1]  shift left by 1</span>
+
+<span class="cm"># np.pad — add padding around an array</span>
+img = <span class="op">np</span>.<span class="fn">ones</span>((<span class="nm">4</span>, <span class="nm">4</span>))
+padded = <span class="op">np</span>.<span class="fn">pad</span>(img, pad_width=<span class="nm">1</span>, mode=<span class="st">'constant'</span>, constant_values=<span class="nm">0</span>)
+<span class="fn">print</span>(padded.shape)  <span class="cm"># (6, 6)  ← 1px zero border all around</span>
+
+<span class="cm"># np.digitize — bin data into intervals</span>
+scores = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">45</span>, <span class="nm">62</span>, <span class="nm">78</span>, <span class="nm">91</span>, <span class="nm">55</span>, <span class="nm">83</span>])
+bins   = [<span class="nm">0</span>, <span class="nm">50</span>, <span class="nm">60</span>, <span class="nm">75</span>, <span class="nm">90</span>, <span class="nm">100</span>]
+grade_bins = <span class="op">np</span>.<span class="fn">digitize</span>(scores, bins)
+<span class="fn">print</span>(grade_bins)    <span class="cm"># [1 3 4 5 2 5]  ← bin index for each score</span>
+
+<span class="cm"># np.interp — linear interpolation</span>
+xp = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+fp = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">5</span>, <span class="nm">15</span>])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">interp</span>(<span class="nm">1.5</span>, xp, fp))   <span class="cm"># 7.5  ← midpoint between 10 and 5</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 5 — MEMORY & PERFORMANCE
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🧠</div>
+    <div>
+      <h2>Memory Layout &amp; Performance Secrets</h2>
+      <p>Write code that is not just correct, but blazing fast</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>C vs Fortran Memory Order</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># C order (row-major) — rows stored together in memory — DEFAULT
+# Fortran order (column-major) — columns stored together</span>
+
+C_arr = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>]], order=<span class="st">'C'</span>)   <span class="cm"># memory: 1,2,3,4,5,6</span>
+F_arr = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>]], order=<span class="st">'F'</span>)   <span class="cm"># memory: 1,4,2,5,3,6</span>
+
+<span class="fn">print</span>(C_arr.flags[<span class="st">'C_CONTIGUOUS'</span>])    <span class="cm"># True</span>
+<span class="fn">print</span>(F_arr.flags[<span class="st">'C_CONTIGUOUS'</span>])    <span class="cm"># False</span>
+<span class="fn">print</span>(F_arr.flags[<span class="st">'F_CONTIGUOUS'</span>])    <span class="cm"># True</span>
+
+<span class="cm"># Ensure C contiguous (for libraries that require it)</span>
+cont = <span class="op">np</span>.<span class="fn">ascontiguousarray</span>(F_arr)
+
+<span class="cm"># Strides — bytes to jump to next element in each dimension</span>
+arr = <span class="op">np</span>.<span class="fn">zeros</span>((<span class="nm">3</span>, <span class="nm">4</span>), dtype=<span class="op">np</span>.float64)
+<span class="fn">print</span>(arr.strides)   <span class="cm"># (32, 8) → jump 32 bytes for next row, 8 for next col</span></pre>
+    </div>
+
+    <h3>Performance Best Practices</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># ① Use smallest sufficient dtype</span>
+big   = <span class="op">np</span>.<span class="fn">ones</span>(<span class="nm">1_000_000</span>, dtype=<span class="op">np</span>.float64)  <span class="cm"># 8 MB</span>
+small = <span class="op">np</span>.<span class="fn">ones</span>(<span class="nm">1_000_000</span>, dtype=<span class="op">np</span>.float32)  <span class="cm"># 4 MB  ← half!</span>
+
+<span class="cm"># ② Pre-allocate output arrays instead of appending</span>
+n = <span class="nm">10_000</span>
+result = <span class="op">np</span>.<span class="fn">empty</span>(n)       <span class="cm"># fast — memory allocated, values unknown</span>
+<span class="cm"># then fill: result[i] = ...   (not result.append(...))</span>
+
+<span class="cm"># ③ Avoid unnecessary copies — use views</span>
+arr = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">1000</span>)
+view  = arr[:<span class="nm">500</span>]          <span class="cm"># VIEW — shared memory, instant</span>
+copy  = arr[:<span class="nm">500</span>].<span class="fn">copy</span>()  <span class="cm"># COPY — allocates new memory, slower</span>
+
+<span class="cm"># ④ Use in-place operations to save memory</span>
+arr += <span class="nm">1</span>         <span class="cm"># in-place — modifies arr, no new array</span>
+arr = arr + <span class="nm">1</span>   <span class="cm"># out-of-place — creates new array, twice the memory</span>
+
+<span class="cm"># ⑤ Avoid Python loops — always find a NumPy vectorised form</span>
+
+<span class="cm"># ⑥ Use np.empty instead of np.zeros when you will overwrite immediately</span>
+buf = <span class="op">np</span>.<span class="fn">empty</span>((<span class="nm">1000</span>, <span class="nm">1000</span>))   <span class="cm"># skips zero-filling → faster</span></pre>
+    </div>
+
+    <h3>The NumPy Speed Hierarchy</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Approach</th><th>Relative Speed</th><th>Notes</th></tr>
+        <tr><td>NumPy ufuncs on contiguous arrays</td><td>🚀 1× (baseline fastest)</td><td>C loop on aligned memory</td></tr>
+        <tr><td>np.einsum with optimise=True</td><td>🚀 ~1–2×</td><td>Optimal contraction order</td></tr>
+        <tr><td>Broadcasting operations</td><td>🚀 ~1–3×</td><td>Minimal copying</td></tr>
+        <tr><td>np.apply_along_axis</td><td>🐢 ~10–50×</td><td>Python loop internally</td></tr>
+        <tr><td>np.vectorize</td><td>🐢 ~10–50×</td><td>Python loop internally</td></tr>
+        <tr><td>Python for loop</td><td>🐌 ~100–500×</td><td>Interpreter overhead per element</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 6 — LIBRARY BRIDGE
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#3B82F6">🌉</div>
+    <div>
+      <h2>NumPy as the Universal Bridge</h2>
+      <p>How NumPy arrays flow seamlessly between all major Python libraries</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># ── NumPy ↔ Pandas ─────────────────────────────────────</span>
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+arr = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">5</span>, <span class="nm">3</span>)
+
+df  = pd.<span class="fn">DataFrame</span>(arr, columns=[<span class="st">'A'</span>,<span class="st">'B'</span>,<span class="st">'C'</span>])  <span class="cm"># NumPy → Pandas</span>
+arr2 = df.<span class="fn">to_numpy</span>()                               <span class="cm"># Pandas → NumPy</span>
+arr3 = df.<span class="fn">values</span>                                    <span class="cm"># same (older API)</span>
+
+<span class="cm"># ── NumPy ↔ Matplotlib ─────────────────────────────────</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+x = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">2</span>*<span class="op">np</span>.pi, <span class="nm">300</span>)
+y = <span class="op">np</span>.<span class="fn">sin</span>(x) * <span class="op">np</span>.<span class="fn">exp</span>(-x/<span class="nm">5</span>)
+plt.<span class="fn">plot</span>(x, y)   <span class="cm"># Matplotlib accepts NumPy arrays directly</span>
+
+XX, YY = <span class="op">np</span>.<span class="fn">meshgrid</span>(<span class="op">np</span>.<span class="fn">linspace</span>(-<span class="nm">2</span>,<span class="nm">2</span>,<span class="nm">100</span>),
+                      <span class="op">np</span>.<span class="fn">linspace</span>(-<span class="nm">2</span>,<span class="nm">2</span>,<span class="nm">100</span>))
+Z = <span class="op">np</span>.<span class="fn">exp</span>(-(XX**<span class="nm">2</span>+YY**<span class="nm">2</span>))
+plt.<span class="fn">contourf</span>(XX, YY, Z)   <span class="cm"># 2D plot from NumPy grid</span>
+
+<span class="cm"># ── NumPy ↔ scikit-learn ────────────────────────────────</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> LinearRegression
+
+X = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">100</span>, <span class="nm">3</span>)   <span class="cm"># scikit-learn accepts NumPy arrays</span>
+y = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">100</span>)
+model = LinearRegression().<span class="fn">fit</span>(X, y)
+preds = model.<span class="fn">predict</span>(X)     <span class="cm"># returns NumPy array</span>
+coefs = model.coef_           <span class="cm"># NumPy array of coefficients</span>
+
+<span class="cm"># ── NumPy ↔ TensorFlow / PyTorch ───────────────────────</span>
+<span class="kw">import</span> torch
+arr = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1.0</span>, <span class="nm">2.0</span>], [<span class="nm">3.0</span>, <span class="nm">4.0</span>]])
+tensor = torch.<span class="fn">from_numpy</span>(arr)        <span class="cm"># NumPy → PyTorch (shared memory!)</span>
+arr_back = tensor.<span class="fn">numpy</span>()             <span class="cm"># PyTorch → NumPy</span></pre>
+    </div>
+
+    <div class="callout gold">
+      <div class="callout-title">🌉 NumPy is the Universal Language</div>
+      Every major Python data science library accepts NumPy arrays as input and returns NumPy arrays as output. Mastering NumPy means you can work fluently with Pandas, Matplotlib, scikit-learn, TensorFlow, PyTorch, SciPy, OpenCV, and more — they all speak NumPy.
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 7 — QUIZ
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div>
+      <h2>Final Practice MCQs — 20 Questions</h2>
+      <p>File I/O, structured arrays, einsum, meshgrid, memory and the full course. Pass: 16/20.</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div>
+      <div class="score-msg" id="score-msg"></div>
+      <div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 8 — CAPSTONE PROJECT
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#DC2626,#D97706)">🏆</div>
+    <div>
+      <h2>Capstone Project — ML Pipeline from Scratch</h2>
+      <p>Estimated time: 3–4 hours &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐ &nbsp;|&nbsp; Uses ALL 5 days</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>📋 Project Brief — DataSphere Analytics</h3>
+      <p>You are the <strong>Lead Data Scientist</strong> at <em>DataSphere Analytics</em>. Build a complete, production-quality <strong>Machine Learning pipeline using only NumPy</strong> — no scikit-learn, no TensorFlow, no Pandas. Implement data preprocessing, linear regression, K-Means clustering, a neural network forward pass, evaluation metrics, and persist everything to disk. This project proves you understand how ML algorithms actually work at the mathematical level.</p>
+      <span class="cap-badge">Day 1: Arrays & Indexing</span>
+      <span class="cap-badge">Day 2: Stats & Distributions</span>
+      <span class="cap-badge">Day 3: Broadcasting</span>
+      <span class="cap-badge">Day 4: Linear Algebra</span>
+      <span class="cap-badge">Day 5: File I/O & einsum</span>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#DC2626">1</div>
+        <h4>Phase 1 — Dataset Generation &amp; Preprocessing</h4>
+        <span class="phase-time">~30 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Generate a Realistic Synthetic Dataset</h5>
+            <p>Create a dataset of 1,000 samples with 8 features for a house price prediction problem. Use different distributions for each feature to make it realistic.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(seed=<span class="nm">2025</span>)
+n = <span class="nm">1000</span>
+
+<span class="cm"># 8 features for house price prediction</span>
+size_sqft    = rng.<span class="fn">normal</span>(<span class="nm">1500</span>, <span class="nm">400</span>, n).<span class="fn">clip</span>(<span class="nm">500</span>, <span class="nm">4000</span>)    <span class="cm"># sq footage</span>
+bedrooms     = rng.<span class="fn">integers</span>(<span class="nm">1</span>, <span class="nm">6</span>, n).<span class="fn">astype</span>(<span class="fn">float</span>)          <span class="cm"># 1–5 bedrooms</span>
+bathrooms    = rng.<span class="fn">choice</span>([<span class="nm">1</span>, <span class="nm">1.5</span>, <span class="nm">2</span>, <span class="nm">2.5</span>, <span class="nm">3</span>], n)           <span class="cm"># bathrooms</span>
+age_years    = rng.<span class="fn">integers</span>(<span class="nm">1</span>, <span class="nm">51</span>, n).<span class="fn">astype</span>(<span class="fn">float</span>)          <span class="cm"># 1–50 years old</span>
+garage_cars  = rng.<span class="fn">integers</span>(<span class="nm">0</span>, <span class="nm">4</span>, n).<span class="fn">astype</span>(<span class="fn">float</span>)           <span class="cm"># 0–3 car garage</span>
+dist_school  = rng.<span class="fn">exponential</span>(<span class="nm">2</span>, n).<span class="fn">clip</span>(<span class="nm">0.1</span>, <span class="nm">15</span>)            <span class="cm"># km to school</span>
+crime_rate   = rng.<span class="fn">beta</span>(<span class="nm">2</span>, <span class="nm">8</span>, n) * <span class="nm">100</span>                        <span class="cm"># crime index</span>
+has_pool     = rng.<span class="fn">binomial</span>(<span class="nm">1</span>, <span class="nm">0.2</span>, n).<span class="fn">astype</span>(<span class="fn">float</span>)          <span class="cm"># binary</span>
+
+<span class="cm"># Stack into feature matrix</span>
+X_raw = <span class="op">np</span>.<span class="fn">column_stack</span>([size_sqft, bedrooms, bathrooms,
+                          age_years, garage_cars, dist_school,
+                          crime_rate, has_pool])
+feature_names = [<span class="st">'size'</span>,<span class="st">'beds'</span>,<span class="st">'baths'</span>,<span class="st">'age'</span>,<span class="st">'garage'</span>,<span class="st">'school_dist'</span>,<span class="st">'crime'</span>,<span class="st">'pool'</span>]
+
+<span class="cm"># Generate target: house price with known weights + noise</span>
+true_weights = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">150</span>, <span class="nm">8000</span>, <span class="nm">12000</span>, -<span class="nm">500</span>, <span class="nm">5000</span>, -<span class="nm">3000</span>, -<span class="nm">800</span>, <span class="nm">20000</span>])
+true_bias    = <span class="nm">50000</span>
+noise        = rng.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">15000</span>, n)
+y_raw        = X_raw @ true_weights + true_bias + noise
+
+<span class="fn">print</span>(<span class="st">f"X shape: {X_raw.shape}"</span>)     <span class="cm"># (1000, 8)</span>
+<span class="fn">print</span>(<span class="st">f"y shape: {y_raw.shape}"</span>)     <span class="cm"># (1000,)</span>
+<span class="fn">print</span>(<span class="st">f"Price range: ₹{y_raw.min():,.0f} – ₹{y_raw.max():,.0f}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Exploratory Data Analysis (EDA)</h5>
+            <p>Print a full EDA summary table for all 8 features: mean, std, min, Q1, median, Q3, max. Use <code>np.percentile</code> with <code>axis=0</code>. Detect outliers in each feature using the IQR method (value outside 1.5×IQR).</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Feature Normalisation (Standardisation)</h5>
+            <p>Standardise ALL features to zero mean and unit std using <code>keepdims=True</code> broadcasting. Store mean and std so you can <strong>un-standardise</strong> predictions later.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>X_mean = X_raw.<span class="fn">mean</span>(axis=<span class="nm">0</span>, keepdims=<span class="kw">True</span>)   <span class="cm"># (1,8)</span>
+X_std  = X_raw.<span class="fn">std</span>(axis=<span class="nm">0</span>,  keepdims=<span class="kw">True</span>)   <span class="cm"># (1,8)</span>
+X_norm = (X_raw - X_mean) / X_std              <span class="cm"># broadcasting (1000,8)-(1,8)</span>
+<span class="fn">print</span>(<span class="st">f"Normalised mean ≈ 0: {X_norm.mean(axis=0).round(4)}"</span>)
+<span class="fn">print</span>(<span class="st">f"Normalised std  = 1: {X_norm.std(axis=0).round(4)}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">4</div>
+          <div class="step-content">
+            <h5>Train / Test Split</h5>
+            <p>Split the 1000 samples into 80% train (800) and 20% test (200) using <code>rng.permutation</code> to shuffle indices. Save both splits as <code>.npz</code> files to disk.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>idx = rng.<span class="fn">permutation</span>(n)
+split = <span class="fn">int</span>(n * <span class="nm">0.8</span>)
+train_idx, test_idx = idx[:split], idx[split:]
+
+X_train, X_test = X_norm[train_idx], X_norm[test_idx]
+y_train, y_test = y_raw[train_idx],  y_raw[test_idx]
+
+<span class="op">np</span>.<span class="fn">savez</span>(<span class="st">'train.npz'</span>, X=X_train, y=y_train)
+<span class="op">np</span>.<span class="fn">savez</span>(<span class="st">'test.npz'</span>,  X=X_test,  y=y_test)
+<span class="fn">print</span>(<span class="st">f"Train: {X_train.shape}, Test: {X_test.shape}"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div>
+        <h4>Phase 2 — Linear Regression from Scratch</h4>
+        <span class="phase-time">~40 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Normal Equation Solution (Exact)</h5>
+            <p>Solve linear regression analytically using the normal equation: <code>w = (XᵀX)⁻¹ Xᵀy</code>. Add a bias column of 1s, use <code>np.linalg.lstsq</code> (better than explicit inverse).</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Add bias column (column of 1s)</span>
+X_b = <span class="op">np</span>.<span class="fn">column_stack</span>([<span class="op">np</span>.<span class="fn">ones</span>(<span class="fn">len</span>(X_train)), X_train])  <span class="cm"># (800,9)</span>
+
+<span class="cm"># Solve using lstsq (numerically stable normal equation)</span>
+w_opt, _, _, _ = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">lstsq</span>(X_b, y_train, rcond=<span class="kw">None</span>)
+bias, weights = w_opt[<span class="nm">0</span>], w_opt[<span class="nm">1</span>:]
+
+<span class="cm"># Predict on test set</span>
+X_test_b = <span class="op">np</span>.<span class="fn">column_stack</span>([<span class="op">np</span>.<span class="fn">ones</span>(<span class="fn">len</span>(X_test)), X_test])
+y_pred_lr = X_test_b @ w_opt
+
+<span class="fn">print</span>(<span class="st">"Learned weights:"</span>)
+<span class="kw">for</span> name, w <span class="kw">in</span> <span class="fn">zip</span>([<span class="st">'bias'</span>] + feature_names, w_opt):
+    <span class="fn">print</span>(<span class="st">f"  {name:12s}: {w:+.2f}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Gradient Descent Solution (Iterative)</h5>
+            <p>Implement batch gradient descent from scratch. Update weights using: <code>w = w - α × (1/m) × Xᵀ(Xw − y)</code>. Run for 1,000 iterations, track loss every 100 iterations. Compare final weights with the exact lstsq solution.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>alpha  = <span class="nm">0.01</span>          <span class="cm"># learning rate</span>
+epochs = <span class="nm">1000</span>
+m      = <span class="fn">len</span>(X_train)
+
+w_gd  = <span class="op">np</span>.<span class="fn">zeros</span>(X_b.shape[<span class="nm">1</span>])   <span class="cm"># initialise weights to zeros</span>
+loss_history = []
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(epochs):
+    y_hat = X_b @ w_gd                          <span class="cm"># predictions  (m,)</span>
+    error = y_hat - y_train                      <span class="cm"># residuals    (m,)</span>
+    loss  = (error**<span class="nm">2</span>).<span class="fn">mean</span>()                  <span class="cm"># MSE</span>
+    grad  = (X_b.T @ error) / m                  <span class="cm"># gradient     (9,)</span>
+    w_gd -= alpha * grad                         <span class="cm"># weight update</span>
+
+    <span class="kw">if</span> i % <span class="nm">100</span> == <span class="nm">0</span>:
+        loss_history.<span class="fn">append</span>(loss)
+        <span class="fn">print</span>(<span class="st">f"Epoch {i:4d}: MSE = {loss:,.0f}"</span>)
+
+<span class="fn">print</span>(<span class="st">f"\nlstsq vs GD weight difference: {np.linalg.norm(w_opt - w_gd):.2f}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Evaluate — R², RMSE, MAE</h5>
+            <p>Implement all three regression metrics from scratch using NumPy. No sklearn.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">evaluate_regression</span>(y_true, y_pred):
+    ss_res = ((y_true - y_pred)**<span class="nm">2</span>).<span class="fn">sum</span>()
+    ss_tot = ((y_true - y_true.<span class="fn">mean</span>())**<span class="nm">2</span>).<span class="fn">sum</span>()
+    r2   = <span class="nm">1</span> - ss_res / ss_tot
+    rmse = <span class="op">np</span>.<span class="fn">sqrt</span>(((y_true - y_pred)**<span class="nm">2</span>).<span class="fn">mean</span>())
+    mae  = <span class="op">np</span>.<span class="fn">abs</span>(y_true - y_pred).<span class="fn">mean</span>()
+    <span class="kw">return</span> r2, rmse, mae
+
+r2, rmse, mae = <span class="fn">evaluate_regression</span>(y_test, y_pred_lr)
+<span class="fn">print</span>(<span class="st">f"R²   = {r2:.4f}"</span>)
+<span class="fn">print</span>(<span class="st">f"RMSE = ₹{rmse:,.0f}"</span>)
+<span class="fn">print</span>(<span class="st">f"MAE  = ₹{mae:,.0f}"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div>
+        <h4>Phase 3 — K-Means Clustering from Scratch</h4>
+        <span class="phase-time">~40 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Implement K-Means Algorithm (k=4 House Segments)</h5>
+            <p>Cluster houses into 4 segments (Budget, Mid-range, Luxury, Ultra-Luxury). Implement the full K-Means loop using broadcasting for distance computation.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">FULL IMPLEMENTATION</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">kmeans</span>(X, k, max_iter=<span class="nm">100</span>, seed=<span class="nm">42</span>):
+    rng_km = <span class="op">np</span>.random.<span class="fn">default_rng</span>(seed)
+
+    <span class="cm"># 1. Randomly initialise k centroids from data points</span>
+    init_idx  = rng_km.<span class="fn">choice</span>(<span class="fn">len</span>(X), size=k, replace=<span class="kw">False</span>)
+    centroids = X[init_idx].copy()   <span class="cm"># (k, features)</span>
+
+    labels = <span class="op">np</span>.<span class="fn">zeros</span>(<span class="fn">len</span>(X), dtype=<span class="fn">int</span>)
+    history = []
+
+    <span class="kw">for</span> iteration <span class="kw">in</span> <span class="fn">range</span>(max_iter):
+        <span class="cm"># 2. Assign each point to nearest centroid
+        # X:(n,f), centroids:(k,f) → diff:(n,k,f) via broadcasting</span>
+        diff  = X[:, <span class="op">np</span>.newaxis, :] - centroids[<span class="op">np</span>.newaxis, :, :]
+        dists = <span class="op">np</span>.<span class="fn">sqrt</span>((diff**<span class="nm">2</span>).<span class="fn">sum</span>(axis=<span class="nm">2</span>))   <span class="cm"># (n, k)</span>
+        new_labels = dists.<span class="fn">argmin</span>(axis=<span class="nm">1</span>)           <span class="cm"># (n,)</span>
+
+        <span class="cm"># 3. Update centroids to mean of assigned points</span>
+        new_centroids = <span class="op">np</span>.<span class="fn">array</span>([
+            X[new_labels == j].<span class="fn">mean</span>(axis=<span class="nm">0</span>) <span class="kw">if</span> (new_labels==j).<span class="fn">any</span>()
+            <span class="kw">else</span> centroids[j]
+            <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(k)
+        ])
+
+        <span class="cm"># Inertia (within-cluster sum of squares)</span>
+        inertia = <span class="fn">sum</span>(
+            ((X[new_labels==j] - new_centroids[j])**<span class="nm">2</span>).<span class="fn">sum</span>()
+            <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(k) <span class="kw">if</span> (new_labels==j).<span class="fn">any</span>()
+        )
+        history.<span class="fn">append</span>(inertia)
+
+        <span class="cm"># 4. Check convergence</span>
+        <span class="kw">if</span> <span class="op">np</span>.<span class="fn">array_equal</span>(new_labels, labels):
+            <span class="fn">print</span>(<span class="st">f"Converged at iteration {iteration+1}"</span>)
+            <span class="kw">break</span>
+
+        labels, centroids = new_labels, new_centroids
+
+    <span class="kw">return</span> labels, centroids, history
+
+labels, centroids, history = <span class="fn">kmeans</span>(X_norm, k=<span class="nm">4</span>)
+
+<span class="cm"># Count houses per cluster</span>
+<span class="kw">for</span> k_i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">4</span>):
+    cluster_prices = y_raw[labels == k_i]
+    <span class="fn">print</span>(<span class="st">f"Cluster {k_i}: {(labels==k_i).sum()} houses, avg price ₹{cluster_prices.mean():,.0f}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Name the Clusters &amp; Analyse Feature Profiles</h5>
+            <p>Sort clusters by average price. Name them: Budget, Mid-range, Luxury, Ultra-Luxury. For each cluster, compute the mean of each feature (un-standardise for readability). Print a full cluster profile table.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div>
+        <h4>Phase 4 — Neural Network Forward Pass from Scratch</h4>
+        <span class="phase-time">~35 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Build a 3-Layer Neural Network</h5>
+            <p>Architecture: Input(8) → Hidden1(16, ReLU) → Hidden2(8, ReLU) → Output(1, Linear). Initialise weights using He initialisation for ReLU layers.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">FULL CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">relu</span>(x):
+    <span class="kw">return</span> <span class="op">np</span>.<span class="fn">maximum</span>(<span class="nm">0</span>, x)
+
+<span class="kw">def</span> <span class="fn">he_init</span>(fan_in, fan_out):
+    <span class="cm"># He initialisation: std = sqrt(2/fan_in)</span>
+    <span class="kw">return</span> rng.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="op">np</span>.<span class="fn">sqrt</span>(<span class="nm">2</span>/fan_in), (fan_in, fan_out))
+
+<span class="cm"># Layer weights &amp; biases</span>
+W1 = <span class="fn">he_init</span>(<span class="nm">8</span>,  <span class="nm">16</span>);  b1 = <span class="op">np</span>.<span class="fn">zeros</span>(<span class="nm">16</span>)
+W2 = <span class="fn">he_init</span>(<span class="nm">16</span>, <span class="nm">8</span>);   b2 = <span class="op">np</span>.<span class="fn">zeros</span>(<span class="nm">8</span>)
+W3 = <span class="fn">he_init</span>(<span class="nm">8</span>,  <span class="nm">1</span>);   b3 = <span class="op">np</span>.<span class="fn">zeros</span>(<span class="nm">1</span>)
+
+<span class="kw">def</span> <span class="fn">forward_pass</span>(X):
+    Z1 = X  @ W1 + b1      <span class="cm"># (n,8)@(8,16)+(16,) → (n,16)</span>
+    A1 = <span class="fn">relu</span>(Z1)
+    Z2 = A1 @ W2 + b2      <span class="cm"># (n,16)@(16,8)+(8,) → (n,8)</span>
+    A2 = <span class="fn">relu</span>(Z2)
+    Z3 = A2 @ W3 + b3      <span class="cm"># (n,8)@(8,1)+(1,)   → (n,1)</span>
+    <span class="kw">return</span> Z3.<span class="fn">flatten</span>()    <span class="cm"># (n,) predictions</span>
+
+y_pred_nn = <span class="fn">forward_pass</span>(X_test)
+r2_nn, rmse_nn, mae_nn = <span class="fn">evaluate_regression</span>(y_test, y_pred_nn)
+<span class="fn">print</span>(<span class="st">f"NN (untrained) R²={r2_nn:.4f}, RMSE=₹{rmse_nn:,.0f}"</span>)
+<span class="cm"># Untrained NN will be bad — that's expected!</span>
+
+<span class="cm"># Use einsum for the matrix multiply as a bonus demonstration</span>
+Z1_einsum = <span class="op">np</span>.<span class="fn">einsum</span>(<span class="st">'ni,ij->nj'</span>, X_test, W1) + b1
+<span class="fn">print</span>(<span class="st">f"einsum matches matmul: {np.allclose(X_test@W1, Z1_einsum)}"</span>)  <span class="cm"># True</span></pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Count Total Parameters &amp; Memory Usage</h5>
+            <p>Calculate how many learnable parameters the network has. Calculate total memory in bytes. Print a layer-by-layer parameter summary.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span></div>
+<pre>params = [(W1,b1,<span class="st">'Layer1'</span>),(W2,b2,<span class="st">'Layer2'</span>),(W3,b3,<span class="st">'Layer3'</span>)]
+total_params = <span class="nm">0</span>
+<span class="kw">for</span> W, b, name <span class="kw">in</span> params:
+    p = W.size + b.size
+    total_params += p
+    <span class="fn">print</span>(<span class="st">f"{name}: W{W.shape} + b{b.shape} = {p} params"</span>)
+<span class="fn">print</span>(<span class="st">f"Total: {total_params} params = {total_params*8} bytes ({total_params*8/1024:.1f} KB)"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">5</div>
+        <h4>Phase 5 — Feature Importance &amp; Correlation Analysis</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Feature Correlation with Target</h5>
+            <p>Compute the Pearson correlation of each feature with the house price using <code>np.corrcoef</code>. Rank features by absolute correlation (most important first).</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Feature Importance from Regression Coefficients</h5>
+            <p>The magnitude of standardised regression coefficients directly indicates feature importance. Rank the 8 features by <code>np.abs(weights)</code>. Do the top features match those with the highest true weights?</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Residual Analysis</h5>
+            <p>Compute residuals <code>y_test − y_pred_lr</code>. Check: are they approximately normally distributed? Compute their mean, std, and what % fall within ±1 RMSE.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#DC2626">6</div>
+        <h4>Phase 6 — Final Report &amp; File Persistence</h4>
+        <span class="phase-time">~25 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Save All Results to Disk</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Save model weights</span>
+<span class="op">np</span>.<span class="fn">savez</span>(<span class="st">'linear_model.npz'</span>,
+          weights=weights, bias=<span class="op">np</span>.<span class="fn">array</span>([bias]),
+          X_mean=X_mean, X_std=X_std)
+
+<span class="cm"># Save predictions as CSV</span>
+results = <span class="op">np</span>.<span class="fn">column_stack</span>([y_test, y_pred_lr, y_test - y_pred_lr])
+<span class="op">np</span>.<span class="fn">savetxt</span>(<span class="st">'predictions.csv'</span>, results,
+           delimiter=<span class="st">','</span>, header=<span class="st">'actual,predicted,residual'</span>,
+           fmt=<span class="st">'%.2f'</span>, comments=<span class="st">''</span>)
+
+<span class="cm"># Save cluster labels</span>
+<span class="op">np</span>.<span class="fn">save</span>(<span class="st">'cluster_labels.npy'</span>, labels)
+<span class="fn">print</span>(<span class="st">"All results saved to disk ✅"</span>)
+
+<span class="cm"># Reload and verify</span>
+model_data = <span class="op">np</span>.<span class="fn">load</span>(<span class="st">'linear_model.npz'</span>)
+<span class="fn">print</span>(<span class="st">f"Loaded weights: {model_data['weights'].round(2)}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Print the Grand Final Report</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED OUTPUT FORMAT</span></div>
+<pre>══════════════════════════════════════════════════
+       DATASPHERE ANALYTICS — FINAL REPORT
+══════════════════════════════════════════════════
+DATASET
+  Samples   : 1,000   Features: 8
+  Train/Test: 800 / 200
+  Price Range: ₹??? – ₹???
+
+FEATURE IMPORTANCE (by |regression weight|)
+  1. size         : |w| = ???
+  2. pool         : |w| = ???
+  3. baths        : |w| = ???
+  ...
+
+LINEAR REGRESSION
+  Method      : Normal Equation (lstsq)
+  Test R²     : ???
+  Test RMSE   : ₹???
+  Test MAE    : ₹???
+  Residual std: ₹???  (within ±1 RMSE: ???%)
+
+GRADIENT DESCENT (1000 epochs, α=0.01)
+  Initial MSE : ₹???
+  Final MSE   : ₹???
+  Weight diff from exact: ???
+
+K-MEANS CLUSTERING (k=4)
+  Cluster 0 (Budget)       : ??? houses | avg ₹???
+  Cluster 1 (Mid-range)    : ??? houses | avg ₹???
+  Cluster 2 (Luxury)       : ??? houses | avg ₹???
+  Cluster 3 (Ultra-Luxury) : ??? houses | avg ₹???
+
+NEURAL NETWORK (3-layer, untrained)
+  Parameters  : ???
+  Memory      : ??? KB
+  Test R²     : ??? (untrained baseline)
+
+FILES SAVED
+  ✅ train.npz          (800 samples)
+  ✅ test.npz           (200 samples)
+  ✅ linear_model.npz   (weights)
+  ✅ predictions.csv    (test results)
+  ✅ cluster_labels.npy (4 clusters)
+══════════════════════════════════════════════════</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Capstone Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated 1000-sample dataset with 8 features from realistic distributions</li>
+        <li>Computed full EDA table (mean, std, Q1, median, Q3, min, max) per feature</li>
+        <li>Detected outliers using IQR method per feature</li>
+        <li>Standardised features using broadcasting with keepdims=True</li>
+        <li>Split data 80/20 train/test using permutation shuffle</li>
+        <li>Saved train and test sets as .npz files</li>
+        <li>Implemented linear regression via normal equation (lstsq)</li>
+        <li>Implemented gradient descent (1000 epochs) and tracked loss history</li>
+        <li>Verified GD weights converge towards exact lstsq solution</li>
+        <li>Implemented R², RMSE, MAE metrics from scratch</li>
+        <li>Implemented K-Means clustering with broadcasting-based distance matrix</li>
+        <li>Named 4 clusters (Budget→Ultra-Luxury) and profiled feature means</li>
+        <li>Built 3-layer neural network with He initialisation and ReLU</li>
+        <li>Used np.einsum for at least one matrix multiply in the NN</li>
+        <li>Counted total parameters and memory usage</li>
+        <li>Computed feature-price correlations and ranked features</li>
+        <li>Analysed residuals (mean, std, normality check)</li>
+        <li>Saved model weights, predictions CSV, and cluster labels</li>
+        <li>Reloaded files and verified correctness</li>
+        <li>Printed complete formatted final report</li>
+      </ul>
+    </div>
+
+    <div class="callout gold" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges — Prove Mastery</div>
+      <ol style="margin-top:8px;">
+        <li><strong>Ridge Regression</strong>: Modify normal equation to <code>(XᵀX + λI)⁻¹Xᵀy</code>. Test λ = [0.001, 0.01, 0.1, 1.0] and compare R² scores.</li>
+        <li><strong>Mini-batch GD</strong>: Modify gradient descent to use batches of 32 samples. Implement a shuffle-each-epoch mechanism.</li>
+        <li><strong>Elbow Method</strong>: Run K-Means for k=2 to 8, plot inertia vs k to find the optimal number of clusters.</li>
+        <li><strong>Backpropagation</strong>: Implement the backward pass for the neural network and train it for 1000 epochs on the housing data. Compare final R² with linear regression.</li>
+      </ol>
+    </div>
+
+    <!-- CERTIFICATE -->
+    <div class="certificate">
+      <div class="cert-title">Certificate of Completion</div>
+      <h2>NumPy Full Course</h2>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">This certifies that you have completed all 5 days of</div>
+      <div class="cert-name">🎓 NumPy Mastery Track</div>
+      <p>You have built expertise in arrays, mathematical operations, broadcasting, vectorisation, linear algebra, and ML algorithms — all using only NumPy.</p>
+      <div class="cert-skills">
+        <span class="cert-skill">✓ ndarray Foundations</span>
+        <span class="cert-skill">✓ Universal Functions</span>
+        <span class="cert-skill">✓ Statistical Analysis</span>
+        <span class="cert-skill">✓ Broadcasting</span>
+        <span class="cert-skill">✓ Fancy Indexing</span>
+        <span class="cert-skill">✓ Linear Algebra</span>
+        <span class="cert-skill">✓ Decompositions</span>
+        <span class="cert-skill">✓ File I/O</span>
+        <span class="cert-skill">✓ einsum</span>
+        <span class="cert-skill">✓ ML from Scratch</span>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--muted);">⭐ 100 MCQs passed &nbsp;|&nbsp; 5 Real-World Projects &nbsp;|&nbsp; 1 Full ML Pipeline</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="day-footer">
+  <div class="series">NumPy Full Course — Complete! 🎉</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Arrays</span>
+    <span class="day-pill done">Day 2 · Math &amp; Stats</span>
+    <span class="day-pill done">Day 3 · Broadcasting</span>
+    <span class="day-pill done">Day 4 · Linear Algebra</span>
+    <span class="day-pill done active">Day 5 · Capstone ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">Next: Start <strong>Pandas</strong> to apply these skills on real structured data!</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What file extension does `np.save('data', arr)` create?",opts:["data.txt","data.npy","data.csv","data.npz"],ans:1,explain:"np.save always creates a .npy binary file. It's NumPy's native lossless format that preserves dtype, shape, and endianness."},
+  {q:"What is the difference between `np.savez` and `np.savez_compressed`?",opts:["savez_compressed only works with 1D arrays","savez_compressed uses ZIP compression — smaller file, slower to save/load","savez_compressed saves as CSV instead of binary","They are identical — just different names"],ans:1,explain:"Both save multiple arrays in one .npz file. savez_compressed applies ZIP compression to reduce file size at the cost of slightly slower I/O. Choose based on your disk-space vs speed tradeoff."},
+  {q:"Which function handles CSV files with missing values (NaN), headers, and mixed types?",opts:["np.loadtxt","np.fromfile","np.genfromtxt","np.load"],ans:2,explain:"np.genfromtxt is designed for messy text data. It handles missing values (filling_values), column names (names=True), and auto-detects dtypes per column (dtype=None)."},
+  {code:"data = np.load('file.npz')\nprint(list(data.keys()))",q:"What does this print if saved with `np.savez('file.npz', X=X_arr, y=y_arr)`?",opts:["['file.npz']","['X', 'y']","['X_arr', 'y_arr']","['0', '1']"],ans:1,explain:"np.savez saves named arrays. The keys in the loaded NpzFile object match the keyword argument names used during save — in this case 'X' and 'y'."},
+  {q:"In structured arrays, what does `students['score']` return?",opts:["A scalar — the first student's score","A 1D NumPy array of all students' score values","A structured array with only the score field","An error — you must use indexing like students[0][1]"],ans:1,explain:"Accessing a structured array by field name returns a 1D array of that field's values for all records — like a column in a table. You can then apply all normal NumPy operations on it."},
+  {code:"np.einsum('ij->ji', A)",q:"What operation does this perform?",opts:["Matrix multiplication A@A","Transpose of A","Trace of A (sum of diagonal)","Sum of all elements"],ans:1,explain:"'ij->ji' swaps the two indices — rows become columns and vice versa. This is identical to A.T or np.transpose(A)."},
+  {code:"np.einsum('ii->', A)",q:"What does this compute?",opts:["Sum of all elements","Determinant","Trace (sum of diagonal)","Rank"],ans:2,explain:"'ii->' repeats index i both as row and column → selects diagonal elements. The empty output '>' sums them all up. This equals np.trace(A)."},
+  {code:"a = np.array([1,2,3])\nb = np.array([4,5,6])\nprint(np.einsum('i,i->', a, b))",q:"What is printed?",opts:["[4,10,18]","32","Error","[1,2,3,4,5,6]"],ans:1,explain:"'i,i->' multiplies element-wise (1×4=4, 2×5=10, 3×6=18) then sums with the empty output→ 4+10+18=32. This is equivalent to np.dot(a,b)."},
+  {q:"What does `np.meshgrid(x, y)` return for x.shape=(4,) and y.shape=(3,)?",opts:["Two arrays each of shape (4,3)","Two arrays each of shape (3,4)","One array of shape (12,2)","Two scalars"],ans:1,explain:"meshgrid returns two arrays each of shape (len(y), len(x)) = (3,4). XX[i,j]=x[j] and YY[i,j]=y[i] — giving coordinates at every grid intersection."},
+  {q:"What is the main advantage of C-order (row-major) arrays over F-order when iterating rows?",opts:["F-order is always faster","C-order stores row elements contiguously in memory — row iteration reads sequential memory addresses (cache-friendly)","C-order uses less memory","They are identical in performance"],ans:1,explain:"CPU cache performance is critical. C-order stores rows contiguously, so iterating row-by-row reads sequential memory → fewer cache misses → faster. F-order is better for column-by-column access."},
+  {q:"Which NumPy operation is FASTEST for computing element-wise sum of all corresponding elements of two matrices?",opts:["np.vectorize(lambda x,y: x+y)","A Python for loop","A + B (ufunc broadcasting)","np.apply_along_axis"],ans:2,explain:"A+B uses NumPy's built-in add ufunc which runs in compiled C on contiguous memory. It's ~100-500x faster than Python loops, and much faster than np.vectorize or apply_along_axis which both have Python overhead."},
+  {code:"np.einsum('ij,jk->ik', A, B)",q:"This is equivalent to:",opts:["np.dot(A.T, B)","A @ B  (matrix multiplication)","A * B (element-wise)","np.outer(A, B)"],ans:1,explain:"'ij,jk->ik' sums over the shared index j (inner dimension), giving result[i,k]=Σⱼ A[i,j]×B[j,k]. This is exactly matrix multiplication — same as A @ B or np.matmul(A,B)."},
+  {q:"In K-Means, how is each point assigned to a cluster?",opts:["Randomly each iteration","By the highest feature value","By the nearest centroid — minimum Euclidean distance","By a probability proportional to distance"],ans:2,explain:"In the assignment step, each point is assigned to the cluster whose centroid has the minimum Euclidean distance. With broadcasting: diff = X[:,np.newaxis,:] - centroids[np.newaxis,:,:] → dists → argmin."},
+  {q:"What is He initialisation and why is it used for ReLU networks?",opts:["Random values from [0,1] — simple and effective","std = √(2/fan_in) — accounts for ReLU zeroing half the activations to keep variance stable","std = 1/fan_in — keeps outputs small","Initialise all weights to exactly 0"],ans:1,explain:"He initialisation sets std=√(2/fan_in). The factor of 2 compensates for ReLU zeroing ~50% of neurons. Without it, signals either explode or vanish in deep networks."},
+  {q:"What does `np.pad(img, pad_width=1, mode='constant', constant_values=0)` do?",opts:["Crops 1 pixel from all edges","Adds a border of 1 zero-pixel around all sides","Repeats edge values 1 time","Doubles the image size"],ans:1,explain:"np.pad adds padding around the array. pad_width=1 adds 1 element on each side of each dimension. mode='constant' fills with constant_values=0. Essential for convolution in CNNs (zero-padding)."},
+  {q:"What is the formula for R² (coefficient of determination)?",opts:["1 - MSE/MAE","1 - SS_residual/SS_total","SS_total/SS_residual","RMSE/mean(y)"],ans:1,explain:"R² = 1 - SS_res/SS_tot where SS_res=Σ(y-ŷ)² and SS_tot=Σ(y-ȳ)². R²=1 is perfect fit, R²=0 means the model just predicts the mean, R²<0 is worse than predicting the mean."},
+  {code:"np.digitize([45,62,91], [0,50,75,90,100])",q:"What is returned?",opts:["[0,1,3]","[1,2,4]","[1,2,3]","[0,2,4]"],ans:1,explain:"np.digitize returns the bin INDEX each value falls into. 45→bin 1 (0–50), 62→bin 2 (50–75), 91→bin 4 (90–100). Bins are [0,50), [50,75), [75,90), [90,100]."},
+  {q:"In gradient descent for linear regression, what is the gradient of MSE loss with respect to weights?",opts:["(1/m) × X.T @ (Xw − y)","(1/m) × (Xw − y)","X.T @ y","2 × (Xw − y)"],ans:0,explain:"Gradient of MSE = (1/m) × Xᵀ(Xw−y). This tells us how to decrease the loss — we subtract learning_rate × gradient from the weights at each step."},
+  {q:"Why is `np.empty()` faster than `np.zeros()` when creating a large array you'll immediately overwrite?",opts:["np.empty uses less memory","np.empty skips zero-initialisation — it just allocates memory without writing to it","np.empty uses float16 by default","There is no speed difference"],ans:1,explain:"np.zeros must write 0 to every byte after allocation. np.empty just allocates the memory block without initialising values. If you'll overwrite everything anyway, zeros-filling is wasted work."},
+  {q:"When torch.from_numpy(arr) is called, does PyTorch copy the data?",opts:["Yes — always creates a full independent copy","No — tensor and array SHARE the same memory (modifying one changes the other)","Only copies if dtype is float64","Depends on the array size"],ans:1,explain:"torch.from_numpy creates a tensor that SHARES memory with the NumPy array — no copying. This is intentional for efficiency. If you modify the tensor, the NumPy array changes too, and vice versa."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Keep pushing — review the Day 5 topics and try again! 📚"],[50,75,"Almost there! File I/O and einsum need a closer look. 💪"],[75,90,"Strong finish! You've completed the NumPy course. 🎉"],[90,101,"Perfect score — NumPy Master achieved! 🏆🎓"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — Course Complete! 5 days × 20 MCQs = 100 total questions.`;
+  document.getElementById('score-live').textContent=correct;
+}
+
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+
+buildQuiz();
+</script>
+</body>
+</html>

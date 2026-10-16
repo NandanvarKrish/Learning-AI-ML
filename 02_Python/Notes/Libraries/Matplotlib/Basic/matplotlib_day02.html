@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matplotlib (Condensed) – Day 2 | Styling & Statistical Charts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F5F3FF;--surface:#FFFFFF;--border:#DDD6FE;--accent:#6D28D9;--accent2:#4C1D95;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--purple:#7C3AED;
+    --text:#1E0B3A;--muted:#7C3AED;--code-bg:#160A2E;--code-text:#DDD6FE;--tag-bg:#EDE9FE;--tag-text:#4C1D95;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#6D28D9 0%,#4C1D95 100%);color:#fff;padding:56px 40px 48px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(26px,5vw,44px);font-weight:800;line-height:1.15;margin-bottom:16px;}
+  .hero h1 span{color:#DDD6FE;} .hero p{max-width:620px;margin:0 auto 24px;opacity:.9;font-size:14.5px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:24px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:18px 26px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;} .section-header p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:24px;}
+  .func-block{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .func-head{background:var(--bg);padding:12px 18px;border-bottom:1px solid var(--border);}
+  .func-sig{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:600;color:var(--accent2);}
+  .func-desc{font-size:13.5px;color:var(--muted);margin-top:4px;}
+  .func-body{padding:14px 18px;}
+  .func-params{font-size:13px;margin-bottom:10px;}
+  .func-params code{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:10px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:10.5px;color:#A78BFA;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:10.5px;padding:3px 9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:var(--code-text);}
+  .kw{color:#C4B5FD;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#4C1D95;font-style:italic;} .op{color:#DDD6FE;}
+  .real-tag{display:inline-flex;align-items:center;gap:5px;background:#ECFDF5;color:#065F46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:12px 0;} table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:var(--accent);color:#fff;padding:8px 12px;text-align:left;font-weight:600;} td{padding:8px 12px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--code-bg);color:var(--code-text);padding:7px 11px;border-radius:6px;margin:7px 0;display:block;white-space:pre;}
+  .q-options{padding:12px 18px;display:grid;gap:7px;}
+  .opt{display:flex;align-items:center;gap:9px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13.5px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:22px;height:22px;border-radius:6px;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 18px 12px;padding:9px 13px;border-radius:8px;font-size:12.5px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .btn{padding:10px 22px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#6D28D9,#4C1D95);color:#fff;border-radius:14px;padding:26px;text-align:center;display:none;margin-top:18px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:48px;font-weight:800;} .score-box .score-msg{font-size:15px;opacity:.9;margin-top:5px;} .score-box .score-detail{font-size:12.5px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#6D28D9,#059669);padding:24px;border-radius:10px;color:#fff;margin-bottom:18px;} .task-hero h3{color:#fff;margin:0 0 6px;font-size:17px;} .task-hero p{margin:0;opacity:.92;font-size:13.5px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:5px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:14px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:24px 40px;text-align:center;margin-top:32px;}
+  .day-footer .series{font-size:12.5px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:40px 20px 36px;}.section-body{padding:16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">📊 Matplotlib</div><span class="sep">|</span><span class="day-label">Condensed · Day 2 of 3</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">66%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:66%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Matplotlib Condensed Course · Day 2</div>
+  <h1>Styling &amp; <span>Statistical Charts</span></h1>
+  <p>Give charts a professional look, build multi-panel layouts, and use the 3 statistical chart types every analyst actually reaches for.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🎨 plt.style.use()</span>
+    <span class="hero-pill">🧩 Subplots Grid</span>
+    <span class="hero-pill">📦 boxplot()</span>
+    <span class="hero-pill">🎻 violinplot()</span>
+    <span class="hero-pill">🔥 imshow() Heatmap</span>
+    <span class="hero-pill">📊 15 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🎨</div>
+    <div><h2>Styling — Instant Professional Look</h2><p>Two functions, whole-chart makeover</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">plt.style.use(style_name)</div>
+        <div class="func-desc">Applies a built-in visual theme globally to every chart made afterward.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params">Popular values: <code>'ggplot'</code>, <code>'seaborn-v0_8-whitegrid'</code>, <code>'fivethirtyeight'</code>, <code>'dark_background'</code></div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A data team sets <code>plt.style.use('seaborn-v0_8-whitegrid')</code> once at the top of every notebook to keep all charts across the company visually consistent.</p>
+      </div>
+    </div>
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.spines['top'].set_visible(False)</div>
+        <div class="func-desc">Removes a chart border line for a cleaner, modern look.</div>
+      </div>
+      <div class="func-body">
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>ax.spines[<span class="st">'top'</span>].<span class="fn">set_visible</span>(<span class="kw">False</span>)
+ax.spines[<span class="st">'right'</span>].<span class="fn">set_visible</span>(<span class="kw">False</span>)
+<span class="cm"># removing the top/right border box lines is a common "modern dashboard" touch</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🧩</div>
+    <div><h2>Multi-Panel Layouts</h2><p>Showing several charts together, cleanly</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12,8))</div>
+        <div class="func-desc">Creates a GRID of Axes in one Figure — a mini-dashboard.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>axes</code> becomes a 2D array — access individual panels via <code>axes[0,0]</code>, <code>axes[0,1]</code>, etc.</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">An executive dashboard showing 4 KPIs at once: revenue trend, top products, regional split, and customer growth — all in one screenshot.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>fig, axes = <span class="op">plt</span>.<span class="fn">subplots</span>(nrows=<span class="nm">2</span>, ncols=<span class="nm">2</span>, figsize=(<span class="nm">12</span>,<span class="nm">8</span>))
+
+axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">plot</span>(months, revenue)
+axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">set_title</span>(<span class="st">'Revenue Trend'</span>)
+
+axes[<span class="nm">0</span>,<span class="nm">1</span>].<span class="fn">bar</span>(products, sales)
+axes[<span class="nm">0</span>,<span class="nm">1</span>].<span class="fn">set_title</span>(<span class="st">'Top Products'</span>)
+
+fig.<span class="fn">suptitle</span>(<span class="st">'Q3 Executive Dashboard'</span>, fontsize=<span class="nm">16</span>, fontweight=<span class="st">'bold'</span>)
+fig.<span class="fn">tight_layout</span>()   <span class="cm"># auto-fixes overlapping titles/labels between panels — call this almost always</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Always Call fig.tight_layout() with Multiple Subplots</div>
+      Without it, titles and axis labels from adjacent panels commonly overlap each other. It's a single line that fixes 90% of spacing complaints.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📦</div>
+    <div><h2>ax.boxplot() — Compare Distributions Across Groups</h2><p>Median, spread, and outliers at a glance</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.boxplot(data_list, labels=, patch_artist=True)</div>
+        <div class="func-desc">Draws a box (25th–75th percentile) with a median line and whiskers; dots beyond whiskers are outliers.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>data_list</code> = a list of arrays, one per group &nbsp;|&nbsp; <code>labels</code> = names for each group &nbsp;|&nbsp; <code>patch_artist=True</code> enables fill colors</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">HR comparing salary spread across 3 departments to spot which one has the widest pay range or unusual outliers.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>eng_salaries = [<span class="nm">70000</span>,<span class="nm">85000</span>,<span class="nm">95000</span>,<span class="nm">78000</span>,<span class="nm">130000</span>]
+sales_salaries = [<span class="nm">55000</span>,<span class="nm">62000</span>,<span class="nm">58000</span>,<span class="nm">70000</span>,<span class="nm">60000</span>]
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">7</span>,<span class="nm">5</span>))
+ax.<span class="fn">boxplot</span>([eng_salaries, sales_salaries], labels=[<span class="st">'Engineering'</span>,<span class="st">'Sales'</span>], patch_artist=<span class="kw">True</span>)
+ax.<span class="fn">set_ylabel</span>(<span class="st">'Salary (₹)'</span>)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🎻</div>
+    <div><h2>ax.violinplot() — Full Distribution Shape</h2><p>Like a box plot, but shows the actual shape too</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.violinplot(data_list, showmeans=True)</div>
+        <div class="func-desc">Draws a smoothed density curve mirrored around a vertical axis, per group.</div>
+      </div>
+      <div class="func-body">
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A survey team checking if customer satisfaction scores are bunched around one value or actually SPLIT into two distinct groups (happy customers + unhappy customers) — a box plot alone would hide this "two-peak" pattern, but a violin plot reveals it visually.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">7</span>,<span class="nm">5</span>))
+ax.<span class="fn">violinplot</span>([eng_salaries, sales_salaries], showmeans=<span class="kw">True</span>)
+ax.<span class="fn">set_xticks</span>([<span class="nm">1</span>,<span class="nm">2</span>])
+ax.<span class="fn">set_xticklabels</span>([<span class="st">'Engineering'</span>,<span class="st">'Sales'</span>])</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Chart</th><th>Best For</th></tr>
+        <tr><td>Box plot</td><td>Quick summary stats (median, quartiles, outliers) — compact, easy to compare many groups</td></tr>
+        <tr><td>Violin plot</td><td>Seeing the FULL shape — reveals if data is bunched, spread, or split into multiple peaks</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔥</div>
+    <div><h2>ax.imshow() — Heatmaps for Correlation/Matrix Data</h2><p>Turning a grid of numbers into color</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.imshow(matrix, cmap='coolwarm', vmin=-1, vmax=1)</div>
+        <div class="func-desc">Displays a 2D array as a grid of colored cells.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>cmap</code> = colormap ('coolwarm' good for -1 to 1 correlation data) &nbsp;|&nbsp; <code>vmin/vmax</code> = fix the color scale range explicitly</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A finance analyst checking which financial metrics move together (correlation matrix) before building a forecasting model — instantly spotting the strongest relationships by color intensity.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+corr_matrix = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1.0</span>,<span class="nm">0.8</span>,<span class="nm">0.2</span>],[<span class="nm">0.8</span>,<span class="nm">1.0</span>,<span class="nm">0.1</span>],[<span class="nm">0.2</span>,<span class="nm">0.1</span>,<span class="nm">1.0</span>]])
+labels = [<span class="st">'Revenue'</span>,<span class="st">'AdSpend'</span>,<span class="st">'Rainfall'</span>]
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">6</span>,<span class="nm">5</span>))
+im = ax.<span class="fn">imshow</span>(corr_matrix, cmap=<span class="st">'coolwarm'</span>, vmin=-<span class="nm">1</span>, vmax=<span class="nm">1</span>)
+ax.<span class="fn">set_xticks</span>(<span class="fn">range</span>(<span class="nm">3</span>)); ax.<span class="fn">set_xticklabels</span>(labels)
+ax.<span class="fn">set_yticks</span>(<span class="fn">range</span>(<span class="nm">3</span>)); ax.<span class="fn">set_yticklabels</span>(labels)
+fig.<span class="fn">colorbar</span>(im, ax=ax, label=<span class="st">'Correlation'</span>)   <span class="cm"># the color-to-value legend strip</span>
+
+<span class="cm"># Annotate each cell with its exact number — very common addition</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">3</span>):
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">3</span>):
+        ax.<span class="fn">text</span>(j, i, <span class="st">f'{corr_matrix[i,j]:.2f}'</span>, ha=<span class="st">'center'</span>, va=<span class="st">'center'</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Always Add fig.colorbar() to a Heatmap</div>
+      Without it, viewers have no idea what the COLORS actually mean numerically. The colorbar is the "legend" that translates color intensity into actual values — never skip it.
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 15 Questions</h2><p>Styling, subplots grids, box/violin/heatmap. Need 12/15 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">15</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">12</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#6D28D9">🏆</div>
+    <div><h2>Real-World Task — HR Compensation Dashboard</h2><p>Estimated time: 45–55 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>Build a 2×2 dashboard for an HR compensation review: salary spread by department, salary distribution shape, a correlation heatmap of factors affecting pay, and a styled trend line — all in ONE figure.</p>
+    </div>
+    <ul class="checklist">
+      <li>Applied a global style with plt.style.use()</li>
+      <li>Built a 2×2 subplots grid with fig.suptitle() and fig.tight_layout()</li>
+      <li>Panel 1: box plot comparing salary across 3+ departments</li>
+      <li>Panel 2: violin plot of the same data, discussing what it reveals that the box plot didn't</li>
+      <li>Panel 3: correlation heatmap (experience, performance score, salary) with colorbar and annotated values</li>
+      <li>Panel 4: a styled line chart with spines removed for a clean look</li>
+    </ul>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Matplotlib Condensed Course — 3-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Fundamentals</span>
+    <span class="day-pill done active">Day 2 · Styling &amp; Statistical Charts</span>
+    <span class="day-pill">Day 3 · Advanced &amp; Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"plt.style.use('ggplot')",q:"What does this line accomplish?",opts:["It only affects the NEXT single chart created","It applies a built-in visual theme GLOBALLY — every chart created AFTER this line (until changed again) will use the ggplot color/gridline/background style", "It permanently changes Matplotlib's source code","It only works inside Jupyter notebooks"],ans:1,explain:"plt.style.use() sets a GLOBAL style that persists for the rest of the script/session — every subsequent chart automatically inherits this visual theme (colors, gridlines, background) until you call plt.style.use() again with a different value."},
+  {code:"fig, axes = plt.subplots(nrows=2, ncols=2)",q:"How do you access the top-right individual panel from axes?",opts:["axes[1]","axes[0,1] — with nrows>1 AND ncols>1, axes becomes a 2D array indexed as [row, column]; row 0 is the top row, column 1 is the second (right) column", "axes.top_right","axes[2]"],ans:1,explain:"When BOTH nrows and ncols are greater than 1, plt.subplots() returns axes as a 2D array. You access individual panels using [row_index, column_index] — row 0 is the top row, and column 1 is the second column (rightmost in a 2-column grid), so axes[0,1] is the top-right panel."},
+  {q:"Why should fig.tight_layout() almost always be called when using multiple subplots?",opts:["It has no real visual effect and is purely optional","Without it, titles, axis labels, and tick labels from ADJACENT panels commonly overlap each other; tight_layout() automatically adjusts spacing between panels to prevent this overlap", "It only works with exactly 2 subplots","It changes the colors of each subplot"],ans:1,explain:"When multiple subplots are packed into one Figure, their titles/labels can easily overlap with neighboring panels' content without any spacing adjustment. fig.tight_layout() automatically recalculates and adjusts the spacing between panels to prevent this common overlap problem — a near-mandatory call whenever building multi-panel layouts."},
+  {code:"ax.boxplot([eng_salaries, sales_salaries], labels=['Engineering','Sales'])",q:"What does the resulting chart show for EACH group?",opts:["Only the average value as a single dot","A box spanning the 25th-75th percentile (IQR) with a median line inside, whiskers extending to typical range, and individual dots for any statistical OUTLIERS beyond that range", "A single bar showing the total sum","A pie chart slice"],ans:1,explain:"A box plot shows the five-number summary for each group: the box itself spans from Q1 (25th percentile) to Q3 (75th percentile), with a line marking the median inside; whiskers extend to show the typical data range; and individual points beyond the whiskers mark statistical outliers."},
+  {q:"Why might a violin plot reveal something a box plot HIDES, given the SAME underlying data?",opts:["Violin plots always show completely different, unrelated data","A box plot only shows 5 summary numbers (min, Q1, median, Q3, max) — if the data actually has TWO separate clusters/peaks (bimodal), the box plot just shows one 'blob' shape; a violin plot's smooth density curve directly reveals BOTH peaks, since it shows the full distribution shape rather than just summary statistics", "Box plots and violin plots always show identical information", "Violin plots cannot be used for numeric data"],ans:1,explain:"A box plot compresses data down to 5 summary numbers, which cannot distinguish 'data clustered around one central value' from 'data actually split into two separate groups' if those two scenarios happen to produce similar quartile statistics. A violin plot's density curve shows the FULL shape, directly revealing multiple peaks (bimodal patterns) that a box plot's simplified summary would completely hide."},
+  {code:"im = ax.imshow(corr_matrix, cmap='coolwarm', vmin=-1, vmax=1)\nfig.colorbar(im, ax=ax)",q:"What is the purpose of fig.colorbar() here?",opts:["It removes the heatmap colors entirely","It adds a color-to-value LEGEND STRIP next to the heatmap, showing viewers exactly what each color intensity actually MEANS numerically — without it, colors would be meaningless to interpret", "It sorts the matrix values","colorbar() only works with bar charts, not heatmaps"],ans:1,explain:"A heatmap's colors are meaningless without some way to translate them back into actual numeric values. fig.colorbar() adds a visual legend strip showing the color-to-value mapping (here, from -1 to 1), letting viewers correctly interpret what a given color intensity in the heatmap actually represents."},
+  {code:"for i in range(3):\n    for j in range(3):\n        ax.text(j, i, f'{corr_matrix[i,j]:.2f}', ha='center', va='center')",q:"What does this nested loop accomplish on a heatmap?",opts:["It removes cells with low correlation values","It ANNOTATES each cell of the heatmap with its EXACT numeric value (formatted to 2 decimal places), letting viewers read precise numbers directly rather than relying only on estimating from color intensity", "It changes the heatmap's colormap", "It sorts the heatmap rows"],ans:1,explain:"This pattern iterates through every cell position (i,j) in the matrix and places a text label showing that exact numeric value directly on top of the corresponding heatmap cell — combining the visual pattern-recognition benefit of color with the PRECISION of exact numbers, a very common and expected addition to analytical heatmaps."},
+  {q:"Why would vmin=-1, vmax=1 be explicitly set when displaying a CORRELATION matrix specifically?",opts:["These values have no special meaning for correlation data","Correlation coefficients are mathematically BOUNDED between -1 and +1 by definition; explicitly fixing the color scale to this exact range ensures the colormap's neutral midpoint color correctly aligns with 0 (no correlation), and prevents the color scale from being skewed by the specific min/max VALUES actually present in this particular matrix", "vmin/vmax only work with the coolwarm colormap specifically","Setting vmin/vmax is required syntax with no functional purpose"],ans:1,explain:"Correlation values are mathematically constrained to the range [-1, +1]. Explicitly setting vmin=-1, vmax=1 ensures the colormap's scale is anchored to this MEANINGFUL, consistent range (with 0/no-correlation mapping to the colormap's neutral midpoint color) — rather than letting Matplotlib auto-scale based on whatever specific min/max values happen to appear in this particular matrix, which could produce a misleading color scale if, say, the actual data only ranged from 0.1 to 0.8."},
+  {q:"What does `ax.spines['top'].set_visible(False)` accomplish visually?",opts:["It removes the entire chart, including all data","It removes the TOP border/frame line of the plot area — a common styling choice (along with removing the right spine too) for a cleaner, more modern, less 'boxed-in' chart appearance", "It hides the chart's title","It converts the chart to grayscale"],ans:1,explain:"Spines are the border/frame lines around a plot's data area (top, bottom, left, right). Hiding the top and right spines (while keeping bottom and left, which serve as reference axes) is a common modern styling choice that reduces visual clutter, giving charts a cleaner, more 'open' appearance often seen in professional dashboards."},
+  {q:"For an HR team comparing salary DISTRIBUTIONS across 3 departments, why might they build BOTH a box plot AND a violin plot rather than just one?",opts:["This is redundant with no additional value from using both", "The box plot gives a QUICK, compact summary (median, quartiles, outliers) that's easy to compare across all 3 departments at a glance; the violin plot ADDITIONALLY reveals the full SHAPE of each department's salary distribution, which could reveal something important like 'Engineering salaries are actually bimodal, suggesting two distinct pay tiers' that the box plot's summary statistics alone wouldn't show", "Violin plots are always strictly better and box plots should never be used", "Combining both chart types would cause a rendering error"],ans:1,explain:"These two chart types serve complementary purposes: the box plot offers a QUICK, compact comparison of key summary statistics across groups (great for a fast overview), while the violin plot reveals ADDITIONAL shape information (like bimodality) that could represent a genuinely important finding (e.g., two distinct pay tiers within one department) that the box plot's compressed summary would completely miss — using both together provides a more complete picture than either alone."},
+  {code:"fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12,8))\naxes[0,0].plot(months, revenue)\naxes[0,0].set_title('Revenue Trend')",q:"What does this pattern demonstrate about building a multi-panel dashboard?",opts:["Each subplot must use the exact same chart type as every other panel","Each individual Axes within the grid (axes[0,0] here) can be treated almost like its OWN independent chart — you call plotting functions (plot, bar, etc.) and customization functions (set_title, etc.) directly on that SPECIFIC Axes object, letting each panel show completely different data/chart types within one combined Figure", "Only axes[0,0] can actually display any data; other panels are always blank","This code would cause all 4 panels to show identical content"],ans:1,explain:"This demonstrates the core pattern for building multi-panel dashboards: each individual Axes object within the grid (like axes[0,0]) functions almost like its OWN self-contained chart — you call whatever plotting method makes sense for that specific panel (plot, bar, boxplot, imshow, etc.) directly on it, along with its own title/labels, completely independently from the other panels in the same grid — allowing a rich, varied dashboard with different chart types shown together."},
+  {q:"Why is a heatmap (imshow) an appropriate choice specifically for a CORRELATION matrix, compared to, say, a bar chart?",opts:["Bar charts would actually work equally well for this specific use case","A correlation matrix is inherently a 2D GRID of values (correlation between EVERY pair of variables); a heatmap naturally displays 2D grid data using COLOR intensity per cell, letting viewers instantly scan and spot the STRONGEST relationships (brightest/most intense colors) across the whole grid at once — a bar chart would need many separate bars and wouldn't naturally represent this pairwise, grid-shaped relationship structure", "Heatmaps can only display exactly 3x3 matrices","Bar charts are specifically designed for correlation data, not heatmaps"],ans:1,explain:"A correlation matrix is fundamentally 2-DIMENSIONAL data (a value for every PAIR of variables, arranged in a grid). A heatmap is specifically designed to visualize this kind of grid-structured data using color, letting viewers quickly scan the ENTIRE grid at once and spot the strongest relationships via color intensity. A bar chart is designed for 1-dimensional category comparisons and doesn't naturally accommodate this inherently 2D, pairwise grid structure without significant awkward restructuring."},
+  {q:"What would happen visually if you built a 2×2 dashboard using plt.subplots(nrows=2, ncols=2) but FORGOT to call fig.tight_layout()?",opts:["Nothing — the layout would look identical either way","Titles, axis labels, or tick labels from adjacent panels would likely OVERLAP each other or get visually cramped/cut off, since Matplotlib doesn't automatically reserve enough spacing between multiple subplots by default", "The program would raise a runtime error and fail to execute","Only 1 of the 4 panels would actually display any content"],ans:1,explain:"Without tight_layout() (or similar manual spacing adjustments), Matplotlib's DEFAULT spacing between multiple subplots is often insufficient — titles, x-axis labels of one panel, and the title of the panel below it can easily overlap or appear visually cramped/cut off. This is purely a VISUAL/layout issue (not a code-breaking error), but it looks unprofessional and is one of the most common complaints about multi-panel Matplotlib figures, easily fixed by remembering to call fig.tight_layout()."},
+  {q:"In the HR dashboard task, why might Panel 3 (correlation heatmap) come BEFORE finalizing which specific chart types to use in other panels, in a real analytical workflow?",opts:["Panel order has no bearing on the actual analytical process", "A correlation heatmap is often used EARLY in analysis as an EXPLORATORY tool — quickly revealing which factors (like experience, performance score) actually relate meaningfully to salary — this insight can then INFORM what's worth visualizing more deeply in OTHER panels (e.g., if performance score strongly correlates with salary, that relationship might deserve its own dedicated scatter plot panel)", "Heatmaps must always be the first chart built in any dashboard by strict rule", "This ordering is purely arbitrary with no analytical reasoning behind it"],ans:1,explain:"In a genuine analytical workflow, a correlation heatmap often serves as an early EXPLORATORY step — quickly scanning which variables show meaningful relationships worth investigating further. This insight can then guide which SPECIFIC relationships deserve deeper, dedicated visualization in other panels (e.g., discovering a strong performance-salary correlation might justify adding a scatter plot specifically exploring that relationship) — reflecting how real dashboards are often built iteratively, with early exploratory findings shaping which additional charts get prioritized."},
+  {q:"Reflecting on Day 2's material, what is the key skill difference between 'knowing individual chart functions' (Day 1) and 'combining them into a styled, multi-panel dashboard' (Day 2)?",opts:["There is no meaningful skill difference between these two things","Day 1 teaches WHAT each individual function does in isolation; Day 2 builds the additional skill of COMPOSING multiple charts together into one COHESIVE, professionally-styled deliverable (consistent theme, proper spacing via tight_layout, a unified suptitle) — reflecting how real business dashboards actually combine several charts into ONE polished artifact, rather than producing several separate, disconnected individual charts", "Day 2's skills are strictly easier than Day 1's and require no additional knowledge", "Combining multiple charts into a dashboard provides no additional value over separate individual charts"],ans:1,explain:"Day 1 focused on individual chart-building blocks (what does bar() do, what does scatter() do). Day 2 builds on this with the higher-order skill of COMPOSITION — combining multiple individual charts into one COHESIVE, professionally-styled deliverable: consistent visual theme (plt.style.use), proper multi-panel spacing (tight_layout), a unified overall title (suptitle), and thoughtful use of statistical chart types alongside basic ones. This mirrors how real business dashboards are actually built — as ONE polished, integrated artifact rather than a collection of disconnected separate charts."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review styling and subplots grids, then try again! 📚"],[50,75,"Good progress! Focus on box/violin/heatmap. 💪"],[75,90,"Strong Day 2! Styling and statistical charts are solid. 🎉"],[90,101,"Excellent! Day 2 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 12/15 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

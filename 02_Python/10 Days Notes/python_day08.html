@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Python – Day 8 | Advanced OOP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F5F3FF;--surface:#FFFFFF;--border:#DDD6FE;--accent:#6D28D9;--accent2:#4C1D95;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--teal:#0891B2;
+    --text:#1E0B3A;--muted:#7C3AED;--code-bg:#160A2E;--code-text:#DDD6FE;--tag-bg:#EDE9FE;--tag-text:#4C1D95;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#6D28D9 0%,#4C1D95 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#DDD6FE;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#A78BFA;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#C4B5FD;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#4C1D95;font-style:italic;} .op{color:#DDD6FE;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.green .callout-title{color:var(--green);} .callout.red .callout-title{color:var(--red);} .callout.teal .callout-title{color:var(--teal);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .fbox{background:linear-gradient(135deg,#4C1D95,#6D28D9);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#6D28D9,#4C1D95);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#6D28D9,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐍 Python</div><span class="sep">|</span><span class="day-label">Day 8 of 10</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">80%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:80%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Python Full Course · Day 8</div>
+  <h1>Advanced <span>OOP</span></h1>
+  <p>Beyond basic classes: abstract base classes enforcing contracts, dataclasses eliminating boilerplate, class/static methods, properties, and a peek at metaclasses.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🧬 Abstract Base Classes</span>
+    <span class="hero-pill">📦 @dataclass</span>
+    <span class="hero-pill">🏗️ classmethod &amp; staticmethod</span>
+    <span class="hero-pill">🔐 @property</span>
+    <span class="hero-pill">🧿 Metaclasses (intro)</span>
+    <span class="hero-pill">🔀 Multiple Inheritance &amp; MRO</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🧬</div>
+    <div><h2>Abstract Base Classes (ABCs)</h2><p>Enforcing that subclasses implement required methods</p></div>
+  </div>
+  <div class="section-body">
+    <p>An <strong>abstract base class</strong> defines a CONTRACT — methods that every subclass MUST implement. It cannot be instantiated directly; it exists purely to be inherited from.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="kw">class</span> <span class="fn">Shape</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">area</span>(self):
+        <span class="kw">pass</span>   <span class="cm"># no implementation — subclasses MUST override this</span>
+
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">perimeter</span>(self):
+        <span class="kw">pass</span>
+
+<span class="cm"># Shape()   ❌ TypeError: Can't instantiate abstract class Shape</span>
+
+<span class="kw">class</span> <span class="fn">Rectangle</span>(Shape):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, width, height):
+        self.width = width
+        self.height = height
+
+    <span class="kw">def</span> <span class="fn">area</span>(self):
+        <span class="kw">return</span> self.width * self.height
+
+    <span class="kw">def</span> <span class="fn">perimeter</span>(self):
+        <span class="kw">return</span> <span class="nm">2</span> * (self.width + self.height)
+
+<span class="cm"># If Rectangle forgot to implement perimeter(), instantiating it would ALSO raise TypeError</span>
+r = Rectangle(<span class="nm">4</span>, <span class="nm">5</span>)
+<span class="fn">print</span>(r.<span class="fn">area</span>())   <span class="cm"># 20</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Why Use ABCs Instead of Just Regular Inheritance?</div>
+      Without ABC, if a subclass forgets to implement <code>area()</code>, you'd only find out at RUNTIME when someone calls it (an AttributeError or wrong behavior). With ABC, Python refuses to even CREATE an incomplete subclass instance — catching the mistake immediately, not later.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">📦</div>
+    <div><h2>@dataclass — Eliminating Boilerplate</h2><p>Auto-generating __init__, __repr__, and __eq__</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># BEFORE — a "plain" class needs manual boilerplate</span>
+<span class="kw">class</span> <span class="fn">PointOld</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, x, y):
+        self.x = x
+        self.y = y
+    <span class="kw">def</span> <span class="fn">__repr__</span>(self):
+        <span class="kw">return</span> <span class="st">f"PointOld(x={self.x}, y={self.y})"</span>
+    <span class="kw">def</span> <span class="fn">__eq__</span>(self, other):
+        <span class="kw">return</span> self.x == other.x <span class="kw">and</span> self.y == other.y
+
+<span class="cm"># AFTER — @dataclass generates ALL of that automatically</span>
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+
+<span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="fn">Point</span>:
+    x: <span class="fn">int</span>
+    y: <span class="fn">int</span>
+    label: <span class="fn">str</span> = <span class="st">"origin"</span>   <span class="cm"># default value</span>
+
+p1 = Point(<span class="nm">3</span>, <span class="nm">4</span>)
+p2 = Point(<span class="nm">3</span>, <span class="nm">4</span>)
+<span class="fn">print</span>(p1)             <span class="cm"># Point(x=3, y=4, label='origin') — __repr__ auto-generated</span>
+<span class="fn">print</span>(p1 == p2)      <span class="cm"># True — __eq__ auto-generated, compares field values</span>
+
+<span class="cm"># Mutable defaults need field(default_factory=...) — NEVER use a raw mutable default</span>
+<span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="fn">Cart</span>:
+    items: <span class="fn">list</span> = field(default_factory=<span class="fn">list</span>)   <span class="cm"># NOT items: list = []</span>
+
+<span class="cm"># frozen=True makes instances IMMUTABLE (like a tuple)</span>
+<span class="kw">@dataclass</span>(frozen=<span class="kw">True</span>)
+<span class="kw">class</span> <span class="fn">ImmutablePoint</span>:
+    x: <span class="fn">int</span>
+    y: <span class="fn">int</span>
+<span class="cm"># ip.x = 5   ❌ FrozenInstanceError</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Never Use a Mutable Default Directly</div>
+      <code>items: list = []</code> would cause ALL instances to SHARE the same list object — a classic, dangerous Python bug. <code>field(default_factory=list)</code> ensures each instance gets its OWN fresh empty list.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🏗️</div>
+    <div><h2>classmethod, staticmethod &amp; property</h2><p>Three special method decorators every class should know</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">class</span> <span class="fn">Employee</span>:
+    company = <span class="st">"Acme Corp"</span>   <span class="cm"># CLASS attribute, shared by all instances</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, salary):
+        self.name = name
+        self._salary = salary   <span class="cm"># leading underscore = "internal, don't touch directly"</span>
+
+    <span class="cm"># INSTANCE method — needs self, operates on ONE object</span>
+    <span class="kw">def</span> <span class="fn">give_raise</span>(self, amount):
+        self._salary += amount
+
+    <span class="cm"># CLASSMETHOD — receives the CLASS (cls), not an instance; used for alternative constructors</span>
+    <span class="kw">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">from_string</span>(cls, data_string):
+        name, salary = data_string.<span class="fn">split</span>(<span class="st">","</span>)
+        <span class="kw">return</span> cls(name, <span class="fn">float</span>(salary))   <span class="cm"># cls(...) == Employee(...)</span>
+
+    <span class="cm"># STATICMETHOD — no self OR cls; just a regular function logically grouped in the class</span>
+    <span class="kw">@staticmethod</span>
+    <span class="kw">def</span> <span class="fn">is_valid_salary</span>(amount):
+        <span class="kw">return</span> amount > <span class="nm">0</span>
+
+    <span class="cm"># PROPERTY — access a method like an attribute, no parentheses needed</span>
+    <span class="kw">@property</span>
+    <span class="kw">def</span> <span class="fn">salary</span>(self):
+        <span class="kw">return</span> self._salary
+
+    <span class="kw">@salary.setter</span>
+    <span class="kw">def</span> <span class="fn">salary</span>(self, value):
+        <span class="kw">if</span> value < <span class="nm">0</span>:
+            <span class="kw">raise</span> ValueError(<span class="st">"Salary cannot be negative"</span>)
+        self._salary = value
+
+e = Employee.<span class="fn">from_string</span>(<span class="st">"Sam,50000"</span>)   <span class="cm"># alternative constructor</span>
+<span class="fn">print</span>(Employee.<span class="fn">is_valid_salary</span>(<span class="nm">-5</span>))   <span class="cm"># False — called on the CLASS, no instance needed</span>
+<span class="fn">print</span>(e.salary)                     <span class="cm"># calls the getter — looks like an attribute, IS a method</span>
+e.salary = <span class="nm">55000</span>                     <span class="cm"># calls the setter — validates before assigning</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Decorator</th><th>First Parameter</th><th>Use For</th></tr>
+        <tr><td><code>(instance method)</code></td><td><code>self</code></td><td>Operating on one specific instance's data</td></tr>
+        <tr><td><code>@classmethod</code></td><td><code>cls</code></td><td>Alternative constructors, class-wide operations</td></tr>
+        <tr><td><code>@staticmethod</code></td><td>none</td><td>Utility function logically related to the class</td></tr>
+        <tr><td><code>@property</code></td><td><code>self</code></td><td>Computed attribute-like access with validation</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🔀</div>
+    <div><h2>Multiple Inheritance &amp; MRO</h2><p>Method Resolution Order — which parent's method wins?</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">class</span> <span class="fn">Flyer</span>:
+    <span class="kw">def</span> <span class="fn">move</span>(self):
+        <span class="kw">return</span> <span class="st">"Flying"</span>
+
+<span class="kw">class</span> <span class="fn">Swimmer</span>:
+    <span class="kw">def</span> <span class="fn">move</span>(self):
+        <span class="kw">return</span> <span class="st">"Swimming"</span>
+
+<span class="cm"># Multiple inheritance — Duck inherits from BOTH classes</span>
+<span class="kw">class</span> <span class="fn">Duck</span>(Flyer, Swimmer):
+    <span class="kw">pass</span>
+
+d = Duck()
+<span class="fn">print</span>(d.<span class="fn">move</span>())   <span class="cm"># "Flying" — Flyer comes FIRST in the inheritance list, so it takes priority</span>
+
+<span class="cm"># See the exact resolution order Python uses to search for methods</span>
+<span class="fn">print</span>(Duck.__mro__)
+<span class="cm"># (&lt;class 'Duck'&gt;, &lt;class 'Flyer'&gt;, &lt;class 'Swimmer'&gt;, &lt;class 'object'&gt;)</span>
+
+<span class="cm"># super() cooperatively calls the NEXT class in the MRO chain</span>
+<span class="kw">class</span> <span class="fn">Base</span>:
+    <span class="kw">def</span> <span class="fn">greet</span>(self):
+        <span class="fn">print</span>(<span class="st">"Base greet"</span>)
+
+<span class="kw">class</span> <span class="fn">Child</span>(Base):
+    <span class="kw">def</span> <span class="fn">greet</span>(self):
+        <span class="fn">super</span>().<span class="fn">greet</span>()   <span class="cm"># calls Base's greet() FIRST</span>
+        <span class="fn">print</span>(<span class="st">"Child greet"</span>)
+
+Child().<span class="fn">greet</span>()   <span class="cm"># "Base greet" then "Child greet"</span></pre>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Order Matters in Multiple Inheritance</div>
+      <code>class Duck(Flyer, Swimmer)</code> and <code>class Duck(Swimmer, Flyer)</code> behave DIFFERENTLY when both parents define the same method — Python searches LEFT TO RIGHT (following the MRO, computed via the C3 linearization algorithm). Always check <code>ClassName.__mro__</code> if you're unsure which method will actually run.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🧿</div>
+    <div><h2>Metaclasses — A Brief Introduction</h2><p>Classes that create classes</p></div>
+  </div>
+  <div class="section-body">
+    <p>Just as a class is a "blueprint" for creating objects, a <strong>metaclass</strong> is a blueprint for creating CLASSES themselves. This is advanced, rarely-needed territory — but understanding it deepens your grasp of Python's object model.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Every class's type is 'type' — the default metaclass</span>
+<span class="fn">print</span>(<span class="fn">type</span>(<span class="fn">int</span>))      <span class="cm"># &lt;class 'type'&gt;</span>
+<span class="fn">print</span>(<span class="fn">type</span>(Duck))    <span class="cm"># &lt;class 'type'&gt; — Duck's type IS 'type'</span>
+
+<span class="cm"># A custom metaclass — controls HOW classes using it are constructed</span>
+<span class="kw">class</span> <span class="fn">UpperAttrMeta</span>(<span class="fn">type</span>):
+    <span class="kw">def</span> <span class="fn">__new__</span>(cls, name, bases, namespace):
+        <span class="cm"># uppercase all non-dunder attribute names at class-creation time</span>
+        new_namespace = {
+            (key.<span class="fn">upper</span>() <span class="kw">if</span> <span class="kw">not</span> key.<span class="fn">startswith</span>(<span class="st">'__'</span>) <span class="kw">else</span> key): value
+            <span class="kw">for</span> key, value <span class="kw">in</span> namespace.items()
+        }
+        <span class="kw">return</span> <span class="fn">super</span>().<span class="fn">__new__</span>(cls, name, bases, new_namespace)
+
+<span class="kw">class</span> <span class="fn">MyClass</span>(metaclass=UpperAttrMeta):
+    x = <span class="nm">5</span>   <span class="cm"># will be renamed to X during class creation</span>
+
+<span class="fn">print</span>(MyClass.X)   <span class="cm"># 5 — accessible as X, not x!</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 "Metaclasses are deeper magic than 99% of users should ever worry about"</div>
+      This quote (paraphrased from Tim Peters, a Python core contributor) is genuinely good advice. Frameworks like Django ORM use metaclasses internally, but as an application developer you'll rarely write your own. Understanding the CONCEPT (classes are objects too, created by a metaclass) is valuable; writing custom metaclasses is a rare, advanced need.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">ABC + @abstractmethod</div><div class="mc-desc">Enforce subclass contracts</div></div>
+      <div class="mini-card"><div class="mc-name">@dataclass</div><div class="mc-desc">Auto __init__/__repr__/__eq__</div></div>
+      <div class="mini-card"><div class="mc-name">@classmethod</div><div class="mc-desc">Alternative constructors</div></div>
+      <div class="mini-card"><div class="mc-name">@property</div><div class="mc-desc">Validated attribute access</div></div>
+      <div class="mini-card"><div class="mc-name">Class.__mro__</div><div class="mc-desc">Method resolution order</div></div>
+      <div class="mini-card"><div class="mc-name">metaclass=type</div><div class="mc-desc">Classes that build classes</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>ABCs, dataclasses, class/static methods, MRO, metaclasses. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#6D28D9">🏆</div>
+    <div><h2>Real-World Task — Plugin-Based Payment System</h2><p>Estimated time: 80–95 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>Build an extensible payment processing system where new payment methods can be "plugged in" as subclasses, enforced by an abstract base class, using dataclasses for transaction records.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#6D28D9">1</div><h4>Phase 1 — Abstract Payment Contract</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Define the ABC</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+<span class="kw">class</span> <span class="fn">PaymentMethod</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">process</span>(self, amount):
+        <span class="kw">pass</span>
+
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">fee_percentage</span>(self):
+        <span class="kw">pass</span></pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Build 2 Concrete Payment Methods</h5>
+          <p>Create CreditCard and BankTransfer classes inheriting from PaymentMethod. CreditCard has a 2.9% fee; BankTransfer has a flat $0.50 fee. Each process(amount) should return the amount after fees are deducted.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Dataclass Transaction Records</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Transaction Dataclass</h5>
+          <p>Create a @dataclass Transaction with fields: amount (float), method_name (str), net_amount (float), timestamp (default_factory=datetime.now). Ensure __repr__ and __eq__ work automatically.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Payment Processor with classmethod</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build the Processor Class</h5>
+          <p>Build a PaymentProcessor class that maintains a registry (class attribute dict) mapping method names to PaymentMethod instances. Add a classmethod register_method(cls, name, method_instance) to add new payment methods to the shared registry. Add a process_payment(name, amount) method returning a Transaction record.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Add a New Payment Method Without Modifying Existing Code</h5>
+          <p>Create a third payment method (e.g., CryptoWallet with a 1% fee) and register it via the classmethod — demonstrating the system is extensible ("open for extension, closed for modification").</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Defined PaymentMethod ABC with 2 abstractmethods</li>
+        <li>Built CreditCard and BankTransfer concrete implementations</li>
+        <li>Confirmed instantiating PaymentMethod directly raises TypeError</li>
+        <li>Built a Transaction dataclass with default_factory for timestamp</li>
+        <li>Built PaymentProcessor with a classmethod registry</li>
+        <li>Processed payments through 2+ methods, producing Transaction records</li>
+        <li>Added a 3rd payment method without modifying existing classes</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge</div>
+      Add a @property to PaymentProcessor called total_processed that sums net_amount across all processed Transaction records stored in a list.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Python Full Course — 10-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Basics</span>
+    <span class="day-pill">Day 2 · Control Flow &amp; Functions</span>
+    <span class="day-pill">Day 3 · Data Structures</span>
+    <span class="day-pill">Day 4 · OOP</span>
+    <span class="day-pill">Day 5 · Files &amp; Exceptions</span>
+    <span class="day-pill">Day 6 · Modules &amp; Packages</span>
+    <span class="day-pill done">Day 7 · Iterators, Generators &amp; Decorators</span>
+    <span class="day-pill done active">Day 8 · Advanced OOP</span>
+    <span class="day-pill">Day 9 · Concurrency</span>
+    <span class="day-pill">Day 10 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"class Shape(ABC):\n    @abstractmethod\n    def area(self):\n        pass",q:"What happens if you try to run `Shape()` directly?",opts:["It creates an empty Shape object with no methods","It raises a TypeError, since Shape has an unimplemented abstractmethod — ABCs with abstract methods CANNOT be instantiated directly, only subclassed", "It runs fine and area() returns None","It automatically becomes a Rectangle"],ans:1,explain:"A class inheriting from ABC with at least one @abstractmethod cannot be instantiated directly — Python raises a TypeError. The class exists purely to define a contract that concrete subclasses must fulfill by implementing all abstract methods."},
+  {q:"What is the main benefit of using an Abstract Base Class over just documenting 'subclasses should implement area()' in a comment?",opts:["ABCs make code run faster","ABCs ENFORCE the contract at the language level — Python refuses to create an instance of an incomplete subclass, catching the mistake immediately at instantiation time rather than relying on a comment that could be ignored or missed, with the bug only surfacing later at runtime when the missing method is actually called", "Comments and ABCs are functionally identical","ABCs are only useful for documentation purposes"],ans:1,explain:"A comment is just a suggestion that can be overlooked. An ABC with @abstractmethod is ENFORCED by Python itself — attempting to instantiate an incomplete subclass immediately raises a TypeError, catching the mistake right away rather than allowing a broken object to be created and only failing later when the missing method happens to be called."},
+  {code:"@dataclass\nclass Point:\n    x: int\n    y: int",q:"What does the @dataclass decorator automatically generate for this class?",opts:["Only __init__","__init__, __repr__, and __eq__ methods automatically, based on the declared fields (x and y) — eliminating the need to write this common boilerplate by hand", "A complete GUI interface","Nothing — @dataclass is purely decorative"],ans:1,explain:"@dataclass automatically generates __init__ (accepting the declared fields as parameters), __repr__ (a readable string representation showing field values), and __eq__ (comparing instances by their field values) — three commonly-needed methods that would otherwise require repetitive manual boilerplate code."},
+  {code:"@dataclass\nclass Cart:\n    items: list = []",q:"Why is this considered a dangerous bug, and what's the correct fix?",opts:["This code is actually completely safe as written","Using a mutable default value like [] directly would cause ALL instances of Cart to SHARE the exact same list object; the correct fix is `items: list = field(default_factory=list)`, which ensures each new instance gets its own independent empty list", "Lists cannot be used as dataclass fields at all","This would cause a SyntaxError, not a runtime bug"],ans:1,explain:"This is one of Python's most notorious gotchas (also applies to regular default arguments, not just dataclasses): a mutable default value is created ONCE and shared across ALL instances, meaning modifying one Cart's items list would unexpectedly affect every other Cart instance too. field(default_factory=list) fixes this by calling list() fresh for EACH new instance, giving each one an independent empty list."},
+  {code:"class Employee:\n    @classmethod\n    def from_string(cls, data):\n        name, salary = data.split(\",\")\n        return cls(name, float(salary))",q:"What is the purpose of using `cls` (the class itself) instead of hardcoding `Employee(...)` inside this method?",opts:["cls and Employee are functionally identical with no difference","Using cls makes the method work correctly even if called on a SUBCLASS of Employee — cls automatically refers to whichever class the method was actually called on, making the alternative constructor pattern properly inheritance-aware, rather than hardcoding always creating an Employee specifically", "cls is required syntax with no functional purpose", "This pattern only works for the exact Employee class and breaks with any subclass"],ans:1,explain:"Using cls (rather than hardcoding Employee) means this alternative constructor correctly respects inheritance — if a subclass like Manager(Employee) calls Manager.from_string(...), cls would correctly refer to Manager, creating a Manager instance rather than incorrectly always creating a base Employee regardless of which subclass invoked the method."},
+  {q:"What is the key difference between @classmethod and @staticmethod?",opts:["They are functionally identical, just different names","@classmethod receives the class itself (cls) as its first parameter, useful for alternative constructors or class-wide operations; @staticmethod receives NEITHER self NOR cls — it's just a regular function that happens to be logically grouped inside the class namespace, with no automatic access to instance or class data", "@staticmethod can only be called on instances, never on the class directly","@classmethod cannot access any class attributes"],ans:1,explain:"@classmethod's first parameter is automatically the class (conventionally named cls), giving it access to class-level data and letting it create instances of the (possibly subclassed) class. @staticmethod takes neither self nor cls automatically — it behaves like a plain function that's simply namespaced within the class for logical organization, with no automatic access to instance or class state."},
+  {code:"class Employee:\n    @property\n    def salary(self):\n        return self._salary\n\n    @salary.setter\n    def salary(self, value):\n        if value < 0:\n            raise ValueError(\"...\")\n        self._salary = value",q:"What does this @property/@setter pattern accomplish?",opts:["It makes salary a read-only attribute that can never be changed","It lets code access/assign `employee.salary` using normal ATTRIBUTE SYNTAX (no parentheses), while secretly running VALIDATION LOGIC behind the scenes on assignment (e.g., rejecting negative values) — combining the clean syntax of a plain attribute with the safety of a controlled setter method", "This pattern only works with numeric attributes","@property and @setter must always be used completely separately, never together"],ans:1,explain:"This is the classic Python property pattern: @property makes the getter accessible via employee.salary (no parentheses, looks like a plain attribute), while the paired @salary.setter intercepts assignment (employee.salary = value) to run custom validation logic before actually storing the value — giving you attribute-like syntax with the safety and control of explicit getter/setter methods."},
+  {code:"class Duck(Flyer, Swimmer):\n    pass",q:"If both Flyer and Swimmer define a move() method, which one does `Duck().move()` call?",opts:["It's random/undefined which one runs","Flyer's move() — Python's Method Resolution Order (MRO) searches parent classes LEFT TO RIGHT as listed in the inheritance declaration, so Flyer (listed first) takes priority over Swimmer (listed second)", "Both methods run together, combining their outputs","Swimmer's move() always takes priority regardless of order"],ans:1,explain:"Python's MRO (Method Resolution Order) determines which parent's method is used when multiple parents define the same method name — for straightforward multiple inheritance like this, it generally follows the LEFT-TO-RIGHT order of the inheritance list. Since Flyer is listed first in class Duck(Flyer, Swimmer), Flyer's move() takes priority over Swimmer's."},
+  {code:"print(Duck.__mro__)",q:"What does this attribute show?",opts:["The docstring of the Duck class","The exact ORDER in which Python searches parent classes when resolving a method or attribute name — computed via the C3 linearization algorithm, useful for debugging which specific parent's method will actually be called in cases of multiple inheritance", "A list of all instances of Duck ever created","The memory address of the Duck class"],ans:1,explain:"__mro__ (Method Resolution Order) shows the precise, computed sequence of classes Python will search through (in order) when looking up a method or attribute on an instance — extremely useful for debugging exactly which parent class's implementation will be used when multiple inheritance creates potential ambiguity."},
+  {code:"class Child(Base):\n    def greet(self):\n        super().greet()\n        print(\"Child greet\")",q:"What does calling `super().greet()` do here?",opts:["It calls Child's own greet() method again, causing infinite recursion","It calls the NEXT class in the MRO chain's (typically the parent's) greet() method — allowing Child to EXTEND the parent's behavior rather than completely replacing it, a common cooperative-inheritance pattern", "It skips calling greet() entirely","super() only works with abstract base classes"],ans:1,explain:"super() provides a way to call the NEXT class in the Method Resolution Order chain (usually the immediate parent) 's version of a method — commonly used to EXTEND rather than completely override a parent's behavior. Here, Child.greet() first runs Base's greet() logic via super(), THEN adds its own additional behavior, rather than replacing the parent's logic entirely."},
+  {q:"What does `type(SomeClass)` typically return for an ordinary Python class?",opts:["The class's own name as a string","<class 'type'> — by default, EVERY class (unless explicitly given a custom metaclass) is itself an INSTANCE of the built-in 'type' metaclass; just as objects are instances of classes, classes themselves are instances of their metaclass", "None, since classes don't have a type","The class's parent class"],ans:1,explain:"This reveals a deep truth about Python's object model: classes are THEMSELVES objects, and (like all objects) have a type. By default, that type is the built-in 'type' — which functions as the DEFAULT metaclass. Just as instances are created by calling their class, classes themselves are created by calling their metaclass (type by default)."},
+  {q:"What is a metaclass, conceptually?",opts:["A class with unusually large amounts of code","A 'class of a class' — just as a regular class serves as a blueprint for creating INSTANCES (objects), a metaclass serves as a blueprint for creating CLASSES themselves, controlling how classes using it are constructed", "A synonym for 'abstract base class'","A metaclass is just another name for a module"],ans:1,explain:"The relationship is: metaclass creates classes, just as classes create instances. A metaclass controls the CLASS-CREATION process itself — you can customize things like automatically transforming attribute names, validating class definitions, or registering classes in a global registry, all happening at the moment a class USING that metaclass is defined (not when instances of it are created)."},
+  {q:"Why does the lesson describe custom metaclasses as something '99% of developers should rarely need to write themselves'?",opts:["Metaclasses are deprecated and about to be removed from Python","Metaclasses represent very advanced, deep 'magic' that most application-level code never genuinely needs — while understanding the CONCEPT (classes are objects too, created by a metaclass) deepens your grasp of Python's object model, actually WRITING custom metaclasses is typically reserved for framework/library authors solving very specific, advanced problems (like Django's ORM)", "Metaclasses only work in Python 2, not Python 3","This statement is factually incorrect and metaclasses are commonly needed"],ans:1,explain:"While metaclasses are a genuine, powerful feature of Python's object model, they represent quite advanced, rarely-needed functionality for typical application code. Most developers benefit from UNDERSTANDING the concept (which deepens comprehension of how Python's class system fundamentally works) without ever needing to WRITE a custom metaclass themselves — that need is largely confined to framework/library authors solving specialized architectural problems."},
+  {q:"Why might building a payment processing system (as in today's real-world task) benefit specifically from an Abstract Base Class defining PaymentMethod?",opts:["ABCs provide no real benefit for this scenario","The ABC ENFORCES that every new payment method (CreditCard, BankTransfer, future additions like CryptoWallet) correctly implements BOTH required methods (process, fee_percentage) — if a new payment type forgot to implement one, Python would immediately raise an error at class-definition/instantiation time, rather than allowing an incomplete payment method to silently exist and fail unpredictably later when actually processing a real transaction", "ABCs only work with numeric data, not payment systems", "This pattern only applies to graphical user interfaces"],ans:1,explain:"In a payment system where CORRECTNESS matters significantly (mishandling money is a serious bug), an ABC provides a strong SAFETY GUARANTEE: any new payment method class MUST correctly implement all required methods (process, fee_percentage) or Python will refuse to even create an instance of it — catching an incomplete implementation immediately during development, rather than allowing a broken payment method to exist and potentially fail unpredictably (or silently) when actually processing a real customer transaction."},
+  {q:"Why use `field(default_factory=datetime.now)` for a Transaction dataclass's timestamp field, rather than something like `timestamp: datetime = datetime.now()`?",opts:["Both approaches produce identical, correct behavior","Using datetime.now() directly as a default value would evaluate ONCE when the class is DEFINED, meaning EVERY Transaction instance would incorrectly share the SAME frozen timestamp (from class-definition time); default_factory=datetime.now instead calls datetime.now() FRESH for EACH new instance, correctly capturing the actual moment each transaction was created", "field(default_factory=...) is required syntax with no functional purpose", "datetime.now() cannot be used as a default value under any circumstances"],ans:1,explain:"This mirrors the mutable-default-value gotcha discussed earlier but applies more broadly: any default value expression like datetime.now() is evaluated ONCE, at class-definition time, not each time a new instance is created — meaning ALL instances would incorrectly share the exact same 'frozen' timestamp from whenever the class was originally defined. default_factory=datetime.now (passing the FUNCTION itself, not calling it) ensures datetime.now() is called freshly for EACH new instance, correctly capturing that specific instance's actual creation moment."},
+  {q:"In the payment system task, what does it mean for the design to be 'open for extension, closed for modification' when adding a new CryptoWallet payment method?",opts:["This means the existing code becomes literally uneditable by anyone", "It means you can ADD entirely new functionality (a new CryptoWallet class implementing the PaymentMethod contract, registered via the classmethod) WITHOUT needing to MODIFY any of the EXISTING, already-working code (PaymentProcessor, CreditCard, BankTransfer classes remain untouched) — a well-known software design principle (part of the SOLID principles) that reduces the risk of breaking existing functionality when adding new features", "This principle is unrelated to the ABC/classmethod pattern used in the payment system", "It means the system cannot support more than 2 payment methods total"],ans:1,explain:"This describes the 'Open/Closed Principle' (one of the well-known SOLID object-oriented design principles): well-designed systems should be OPEN for extension (you CAN add new functionality, like a new payment method) but CLOSED for modification (you should NOT need to edit/risk-breaking existing, already-tested code to do so). The ABC contract + classmethod registry pattern used in this task exemplifies this — adding CryptoWallet requires only writing NEW code implementing the established PaymentMethod interface, without touching the existing CreditCard, BankTransfer, or PaymentProcessor classes at all."},
+  {q:"Why might a leading underscore (like `self._salary` instead of `self.salary`) be used for the INTERNAL storage of a property's value?",opts:["The underscore has no meaning and is purely stylistic with zero convention behind it", "By Python CONVENTION, a leading underscore signals 'this is an internal implementation detail, not meant for direct external access' — this naming convention avoids a naming COLLISION with the public @property named salary (which needs its own separate name for the actual stored value), while also signaling to other developers that they should use the salary property/setter rather than directly manipulating _salary", "A leading underscore makes a variable technically impossible to access from outside the class", "This underscore convention only applies to class methods, never to instance attributes"],ans:1,explain:"The leading underscore is a widely-followed Python CONVENTION (not an enforced language restriction) signaling 'this is an internal implementation detail — please don't access it directly from outside the class.' Practically, it's also necessary here to avoid a naming CONFLICT: the public salary property needs a DIFFERENT underlying attribute name (_salary) to actually store its value in, since the property itself is named salary and can't also directly store data under that exact same name without recursion issues."},
+  {q:"What advantage does combining @dataclass with type hints (like `x: int`, `y: int`) provide, beyond just the automatic method generation?",opts:["Type hints have zero practical effect and are purely decorative comments","Type hints serve DOCUMENTATION purposes (clearly communicating what type each field is EXPECTED to hold) and enable STATIC TYPE CHECKING TOOLS (like mypy) to catch potential type-related bugs BEFORE running the code — though Python itself does NOT enforce these hints at runtime by default, they provide significant value for code clarity and tooling-assisted bug detection", "Type hints make dataclass instances run significantly faster at runtime", "Type hints are required syntax with no semantic meaning beyond triggering @dataclass to work at all"],ans:1,explain:"While @dataclass DOES require type hints syntactically (to determine which class-level attributes become dataclass fields), those hints serve valuable ADDITIONAL purposes: they clearly DOCUMENT the intended type of each field for other developers reading the code, and they enable external STATIC TYPE CHECKING tools (like mypy or Pyright) to analyze your code and catch type-mismatch bugs before you even run the program — though it's worth noting Python itself does NOT enforce these type hints at runtime by default (you COULD still assign a string to an int-hinted field without an immediate error, unless using additional validation)."},
+  {q:"Reflecting on ABCs, dataclasses, class/static methods, and properties together — what common theme unites these 'advanced OOP' features covered today?",opts:["They are entirely unrelated, randomly grouped topics with no common thread", "Each feature provides a way to make class DESIGN more EXPLICIT, SAFE, and MAINTAINABLE — ABCs explicitly enforce required behavior contracts; dataclasses explicitly reduce error-prone boilerplate; classmethod/staticmethod explicitly clarify a method's relationship to instance vs class-level data; properties explicitly control attribute access with validation — together representing tools for writing more ROBUST, SELF-DOCUMENTING object-oriented code compared to using only 'basic' classes with plain attributes and methods", "These features are purely about making code run faster", "Only dataclasses provide any genuine practical benefit; the others are purely academic"],ans:1,explain:"The unifying theme across today's advanced OOP topics is making class design more EXPLICIT and ROBUST: ABCs explicitly enforce that subclasses fulfill a required contract (rather than relying on documentation/convention alone); dataclasses explicitly eliminate repetitive, error-prone boilerplate code; classmethod/staticmethod explicitly clarify whether a method operates on class-level vs instance-level concerns; and properties explicitly add validation/control to attribute access rather than allowing unrestricted direct attribute manipulation. Together, these tools help developers write clearer, safer, more maintainable object-oriented code than relying solely on basic classes with unrestricted plain attributes."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review ABCs and dataclasses, then try again! 📚"],[50,75,"Good progress! Focus on MRO and metaclasses. 💪"],[75,90,"Strong Day 8! Advanced OOP skills are solid. 🎉"],[90,101,"Excellent! Day 8 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

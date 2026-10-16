@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Card Catalog — Understanding Python Dictionaries</title>
+<style>
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/fira-code/6.2.0/fira_code.css');
+
+  :root{
+    --paper: #F5F1E6;
+    --paper-raised: #FCFAF3;
+    --ink: #24271F;
+    --ink-soft: #565A4C;
+    --rule: #D9D2BC;
+    --brass: #8A6A2F;
+    --brass-deep: #6B5222;
+    --teal: #2A6660;
+    --teal-deep: #1D4A46;
+    --tab-1: #C9A66B;
+    --tab-2: #7FA69C;
+    --tab-3: #B98A72;
+    --tab-4: #8FA05A;
+    --correct: #2F7A4F;
+    --wrong: #B14C3A;
+    --code-bg: #1F2A28;
+    --code-ink: #E9EFE9;
+    --shadow: 0 2px 0 rgba(36,39,31,0.06), 0 8px 20px rgba(36,39,31,0.08);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(180deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 28px),
+      var(--paper);
+    color:var(--ink);
+    font-family: 'Iowan Old Style','Palatino Linotype', Georgia, 'Times New Roman', serif;
+    line-height:1.6;
+  }
+
+  .mono, code, pre, .kbd{
+    font-family:'Fira Code','JetBrains Mono', Consolas, monospace;
+  }
+
+  /* ---------- Header / Hero ---------- */
+  header.hero{
+    padding:64px 24px 40px;
+    max-width:980px;
+    margin:0 auto;
+    position:relative;
+  }
+  .drawer-label{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    padding:6px 14px;
+    border-radius:3px;
+    font-family:'Fira Code',monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass-deep);
+    box-shadow:var(--shadow);
+  }
+  .drawer-label::before{
+    content:"";
+    width:8px;height:8px;
+    background:var(--brass);
+    border-radius:50%;
+  }
+  h1.title{
+    font-size:clamp(34px, 5.4vw, 58px);
+    margin:22px 0 6px;
+    line-height:1.05;
+    letter-spacing:-0.01em;
+    font-weight:600;
+  }
+  h1.title em{
+    font-style:italic;
+    color:var(--teal-deep);
+  }
+  .subtitle{
+    font-size:18px;
+    color:var(--ink-soft);
+    max-width:640px;
+    margin:14px 0 0;
+  }
+  .hero-card{
+    margin-top:36px;
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    box-shadow:var(--shadow);
+    padding:22px 26px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  .hero-card .catalog-icon{
+    width:52px;height:52px;
+    flex-shrink:0;
+    border-radius:4px;
+    background:linear-gradient(160deg, var(--tab-2), var(--teal));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-family:'Fira Code',monospace;font-weight:700;font-size:20px;
+  }
+  .hero-card p{margin:0;color:var(--ink-soft);font-size:15px;}
+  .hero-card strong{color:var(--ink);}
+
+  /* ---------- Nav tabs (rolodex) ---------- */
+  nav.tabs{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:var(--paper);
+    border-bottom:1px solid var(--rule);
+    padding:0 24px;
+    backdrop-filter:blur(4px);
+  }
+  .tabs-inner{
+    max-width:980px;
+    margin:0 auto;
+    display:flex;
+    overflow-x:auto;
+    scrollbar-width:none;
+    gap:2px;
+    padding-top:10px;
+  }
+  .tabs-inner::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    flex:0 0 auto;
+    font-family:'Fira Code',monospace;
+    font-size:12.5px;
+    letter-spacing:0.03em;
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-bottom:none;
+    color:var(--ink-soft);
+    padding:10px 16px 9px;
+    border-radius:6px 6px 0 0;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s, color .15s, transform .15s;
+  }
+  .tab-btn:hover{ color:var(--ink); transform:translateY(-2px); }
+  .tab-btn.active{
+    background:var(--paper);
+    color:var(--teal-deep);
+    font-weight:700;
+    border-color:var(--rule);
+    box-shadow: 0 -2px 0 var(--teal) inset;
+  }
+
+  /* ---------- Main layout ---------- */
+  main{
+    max-width:980px;
+    margin:0 auto;
+    padding:40px 24px 100px;
+  }
+  section.card{
+    display:none;
+    animation:fadeIn .35s ease;
+  }
+  section.card.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .section-eyebrow{
+    font-family:'Fira Code',monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    color:var(--brass-deep);
+    margin-bottom:6px;
+  }
+  h2.section-title{
+    font-size:clamp(26px,3.6vw,34px);
+    margin:0 0 18px;
+    font-weight:600;
+  }
+  h3.sub-title{
+    font-size:20px;
+    margin:32px 0 10px;
+    color:var(--teal-deep);
+    font-weight:700;
+  }
+  p{color:var(--ink);}
+  p.lead{font-size:16.5px;}
+
+  .analogy{
+    background:linear-gradient(180deg, #EFE9D6, #F2EEDF);
+    border:1px solid var(--rule);
+    border-left:4px solid var(--tab-1);
+    border-radius:4px;
+    padding:16px 20px;
+    margin:16px 0;
+    font-size:15px;
+  }
+  .analogy .tag{
+    font-family:'Fira Code',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--brass-deep);
+    font-weight:700;
+    display:block;
+    margin-bottom:6px;
+  }
+
+  pre{
+    background:var(--code-bg);
+    color:var(--code-ink);
+    padding:18px 20px;
+    border-radius:6px;
+    overflow-x:auto;
+    font-size:13.5px;
+    line-height:1.65;
+    margin:14px 0;
+    box-shadow:var(--shadow);
+  }
+  pre .c1{color:#8FBF9F;} /* comment */
+  pre .kw{color:#E4B673;} /* keyword */
+  pre .st{color:#B7D4A4;} /* string */
+  pre .fn{color:#8FC5D6;} /* function/method */
+  code.inline{
+    background:#EAE3CC;
+    border:1px solid var(--rule);
+    padding:1px 6px;
+    border-radius:3px;
+    font-size:0.88em;
+    color:var(--teal-deep);
+  }
+
+  ul, ol{padding-left:22px;}
+  li{margin:6px 0;}
+
+  .grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin:18px 0;
+  }
+  @media(max-width:680px){ .grid-2{grid-template-columns:1fr;} }
+
+  .mini-card{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:16px 18px;
+    box-shadow:var(--shadow);
+  }
+  .mini-card h4{
+    margin:0 0 8px;
+    font-size:15px;
+    font-family:'Fira Code',monospace;
+    color:var(--teal-deep);
+  }
+  .mini-card p{font-size:14px;color:var(--ink-soft);margin:0;}
+
+  /* progress dots for topic map */
+  .topic-map{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:20px 0 8px;
+  }
+  .topic-map span{
+    font-family:'Fira Code',monospace;
+    font-size:11px;
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    padding:5px 10px;
+    border-radius:12px;
+    color:var(--ink-soft);
+  }
+
+  /* ---------- Real world task ---------- */
+  .step{
+    display:grid;
+    grid-template-columns:44px 1fr;
+    gap:16px;
+    margin:22px 0;
+  }
+  .step-num{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--teal);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fira Code',monospace;
+    font-weight:700;
+    font-size:15px;
+    flex-shrink:0;
+    box-shadow:var(--shadow);
+  }
+  .step-body h4{margin:6px 0 6px;font-size:17px;}
+  .step-body p{font-size:14.5px;color:var(--ink-soft);margin:4px 0 8px;}
+
+  /* ---------- Quiz ---------- */
+  .quiz-progress{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:20px;
+    font-family:'Fira Code',monospace;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .quiz-bar{
+    height:6px;
+    background:var(--rule);
+    border-radius:4px;
+    overflow:hidden;
+    flex:1;
+    margin:0 16px;
+  }
+  .quiz-bar-fill{
+    height:100%;
+    background:var(--teal);
+    width:0%;
+    transition:width .3s ease;
+  }
+  .q-block{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:20px 22px;
+    margin:16px 0;
+    box-shadow:var(--shadow);
+  }
+  .q-block .q-num{
+    font-family:'Fira Code',monospace;
+    font-size:11px;
+    color:var(--brass-deep);
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+  }
+  .q-block h4{margin:6px 0 14px;font-size:16.5px;font-weight:700;}
+  .q-block .opts{display:flex;flex-direction:column;gap:8px;}
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px 12px;
+    border:1px solid var(--rule);
+    border-radius:5px;
+    cursor:pointer;
+    font-size:14.5px;
+    background:var(--paper);
+    transition:background .15s, border-color .15s;
+  }
+  .opt:hover{background:#EFE9D6;}
+  .opt input{margin-top:3px;accent-color:var(--teal);}
+  .opt.correct{border-color:var(--correct); background:#E4F1E6;}
+  .opt.wrong{border-color:var(--wrong); background:#F5E4DF;}
+  .explain{
+    display:none;
+    margin-top:12px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    border-top:1px dashed var(--rule);
+    padding-top:10px;
+  }
+  .explain.show{display:block;}
+
+  .quiz-actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:24px;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  button.primary-btn{
+    font-family:'Fira Code',monospace;
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:5px;
+    font-size:13.5px;
+    cursor:pointer;
+    letter-spacing:0.03em;
+    box-shadow:var(--shadow);
+    transition:background .15s, transform .15s;
+  }
+  button.primary-btn:hover{background:var(--teal-deep); transform:translateY(-1px);}
+  button.ghost-btn{
+    font-family:'Fira Code',monospace;
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--rule);
+    padding:11px 18px;
+    border-radius:5px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  button.ghost-btn:hover{color:var(--ink); border-color:var(--ink-soft);}
+
+  #quizResult{
+    display:none;
+    text-align:center;
+    padding:40px 20px;
+  }
+  #quizResult .score-big{
+    font-family:'Fira Code',monospace;
+    font-size:56px;
+    font-weight:700;
+    color:var(--teal-deep);
+  }
+  #quizResult p{color:var(--ink-soft);}
+
+  footer{
+    text-align:center;
+    padding:30px;
+    font-family:'Fira Code',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    border-top:1px solid var(--rule);
+  }
+
+  /* focus visibility */
+  button:focus-visible, .opt input:focus-visible, .tab-btn:focus-visible{
+    outline:2px solid var(--teal-deep);
+    outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="drawer-label">drawer no. 7 &mdash; py / dict</span>
+  <h1 class="title">The Card Catalog:<br><em>Understanding Python Dictionaries</em></h1>
+  <p class="subtitle">Before search engines, libraries found any book in seconds using a card catalog — one label, one card, no scanning the whole shelf. Python's dictionary works the same way, and it's the idea we'll use to understand every part of it.</p>
+
+  <div class="hero-card">
+    <div class="catalog-icon">{ }</div>
+    <p><strong>What you'll walk away with:</strong> how dictionaries store and find data, every core operation and method, dict comprehensions, nested dictionaries, why keys must be "hashable," a full real-world build (a contact book program) done step by step, and a 15-question quiz to check what stuck.</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner" id="tabsInner">
+    <button class="tab-btn active" data-target="t-basics">01 · What is it</button>
+    <button class="tab-btn" data-target="t-create">02 · Creating</button>
+    <button class="tab-btn" data-target="t-access">03 · Access &amp; Update</button>
+    <button class="tab-btn" data-target="t-methods">04 · Key Methods</button>
+    <button class="tab-btn" data-target="t-loop">05 · Looping</button>
+    <button class="tab-btn" data-target="t-comp">06 · Comprehensions</button>
+    <button class="tab-btn" data-target="t-nested">07 · Nested Dicts</button>
+    <button class="tab-btn" data-target="t-hash">08 · Hashability &amp; Speed</button>
+    <button class="tab-btn" data-target="t-task">09 · Real-World Task</button>
+    <button class="tab-btn" data-target="t-quiz">10 · Quiz</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- 01 BASICS -->
+  <section class="card active" id="t-basics">
+    <div class="section-eyebrow">Topic 01</div>
+    <h2 class="section-title">What a dictionary actually is</h2>
+    <p class="lead">A Python dictionary stores data as <strong>key → value</strong> pairs. Instead of finding something by counting position (like a list: "give me item #3"), you find it by name: "give me the value stored under this key."</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      In a library card catalog, every book has an index card filed under its title. You never walk every shelf looking for "1984" — you go straight to the "1" drawer, flip to the "1984" card, and it tells you exactly where the book sits. The <strong>title is the key</strong>, the <strong>card's info is the value</strong>, and the whole cabinet is the <strong>dictionary</strong>.
+    </div>
+
+    <pre><span class="c1"># A dictionary of book locations, like catalog cards</span>
+catalog = {
+    <span class="st">"1984"</span>: <span class="st">"Fiction, Shelf 4B"</span>,
+    <span class="st">"Sapiens"</span>: <span class="st">"History, Shelf 2A"</span>,
+    <span class="st">"Dune"</span>: <span class="st">"Sci-Fi, Shelf 5C"</span>
+}
+
+<span class="c1"># Straight to the card — no searching shelf by shelf</span>
+print(catalog[<span class="st">"Dune"</span>])   <span class="c1"># Sci-Fi, Shelf 5C</span></pre>
+
+    <h3 class="sub-title">Key properties, in plain terms</h3>
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>Keys are unique</h4>
+        <p>A catalog only has one card per title. Adding a second card for "1984" doesn't create a duplicate — it overwrites the first.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Keys must be immutable</h4>
+        <p>Card labels can't change shape mid-search. Strings, numbers, and tuples work as keys; lists don't.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Order is preserved</h4>
+        <p>Since Python 3.7, dictionaries remember the order you added things — like cards staying in the order they were filed.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Mutable overall</h4>
+        <p>You can add, remove, or update cards anytime, even though each key itself must stay fixed.</p>
+      </div>
+    </div>
+
+    <div class="topic-map">
+      <span>dict = {}</span><span>key : value</span><span>O(1) lookup</span><span>unordered pre-3.7</span><span>hashable keys only</span>
+    </div>
+  </section>
+
+  <!-- 02 CREATING -->
+  <section class="card" id="t-create">
+    <div class="section-eyebrow">Topic 02</div>
+    <h2 class="section-title">Creating dictionaries</h2>
+    <p class="lead">There are several ways to open a fresh "drawer," depending on what data you're starting with.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      Sometimes you start a new catalog drawer empty and file cards one by one. Sometimes a librarian hands you a stack of cards already paired up, and you drop them all into the drawer at once. Both are valid ways to build the same catalog.
+    </div>
+
+    <h3 class="sub-title">Literal syntax — the most common way</h3>
+    <pre>student = {<span class="st">"name"</span>: <span class="st">"Maya"</span>, <span class="st">"grade"</span>: <span class="st">10</span>, <span class="st">"passed"</span>: <span class="kw">True</span>}</pre>
+
+    <h3 class="sub-title">The <code class="inline">dict()</code> constructor</h3>
+    <pre>student = <span class="fn">dict</span>(name=<span class="st">"Maya"</span>, grade=<span class="st">10</span>, passed=<span class="kw">True</span>)
+
+<span class="c1"># from a list of (key, value) pairs — like pairing loose cards</span>
+pairs = [(<span class="st">"a"</span>, <span class="st">1</span>), (<span class="st">"b"</span>, <span class="st">2</span>)]
+d = <span class="fn">dict</span>(pairs)   <span class="c1"># {'a': 1, 'b': 2}</span></pre>
+
+    <h3 class="sub-title">Starting empty</h3>
+    <pre>empty_drawer = {}          <span class="c1"># most common</span>
+also_empty = <span class="fn">dict</span>()      <span class="c1"># same result, slightly slower to type</span></pre>
+
+    <h3 class="sub-title"><code class="inline">fromkeys()</code> — same starting value for every card</h3>
+    <p>Useful when you want several keys to all start out identical, like resetting every student's attendance to zero at term start.</p>
+    <pre>attendance = <span class="fn">dict.fromkeys</span>([<span class="st">"Maya"</span>, <span class="st">"Leo"</span>, <span class="st">"Sam"</span>], <span class="st">0</span>)
+<span class="c1"># {'Maya': 0, 'Leo': 0, 'Sam': 0}</span></pre>
+  </section>
+
+  <!-- 03 ACCESS & UPDATE -->
+  <section class="card" id="t-access">
+    <div class="section-eyebrow">Topic 03</div>
+    <h2 class="section-title">Reading, adding, updating, deleting</h2>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      Reading a card is fine — but what if the card doesn't exist? A careless librarian who assumes every title has a card will panic when one's missing. A careful one checks first, or has a standard "not found" response ready.
+    </div>
+
+    <h3 class="sub-title">Reading a value</h3>
+    <pre>catalog = {<span class="st">"1984"</span>: <span class="st">"Shelf 4B"</span>}
+
+catalog[<span class="st">"1984"</span>]            <span class="c1"># 'Shelf 4B'  — crashes with KeyError if missing</span>
+catalog.<span class="fn">get</span>(<span class="st">"1984"</span>)        <span class="c1"># 'Shelf 4B'  — safe, returns None if missing</span>
+catalog.<span class="fn">get</span>(<span class="st">"Emma"</span>, <span class="st">"Not filed"</span>) <span class="c1"># fallback value instead of None</span></pre>
+    <p><code class="inline">.get()</code> is the "safe" read — like a librarian who says "no card for that title" instead of freezing when a book isn't catalogued.</p>
+
+    <h3 class="sub-title">Adding or updating</h3>
+    <pre><span class="c1"># adding a brand-new card, or overwriting an existing one</span>
+catalog[<span class="st">"Dune"</span>] = <span class="st">"Shelf 5C"</span>
+catalog[<span class="st">"1984"</span>] = <span class="st">"Shelf 4C"</span>   <span class="c1"># moved shelves — card updated in place</span>
+
+<span class="c1"># merging many cards at once</span>
+catalog.<span class="fn">update</span>({<span class="st">"Sapiens"</span>: <span class="st">"Shelf 2A"</span>, <span class="st">"Emma"</span>: <span class="st">"Shelf 4A"</span>})</pre>
+
+    <h3 class="sub-title">Deleting</h3>
+    <pre><span class="kw">del</span> catalog[<span class="st">"Dune"</span>]              <span class="c1"># removes the card, errors if missing</span>
+catalog.<span class="fn">pop</span>(<span class="st">"Sapiens"</span>)            <span class="c1"># removes AND hands you the value back</span>
+catalog.<span class="fn">pop</span>(<span class="st">"Ghost"</span>, <span class="st">"none"</span>)     <span class="c1"># safe pop with a fallback</span>
+catalog.<span class="fn">clear</span>()                    <span class="c1"># empties the whole drawer</span></pre>
+
+    <h3 class="sub-title"><code class="inline">setdefault()</code> — file it only if it's missing</h3>
+    <pre><span class="c1"># if "Emma" has no card yet, file one; otherwise leave it alone</span>
+catalog.<span class="fn">setdefault</span>(<span class="st">"Emma"</span>, <span class="st">"Unfiled"</span>)</pre>
+  </section>
+
+  <!-- 04 METHODS -->
+  <section class="card" id="t-methods">
+    <div class="section-eyebrow">Topic 04</div>
+    <h2 class="section-title">The methods worth knowing well</h2>
+    <p class="lead">These three are how you pull data <em>out</em> of the drawer in bulk — all the titles, all the shelf numbers, or every card as a pair.</p>
+
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>.keys()</h4>
+        <p>Every card's title — like reading just the tabs on the front of each card.</p>
+      </div>
+      <div class="mini-card">
+        <h4>.values()</h4>
+        <p>Every card's content, ignoring the titles — just the shelf numbers.</p>
+      </div>
+      <div class="mini-card">
+        <h4>.items()</h4>
+        <p>Every full card, title and content together, as (key, value) pairs.</p>
+      </div>
+      <div class="mini-card">
+        <h4>len(d)</h4>
+        <p>How many cards are in the drawer.</p>
+      </div>
+    </div>
+
+    <pre>catalog = {<span class="st">"1984"</span>: <span class="st">"4B"</span>, <span class="st">"Dune"</span>: <span class="st">"5C"</span>}
+
+catalog.<span class="fn">keys</span>()    <span class="c1"># dict_keys(['1984', 'Dune'])</span>
+catalog.<span class="fn">values</span>()  <span class="c1"># dict_values(['4B', '5C'])</span>
+catalog.<span class="fn">items</span>()   <span class="c1"># dict_items([('1984', '4B'), ('Dune', '5C')])</span>
+<span class="fn">len</span>(catalog)     <span class="c1"># 2</span>
+
+<span class="st">"Dune"</span> <span class="kw">in</span> catalog   <span class="c1"># True — checks keys, not values, and it's fast</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      <code class="inline">in</code> is like glancing at the drawer's tab index instead of flipping through every card — because the catalog is organized by key, checking "do we have this title?" is nearly instant no matter how big the drawer is.
+    </div>
+  </section>
+
+  <!-- 05 LOOPING -->
+  <section class="card" id="t-loop">
+    <div class="section-eyebrow">Topic 05</div>
+    <h2 class="section-title">Looping through a dictionary</h2>
+    <p class="lead">Looping is like a librarian doing a full inventory sweep, card by card, in the order they were filed.</p>
+
+    <pre>catalog = {<span class="st">"1984"</span>: <span class="st">"4B"</span>, <span class="st">"Dune"</span>: <span class="st">"5C"</span>, <span class="st">"Sapiens"</span>: <span class="st">"2A"</span>}
+
+<span class="c1"># just the titles</span>
+<span class="kw">for</span> title <span class="kw">in</span> catalog:
+    <span class="fn">print</span>(title)
+
+<span class="c1"># title + shelf, the natural way to read a full card</span>
+<span class="kw">for</span> title, shelf <span class="kw">in</span> catalog.<span class="fn">items</span>():
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"{title} is on shelf {shelf}"</span>)
+
+<span class="c1"># just the shelf numbers</span>
+<span class="kw">for</span> shelf <span class="kw">in</span> catalog.<span class="fn">values</span>():
+    <span class="fn">print</span>(shelf)</pre>
+
+    <div class="analogy">
+      <span class="tag">Watch out</span>
+      Never add or delete cards from the drawer <em>while</em> you're sweeping through it — Python raises a <code class="inline">RuntimeError</code> because the inventory count shifts mid-count. Build a list of changes first, then apply them after the loop finishes.
+    </div>
+  </section>
+
+  <!-- 06 COMPREHENSIONS -->
+  <section class="card" id="t-comp">
+    <div class="section-eyebrow">Topic 06</div>
+    <h2 class="section-title">Dict comprehensions</h2>
+    <p class="lead">A comprehension is a one-line assembly line: it takes a stack of raw material and files a card for each item automatically, following a rule you give it.</p>
+
+    <pre><span class="c1"># squares of 1 through 5, filed as {number: square}</span>
+squares = {n: n**2 <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(1, 6)}
+<span class="c1"># {1: 1, 2: 4, 3: 9, 4: 16, 5: 25}</span>
+
+<span class="c1"># only file cards that pass a condition</span>
+words = [<span class="st">"fig"</span>, <span class="st">"apple"</span>, <span class="st">"kiwi"</span>, <span class="st">"banana"</span>]
+long_words = {w: <span class="fn">len</span>(w) <span class="kw">for</span> w <span class="kw">in</span> words <span class="kw">if</span> <span class="fn">len</span>(w) > <span class="st">4</span>}
+<span class="c1"># {'apple': 5, 'banana': 6}</span>
+
+<span class="c1"># flip an existing catalog — value becomes the new key</span>
+shelf_of = {<span class="st">"1984"</span>: <span class="st">"4B"</span>, <span class="st">"Dune"</span>: <span class="st">"5C"</span>}
+book_on = {shelf: title <span class="kw">for</span> title, shelf <span class="kw">in</span> shelf_of.<span class="fn">items</span>()}
+<span class="c1"># {'4B': '1984', '5C': 'Dune'}</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      Instead of a librarian filing 500 cards one at a time by hand, a comprehension is the machine that reads a shelving list and stamps out every card in one pass, skipping any that don't meet the filing rule.
+    </div>
+  </section>
+
+  <!-- 07 NESTED -->
+  <section class="card" id="t-nested">
+    <div class="section-eyebrow">Topic 07</div>
+    <h2 class="section-title">Nested dictionaries</h2>
+    <p class="lead">A value doesn't have to be simple — it can be a whole dictionary of its own. That's how you model something with several fields, like a full patron or student record.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      Some catalog cards aren't a single line — they're a small folder: title, author, year, and condition, all filed under one book. A nested dictionary is that folder-within-a-drawer.
+    </div>
+
+    <pre>library = {
+    <span class="st">"1984"</span>: {<span class="st">"author"</span>: <span class="st">"Orwell"</span>, <span class="st">"year"</span>: <span class="st">1949</span>, <span class="st">"copies"</span>: <span class="st">3</span>},
+    <span class="st">"Dune"</span>:  {<span class="st">"author"</span>: <span class="st">"Herbert"</span>, <span class="st">"year"</span>: <span class="st">1965</span>, <span class="st">"copies"</span>: <span class="st">5</span>}
+}
+
+<span class="c1"># reach into a nested field</span>
+library[<span class="st">"1984"</span>][<span class="st">"author"</span>]      <span class="c1"># 'Orwell'</span>
+
+<span class="c1"># update one field deep inside</span>
+library[<span class="st">"Dune"</span>][<span class="st">"copies"</span>] -= <span class="st">1</span>
+
+<span class="c1"># walk every book and its details</span>
+<span class="kw">for</span> title, info <span class="kw">in</span> library.<span class="fn">items</span>():
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"{title} by {info['author']} ({info['year']})"</span>)</pre>
+
+    <p>Nesting can go as deep as the real thing you're modeling needs — a library system, a shelf, a book, a copy's condition — but past two or three levels, it usually reads better as small classes instead.</p>
+  </section>
+
+  <!-- 08 HASHABILITY -->
+  <section class="card" id="t-hash">
+    <div class="section-eyebrow">Topic 08</div>
+    <h2 class="section-title">Why lookups are instant: hashability</h2>
+    <p class="lead">A dictionary isn't secretly scanning every card when you look something up — it jumps straight to the right spot. That's the whole point of the card-catalog design, and it's why keys have a restriction.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      A library catalog is organized by a rule: the first letter of the title decides which drawer it's in. Python does the same thing with a <strong>hash function</strong> — it runs the key through a formula that spits out a "drawer number," so it never has to search, it just goes straight there. That's why lookups stay fast even with a million entries.
+    </div>
+
+    <pre><span class="c1"># hashable — fine as keys</span>
+d = {<span class="st">"text"</span>: <span class="st">1</span>, <span class="st">42</span>: <span class="st">"num"</span>, (<span class="st">1</span>,<span class="st">2</span>): <span class="st">"tuple key"</span>}
+
+<span class="c1"># unhashable — lists can change shape, so they can't be filed by a fixed rule</span>
+d[[<span class="st">1</span>,<span class="st">2</span>]] = <span class="st">"oops"</span>   <span class="c1"># TypeError: unhashable type: 'list'</span></pre>
+
+    <p>This is also why a key, once used to file a card, must stay the same "shape" forever — a string or number's hash never changes, but a list's would, and that would put the card in the wrong drawer.</p>
+
+    <h3 class="sub-title">Why this makes dictionaries fast</h3>
+    <ul>
+      <li><strong>List lookup:</strong> checking if something is present means checking every item — slower as the list grows.</li>
+      <li><strong>Dict lookup:</strong> the hash tells Python exactly where to look — roughly the same speed whether there are 10 entries or 10 million.</li>
+    </ul>
+  </section>
+
+  <!-- 09 REAL WORLD TASK -->
+  <section class="card" id="t-task">
+    <div class="section-eyebrow">Topic 09 · Build something real</div>
+    <h2 class="section-title">Project: a Contact Book manager</h2>
+    <p class="lead">We'll build a small command-line contact book — the kind of thing a phone's Contacts app does underneath. It uses almost every dictionary skill from this page: creation, safe access, updates, deletion, looping, nesting, and comprehensions.</p>
+
+    <div class="analogy">
+      <span class="tag">The brief</span>
+      Store each contact's name as the key, and a nested dictionary of phone, email, and city as the value. Support adding, updating, searching, deleting, and generating a filtered directory — say, "everyone in Mumbai."
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Set up the contact book</h4>
+        <p>Start with an empty dictionary. Each contact will be a nested dictionary of details.</p>
+        <pre>contact_book = {}</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Add a contact</h4>
+        <p>Write a function that files a new "card" — the person's name maps to their details.</p>
+        <pre><span class="kw">def</span> <span class="fn">add_contact</span>(book, name, phone, email, city):
+    book[name] = {
+        <span class="st">"phone"</span>: phone,
+        <span class="st">"email"</span>: email,
+        <span class="st">"city"</span>: city
+    }
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Added {name}."</span>)
+
+<span class="fn">add_contact</span>(contact_book, <span class="st">"Maya Rao"</span>, <span class="st">"98765xxxxx"</span>, <span class="st">"maya@mail.com"</span>, <span class="st">"Mumbai"</span>)
+<span class="fn">add_contact</span>(contact_book, <span class="st">"Leo Diaz"</span>, <span class="st">"91234xxxxx"</span>, <span class="st">"leo@mail.com"</span>, <span class="st">"Pune"</span>)</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Look someone up — safely</h4>
+        <p>Use <code class="inline">.get()</code> so an unknown name doesn't crash the whole program.</p>
+        <pre><span class="kw">def</span> <span class="fn">find_contact</span>(book, name):
+    contact = book.<span class="fn">get</span>(name)
+    <span class="kw">if</span> contact <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="fn">print</span>(<span class="fn">f</span><span class="st">"No contact named {name}."</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(<span class="fn">f</span><span class="st">"{name}: {contact['phone']}, {contact['email']}, {contact['city']}"</span>)
+
+<span class="fn">find_contact</span>(contact_book, <span class="st">"Maya Rao"</span>)</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Update one field without touching the rest</h4>
+        <p>Someone changed cities — reach into the nested dict and update just that key.</p>
+        <pre><span class="kw">def</span> <span class="fn">update_city</span>(book, name, new_city):
+    <span class="kw">if</span> name <span class="kw">in</span> book:
+        book[name][<span class="st">"city"</span>] = new_city
+        <span class="fn">print</span>(<span class="fn">f</span><span class="st">"{name} moved to {new_city}."</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(<span class="st">"Contact not found."</span>)
+
+<span class="fn">update_city</span>(contact_book, <span class="st">"Leo Diaz"</span>, <span class="st">"Bangalore"</span>)</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Delete a contact</h4>
+        <p><code class="inline">.pop()</code> removes them and confirms who was removed, without crashing if they were never there.</p>
+        <pre><span class="kw">def</span> <span class="fn">delete_contact</span>(book, name):
+    removed = book.<span class="fn">pop</span>(name, <span class="kw">None</span>)
+    <span class="kw">if</span> removed:
+        <span class="fn">print</span>(<span class="fn">f</span><span class="st">"Removed {name}."</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(<span class="st">"Nothing to remove — not found."</span>)</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h4>Build a filtered directory with a comprehension</h4>
+        <p>Generate a mini phonebook of just the people in one city — a single line does what would otherwise be a multi-line loop.</p>
+        <pre><span class="kw">def</span> <span class="fn">contacts_in_city</span>(book, city):
+    <span class="kw">return</span> {name: info[<span class="st">"phone"</span>] <span class="kw">for</span> name, info <span class="kw">in</span> book.<span class="fn">items</span>() <span class="kw">if</span> info[<span class="st">"city"</span>] == city}
+
+<span class="fn">print</span>(<span class="fn">contacts_in_city</span>(contact_book, <span class="st">"Mumbai"</span>))
+<span class="c1"># {'Maya Rao': '98765xxxxx'}</span></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <h4>Print the full directory</h4>
+        <p>Loop through everything with <code class="inline">.items()</code> for a full readable listing — the "inventory sweep" from Topic 05.</p>
+        <pre><span class="kw">def</span> <span class="fn">print_directory</span>(book):
+    <span class="kw">for</span> name, info <span class="kw">in</span> book.<span class="fn">items</span>():
+        <span class="fn">print</span>(<span class="fn">f</span><span class="st">"{name} — {info['city']} — {info['phone']}"</span>)
+
+<span class="fn">print_directory</span>(contact_book)</pre>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">What you just practiced</span>
+      Creation (<code class="inline">{}</code>), nested structure, safe reads (<code class="inline">.get()</code>), targeted updates, safe deletes (<code class="inline">.pop()</code>), comprehensions, and full iteration (<code class="inline">.items()</code>) — the entire toolkit, applied to one coherent, realistic program.
+    </div>
+  </section>
+
+  <!-- 10 QUIZ -->
+  <section class="card" id="t-quiz">
+    <div class="section-eyebrow">Topic 10</div>
+    <h2 class="section-title">Check what stuck</h2>
+    <p class="lead">15 questions. Pick an answer to see if you're right — your score tallies as you go.</p>
+
+    <div class="quiz-progress">
+      <span id="qProgressText">0 / 15 answered</span>
+      <div class="quiz-bar"><div class="quiz-bar-fill" id="quizBarFill"></div></div>
+      <span id="qScoreText">Score: 0</span>
+    </div>
+
+    <div id="quizContainer"></div>
+
+    <div class="quiz-actions">
+      <button class="ghost-btn" id="resetBtn">Reset quiz</button>
+      <button class="primary-btn" id="finishBtn">See final score</button>
+    </div>
+
+    <div id="quizResult">
+      <div class="score-big" id="finalScore">0 / 15</div>
+      <p id="finalMsg">Fill in the quiz above to see how you did.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>index card no. 000-DICT — filed under python / data-structures — end of drawer</footer>
+
+<script>
+  // ---------- Tab navigation ----------
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const cards = document.querySelectorAll('section.card');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      cards.forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  });
+
+  // ---------- Quiz data ----------
+  const QUESTIONS = [
+    {
+      q: "What does a Python dictionary primarily use to organize its data?",
+      opts: ["Numeric index positions", "Key–value pairs", "Alphabetical sorting only", "A fixed-size array"],
+      correct: 1,
+      explain: "Like a card catalog filed by title, a dictionary is organized around keys that map to values — not numeric positions like a list."
+    },
+    {
+      q: "Which line creates an empty dictionary?",
+      opts: ["dict[]", "{}", "()", "dict.new()"],
+      correct: 1,
+      explain: "{} creates an empty dict. () creates an empty tuple, and dict[] / dict.new() aren't valid syntax."
+    },
+    {
+      q: "What happens if you access a missing key using square brackets, e.g. d['ghost']?",
+      opts: ["Returns None", "Returns an empty string", "Raises a KeyError", "Creates the key automatically"],
+      correct: 2,
+      explain: "Square-bracket access assumes the card exists. If it doesn't, Python raises a KeyError instead of guessing."
+    },
+    {
+      q: "Which method safely returns a fallback value instead of crashing on a missing key?",
+      opts: [".find()", ".get()", ".search()", ".lookup()"],
+      correct: 1,
+      explain: ".get(key, fallback) is the 'careful librarian' approach — it never raises an error for a missing key."
+    },
+    {
+      q: "What does catalog.items() return?",
+      opts: ["Only the keys", "Only the values", "Key–value pairs together", "The number of entries"],
+      correct: 2,
+      explain: ".items() hands you every full card — key and value together — as pairs, ideal for looping."
+    },
+    {
+      q: "Which of these CANNOT be used as a dictionary key?",
+      opts: ["A string", "A tuple", "A list", "An integer"],
+      correct: 2,
+      explain: "Lists are mutable, so they're unhashable — their 'shape' could change, which would break the lookup rule. Tuples, strings, and numbers are all fine because they're immutable."
+    },
+    {
+      q: "Why are dictionary lookups so fast compared to searching a list?",
+      opts: [
+        "Dictionaries are always smaller than lists",
+        "Python secretly sorts dictionaries first",
+        "A hash function jumps straight to the right spot instead of scanning",
+        "Dictionaries only store numbers"
+      ],
+      correct: 2,
+      explain: "The hash function is like the catalog's shelving rule — it computes exactly where a key belongs, so there's no need to scan every entry."
+    },
+    {
+      q: "What does d.pop('name', None) do if 'name' isn't in d?",
+      opts: ["Raises a KeyError", "Returns None without error", "Adds 'name' with value None", "Deletes a random key"],
+      correct: 1,
+      explain: "Giving .pop() a fallback value makes it safe — missing keys just return the fallback instead of crashing."
+    },
+    {
+      q: "Which snippet correctly builds {1: 1, 2: 4, 3: 9} using a comprehension?",
+      opts: [
+        "{n: n**2 for n in range(1,4)}",
+        "[n: n**2 for n in range(1,4)]",
+        "{n**2 for n in range(1,4)}",
+        "dict(n, n**2 for n in range(1,4))"
+      ],
+      correct: 0,
+      explain: "Dict comprehensions use { key_expr: value_expr for item in iterable }. Option 3 builds a set, not a dict, since it's missing the colon."
+    },
+    {
+      q: "In library['1984']['author'], what is library structured as?",
+      opts: ["A list of lists", "A nested dictionary", "A tuple of strings", "A single flat dictionary"],
+      correct: 1,
+      explain: "Chaining two square brackets like this means the outer dictionary's values are themselves dictionaries — a nested dictionary."
+    },
+    {
+      q: "What's the safest way to add a key ONLY if it doesn't already exist?",
+      opts: [".update()", ".setdefault()", ".append()", "del d[key]"],
+      correct: 1,
+      explain: ".setdefault(key, value) files the card only if it's missing; if it's already there, it leaves it untouched."
+    },
+    {
+      q: "Which statement about dictionary order is true in modern Python (3.7+)?",
+      opts: [
+        "Dictionaries are always sorted alphabetically by key",
+        "Dictionaries have no reliable order at all",
+        "Dictionaries preserve insertion order",
+        "Dictionaries randomly reorder on every access"
+      ],
+      correct: 2,
+      explain: "Since Python 3.7, dictionaries remember the order keys were added — like cards staying in the order they were filed."
+    },
+    {
+      q: "What does the 'in' operator check when used like 'Dune' in catalog?",
+      opts: ["Whether 'Dune' is a value", "Whether 'Dune' is a key", "Whether the dict is empty", "Whether 'Dune' is the first key"],
+      correct: 1,
+      explain: "'in' checks the keys by default — the fast, hash-based tab index of the catalog, not the card contents."
+    },
+    {
+      q: "What's wrong with adding or removing keys while looping directly over a dictionary?",
+      opts: [
+        "Nothing, it's perfectly safe",
+        "It silently skips some entries with no warning",
+        "It raises a RuntimeError because the size changed mid-iteration",
+        "It only works with nested dictionaries"
+      ],
+      correct: 2,
+      explain: "Changing a dictionary's size while sweeping through it confuses the iteration and Python raises a RuntimeError to warn you."
+    },
+    {
+      q: "Which of these correctly merges dict b's entries into dict a, overwriting shared keys?",
+      opts: ["a.merge(b)", "a.update(b)", "a + b", "a.extend(b)"],
+      correct: 1,
+      explain: "a.update(b) copies all of b's key-value pairs into a, overwriting any keys they share — like merging a new stack of cards into an existing drawer."
+    }
+  ];
+
+  const container = document.getElementById('quizContainer');
+  const answered = new Array(QUESTIONS.length).fill(null);
+
+  function renderQuiz(){
+    container.innerHTML = '';
+    QUESTIONS.forEach((item, qi) => {
+      const block = document.createElement('div');
+      block.className = 'q-block';
+      block.innerHTML = `
+        <div class="q-num">Question ${qi + 1} of ${QUESTIONS.length}</div>
+        <h4>${item.q}</h4>
+        <div class="opts">
+          ${item.opts.map((opt, oi) => `
+            <label class="opt" data-qi="${qi}" data-oi="${oi}">
+              <input type="radio" name="q${qi}" value="${oi}">
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+        </div>
+        <div class="explain" id="explain-${qi}">${item.explain}</div>
+      `;
+      container.appendChild(block);
+    });
+
+    container.querySelectorAll('.opt').forEach(label => {
+      label.addEventListener('click', (e) => {
+        const qi = parseInt(label.dataset.qi);
+        const oi = parseInt(label.dataset.oi);
+        if (answered[qi] !== null) { e.preventDefault(); return; } // lock after first answer
+        answered[qi] = oi;
+
+        const siblingOpts = document.querySelectorAll(`.opt[data-qi="${qi}"]`);
+        siblingOpts.forEach(sib => {
+          const sOi = parseInt(sib.dataset.oi);
+          if (sOi === QUESTIONS[qi].correct) sib.classList.add('correct');
+          else if (sOi === oi) sib.classList.add('wrong');
+        });
+        document.getElementById(`explain-${qi}`).classList.add('show');
+        updateProgress();
+      });
+    });
+  }
+
+  function updateProgress(){
+    const answeredCount = answered.filter(a => a !== null).length;
+    const score = answered.reduce((acc, a, i) => acc + (a === QUESTIONS[i].correct ? 1 : 0), 0);
+    document.getElementById('qProgressText').textContent = `${answeredCount} / ${QUESTIONS.length} answered`;
+    document.getElementById('qScoreText').textContent = `Score: ${score}`;
+    document.getElementById('quizBarFill').style.width = `${(answeredCount / QUESTIONS.length) * 100}%`;
+  }
+
+  document.getElementById('finishBtn').addEventListener('click', () => {
+    const score = answered.reduce((acc, a, i) => acc + (a === QUESTIONS[i].correct ? 1 : 0), 0);
+    const answeredCount = answered.filter(a => a !== null).length;
+    const resultBox = document.getElementById('quizResult');
+    resultBox.style.display = 'block';
+    document.getElementById('finalScore').textContent = `${score} / ${QUESTIONS.length}`;
+
+    let msg;
+    if (answeredCount < QUESTIONS.length) {
+      msg = `You answered ${answeredCount} of ${QUESTIONS.length} — finish the rest for your full score.`;
+    } else if (score === QUESTIONS.length) {
+      msg = "Perfect score — the whole catalog system, filed away correctly.";
+    } else if (score >= QUESTIONS.length * 0.7) {
+      msg = "Solid grasp of dictionaries — a quick re-read of the missed topics will lock it in.";
+    } else {
+      msg = "Worth another pass through the tabs above, especially the ones you missed.";
+    }
+    document.getElementById('finalMsg').textContent = msg;
+    resultBox.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    for (let i = 0; i < answered.length; i++) answered[i] = null;
+    document.getElementById('quizResult').style.display = 'none';
+    renderQuiz();
+    updateProgress();
+  });
+
+  renderQuiz();
+  updateProgress();
+</script>
+
+</body>
+</html>

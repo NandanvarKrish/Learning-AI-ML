@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 10 — Capstone: End-to-End ML Pipeline</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --gold:#b58900;--gold-l:#fefae0;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.07),transparent 60%),
+             radial-gradient(ellipse 40% 30% at 92% 100%,rgba(21,88,192,0.06),transparent 60%),
+             radial-gradient(ellipse 30% 30% at 50% 50%,rgba(181,137,0,0.03),transparent 70%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+/* HERO */
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:linear-gradient(135deg,var(--gold),#d4a200);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;box-shadow:0 2px 8px rgba(181,137,0,0.3);}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+h1 .hl2{color:var(--gold);}
+.tagline{font-size:15px;color:var(--text2);max-width:560px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:linear-gradient(90deg,var(--accent),var(--gold));box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+/* CELEBRATION */
+.celebrate{background:linear-gradient(135deg,var(--gold-l),var(--al));border:2px solid rgba(181,137,0,0.3);border-radius:16px;padding:22px 24px;margin:28px 0;text-align:center;box-shadow:var(--sh);}
+.celebrate-emoji{font-size:36px;margin-bottom:8px;}
+.celebrate-title{font-size:18px;font-weight:800;color:var(--gold);margin-bottom:6px;}
+.celebrate-text{font-size:13px;color:var(--text2);line-height:1.65;max-width:520px;margin:0 auto;}
+
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov{font-size:14px;font-weight:700;}
+
+/* PIPELINE VISUAL */
+.pipeline{display:flex;gap:0;flex-wrap:wrap;margin:16px 0;}
+.pipe-step{background:var(--al);border:1.5px solid var(--ag);border-radius:8px;padding:10px 14px;flex:1;min-width:110px;text-align:center;position:relative;}
+.pipe-step:not(:last-child)::after{content:'→';position:absolute;right:-14px;top:50%;transform:translateY(-50%);color:var(--accent);font-weight:700;font-size:14px;z-index:1;}
+.pipe-n{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:3px;}
+.pipe-label{font-size:12px;font-weight:700;color:var(--accent);}
+
+/* DATASET OPTIONS */
+.dataset-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0;}
+@media(max-width:560px){.dataset-grid{grid-template-columns:1fr;}}
+.ds-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--sh);cursor:pointer;transition:border-color .2s,box-shadow .2s;}
+.ds-card:hover{border-color:var(--accent);box-shadow:var(--shm);}
+.ds-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.ds-desc{font-size:11px;color:var(--text3);line-height:1.5;}
+.ds-type{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;display:inline-block;margin-top:5px;}
+.ds-reg{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.ds-cls{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+
+/* TOPICS */
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+/* CONCEPT CARDS */
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-gold{background:var(--gold-l);color:var(--gold);border:1px solid rgba(181,137,0,0.25);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+
+/* OUTCOMES */
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+/* TASK CARDS */
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.bgold{background:var(--gold-l);color:var(--gold);border:1px solid rgba(181,137,0,0.25);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.goldb{display:flex;gap:10px;background:var(--gold-l);border:1px solid rgba(181,137,0,0.25);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+/* MODEL CARD */
+.model-card{background:var(--surface);border:2px solid var(--accent);border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 2px 16px var(--ag);}
+.mc-title{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;}
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:540px){.mc-grid{grid-template-columns:1fr;}}
+.mc-field{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.mc-label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.mc-val{font-size:13px;font-weight:600;color:var(--text);}
+
+/* FORMULA GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* NEXT STEPS */
+.next-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;}
+@media(max-width:580px){.next-grid{grid-template-columns:1fr;}}
+.next-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);text-align:center;}
+.next-icon{font-size:24px;margin-bottom:8px;}
+.next-title{font-size:13px;font-weight:700;margin-bottom:5px;}
+.next-desc{font-size:11px;color:var(--text3);line-height:1.5;}
+.next-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;display:inline-block;margin-top:7px;}
+
+/* ACHIEVEMENT WALL */
+.achievement-wall{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0;}
+@media(max-width:580px){.achievement-wall{grid-template-columns:repeat(3,1fr);}}
+.badge{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;box-shadow:var(--sh);}
+.badge-icon{font-size:22px;margin-bottom:5px;}
+.badge-name{font-size:10px;font-weight:700;color:var(--text2);}
+
+/* TIP */
+.tip{background:linear-gradient(135deg,var(--gold-l),var(--al));border:2px solid rgba(181,137,0,0.3);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--gold);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+/* NAV */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:linear-gradient(135deg,var(--accent),#0b6650);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:var(--accent);}
+
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 10 of 10</div>
+    <div class="db">🏆 DAY 10 — FINAL</div>
+  </div>
+  <h1>Capstone —<br><span class="hl">End-to-End</span> <span class="hl2">ML Pipeline</span></h1>
+  <div class="tagline">Build a complete, professional ML project from raw data to deployed scoring dashboard — using every skill from Days 1–9. This is your proof of mastery.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#b58900"></div>Category: Capstone</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●●</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">🏆 Final Project</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pl">Day 10 / 10 🎉</div>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="celebrate">
+  <div class="celebrate-emoji">🎓</div>
+  <div class="celebrate-title">You Made It to Day 10!</div>
+  <div class="celebrate-text">You've spent 9 days mastering Excel for data science — cleaning data, visualising patterns, building regression and classification models, clustering customers, and evaluating model performance. Today you put it all together into one complete, professional ML pipeline. This is your graduation project.</div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">🚀</div><div class="ol2">Focus</div><div class="ov">Full ML Pipeline</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Skills Used</div><div class="ov">All 9 Days</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Deliverable</div><div class="ov">Scoring Dashboard</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Output</div><div class="ov">Model Card + Report</div></div>
+</div>
+
+<!-- PIPELINE OVERVIEW -->
+<div class="sl">🗺️ The Full Pipeline — What You're Building Today</div>
+<div class="pipeline">
+  <div class="pipe-step"><div class="pipe-n">Step 1</div><div class="pipe-label">📥 Import</div></div>
+  <div class="pipe-step"><div class="pipe-n">Step 2</div><div class="pipe-label">🧹 Clean</div></div>
+  <div class="pipe-step"><div class="pipe-n">Step 3</div><div class="pipe-label">📊 EDA</div></div>
+  <div class="pipe-step"><div class="pipe-n">Step 4</div><div class="pipe-label">✂️ Split</div></div>
+  <div class="pipe-step"><div class="pipe-n">Step 5</div><div class="pipe-label">🤖 Model</div></div>
+  <div class="pipe-step"><div class="pipe-n">Step 6</div><div class="pipe-label">📏 Evaluate</div></div>
+  <div class="pipe-step"><div class="pipe-n">Step 7</div><div class="pipe-label">🚀 Deploy</div></div>
+</div>
+
+<!-- CHOOSE YOUR DATASET -->
+<div class="sl">📦 Choose Your Capstone Dataset</div>
+<div class="dataset-grid">
+  <div class="ds-card">
+    <div class="ds-title">🏠 House Price Prediction</div>
+    <div class="ds-desc">Columns: Area (sqft), Bedrooms, Age, Distance_to_City, Garden (Y/N), Price (target). Predict house price from features.</div>
+    <div class="ds-type ds-reg">Regression</div>
+  </div>
+  <div class="ds-card">
+    <div class="ds-title">🎓 Student Performance</div>
+    <div class="ds-desc">Columns: StudyHours, Attendance, SleepHours, Income, Department, Pass (target). Predict pass/fail outcome.</div>
+    <div class="ds-type ds-cls">Classification</div>
+  </div>
+  <div class="ds-card">
+    <div class="ds-title">📊 Sales Forecasting</div>
+    <div class="ds-desc">Columns: Month, Region, Marketing_Spend, Competitor_Price, Season, Revenue (target). Predict monthly sales.</div>
+    <div class="ds-type ds-reg">Regression</div>
+  </div>
+  <div class="ds-card">
+    <div class="ds-title">💳 Customer Churn</div>
+    <div class="ds-desc">Columns: Tenure, MonthlySpend, Complaints, ProductCount, Age, Churned (target). Predict churn probability.</div>
+    <div class="ds-type ds-cls">Classification</div>
+  </div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Skills Applied Today (All 9 Days)</div>
+<div class="tg">
+  <div class="ti"><div class="tn">D1</div><div><div class="tt">Excel Tables + Named Ranges</div><div class="ts">Structured data foundation for the full pipeline</div></div></div>
+  <div class="ti"><div class="tn">D2</div><div><div class="tt">Power Formulas</div><div class="ts">XLOOKUP, IFS, SUMPRODUCT for feature engineering</div></div></div>
+  <div class="ti"><div class="tn">D3</div><div><div class="tt">Descriptive Statistics</div><div class="ts">ToolPak stats, skew detection, normalization</div></div></div>
+  <div class="ti"><div class="tn">D4</div><div><div class="tt">Data Cleaning</div><div class="ts">Imputation, dedup, encoding, Power Query ETL</div></div></div>
+  <div class="ti"><div class="tn">D5</div><div><div class="tt">EDA &amp; Visualization</div><div class="ts">5-question framework, charts, feature ranking</div></div></div>
+  <div class="ti"><div class="tn">D6</div><div><div class="tt">Regression</div><div class="ts">LINEST, ToolPak, coefficients, residuals</div></div></div>
+  <div class="ti"><div class="tn">D7</div><div><div class="tt">Classification</div><div class="ts">Logistic regression, confusion matrix, F1</div></div></div>
+  <div class="ti"><div class="tn">D8</div><div><div class="tt">Clustering + RFM</div><div class="ts">K-Means, elbow method, segment profiling</div></div></div>
+  <div class="ti"><div class="tn">D9</div><div><div class="tt">Model Evaluation</div><div class="ts">Train/test split, MAE/RMSE, Data Tables, Goal Seek</div></div></div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl">✅ Capstone Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Complete a full end-to-end ML pipeline in under 60 minutes</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build a live scoring dashboard stakeholders can use</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Write a professional model card with limitations</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Present findings in 2 minutes with clarity and confidence</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Capstone Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#b84f00;flex:10"></div>
+  <div class="hs" style="background:#1558c0;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:13"></div>
+  <div class="hs" style="background:#1558c0;flex:10"></div>
+  <div class="hs" style="background:#b58900;flex:12"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#b58900"></div>Dashboard + Presentation</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>EDA / Model / Evaluate</div>
+  <div class="li"><div class="ld" style="background:#b84f00"></div>Setup + Clean</div>
+</div>
+
+<!-- ══ TASKS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bo">0 – 10 min</div>
+    <div class="tw"><div class="tm">📥 Project Setup &amp; Data Import</div><div class="ts2">Workbook structure, dataset import, and initial data audit</div></div>
+    <div class="typ bo">Setup</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">A professional ML project starts with intentional structure. Every sheet has a purpose. Every column has a type. Every decision is documented. You're not just building a model — you're building an auditable, maintainable data product.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create <strong>Day10_Capstone.xlsx</strong>. Create these sheets in order (right-click tab → Insert):<br>
+        📥 <strong>RawData</strong> — original untouched data<br>
+        🧹 <strong>CleanData</strong> — cleaned and encoded data<br>
+        📊 <strong>EDA</strong> — charts and statistics<br>
+        🤖 <strong>Model</strong> — regression or classifier output<br>
+        📏 <strong>Evaluation</strong> — train/test metrics<br>
+        🚀 <strong>ScoringEngine</strong> — live prediction tool<br>
+        📋 <strong>ModelCard</strong> — documentation<br>
+        Colour each tab differently for easy navigation.</div></div>
+      <div class="si2"><div class="sn">2</div><div>In RawData sheet: manually create your chosen dataset with <strong>80 rows</strong> and all required columns. Make it realistic — add natural variation, a few outliers, 5–8% missing values. Convert to Table named <strong>RawData</strong>.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Initial Data Audit</strong> (Day 3/4 skills): For each column calculate:<br>
+        • Row count: <code>=ROWS(RawData)</code><br>
+        • Missing %: <code>=COUNTBLANK(col)/80*100</code><br>
+        • Data type: text/number/date/boolean<br>
+        • Min, Max, Mean (for numerics)<br>
+        Build this as a Quality Audit table in the RawData sheet — 1 row per column.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Document your hypothesis:</strong> In the ModelCard sheet, write in cell A1: "Project Hypothesis: I predict [feature X] will be the strongest predictor of [target] because [reason]." This written hypothesis is what makes your EDA purposeful rather than exploratory.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Quality Audit formulas (one row per column)</span>
+Row_Count    = <span class="fn">ROWS</span>(RawData[ColumnName])
+Missing_Pct  = <span class="fn">COUNTBLANK</span>(RawData[ColumnName])/<span class="num">80</span>*<span class="num">100</span>
+Is_Numeric   = <span class="fn">ISNUMBER</span>(<span class="fn">INDEX</span>(RawData[ColumnName],<span class="num">1</span>))
+Min_Val      = <span class="fn">MIN</span>(RawData[ColumnName])
+Max_Val      = <span class="fn">MAX</span>(RawData[ColumnName])
+Mean_Val     = <span class="fn">AVERAGE</span>(RawData[ColumnName])
+Skew_Val     = <span class="fn">SKEW</span>(RawData[ColumnName])
+    </div>
+    <div class="gb"><div class="ni">🎯</div><div><strong>Why start with the hypothesis?</strong> Analysts who write their hypothesis first build more focused, actionable EDA. Analysts who skip it wander through charts without direction. Your hypothesis will either be confirmed (satisfying) or challenged (even more interesting). Both outcomes make you smarter about the data.</div></div>
+    <div class="cks">
+      <div class="ck">7 sheets created and coloured</div><div class="ck">80-row dataset in RawData</div>
+      <div class="ck">Table named RawData</div><div class="ck">Quality Audit table complete</div>
+      <div class="ck">Hypothesis written in ModelCard</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bp">10 – 25 min</div>
+    <div class="tw"><div class="tm">🧹 Data Cleaning Sprint + EDA</div><div class="ts2">Full cleaning pipeline in 10 minutes — then 5-question EDA in 5</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">After 9 days of practice, this should feel automatic. Apply all cleaning steps systematically, document every decision, then run your EDA framework to answer the 5 critical questions before any model is trained.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>In CleanData sheet, create a new Table <strong>CleanData</strong> by copying RawData. Apply the full Day 4 pipeline in order:<br>
+        ① Impute numeric nulls with median<br>
+        ② Impute categorical nulls with "Unknown"<br>
+        ③ Add Was_Imputed flag columns<br>
+        ④ Remove duplicates (check CustomerID / StudentID)<br>
+        ⑤ Fix data types (convert text-as-numbers)<br>
+        ⑥ One-hot encode categorical features<br>
+        ⑦ Extract date features (Year, Month, DOW) if applicable<br>
+        Log every step in ModelCard sheet.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Normalize features</strong> for any model that uses distance or regularisation:<br>
+        Add Z-Score columns for all continuous features: <code>=([@val]-AVERAGE(col))/STDEV.S(col)</code><br>
+        Verify: AVERAGE of each Z-Score col ≈ 0, STDEV ≈ 1.</div></div>
+      <div class="si2"><div class="sn">3</div><div>In EDA sheet — answer the <strong>5-Question Framework</strong> (Day 5) rapidly:<br>
+        Q1: Target distribution (histogram + skew check)<br>
+        Q2: Feature correlation with target (RSQ table + bar chart)<br>
+        Q3: Outlier count per feature (IQR method, 2 mins)<br>
+        Q4: Feature-feature correlations (4×4 heatmap)<br>
+        Q5: Group differences (grouped bar chart by main category)</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Feature selection decision:</strong> Based on Q2 and Q4, choose your final features. Rule: keep features with |r| ≥ 0.15 with target AND no pair of kept features with |r| &gt; 0.8 with each other. Write the final list in ModelCard: "Selected Features: [list]".</div></div>
+      <div class="si2"><div class="sn">5</div><div>Add <strong>EDA Write-up</strong> text box in EDA sheet: 5 bullet findings, 1 sentence each. Confirm or refute your hypothesis. This write-up goes verbatim into Section 2 of your ModelCard.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Full cleaning pipeline summary</span>
+<span class="cm">// Step 1: Median imputation</span>
+=<span class="fn">IF</span>(<span class="fn">ISBLANK</span>([@Price]), <span class="fn">MEDIAN</span>(RawData[Price]), [@Price])
+
+<span class="cm">// Step 2: Categorical imputation</span>
+=<span class="fn">IF</span>(<span class="fn">ISBLANK</span>([@Region]), <span class="str">"Unknown"</span>, [@Region])
+
+<span class="cm">// Step 3: Was_Imputed flag</span>
+=<span class="fn">IF</span>(<span class="fn">ISBLANK</span>([@Price]), <span class="num">1</span>, <span class="num">0</span>)
+
+<span class="cm">// Step 4: One-hot encode Region</span>
+Is_North = <span class="fn">IF</span>([@Region]=<span class="str">"North"</span>, <span class="num">1</span>, <span class="num">0</span>)
+
+<span class="cm">// EDA — feature importance ranking</span>
+=<span class="fn">RSQ</span>(CleanData[Target], CleanData[Feature1])
+
+<span class="cm">// Top feature check</span>
+=<span class="fn">INDEX</span>(Feature_names, <span class="fn">MATCH</span>(<span class="fn">MAX</span>(RSQ_values), RSQ_values, <span class="num">0</span>))
+    </div>
+    <div class="nb"><div class="ni">⏱</div><div><strong>Speed target:</strong> Cleaning should take ≤8 minutes. EDA should take ≤7 minutes. You've done this 9 times. Trust your muscle memory — move fast, document as you go. The goal isn't perfection, it's systematic completeness.</div></div>
+    <div class="cks">
+      <div class="ck">7-step cleaning pipeline done</div><div class="ck">Z-Score normalization</div>
+      <div class="ck">5 EDA questions answered</div><div class="ck">Feature selection list in ModelCard</div>
+      <div class="ck">EDA write-up (5 bullet findings)</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bp">25 – 38 min</div>
+    <div class="tw"><div class="tm">🤖 Model Build &amp; Evaluation</div><div class="ts2">Train/test split → model → metrics → overfitting check</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">This is the heart of the capstone — apply the right model for your chosen problem, evaluate it honestly on the test set, and use the Day 9 framework to check for overfitting. By the end of this task, you'll know whether your model is ready to deploy or needs more work.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>In Model sheet — <strong>Train/Test Split:</strong><br>
+        Copy CleanData to Model sheet. Add Random column → RAND() → immediately freeze (Paste Special → Values). Add Split column: <code>=IF([@Random]&lt;=0.8,"Train","Test")</code>. Verify ~64 Train, ~16 Test.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>For Regression datasets (House Price, Sales):</strong><br>
+        Run ToolPak Regression on Train rows using selected features.<br>
+        Record: β coefficients, R², Adjusted R², Standard Error, p-values per feature.<br>
+        Apply backward elimination: remove any feature with p &gt; 0.05, re-run, compare Adj R².</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>For Classification datasets (Student Pass, Churn):</strong><br>
+        Set up logistic regression with Solver (Day 7). Run Solver → record trained β₀, β₁, β₂, β₃.<br>
+        Calculate Predicted Probability and Predicted Class (threshold = 0.5).<br>
+        Build Confusion Matrix: TP, TN, FP, FN → Accuracy, Precision, Recall, F1.</div></div>
+      <div class="si2"><div class="sn">4</div><div>In Evaluation sheet — <strong>Performance Metrics:</strong><br>
+        <em>Regression:</em> Train MAE, Test MAE, Train RMSE, Test RMSE, MAPE, Gap%<br>
+        <em>Classification:</em> Train Accuracy/F1, Test Accuracy/F1, Confusion matrix<br>
+        Apply the overfitting check: Gap% &lt; 20% = ✓ well generalised.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Beat the baseline:</strong> Calculate baseline metric (always predict mean for regression / majority class for classification). Your model MUST beat this. Record: Model RMSE vs Baseline RMSE, % improvement.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Feature importance summary:</strong> Sort your features by absolute coefficient value (standardised). Which feature drives predictions most? Does this confirm or challenge your Day 10 hypothesis? Write one paragraph in ModelCard: "Model Findings."</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Train/test split (freeze RAND immediately)</span>
+=<span class="fn">IF</span>([@Random]&lt;=<span class="num">0.8</span>, <span class="str">"Train"</span>, <span class="str">"Test"</span>)
+
+<span class="cm">// Regression metrics (test set only)</span>
+Test_MAE  = <span class="fn">AVERAGEIF</span>(Split, <span class="str">"Test"</span>, Abs_Error_col)
+Test_RMSE = <span class="fn">SQRT</span>(<span class="fn">AVERAGEIF</span>(Split, <span class="str">"Test"</span>, Sq_Error_col))
+Test_MAPE = <span class="fn">AVERAGEIF</span>(Split, <span class="str">"Test"</span>, MAPE_col) * <span class="num">100</span>
+
+<span class="cm">// Classification metrics (test set)</span>
+TP = <span class="fn">COUNTIFS</span>(Split,<span class="str">"Test"</span>, Actual,<span class="num">1</span>, Predicted,<span class="num">1</span>)
+TN = <span class="fn">COUNTIFS</span>(Split,<span class="str">"Test"</span>, Actual,<span class="num">0</span>, Predicted,<span class="num">0</span>)
+FP = <span class="fn">COUNTIFS</span>(Split,<span class="str">"Test"</span>, Actual,<span class="num">0</span>, Predicted,<span class="num">1</span>)
+FN = <span class="fn">COUNTIFS</span>(Split,<span class="str">"Test"</span>, Actual,<span class="num">1</span>, Predicted,<span class="num">0</span>)
+F1 = <span class="num">2</span>*TP/(<span class="num">2</span>*TP+FP+FN)
+
+<span class="cm">// Overfitting check</span>
+Gap_pct = (Test_RMSE-Train_RMSE)/Train_RMSE*<span class="num">100</span>
+Status  = <span class="fn">IF</span>(Gap_pct&lt;<span class="num">20</span>, <span class="str">"✓ Deploy Ready"</span>, <span class="str">"⚠ More Work Needed"</span>)
+    </div>
+    <div class="wb"><div class="ni">⚠️</div><div><strong>If your model fails the overfitting check:</strong> Remove your weakest feature (highest p-value or lowest |r|) and re-run. If it still fails with 2 features, your dataset of 80 rows may simply be too small to support a complex model. Simplify — a 2-feature model that generalises well is infinitely more valuable than a 5-feature model that overfits.</div></div>
+    <div class="cks">
+      <div class="ck">Train/test split frozen</div><div class="ck">Model trained on Train only</div>
+      <div class="ck">Backward elimination done</div><div class="ck">All metrics calculated (Test set)</div>
+      <div class="ck">Beats baseline ✓</div><div class="ck">Gap% within acceptable range</div>
+      <div class="ck">Feature importance written</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bp">38 – 50 min</div>
+    <div class="tw"><div class="tm">🚀 Live Scoring Engine + Model Card</div><div class="ts2">Deploy your model as a self-service prediction tool with full documentation</div></div>
+    <div class="typ bp">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">A model that exists only in a ToolPak output table is not deployed. Deployment means a non-technical stakeholder can enter data and receive a prediction without touching formulas. Your scoring engine achieves this. The model card makes it trustworthy, auditable, and maintainable.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>In ScoringEngine sheet — build the prediction interface:<br>
+        <strong>Header:</strong> Your model name, version, date trained<br>
+        <strong>Yellow input cells</strong> (one per feature, with data validation):<br>
+        Each feature gets a labelled input cell with validation (range limits or dropdown lists)<br>
+        <strong>Grey auto-calculated cells:</strong> One-hot encoding, Z-score scaling<br>
+        <strong>Green output cells:</strong> Prediction, Confidence/CI, Grade/Risk Level, Recommended Action</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>For Regression scoring engine:</strong><br>
+        Predicted Value: <code>=ROUND(β₀ + β₁*F1 + β₂*F2 + β₃*F3, 1)</code><br>
+        95% Lower: <code>=Predicted - 1.96*StdError</code><br>
+        95% Upper: <code>=Predicted + 1.96*StdError</code><br>
+        Category: <code>=IFS(Predicted>=Q3,"High",Predicted>=Q1,"Medium",TRUE,"Low")</code></div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>For Classification scoring engine:</strong><br>
+        Log_Odds: <code>=β₀+β₁*F1+β₂*F2+β₃*F3</code><br>
+        Probability: <code>=ROUND(1/(1+EXP(-Log_Odds)),3)</code><br>
+        Prediction: <code>=IF(Probability>=0.5,"POSITIVE ✓","NEGATIVE ✗")</code><br>
+        Risk Level: <code>=IFS(Prob>=0.8,"Low",Prob>=0.5,"Medium",TRUE,"High")</code><br>
+        Action: <code>=SWITCH(Risk,"Low","No action","Medium","Monitor","High","Intervene now")</code></div></div>
+      <div class="si2"><div class="sn">4</div><div>Add <strong>Performance Panel</strong> (right side): live-linked metrics from Evaluation sheet. Accuracy/RMSE, F1/MAPE, Train/Test gap — all reference Evaluation sheet cells so they're always current.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Complete the <strong>Model Card</strong> in ModelCard sheet:</div></div>
+    </div>
+
+    <div class="model-card">
+      <div class="mc-title">📋 Model Card Template — Fill All Fields</div>
+      <div class="mc-grid">
+        <div class="mc-field"><div class="mc-label">Project Name</div><div class="mc-val">[Your project title]</div></div>
+        <div class="mc-field"><div class="mc-label">Model Type</div><div class="mc-val">Linear Regression / Logistic Regression</div></div>
+        <div class="mc-field"><div class="mc-label">Target Variable</div><div class="mc-val">[What you're predicting]</div></div>
+        <div class="mc-field"><div class="mc-label">Features Used</div><div class="mc-val">[List all selected features]</div></div>
+        <div class="mc-field"><div class="mc-label">Training Data</div><div class="mc-val">80 rows | Train: 64 | Test: 16</div></div>
+        <div class="mc-field"><div class="mc-label">Train Date</div><div class="mc-val">[Today's date]</div></div>
+        <div class="mc-field"><div class="mc-label">Performance (Test)</div><div class="mc-val">MAE=[X] | RMSE=[X] | R²=[X]</div></div>
+        <div class="mc-field"><div class="mc-label">Beats Baseline?</div><div class="mc-val">✓ Yes — [X]% improvement over naive predictor</div></div>
+        <div class="mc-field"><div class="mc-label">Overfitting Status</div><div class="mc-val">Gap=[X]% — [Diagnosis]</div></div>
+        <div class="mc-field"><div class="mc-label">Hypothesis Result</div><div class="mc-val">Confirmed / Partially / Refuted</div></div>
+        <div class="mc-field"><div class="mc-label">Known Limitations</div><div class="mc-val">Small n=80 | No temporal validation | [others]</div></div>
+        <div class="mc-field"><div class="mc-label">Next Steps</div><div class="mc-val">Collect more data | Test non-linear models | [others]</div></div>
+      </div>
+    </div>
+
+    <div class="form">
+<span class="cm">// Scoring engine — regression prediction</span>
+Predicted = <span class="fn">ROUND</span>(β₀ + β₁*F1 + β₂*F2 + β₃*F3, <span class="num">1</span>)
+CI_Lower  = Predicted - <span class="num">1.96</span>*StdErr
+CI_Upper  = Predicted + <span class="num">1.96</span>*StdErr
+
+<span class="cm">// Scoring engine — classification prediction</span>
+Log_Odds  = β₀ + β₁*F1 + β₂*F2 + β₃*F3
+Prob      = <span class="fn">ROUND</span>(<span class="num">1</span>/(<span class="num">1</span>+<span class="fn">EXP</span>(-Log_Odds)), <span class="num">3</span>)
+Prediction= <span class="fn">IF</span>(Prob>=<span class="num">0.5</span>, <span class="str">"POSITIVE ✓"</span>, <span class="str">"NEGATIVE ✗"</span>)
+Confidence= <span class="fn">TEXT</span>(<span class="fn">MAX</span>(Prob,<span class="num">1</span>-Prob),<span class="str">"0%"</span>) &amp; <span class="str">" confident"</span>
+
+<span class="cm">// Protect the scoring engine</span>
+<span class="cm">// Review → Protect Sheet → allow Select Unlocked Cells only</span>
+<span class="cm">// Users can type in yellow cells but can't break formulas</span>
+    </div>
+    <div class="cks">
+      <div class="ck">ScoringEngine built (yellow/grey/green)</div><div class="ck">Prediction formula correct</div>
+      <div class="ck">Confidence / CI output</div><div class="ck">Risk + Action output</div>
+      <div class="ck">Performance panel linked</div><div class="ck">All 12 Model Card fields complete</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bgold">50 – 60 min</div>
+    <div class="tw"><div class="tm">🏆 Final Dashboard + 2-Minute Presentation</div><div class="ts2">Assemble the complete project and prepare your confident 2-minute pitch</div></div>
+    <div class="typ bgold">Capstone</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">The last 10 minutes are about communication, not computation. Your model is built. Now you present it. A 2-minute structured pitch — Problem, Data, Method, Result, Limitation, Next Step — is the professional standard for presenting ML work to any audience, technical or not.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "FinalDashboard". This is your <strong>one-page project summary</strong>. It should tell the complete story at a glance:<br>
+        Top left: Project title, dataset, date<br>
+        Top right: 4 KPI tiles (train rows, test rows, primary metric, baseline comparison)<br>
+        Middle left: Best chart from your EDA (feature importance or target distribution)<br>
+        Middle right: Performance metrics table (Train vs Test)<br>
+        Bottom: Scoring engine preview (3 test scenarios with predictions)<br>
+        Very bottom: 3-bullet limitations</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>3 test scenarios table:</strong> Create 3 rows of input data (e.g., high performer, average, at-risk). Apply your scoring engine formula to each. Show: Inputs | Predicted Value | Confidence | Risk Level | Action. This is the most convincing section — it shows the model making real, explainable predictions.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Comparison chart — Model vs Baseline:</strong> Build a bar chart comparing your model's Test RMSE or F1 vs the baseline. Add a data label showing % improvement. This single chart answers the most important stakeholder question: "Is the model worth using?"</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Write your 2-Minute Pitch</strong> in the ModelCard sheet (Section: Presentation Script):<br>
+        🎯 <strong>Problem (15 sec):</strong> "We want to predict [target] because [business reason]."<br>
+        📊 <strong>Data (15 sec):</strong> "We used [N] rows, [K] features, cleaned using [methods]."<br>
+        🤖 <strong>Method (20 sec):</strong> "We built a [model type] using [features]. The key finding from EDA was [insight]."<br>
+        📏 <strong>Result (30 sec):</strong> "Test [metric] = [value], [X]% better than baseline. The model [does/doesn't] generalise well (gap = [X]%)."<br>
+        ⚠️ <strong>Limitation (20 sec):</strong> "Key limitation: [most important limitation]. We should not use this model for [specific out-of-scope case]."<br>
+        🚀 <strong>Next Step (20 sec):</strong> "The immediate next step is [action]. In Python, this model would scale to [N] rows."</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Final quality checklist:</strong> Before saving, verify ALL of the following:<br>
+        ☐ All 7 sheets complete and properly named<br>
+        ☐ Model trained on Train rows only<br>
+        ☐ Test RMSE or F1 better than baseline<br>
+        ☐ Gap% within acceptable range (no severe overfitting)<br>
+        ☐ Scoring engine works (change inputs → output updates)<br>
+        ☐ Model Card all 12 fields filled<br>
+        ☐ Presentation script written<br>
+        ☐ FinalDashboard tells the story at a glance<br>
+        Save as <strong>Day10_Capstone_Final.xlsx</strong>.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// 3 test scenarios in your dashboard</span>
+Scenario_1: Best_case_inputs  → =β₀+β₁*BestF1+β₂*BestF2+...
+Scenario_2: Average_inputs    → =β₀+β₁*AvgF1+β₂*AvgF2+...
+Scenario_3: Worst_case_inputs → =β₀+β₁*WorstF1+β₂*WorstF2+...
+
+<span class="cm">// Model vs Baseline comparison</span>
+Model_RMSE    = Evaluation!Test_RMSE_cell
+Baseline_RMSE = Evaluation!Baseline_RMSE_cell
+Improvement   = (Baseline_RMSE - Model_RMSE)/Baseline_RMSE*<span class="num">100</span>
+Label = <span class="fn">TEXT</span>(Improvement,<span class="str">"0.0"</span>) &amp; <span class="str">"% better than baseline"</span>
+
+<span class="cm">// Final quality check automation</span>
+Check_1 = <span class="fn">IF</span>(Test_RMSE &lt; Baseline_RMSE, <span class="str">"✓ Beats baseline"</span>, <span class="str">"✗ FAIL"</span>)
+Check_2 = <span class="fn">IF</span>(Gap_pct &lt; <span class="num">30</span>, <span class="str">"✓ Generalises"</span>, <span class="str">"⚠ Overfitting risk"</span>)
+Check_3 = <span class="fn">IF</span>(ModelCard_complete, <span class="str">"✓ Documented"</span>, <span class="str">"✗ Incomplete"</span>)
+    </div>
+    <div class="goldb"><div class="ni">🏆</div><div><strong>You have completed a professional ML pipeline.</strong> Problem definition → data collection → cleaning → EDA → feature selection → model training → evaluation → deployment → documentation → presentation. This is the full lifecycle. Every ML project you will ever work on, regardless of scale or tool, follows this same sequence. You now know it by heart.</div></div>
+    <div class="cks">
+      <div class="ck">FinalDashboard sheet complete</div><div class="ck">3 test scenarios with predictions</div>
+      <div class="ck">Model vs Baseline chart</div><div class="ck">2-minute pitch written</div>
+      <div class="ck">8-item quality checklist all ✓</div><div class="ck">Day10_Capstone_Final.xlsx saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENT WALL -->
+<div class="sl" style="margin-top:36px;">🏅 10-Day Achievement Badges</div>
+<div class="achievement-wall">
+  <div class="badge"><div class="badge-icon">📁</div><div class="badge-name">Day 1<br>Foundation</div></div>
+  <div class="badge"><div class="badge-icon">🔧</div><div class="badge-name">Day 2<br>Formulas</div></div>
+  <div class="badge"><div class="badge-icon">📐</div><div class="badge-name">Day 3<br>Statistics</div></div>
+  <div class="badge"><div class="badge-icon">🧹</div><div class="badge-name">Day 4<br>Data Clean</div></div>
+  <div class="badge"><div class="badge-icon">📊</div><div class="badge-name">Day 5<br>EDA</div></div>
+  <div class="badge"><div class="badge-icon">📉</div><div class="badge-name">Day 6<br>Regression</div></div>
+  <div class="badge"><div class="badge-icon">🎯</div><div class="badge-name">Day 7<br>Classifier</div></div>
+  <div class="badge"><div class="badge-icon">🌳</div><div class="badge-name">Day 8<br>Clustering</div></div>
+  <div class="badge"><div class="badge-icon">⚙️</div><div class="badge-name">Day 9<br>Evaluation</div></div>
+  <div class="badge" style="background:var(--gold-l);border-color:rgba(181,137,0,0.3);"><div class="badge-icon">🏆</div><div class="badge-name" style="color:var(--gold);">Day 10<br>Capstone</div></div>
+</div>
+
+<!-- NEXT STEPS -->
+<div class="sl" style="margin-top:28px;">🚀 What's Next — Your Learning Path</div>
+<div class="next-grid">
+  <div class="next-card">
+    <div class="next-icon">🐍</div>
+    <div class="next-title">Python + pandas</div>
+    <div class="next-desc">Replicate every exercise in pandas and scikit-learn. The intuition from Excel transfers directly. Target: 4 weeks.</div>
+    <div class="next-badge" style="background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);">Immediate Next Step</div>
+  </div>
+  <div class="next-card">
+    <div class="next-icon">📊</div>
+    <div class="next-title">Power BI</div>
+    <div class="next-desc">Your Power Query and data modelling skills transfer 100%. Build interactive dashboards at scale without Excel limitations.</div>
+    <div class="next-badge" style="background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);">2–4 Weeks</div>
+  </div>
+  <div class="next-card">
+    <div class="next-icon">☁️</div>
+    <div class="next-title">Azure ML / Cloud</div>
+    <div class="next-desc">Automate your Excel pipeline in Azure Machine Learning. Same concepts — regression, classification, evaluation — at enterprise scale.</div>
+    <div class="next-badge" style="background:var(--al);color:var(--accent);border:1px solid var(--ag);">3–6 Months</div>
+  </div>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <div class="tpi">🏆</div>
+  <div>
+    <div class="tpt">Congratulations — You've Done What Most Data Scientists Can't</div>
+    <div class="tpd">Most data scientists using Python can run <code>model.fit(X, y)</code> and get a number. Very few understand what's happening inside — the math, the assumptions, the failure modes, the evaluation pitfalls. You built every piece of this from first principles in Excel. You understand WHY correlation matters before feature selection. You understand WHY we square errors before averaging them. You understand WHY logistic regression uses a sigmoid. That understanding is what separates analysts who get results from those who just run code. Keep building. The Excel foundation will make you a better Python developer, a better communicator, and a better scientist.</div>
+  </div>
+</div>
+
+<!-- FORMULA QUICK REF -->
+<div class="sl">📋 Complete 10-Day Formula Reference</div>
+<div class="fg" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">AVERAGE / MEDIAN / STDEV.S</div><div class="fd">Descriptive stats — mean, middle, spread (Day 3)</div></div>
+  <div class="fr"><div class="ff">CORREL / RSQ</div><div class="fd">Correlation and R² — feature importance (Day 5)</div></div>
+  <div class="fr"><div class="ff">SLOPE / INTERCEPT</div><div class="fd">Linear regression parameters β₁ and β₀ (Day 6)</div></div>
+  <div class="fr"><div class="ff">FORECAST.LINEAR</div><div class="fd">Predict y for any new x value (Day 6)</div></div>
+  <div class="fr"><div class="ff">1/(1+EXP(-x))</div><div class="fd">Sigmoid — log-odds to probability (Day 7)</div></div>
+  <div class="fr"><div class="ff">COUNTIFS(actual,1,pred,1)</div><div class="fd">True Positives for confusion matrix (Day 7)</div></div>
+  <div class="fr"><div class="ff">SQRT((x1-cx)²+(y1-cy)²)</div><div class="fd">Euclidean distance — KNN and K-Means (Day 8)</div></div>
+  <div class="fr"><div class="ff">AVERAGEIF(cluster,k,feat)</div><div class="fd">Centroid update — K-Means iteration (Day 8)</div></div>
+  <div class="fr"><div class="ff">IF(RAND()&lt;=0.8,"Train","Test")</div><div class="fd">80/20 train/test split — freeze immediately (Day 9)</div></div>
+  <div class="fr"><div class="ff">SQRT(AVERAGEIF(split,"Test",sq_err))</div><div class="fd">Test RMSE — the only metric that matters (Day 9)</div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a class="nb2" href="Day9_Model_Evaluation.html">← Day 9: Evaluation</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;font-weight:700;">
+    <span style="color:var(--gold);font-size:14px;">🎓 10-Day Program Complete!</span><br>
+    <span style="color:var(--text3);">You are now an Excel ML Practitioner</span>
+  </div>
+  <a class="nb2 pr" href="Math_Foundations_for_ML.html">📐 Review Math Foundations</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>

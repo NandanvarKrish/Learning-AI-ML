@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 15 — Month 1 Capstone: Student Grade System</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0fdf4;--paper:#fff;--p2:#dcfce7;
+  --ink:#052010;--ink2:#1a4028;--ink3:#5a9070;
+  --rule:#bbf7d0;
+  --green:#15803d;--gs:#f0fdf4;--gb:#86efac;
+  --blue:#0369a1;--bs:#e0f2fb;--bb:#7dd3fc;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#6d28d9;--ps:#f5f3ff;--pb:#c4b5fd;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --sh:0 1px 4px rgba(5,32,16,.07),0 4px 18px rgba(5,32,16,.07);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bbf7d055,transparent 42%),radial-gradient(circle at 5% 92%,#6ee7b740,transparent 40%);min-height:100vh}
+
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(5,32,16,.06)}
+.bar-in{max-width:880px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--gs);border-color:var(--gb);color:var(--green)}
+
+.page{max-width:880px;margin:0 auto;padding:40px 20px 90px}
+
+/* HERO */
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--green)}
+.hsub{font-size:.95rem;color:var(--ink2);max-width:620px;line-height:1.8;margin-bottom:18px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+
+/* PROGRESS */
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:8px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:2%;background:linear-gradient(90deg,var(--amber),#f59e0b,var(--green));border-radius:99px;transition:width .7s ease}
+
+/* MILESTONE BANNER */
+.milestone{background:linear-gradient(135deg,#052010,#1a4028);color:#fff;border-radius:var(--r);padding:22px 26px;margin-bottom:24px;display:flex;align-items:center;gap:18px;box-shadow:var(--sh)}
+.ms-icon{font-size:2.5rem;flex-shrink:0}
+.ms-text{font-size:.9rem;line-height:1.75;opacity:.92}
+.ms-text strong{color:#86efac;display:block;font-size:1rem;margin-bottom:4px}
+
+/* SKILLS GRID */
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0}
+.skill-tag{background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:10px}
+.st-icon{font-size:1.1rem;flex-shrink:0}
+.st-name{font-weight:700;font-size:.78rem;color:var(--green);margin-bottom:1px}
+.skill-tag div{font-size:.72rem;color:var(--ink2);line-height:1.4}
+
+/* CARDS */
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:24px 28px;margin-bottom:18px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.tb{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.18rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.cb{border-radius:10px;padding:12px 16px;font-size:.86rem;line-height:1.7;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:1px;font-style:normal}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* SECTION HEADERS */
+.sh2{font-family:'Fraunces',Georgia,serif;font-size:1.05rem;font-weight:700;color:var(--green);border-bottom:2px solid var(--rule);padding-bottom:8px;margin:20px 0 14px}
+
+/* PART CARDS — PUZZLE LOCK SYSTEM */
+.part-card{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);margin-bottom:22px;overflow:hidden;box-shadow:var(--sh)}
+.part-head{background:linear-gradient(135deg,var(--gs),var(--p2));border-bottom:1.5px solid var(--rule);padding:16px 22px;display:flex;align-items:flex-start;gap:14px}
+.part-num{background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:.84rem;padding:5px 13px;border-radius:6px;flex-shrink:0;margin-top:2px}
+.part-body{flex:1}
+.part-title{font-family:'Fraunces',Georgia,serif;font-size:1.08rem;font-weight:700;color:var(--ink);margin-bottom:6px}
+.part-desc{font-size:.9rem;color:var(--ink2);line-height:1.8}
+.part-desc code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+.part-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.ptag{font-family:'DM Mono',monospace;font-size:.64rem;padding:3px 10px;border-radius:99px;font-weight:600}
+.ptag-g{background:var(--gs);border:1px solid var(--gb);color:var(--green)}
+.ptag-b{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.ptag-a{background:var(--as);border:1px solid var(--ab);color:var(--amber)}
+.ptag-p{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+
+/* puzzle section */
+.puzzle-section{border-top:2px dashed var(--rule);padding:16px 22px;background:#fafffe}
+.pz-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.pz-icon{font-size:1.1rem}
+.pz-title{font-size:.84rem;font-weight:700;color:var(--ink2)}
+.pz-sub{font-size:.74rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.pz-q{font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5}
+.pz-opts{display:flex;flex-direction:column;gap:7px}
+.popt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;background:var(--paper);user-select:none}
+.popt:hover:not(.dis){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.popt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600;cursor:default}
+.popt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red);cursor:default}
+.popt.dis{cursor:default;opacity:.55}
+.popt-l{width:21px;height:21px;border-radius:6px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.popt.cor .popt-l{background:var(--green);border-color:var(--green);color:#fff}
+.popt.wrg .popt-l{background:var(--red);border-color:var(--red);color:#fff}
+.pz-fb{margin-top:9px;padding:9px 13px;border-radius:8px;font-size:.8rem;line-height:1.6;display:none}
+.pz-fb.show{display:block}
+.pz-fb.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.pz-fb.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* code reveal */
+.code-reveal{display:none;border-top:2px solid var(--gb);background:#f2fdf5}
+.code-reveal.show{display:block}
+.cr-head{display:flex;align-items:center;gap:9px;padding:12px 22px;border-bottom:1px solid var(--rule)}
+.cr-title{font-size:.84rem;font-weight:700;color:var(--green)}
+.cw{background:#052010;overflow:hidden}
+.cbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0a2818;border-bottom:1px solid #164030}
+.cdots{display:flex;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot-r{background:#ef4444}.dot-y{background:#f59e0b}.dot-g{background:#22c55e}
+.clang{font-family:'DM Mono',monospace;font-size:.62rem;color:#4a9060;letter-spacing:.1em;text-transform:uppercase}
+.cbody{padding:18px;font-family:'DM Mono',monospace;font-size:.83rem;line-height:2;overflow-x:auto;color:#c8f0d8}
+.cm{color:#2a6040;font-style:italic}.kw{color:#4ade80}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#c8f0d8}.op{color:#4a9060}.dc{color:#2a6040;font-style:italic}
+
+/* done row */
+.done-row{display:flex;align-items:center;gap:10px;padding:12px 22px;border-top:1px solid var(--rule);background:var(--bg)}
+.done-cb{width:20px;height:20px;border:2px solid #6ab88a;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700;flex-shrink:0;transition:all .2s}
+.done-cb.on{background:var(--green);border-color:var(--green)}
+.done-lbl{font-size:.84rem;color:var(--ink2);cursor:pointer;user-select:none}
+
+/* final project reveal */
+.final-reveal{background:var(--paper);border:2px solid var(--green);border-radius:var(--r);padding:0;margin-top:22px;overflow:hidden;box-shadow:var(--sh);display:none}
+.final-reveal.show{display:block}
+.fr-head{background:linear-gradient(135deg,var(--green),#059669);color:#fff;padding:20px 26px;display:flex;align-items:center;gap:14px}
+.fr-icon{font-size:2rem;flex-shrink:0}
+.fr-title{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900}
+.fr-sub{font-size:.8rem;opacity:.85;margin-top:2px}
+
+/* mini quiz */
+.mini-quiz{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 26px;margin-bottom:18px;box-shadow:var(--sh)}
+.mq-q{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.mq-opts{display:flex;flex-direction:column;gap:7px}
+.mq-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.mq-opt:hover:not(.dis){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.mq-opt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.mq-opt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.mq-opt.dis{cursor:default}
+.mq-ind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.mq-opt.cor .mq-ind{background:var(--green);border-color:var(--green);color:#fff}
+.mq-opt.wrg .mq-ind{background:var(--red);border-color:var(--red);color:#fff}
+.mq-exp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.mq-exp.show{display:block}
+.mq-exp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.mq-exp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+
+/* AI chat */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#15803d,#059669);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:320px;overflow-y:auto;background:#f8fefb}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--green);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--gs);border:1px solid var(--gb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--green)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aic-send:hover{background:#116630}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 18px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#116630}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+
+/* graduation card */
+.grad-card{background:linear-gradient(135deg,#052010,#1a4028);color:#fff;border-radius:var(--r);padding:40px 32px;text-align:center;margin-top:32px;display:none}
+.grad-card.show{display:block}
+.grad-trophy{font-size:3rem;margin-bottom:12px}
+.grad-title{font-family:'Fraunces',Georgia,serif;font-size:1.8rem;font-weight:900;margin-bottom:10px}
+.grad-msg{font-size:.92rem;color:rgba(255,255,255,.8);line-height:1.75;max-width:480px;margin:0 auto 20px}
+.grad-badges{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:22px}
+.gbadge{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:7px 16px;font-size:.8rem;font-family:'DM Mono',monospace}
+.grad-next{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:11px 24px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;border:none}
+.grad-next:hover{background:rgba(255,255,255,.25)}
+
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+
+@media(max-width:600px){
+  .card,.part-card,.mini-quiz{padding:18px 16px}
+  .milestone{flex-direction:column;gap:12px}
+  .skills-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">🏆 Day 15</div>
+      <div class="btl">Month 1 Capstone — Student Grade Management System</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 1 · Week 3 · Day 15 — FINAL DAY OF PYTHON FOUNDATION</div>
+  <h1>Month 1 Capstone:<br><em>Student Grade System</em></h1>
+  <p class="hsub">You have learned 14 Python topics. Today you build ONE real program that uses ALL of them together — just like a real software developer. No topic is isolated; everything connects. This is what "knowing Python" actually means.</p>
+  <div class="pills">
+    <span class="pill">⏱ ~2 Hours</span>
+    <span class="pill">🏆 Capstone</span>
+    <span class="pill">🐍 All 14 Topics</span>
+    <span class="pill">🔐 Puzzle Code Unlock</span>
+    <span class="pill">💾 Real Files</span>
+    <span class="pill">🎓 Month 1 Complete</span>
+  </div>
+</div>
+
+<!-- MILESTONE BANNER -->
+<div class="milestone">
+  <div class="ms-icon">🎓</div>
+  <div class="ms-text">
+    <strong>Month 1 Complete — Prove You've Learned It All</strong>
+    14 days. 14 topics. Variables → OOP → File I/O → Error Handling → Comprehensions → Generators. Today you stop learning individual tools and start building a REAL system. Every section of this project tests a different skill. You are building your first Python portfolio project.
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Capstone Progress</span><span id="prog-pct">0%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="cb cbb" style="margin-bottom:24px">
+  <i>🔐</i>
+  <span><strong>How this capstone works:</strong> Each part tells you WHAT to build and WHY it matters. To unlock the solution code, answer the puzzle question about that concept. Build each part in IDLE, run it, test it — then move to the next. By the end, you have a working grade management system!</span>
+</div>
+
+<!-- SKILLS USED -->
+<div class="card">
+  <div class="ctag tg">🧠 Skills Map</div>
+  <h2>Every Month 1 Concept — In One Real Project</h2>
+  <div class="skills-grid">
+    <div class="skill-tag"><span class="st-icon">📦</span><div><div class="st-name">Classes & OOP</div>Student, GradeBook</div></div>
+    <div class="skill-tag"><span class="st-icon">🧬</span><div><div class="st-name">Inheritance</div>ScholarStudent</div></div>
+    <div class="skill-tag"><span class="st-icon">🏷️</span><div><div class="st-name">@property</div>grade, is_passing</div></div>
+    <div class="skill-tag"><span class="st-icon">🛡️</span><div><div class="st-name">Error Handling</div>try/except/raise</div></div>
+    <div class="skill-tag"><span class="st-icon">📄</span><div><div class="st-name">File I/O</div>CSV read/write, JSON</div></div>
+    <div class="skill-tag"><span class="st-icon">⚡</span><div><div class="st-name">Comprehensions</div>filter, transform</div></div>
+    <div class="skill-tag"><span class="st-icon">⚙️</span><div><div class="st-name">Generators</div>batch reports</div></div>
+    <div class="skill-tag"><span class="st-icon">🔗</span><div><div class="st-name">zip / enumerate</div>ranking, pairing</div></div>
+    <div class="skill-tag"><span class="st-icon">⚡</span><div><div class="st-name">Lambda</div>sorted() key</div></div>
+    <div class="skill-tag"><span class="st-icon">📦</span><div><div class="st-name">Modules</div>csv, json, os, datetime</div></div>
+    <div class="skill-tag"><span class="st-icon">📊</span><div><div class="st-name">Data Structures</div>lists, dicts, sets</div></div>
+    <div class="skill-tag"><span class="st-icon">🎲</span><div><div class="st-name">*args / **kwargs</div>flexible report fn</div></div>
+  </div>
+  <div class="cb cbg" style="margin-top:14px">
+    <i>🎯</i>
+    <span><strong>The project in plain English:</strong> You are building a digital gradebook for a school. Teachers can add students, view a ranked leaderboard, save data to a CSV file so it persists between sessions, export a JSON summary for reports, and generate detailed printouts. It handles bad input gracefully and never crashes on bad data.</span>
+  </div>
+</div>
+
+<!-- ===== PART 1: STUDENT CLASS ===== -->
+<div class="part-card">
+  <div class="part-head">
+    <div class="part-num">Part 1</div>
+    <div class="part-body">
+      <div class="part-title">🎓 The Student Class — Foundation of Everything</div>
+      <div class="part-desc">
+        Start by building the <code>Student</code> class. This is the core object — every feature of the system works with Student objects.<br><br>
+        <strong>What your Student class needs:</strong><br>
+        • <code>__init__(roll, name, marks)</code> — validates marks using a <strong>@property setter</strong> (raises ValueError if marks outside 0–100)<br>
+        • <code>grade</code> @property — returns A+/A/B/C/D/F based on marks<br>
+        • <code>is_passing</code> @property — True if marks ≥ 50<br>
+        • <code>to_dict()</code> — returns a dict with all student data (needed for CSV saving)<br>
+        • <code>__repr__</code> — so printing a Student looks nice<br><br>
+        <strong>Why this matters in AI:</strong> In sklearn, every model object stores its own state (self.threshold, self.fitted_). The marks setter with validation is exactly how production systems prevent bad data from entering your pipeline.
+      </div>
+      <div class="part-tags">
+        <span class="ptag ptag-g">OOP · class</span>
+        <span class="ptag ptag-b">@property · setter</span>
+        <span class="ptag ptag-a">raise · ValueError</span>
+        <span class="ptag ptag-p">__repr__</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header">
+      <span class="pz-icon">🔐</span>
+      <div><div class="pz-title">Solve to unlock the Student class code</div><div class="pz-sub">Answer correctly → full Part 1 code appears</div></div>
+    </div>
+    <div class="pz-q">In the Student class, marks is stored as <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">self._marks</code> (with underscore) but accessed as <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">student.marks</code>. Why?</div>
+    <div class="pz-opts" id="pz1-opts">
+      <div class="popt" onclick="pz(1,'A',false)"><span class="popt-l">A</span> Underscore is required by Python for all class attributes</div>
+      <div class="popt" onclick="pz(1,'B',true)"><span class="popt-l">B</span> _marks is the private storage. The @property + @setter lets you control access — so student.marks = 150 raises ValueError before it's stored. Without this, anyone could set invalid marks directly.</div>
+      <div class="popt" onclick="pz(1,'C',false)"><span class="popt-l">C</span> It makes the code faster</div>
+      <div class="popt" onclick="pz(1,'D',false)"><span class="popt-l">D</span> Underscore means the attribute is a class variable, not instance variable</div>
+    </div>
+    <div class="pz-fb" id="pz1-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr1">
+    <div class="cr-head"><span class="cr-icon" style="font-size:1.1rem">🔓</span><span class="cr-title">Part 1 Code Unlocked — student.py</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — student.py · Part 1</div></div>
+      <div class="cbody">
+<span class="cm"># student.py — The Student class</span>
+<span class="kw">import</span> <span class="vr">datetime</span>
+
+<span class="kw">class</span> <span class="fn">Student</span>:
+    <span class="vr">pass_mark</span> = <span class="nm">50</span>   <span class="cm"># class variable — shared by all students</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="vr">self</span>, <span class="vr">roll</span>, <span class="vr">name</span>, <span class="vr">marks</span>):
+        <span class="vr">self</span>.<span class="vr">roll</span>   = <span class="fn">str</span>(<span class="vr">roll</span>)
+        <span class="vr">self</span>.<span class="vr">name</span>   = <span class="fn">str</span>(<span class="vr">name</span>).<span class="fn">strip</span>()
+        <span class="vr">self</span>.<span class="vr">marks</span>  = <span class="vr">marks</span>    <span class="cm"># calls the @setter — validates!</span>
+        <span class="vr">self</span>.<span class="vr">added</span>  = <span class="vr">datetime</span>.<span class="vr">date</span>.<span class="fn">today</span>()
+
+    <span class="op">@property</span>
+    <span class="kw">def</span> <span class="fn">marks</span>(<span class="vr">self</span>):
+        <span class="kw">return</span> <span class="vr">self</span>.<span class="vr">_marks</span>
+
+    <span class="op">@marks.setter</span>
+    <span class="kw">def</span> <span class="fn">marks</span>(<span class="vr">self</span>, <span class="vr">val</span>):
+        <span class="kw">if</span> <span class="kw">not</span> <span class="fn">isinstance</span>(<span class="vr">val</span>, (<span class="fn">int</span>, <span class="fn">float</span>)):
+            <span class="kw">raise</span> <span class="fn">TypeError</span>(<span class="st">"marks must be a number"</span>)
+        <span class="kw">if</span> <span class="kw">not</span> (<span class="nm">0</span> <= <span class="vr">val</span> <= <span class="nm">100</span>):
+            <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="st">f"marks {val} not in 0–100"</span>)
+        <span class="vr">self</span>.<span class="vr">_marks</span> = <span class="fn">round</span>(<span class="vr">val</span>, <span class="nm">1</span>)
+
+    <span class="op">@property</span>
+    <span class="kw">def</span> <span class="fn">grade</span>(<span class="vr">self</span>):
+        <span class="kw">for</span> <span class="vr">threshold</span>, <span class="vr">letter</span> <span class="kw">in</span> [
+            (<span class="nm">90</span>, <span class="st">"A+"</span>), (<span class="nm">80</span>, <span class="st">"A"</span>), (<span class="nm">70</span>, <span class="st">"B"</span>),
+            (<span class="nm">60</span>, <span class="st">"C"</span>), (<span class="nm">50</span>, <span class="st">"D"</span>)
+        ]:
+            <span class="kw">if</span> <span class="vr">self</span>.<span class="vr">_marks</span> >= <span class="vr">threshold</span>:
+                <span class="kw">return</span> <span class="vr">letter</span>
+        <span class="kw">return</span> <span class="st">"F"</span>
+
+    <span class="op">@property</span>
+    <span class="kw">def</span> <span class="fn">is_passing</span>(<span class="vr">self</span>):
+        <span class="kw">return</span> <span class="vr">self</span>.<span class="vr">_marks</span> >= <span class="fn">Student</span>.<span class="vr">pass_mark</span>
+
+    <span class="kw">def</span> <span class="fn">to_dict</span>(<span class="vr">self</span>):
+        <span class="kw">return</span> {
+            <span class="st">"roll"</span>  : <span class="vr">self</span>.<span class="vr">roll</span>,
+            <span class="st">"name"</span>  : <span class="vr">self</span>.<span class="vr">name</span>,
+            <span class="st">"marks"</span> : <span class="vr">self</span>.<span class="vr">_marks</span>,
+            <span class="st">"grade"</span> : <span class="vr">self</span>.<span class="vr">grade</span>,
+            <span class="st">"status"</span>: <span class="st">"Pass"</span> <span class="kw">if</span> <span class="vr">self</span>.<span class="vr">is_passing</span> <span class="kw">else</span> <span class="st">"Fail"</span>
+        }
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(<span class="vr">self</span>):
+        <span class="kw">return</span> <span class="st">f"Student({self.roll}, {self.name!r}, {self.grade})"</span>
+
+
+<span class="cm"># === ScholarStudent inherits from Student ===</span>
+<span class="kw">class</span> <span class="fn">ScholarStudent</span>(<span class="fn">Student</span>):
+    <span class="dc">"""Student who also tracks scholarship eligibility."""</span>
+    <span class="vr">scholarship_threshold</span> = <span class="nm">85</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="vr">self</span>, <span class="vr">roll</span>, <span class="vr">name</span>, <span class="vr">marks</span>):
+        <span class="fn">super</span>().__<span class="fn">init__</span>(<span class="vr">roll</span>, <span class="vr">name</span>, <span class="vr">marks</span>)  <span class="cm"># ← calls Student.__init__</span>
+
+    <span class="op">@property</span>
+    <span class="kw">def</span> <span class="fn">qualifies_for_scholarship</span>(<span class="vr">self</span>):
+        <span class="kw">return</span> <span class="vr">self</span>.<span class="vr">_marks</span> >= <span class="fn">ScholarStudent</span>.<span class="vr">scholarship_threshold</span>
+
+    <span class="kw">def</span> <span class="fn">to_dict</span>(<span class="vr">self</span>):
+        <span class="vr">d</span> = <span class="fn">super</span>().<span class="fn">to_dict</span>()   <span class="cm"># get parent's dict first</span>
+        <span class="vr">d</span>[<span class="st">"scholar"</span>] = <span class="vr">self</span>.<span class="vr">qualifies_for_scholarship</span>
+        <span class="kw">return</span> <span class="vr">d</span>
+
+
+<span class="cm"># === QUICK TEST (run this file directly to test) ===</span>
+<span class="kw">if</span> <span class="vr">__name__</span> == <span class="st">"__main__"</span>:
+    <span class="vr">s1</span> = <span class="fn">Student</span>(<span class="st">"101"</span>, <span class="st">"Ali"</span>, <span class="nm">88</span>)
+    <span class="fn">print</span>(<span class="vr">s1</span>)                          <span class="cm"># uses __repr__</span>
+    <span class="fn">print</span>(<span class="vr">s1</span>.<span class="vr">grade</span>)                    <span class="cm"># "A"</span>
+    <span class="fn">print</span>(<span class="vr">s1</span>.<span class="vr">is_passing</span>)              <span class="cm"># True</span>
+    <span class="fn">print</span>(<span class="vr">s1</span>.<span class="fn">to_dict</span>())
+
+    <span class="vr">ss</span> = <span class="fn">ScholarStudent</span>(<span class="st">"102"</span>, <span class="st">"Sara"</span>, <span class="nm">91</span>)
+    <span class="fn">print</span>(<span class="vr">ss</span>.<span class="vr">qualifies_for_scholarship</span>)  <span class="cm"># True</span>
+
+    <span class="cm"># Test validation</span>
+    <span class="kw">try</span>:
+        <span class="fn">Student</span>(<span class="st">"103"</span>, <span class="st">"Bad"</span>, <span class="nm">150</span>)
+    <span class="kw">except</span> <span class="fn">ValueError</span> <span class="kw">as</span> <span class="vr">e</span>:
+        <span class="fn">print</span>(<span class="st">f"Validation caught: {e}"</span>)
+      </div>
+    </div>
+  </div>
+  <div class="done-row">
+    <div class="done-cb" id="done1" onclick="markDone(1)"></div>
+    <span class="done-lbl" onclick="markDone(1)">I built and tested the Student class ✓</span>
+  </div>
+</div>
+
+<!-- ===== PART 2: GRADEBOOK CLASS ===== -->
+<div class="part-card">
+  <div class="part-head">
+    <div class="part-num">Part 2</div>
+    <div class="part-body">
+      <div class="part-title">📚 The GradeBook — CSV, JSON, Search & Reports</div>
+      <div class="part-desc">
+        The GradeBook holds ALL students. It automatically loads from a CSV file when it starts and saves to it whenever a student is added. This is what "persistence" means — data survives after the program closes.<br><br>
+        <strong>What GradeBook needs:</strong><br>
+        • <code>__init__(filename)</code> — loads existing data from CSV on startup<br>
+        • <code>add(roll, name, marks)</code> — creates a Student, validates, adds to list, saves to CSV<br>
+        • <code>leaderboard()</code> — returns students sorted by marks (highest first) using <code>lambda</code><br>
+        • <code>search(name)</code> — finds a student by name (case-insensitive)<br>
+        • <code>stats()</code> — returns average, highest, lowest, pass count using comprehensions<br>
+        • <code>export_json()</code> — saves full summary to a JSON file<br>
+        • <code>batch_report()</code> — generator that yields one report line at a time<br><br>
+        <strong>Why this matters:</strong> This is a real data management class. Every ML project has something like this — a class that loads data, processes it, and saves results.
+      </div>
+      <div class="part-tags">
+        <span class="ptag ptag-g">File I/O · CSV · JSON</span>
+        <span class="ptag ptag-b">Comprehensions</span>
+        <span class="ptag ptag-a">Generator · yield</span>
+        <span class="ptag ptag-p">lambda · sorted()</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header">
+      <span class="pz-icon">🔐</span>
+      <div><div class="pz-title">Solve to unlock the GradeBook code</div></div>
+    </div>
+    <div class="pz-q">The batch_report() method uses <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">yield</code> instead of returning a list. Why is this better for a large class of 500+ students?</div>
+    <div class="pz-opts" id="pz2-opts">
+      <div class="popt" onclick="pz(2,'A',false)"><span class="popt-l">A</span> yield is faster than return</div>
+      <div class="popt" onclick="pz(2,'B',true)"><span class="popt-l">B</span> yield produces one report line at a time — never builds the full 500-line list in memory. You could process thousands of students without running out of RAM. A return would require all 500+ lines to be created at once.</div>
+      <div class="popt" onclick="pz(2,'C',false)"><span class="popt-l">C</span> yield automatically saves to a file</div>
+      <div class="popt" onclick="pz(2,'D',false)"><span class="popt-l">D</span> There is no difference — both are the same for small classes</div>
+    </div>
+    <div class="pz-fb" id="pz2-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr2">
+    <div class="cr-head"><span class="cr-icon" style="font-size:1.1rem">🔓</span><span class="cr-title">Part 2 Code Unlocked — gradebook.py</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — gradebook.py · Part 2</div></div>
+      <div class="cbody">
+<span class="cm"># gradebook.py — GradeBook class</span>
+<span class="kw">import</span> <span class="vr">csv</span>, <span class="vr">json</span>, <span class="vr">os</span>, <span class="vr">datetime</span>
+<span class="kw">from</span> <span class="vr">student</span> <span class="kw">import</span> <span class="fn">Student</span>
+
+<span class="kw">class</span> <span class="fn">GradeBook</span>:
+    <span class="dc">"""Manages students with full CSV persistence."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="vr">self</span>, <span class="vr">filename</span>=<span class="st">"students.csv"</span>):
+        <span class="vr">self</span>.<span class="vr">filename</span> = <span class="vr">filename</span>
+        <span class="vr">self</span>.<span class="vr">students</span> = <span class="vr">self</span>.<span class="fn">_load</span>()   <span class="cm"># load on startup</span>
+
+    <span class="cm"># ── PRIVATE: Load from CSV ──────────────────</span>
+    <span class="kw">def</span> <span class="fn">_load</span>(<span class="vr">self</span>):
+        <span class="kw">if</span> <span class="kw">not</span> <span class="vr">os</span>.<span class="vr">path</span>.<span class="fn">exists</span>(<span class="vr">self</span>.<span class="vr">filename</span>):
+            <span class="kw">return</span> []
+        <span class="vr">students</span> = []
+        <span class="kw">with</span> <span class="fn">open</span>(<span class="vr">self</span>.<span class="vr">filename</span>) <span class="kw">as</span> <span class="vr">f</span>:
+            <span class="kw">for</span> <span class="vr">row</span> <span class="kw">in</span> <span class="vr">csv</span>.<span class="fn">DictReader</span>(<span class="vr">f</span>):
+                <span class="kw">try</span>:
+                    <span class="vr">s</span> = <span class="fn">Student</span>(<span class="vr">row</span>[<span class="st">"roll"</span>], <span class="vr">row</span>[<span class="st">"name"</span>], <span class="fn">float</span>(<span class="vr">row</span>[<span class="st">"marks"</span>]))
+                    <span class="vr">students</span>.<span class="fn">append</span>(<span class="vr">s</span>)
+                <span class="kw">except</span> (<span class="fn">ValueError</span>, <span class="fn">KeyError</span>) <span class="kw">as</span> <span class="vr">e</span>:
+                    <span class="fn">print</span>(<span class="st">f"⚠️  Skipped bad row: {e}"</span>)
+        <span class="kw">return</span> <span class="vr">students</span>
+
+    <span class="cm"># ── PRIVATE: Save to CSV ───────────────────</span>
+    <span class="kw">def</span> <span class="fn">_save</span>(<span class="vr">self</span>):
+        <span class="kw">with</span> <span class="fn">open</span>(<span class="vr">self</span>.<span class="vr">filename</span>, <span class="st">"w"</span>, <span class="vr">newline</span>=<span class="st">""</span>) <span class="kw">as</span> <span class="vr">f</span>:
+            <span class="vr">fields</span> = [<span class="st">"roll"</span>, <span class="st">"name"</span>, <span class="st">"marks"</span>, <span class="st">"grade"</span>, <span class="st">"status"</span>]
+            <span class="vr">w</span> = <span class="vr">csv</span>.<span class="fn">DictWriter</span>(<span class="vr">f</span>, <span class="vr">fieldnames</span>=<span class="vr">fields</span>)
+            <span class="vr">w</span>.<span class="fn">writeheader</span>()
+            <span class="vr">w</span>.<span class="fn">writerows</span>(<span class="vr">s</span>.<span class="fn">to_dict</span>() <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">self</span>.<span class="vr">students</span>)
+
+    <span class="cm"># ── PUBLIC: Add student ─────────────────────</span>
+    <span class="kw">def</span> <span class="fn">add</span>(<span class="vr">self</span>, <span class="vr">roll</span>, <span class="vr">name</span>, <span class="vr">marks</span>):
+        <span class="kw">try</span>:
+            <span class="vr">s</span> = <span class="fn">Student</span>(<span class="vr">roll</span>, <span class="vr">name</span>, <span class="vr">marks</span>)
+            <span class="vr">self</span>.<span class="vr">students</span>.<span class="fn">append</span>(<span class="vr">s</span>)
+            <span class="vr">self</span>.<span class="fn">_save</span>()                   <span class="cm"># auto-save after every add</span>
+            <span class="fn">print</span>(<span class="st">f"✅ Added: {s}"</span>)
+        <span class="kw">except</span> (<span class="fn">ValueError</span>, <span class="fn">TypeError</span>) <span class="kw">as</span> <span class="vr">e</span>:
+            <span class="fn">print</span>(<span class="st">f"❌ Cannot add student: {e}"</span>)
+
+    <span class="cm"># ── Leaderboard: sorted by marks ───────────</span>
+    <span class="kw">def</span> <span class="fn">leaderboard</span>(<span class="vr">self</span>):
+        <span class="kw">return</span> <span class="fn">sorted</span>(<span class="vr">self</span>.<span class="vr">students</span>,
+                       <span class="vr">key</span>=<span class="kw">lambda</span> <span class="vr">s</span>: <span class="vr">s</span>.<span class="vr">marks</span>, <span class="vr">reverse</span>=<span class="kw">True</span>)
+
+    <span class="cm"># ── Search by name ──────────────────────────</span>
+    <span class="kw">def</span> <span class="fn">search</span>(<span class="vr">self</span>, <span class="vr">name</span>):
+        <span class="vr">matches</span> = [<span class="vr">s</span> <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">self</span>.<span class="vr">students</span>
+                    <span class="kw">if</span> <span class="vr">name</span>.<span class="fn">lower</span>() <span class="kw">in</span> <span class="vr">s</span>.<span class="vr">name</span>.<span class="fn">lower</span>()]
+        <span class="kw">return</span> <span class="vr">matches</span>
+
+    <span class="cm"># ── Stats using comprehensions ──────────────</span>
+    <span class="kw">def</span> <span class="fn">stats</span>(<span class="vr">self</span>):
+        <span class="kw">if</span> <span class="kw">not</span> <span class="vr">self</span>.<span class="vr">students</span>:
+            <span class="kw">return</span> {}
+        <span class="vr">all_marks</span> = [<span class="vr">s</span>.<span class="vr">marks</span> <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">self</span>.<span class="vr">students</span>]
+        <span class="kw">return</span> {
+            <span class="st">"count"</span>    : <span class="fn">len</span>(<span class="vr">self</span>.<span class="vr">students</span>),
+            <span class="st">"average"</span>  : <span class="fn">round</span>(<span class="fn">sum</span>(<span class="vr">all_marks</span>)/<span class="fn">len</span>(<span class="vr">all_marks</span>), <span class="nm">2</span>),
+            <span class="st">"highest"</span>  : <span class="fn">max</span>(<span class="vr">all_marks</span>),
+            <span class="st">"lowest"</span>   : <span class="fn">min</span>(<span class="vr">all_marks</span>),
+            <span class="st">"passing"</span>  : <span class="fn">sum</span>(<span class="nm">1</span> <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">self</span>.<span class="vr">students</span> <span class="kw">if</span> <span class="vr">s</span>.<span class="vr">is_passing</span>),
+            <span class="st">"grades"</span>   : <span class="fn">set</span>(<span class="vr">s</span>.<span class="vr">grade</span> <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">self</span>.<span class="vr">students</span>),
+        }
+
+    <span class="cm"># ── Export to JSON ──────────────────────────</span>
+    <span class="kw">def</span> <span class="fn">export_json</span>(<span class="vr">self</span>, <span class="vr">outfile</span>=<span class="st">"summary.json"</span>):
+        <span class="vr">data</span> = {
+            <span class="st">"exported"</span>: <span class="fn">str</span>(<span class="vr">datetime</span>.<span class="vr">date</span>.<span class="fn">today</span>()),
+            <span class="st">"stats"</span>   : <span class="vr">self</span>.<span class="fn">stats</span>(),
+            <span class="st">"students"</span>: [<span class="vr">s</span>.<span class="fn">to_dict</span>() <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">self</span>.<span class="vr">students</span>],
+        }
+        <span class="vr">data</span>[<span class="st">"stats"</span>][<span class="st">"grades"</span>] = <span class="fn">list</span>(<span class="vr">data</span>[<span class="st">"stats"</span>].<span class="fn">get</span>(<span class="st">"grades"</span>, []))
+        <span class="kw">with</span> <span class="fn">open</span>(<span class="vr">outfile</span>, <span class="st">"w"</span>) <span class="kw">as</span> <span class="vr">f</span>:
+            <span class="vr">json</span>.<span class="fn">dump</span>(<span class="vr">data</span>, <span class="vr">f</span>, <span class="vr">indent</span>=<span class="nm">2</span>)
+        <span class="fn">print</span>(<span class="st">f"✅ Exported to {outfile}"</span>)
+
+    <span class="cm"># ── Batch report — GENERATOR ────────────────</span>
+    <span class="kw">def</span> <span class="fn">batch_report</span>(<span class="vr">self</span>):
+        <span class="dc">"""Yields one formatted report line at a time — memory efficient."""</span>
+        <span class="kw">yield</span> <span class="st">f"{'#':<4} {'Name':<15} {'Marks':>6} {'Grade':>6} {'Status':>8}"</span>
+        <span class="kw">yield</span> <span class="st">"-"</span> * <span class="nm">44</span>
+        <span class="kw">for</span> <span class="vr">i</span>, <span class="vr">s</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="vr">self</span>.<span class="fn">leaderboard</span>(), <span class="nm">1</span>):
+            <span class="vr">status</span> = <span class="st">"✅ Pass"</span> <span class="kw">if</span> <span class="vr">s</span>.<span class="vr">is_passing</span> <span class="kw">else</span> <span class="st">"❌ Fail"</span>
+            <span class="kw">yield</span> <span class="st">f"{i:<4} {s.name:<15} {s.marks:>6} {s.grade:>6} {status:>8}"</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row">
+    <div class="done-cb" id="done2" onclick="markDone(2)"></div>
+    <span class="done-lbl" onclick="markDone(2)">I built and tested the GradeBook class ✓</span>
+  </div>
+</div>
+
+<!-- ===== PART 3: MAIN MENU ===== -->
+<div class="part-card">
+  <div class="part-head">
+    <div class="part-num">Part 3</div>
+    <div class="part-body">
+      <div class="part-title">🖥️ The Main Menu — Putting It All Together</div>
+      <div class="part-desc">
+        The main menu is what the user sees. It creates a <code>GradeBook</code>, then shows a menu in a loop. Each option calls a method from GradeBook or Student.<br><br>
+        <strong>Menu options:</strong><br>
+        1️⃣ Add student (with error handling for bad input)<br>
+        2️⃣ View leaderboard (ranked list with enumerate)<br>
+        3️⃣ Search student by name<br>
+        4️⃣ Class statistics<br>
+        5️⃣ Print batch report (uses the generator)<br>
+        6️⃣ Export JSON summary<br>
+        7️⃣ Quit<br><br>
+        <strong>The whole point:</strong> When you add a student, it's saved to <code>students.csv</code> automatically. Close and reopen the program — the data is still there. This is persistence.
+      </div>
+      <div class="part-tags">
+        <span class="ptag ptag-g">while loop · input()</span>
+        <span class="ptag ptag-b">try/except</span>
+        <span class="ptag ptag-a">All concepts combined</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header">
+      <span class="pz-icon">🔐</span>
+      <div><div class="pz-title">Final puzzle — unlock the main.py</div></div>
+    </div>
+    <div class="pz-q">The menu uses <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">for line in gb.batch_report(): print(line)</code>. Why is iterating a generator this way correct?</div>
+    <div class="pz-opts" id="pz3-opts">
+      <div class="popt" onclick="pz(3,'A',false)"><span class="popt-l">A</span> It is wrong — you must call next() manually on generators</div>
+      <div class="popt" onclick="pz(3,'B',true)"><span class="popt-l">B</span> A for loop automatically calls next() on any generator — so each iteration yields the next line one at a time, never loading all lines at once. This is the standard Pythonic way to consume a generator.</div>
+      <div class="popt" onclick="pz(3,'C',false)"><span class="popt-l">C</span> for loop converts the generator to a list first, then iterates</div>
+      <div class="popt" onclick="pz(3,'D',false)"><span class="popt-l">D</span> You need list(gb.batch_report()) before you can loop it</div>
+    </div>
+    <div class="pz-fb" id="pz3-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr3">
+    <div class="cr-head"><span class="cr-icon" style="font-size:1.1rem">🔓</span><span class="cr-title">Part 3 Code Unlocked — main.py (Complete Program!) 🎉</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — main.py · Part 3 · COMPLETE PROGRAM</div></div>
+      <div class="cbody">
+<span class="cm"># main.py — Run this file to start the system</span>
+<span class="kw">from</span> <span class="vr">gradebook</span> <span class="kw">import</span> <span class="fn">GradeBook</span>
+<span class="kw">from</span> <span class="vr">student</span>   <span class="kw">import</span> <span class="fn">ScholarStudent</span>
+
+<span class="kw">def</span> <span class="fn">show_menu</span>():
+    <span class="fn">print</span>(<span class="st">"""
+╔══════════════════════════════════╗
+║   🎓 STUDENT GRADE SYSTEM       ║
+╠══════════════════════════════════╣
+║  1 → Add student                ║
+║  2 → View leaderboard           ║
+║  3 → Search student             ║
+║  4 → Class statistics           ║
+║  5 → Print batch report         ║
+║  6 → Export JSON summary        ║
+║  7 → Quit                       ║
+╚══════════════════════════════════╝"""</span>)
+
+<span class="kw">def</span> <span class="fn">main</span>():
+    <span class="vr">gb</span> = <span class="fn">GradeBook</span>()     <span class="cm"># loads from CSV on startup</span>
+    <span class="fn">print</span>(<span class="st">f"📂 Loaded {len(gb.students)} students from {gb.filename}"</span>)
+
+    <span class="kw">while</span> <span class="kw">True</span>:
+        <span class="fn">show_menu</span>()
+        <span class="vr">choice</span> = <span class="fn">input</span>(<span class="st">"Enter choice: "</span>).<span class="fn">strip</span>()
+
+        <span class="kw">if</span> <span class="vr">choice</span> == <span class="st">"1"</span>:
+            <span class="cm"># ── Add student ────────────────────────</span>
+            <span class="kw">try</span>:
+                <span class="vr">roll</span>  = <span class="fn">input</span>(<span class="st">"Roll number: "</span>)
+                <span class="vr">name</span>  = <span class="fn">input</span>(<span class="st">"Full name: "</span>)
+                <span class="vr">marks</span> = <span class="fn">float</span>(<span class="fn">input</span>(<span class="st">"Marks (0-100): "</span>))
+                <span class="vr">scholar</span> = <span class="fn">input</span>(<span class="st">"Scholar track? (y/n): "</span>).<span class="fn">lower</span>() == <span class="st">"y"</span>
+                <span class="kw">if</span> <span class="vr">scholar</span>:
+                    <span class="vr">s</span> = <span class="fn">ScholarStudent</span>(<span class="vr">roll</span>, <span class="vr">name</span>, <span class="vr">marks</span>)
+                    <span class="vr">gb</span>.<span class="vr">students</span>.<span class="fn">append</span>(<span class="vr">s</span>)
+                    <span class="vr">gb</span>.<span class="fn">_save</span>()
+                    <span class="fn">print</span>(<span class="st">f"✅ Scholar added: {s}"</span>)
+                <span class="kw">else</span>:
+                    <span class="vr">gb</span>.<span class="fn">add</span>(<span class="vr">roll</span>, <span class="vr">name</span>, <span class="vr">marks</span>)
+            <span class="kw">except</span> <span class="fn">ValueError</span> <span class="kw">as</span> <span class="vr">e</span>:
+                <span class="fn">print</span>(<span class="st">f"❌ Invalid input: {e}"</span>)
+
+        <span class="kw">elif</span> <span class="vr">choice</span> == <span class="st">"2"</span>:
+            <span class="cm"># ── Leaderboard ────────────────────────</span>
+            <span class="fn">print</span>(<span class="st">"\n🏆 LEADERBOARD"</span>)
+            <span class="kw">for</span> <span class="vr">rank</span>, <span class="vr">s</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="vr">gb</span>.<span class="fn">leaderboard</span>(), <span class="nm">1</span>):
+                <span class="vr">medal</span> = {<span class="nm">1</span>:<span class="st">"🥇"</span>, <span class="nm">2</span>:<span class="st">"🥈"</span>, <span class="nm">3</span>:<span class="st">"🥉"</span>}.<span class="fn">get</span>(<span class="vr">rank</span>, <span class="st">"  "</span>)
+                <span class="fn">print</span>(<span class="st">f"  {medal} {rank}. {s.name:<15} {s.marks:>6}  {s.grade}"</span>)
+
+        <span class="kw">elif</span> <span class="vr">choice</span> == <span class="st">"3"</span>:
+            <span class="cm"># ── Search ─────────────────────────────</span>
+            <span class="vr">q</span> = <span class="fn">input</span>(<span class="st">"Search name: "</span>)
+            <span class="vr">found</span> = <span class="vr">gb</span>.<span class="fn">search</span>(<span class="vr">q</span>)
+            <span class="kw">if</span> <span class="vr">found</span>:
+                <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">found</span>:
+                    <span class="fn">print</span>(<span class="st">f"  Found: {s}  marks={s.marks}  grade={s.grade}"</span>)
+            <span class="kw">else</span>:
+                <span class="fn">print</span>(<span class="st">f"  No student named '{q}'"</span>)
+
+        <span class="kw">elif</span> <span class="vr">choice</span> == <span class="st">"4"</span>:
+            <span class="cm"># ── Statistics ─────────────────────────</span>
+            <span class="vr">st</span> = <span class="vr">gb</span>.<span class="fn">stats</span>()
+            <span class="fn">print</span>(<span class="st">"\n📊 CLASS STATISTICS"</span>)
+            <span class="kw">for</span> <span class="vr">k</span>, <span class="vr">v</span> <span class="kw">in</span> <span class="vr">st</span>.<span class="fn">items</span>():
+                <span class="fn">print</span>(<span class="st">f"  {k:12}: {v}"</span>)
+
+        <span class="kw">elif</span> <span class="vr">choice</span> == <span class="st">"5"</span>:
+            <span class="cm"># ── Batch report — generator ───────────</span>
+            <span class="fn">print</span>(<span class="st">"\n📋 BATCH REPORT"</span>)
+            <span class="kw">for</span> <span class="vr">line</span> <span class="kw">in</span> <span class="vr">gb</span>.<span class="fn">batch_report</span>():   <span class="cm"># ← iterates generator!</span>
+                <span class="fn">print</span>(<span class="st">"  "</span> + <span class="vr">line</span>)
+
+        <span class="kw">elif</span> <span class="vr">choice</span> == <span class="st">"6"</span>:
+            <span class="vr">gb</span>.<span class="fn">export_json</span>()
+
+        <span class="kw">elif</span> <span class="vr">choice</span> == <span class="st">"7"</span>:
+            <span class="fn">print</span>(<span class="st">"👋 Goodbye! Data saved to students.csv"</span>)
+            <span class="kw">break</span>
+        <span class="kw">else</span>:
+            <span class="fn">print</span>(<span class="st">"❓ Invalid choice. Enter 1–7."</span>)
+
+<span class="cm"># ── Entry point ─────────────────────────────</span>
+<span class="kw">if</span> <span class="vr">__name__</span> == <span class="st">"__main__"</span>:
+    <span class="fn">main</span>()
+      </div>
+    </div>
+  </div>
+  <div class="done-row">
+    <div class="done-cb" id="done3" onclick="markDone(3)"></div>
+    <span class="done-lbl" onclick="markDone(3)">I ran main.py and tested all 7 menu options ✓</span>
+  </div>
+</div>
+
+<!-- CHALLENGE EXTENSIONS -->
+<div class="card">
+  <div class="ctag ta">🚀 Stretch Challenges</div>
+  <h2>If You Finish Early — Push Further</h2>
+  <p>These are optional but will make your portfolio project much more impressive:</p>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+    <div class="cb cbg"><i>1️⃣</i><span><strong>Add *args/**kwargs to the report function</strong> — let the user optionally pass extra config like <code style="font-family:'DM Mono',monospace">report(show_rank=True, highlight_scholars=True)</code></span></div>
+    <div class="cb cbb"><i>2️⃣</i><span><strong>Add a marks updater</strong> — allow updating an existing student's marks with full re-validation through the @property setter</span></div>
+    <div class="cb cbp"><i>3️⃣</i><span><strong>Build a normalise() method</strong> on GradeBook using list comprehension — returns all marks normalised to 0–1 range for ML readiness</span></div>
+    <div class="cb cba"><i>4️⃣</i><span><strong>Add a class accuracy method</strong> — given predicted pass/fail labels, compute accuracy using <code style="font-family:'DM Mono',monospace">zip(y_true, y_pred)</code></span></div>
+  </div>
+</div>
+
+<!-- ===== MINI QUIZ ===== -->
+<div class="sh" style="display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)">
+  <div style="width:38px;height:38px;border-radius:10px;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">🧪</div>
+  <div><div style="font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700">Month 1 Final Quiz (10 Questions)</div><div style="font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px">One question from every key topic — prove Month 1 is complete</div></div>
+  <div style="margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule)">📝 10 Qs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 10</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Final Score</strong><span style="font-size:.84rem;color:var(--ink3)">Aim for 8/10 — one question from each Month 1 week topic!</span></div>
+</div>
+
+<div id="quiz-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-g" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showGrad()">🎓 Complete Month 1!</button>
+</div>
+
+<!-- GRADUATION CARD -->
+<div class="grad-card" id="grad-card">
+  <div class="grad-trophy">🏆</div>
+  <div class="grad-title">Month 1 Complete!</div>
+  <div class="grad-msg">You have mastered Python foundation. 14 topics, 1 capstone, 1 working program that combines everything. You are no longer a beginner — you think in Python now.</div>
+  <div class="grad-badges">
+    <span class="gbadge">✅ Variables & Types</span>
+    <span class="gbadge">✅ Loops & Conditions</span>
+    <span class="gbadge">✅ Lists, Dicts, Sets</span>
+    <span class="gbadge">✅ Functions & *args</span>
+    <span class="gbadge">✅ Modules & File I/O</span>
+    <span class="gbadge">✅ Error Handling</span>
+    <span class="gbadge">✅ OOP & Inheritance</span>
+    <span class="gbadge">✅ Comprehensions</span>
+    <span class="gbadge">✅ Generators</span>
+    <span class="gbadge">✅ Capstone Project</span>
+  </div>
+  <p style="font-size:.82rem;color:rgba(255,255,255,.6);margin-bottom:18px">Month 2 starts with <strong>NumPy</strong> — finally, the real ML tools!</p>
+  <button class="grad-next" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top · Ready for Month 2!</button>
+</div>
+
+<!-- AI TUTOR -->
+<div class="sh" style="display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)">
+  <div style="width:38px;height:38px;border-radius:10px;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:1rem">💬</div>
+  <div><div style="font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700">AI Tutor — Capstone Help</div><div style="font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px">Stuck on any part? Ask anything</div></div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Ask — Get Unstuck</h2>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">Month 1 Capstone Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">All 14 topics covered · Student class · GradeBook · Error handling · File I/O</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Welcome to your Month 1 Capstone! I can help with any part — Student class, GradeBook, file I/O, error handling, or how the pieces connect. What are you working on?</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Tip:</strong> Create 3 files in the same folder: student.py, gradebook.py, main.py. Run main.py. It imports from the other two. This is real Python project structure — separate files, each with its own responsibility.</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask about any part of the capstone..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<footer>Day 15 of 300+ · AI/ML 15-Month Curriculum · Month 1 COMPLETE 🎓<br>Student Grade System · OOP · File I/O · Error Handling · Comprehensions · Generators · All 14 Month 1 Topics</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let partsD=0,quizS=0,quizSet=new Set();
+function updateProg(){const t=Math.min(Math.round((partsD/3)*60+(quizS/10)*40),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function markDone(n){const cb=document.getElementById('done'+n);const on=cb.classList.toggle('on');cb.textContent=on?'✓':'';partsD=document.querySelectorAll('.done-cb.on').length;updateProg();}
+
+// ── PUZZLE SYSTEM ──
+const PZ_FB={
+  1:{ok:`✅ Exactly right! _marks is "private" storage. The @property lets you READ it as student.marks. The @marks.setter intercepts WRITES — student.marks = 150 runs the setter which raises ValueError. Without this, you could store 999 as marks with no check. This is data encapsulation.`,
+     no:`❌ The underscore is a Python convention for "private" attributes. The @property + @setter pair controls read AND write access. When you write student.marks = 150, the setter runs first and raises ValueError before anything is stored.`},
+  2:{ok:`✅ Perfect! yield one line at a time = lazy generation. For 10,000 students, a return would build a 10,000-line list before printing a single line. A generator yields line 1, you print it, it yields line 2, you print it — never more than one line in memory at a time.`,
+     no:`❌ yield pauses and resumes. For batch_report with 500 students — return would create all 500 lines at once (memory heavy). yield produces one line at a time as the for loop asks for it. This is the difference between a list and a generator.`},
+  3:{ok:`✅ Correct! A for loop is the natural way to consume any iterable — including generators. Python calls next(generator) on each iteration automatically. You never need to call next() manually in a for loop. This is the clean Pythonic pattern.`,
+     no:`❌ A for loop automatically handles generators. You do NOT need list() first (that would defeat the memory saving). You do NOT call next() manually. for line in gb.batch_report(): is exactly right — Python calls next() for you each iteration.`}
+};
+function pz(n,opt,correct){
+  const opts=document.getElementById('pz'+n+'-opts').querySelectorAll('.popt');
+  opts.forEach(o=>o.classList.add('dis'));
+  event.currentTarget.classList.add(correct?'cor':'wrg');
+  if(!correct){opts.forEach(o=>{if(o.getAttribute('onclick')&&o.getAttribute('onclick').includes(',true)'))o.classList.add('cor');});}
+  const fb=document.getElementById('pz'+n+'-fb');fb.className='pz-fb show '+(correct?'ok':'no');
+  fb.textContent=correct?PZ_FB[n].ok:PZ_FB[n].no;
+  if(correct){setTimeout(()=>{const cr=document.getElementById('cr'+n);cr.classList.add('show');cr.scrollIntoView({behavior:'smooth',block:'nearest'});},350);}
+}
+
+// ── QUIZ ──
+const qs=[
+  {q:'In the Student class, why does @property marks use self._marks (underscore) instead of self.marks?',opts:['Underscore is required for all property methods','_marks is private storage — the @setter validates before storing. self.marks = val goes through the setter. self._marks = val bypasses it.','It makes the code run faster','Underscore prevents inheritance'],ans:1,exp:'The @property + @setter pattern: self.marks = x triggers the setter (validates 0-100). self._marks = x bypasses validation. The underscore is a convention for "internal, do not touch directly". This is the core data validation pattern used everywhere in production Python.'},
+  {q:'The GradeBook._load() method uses try/except inside a for loop. Why not one try/except around the whole loop?',opts:['One big try/except works just as well','Per-row try/except means ONE bad row is skipped and logged, but all other rows still load. One outer try/except would stop loading at the first bad row.','try/except cannot be used inside a for loop','To make the code faster'],ans:1,exp:'This is the production ML pipeline pattern from Day 11. Wrap each record individually so bad data is isolated. One outer try/except would crash the entire load on row 3 of 500. Per-row handling = maximum data recovery.'},
+  {q:'leaderboard() returns sorted(self.students, key=lambda s: s.marks, reverse=True). What does the lambda do?',opts:['Filters students with marks above 0','Extracts s.marks from each student object for sorted() to compare — so students are ranked by their marks, not by some default comparison','Converts marks to a percentage','Creates a new sorted copy of each student'],ans:1,exp:'sorted() needs a comparison key. key=lambda s: s.marks tells sorted() "for each student object s, use s.marks as the sorting value". Without this, Python would try to compare Student objects directly — which would fail. This is the standard pattern from Day 8 (lambda) + Day 5 (sorted).'},
+  {q:'batch_report() uses yield. To print all lines, you write: for line in gb.batch_report(): print(line). Is this correct?',opts:['No — you must call next(gb.batch_report()) manually','Yes — a for loop automatically calls next() on any generator each iteration','No — you need list(gb.batch_report()) first','No — generators can only be iterated once inside a function'],ans:1,exp:'for loop + generator = perfect pair. Python automatically calls next() each iteration. The generator pauses at each yield, returns the value, and resumes next iteration. This is the standard Pythonic generator consumption pattern.'},
+  {q:'stats() uses: set(s.grade for s in self.students). What does this give?',opts:['A sorted list of all grade letters including duplicates','A set of UNIQUE grade letters present in the class — no duplicates. If 5 students have "A" and 3 have "B", the set is {"A","B"}','A count of how many of each grade','A list comprehension of grade objects'],ans:1,exp:'set() automatically removes duplicates. If the class has [A, A, B, F, B, A], set() gives {A, B, F} — the unique grades present. This is Day 5 (sets) applied practically. Useful for knowing "what grade levels exist in this class?"'},
+  {q:'The @marks.setter raises TypeError for non-numbers and ValueError for out-of-range. When does gb.add() catch these?',opts:['It never catches them — the errors crash the program','The try/except in add() catches both ValueError and TypeError — prints a friendly message and the add fails safely without crashing','Only ValueError is caught','Only the first error type is caught'],ans:1,exp:'This is Day 11 (error handling) + Day 12 (OOP) working together. The Student class raises exceptions on bad data. The GradeBook.add() wraps Student() creation in try/except — catches the error, prints it, and continues. The program never crashes on bad user input.'},
+  {q:'export_json() converts the stats() result which contains a Python set. Why does the set need to be converted to list() before json.dump()?',opts:['json.dump() always converts sets automatically','JSON has no set type — json.dump() raises TypeError for sets. list() converts it to a JSON-compatible array.','Sets cannot be converted to JSON at all','json.dump() only works with numbers'],ans:1,exp:'JSON supports: strings, numbers, booleans, null, arrays, objects. Python sets → no JSON equivalent → TypeError. Solution: list(my_set) converts to array before dumping. This is a classic File I/O + Data Structures interaction from Days 5 and 10.'},
+  {q:'ScholarStudent inherits from Student. Why does its to_dict() call super().to_dict()?',opts:['super() is required in all methods of child classes','It calls Student\'s to_dict() to get the base dict, then adds "scholar": True/False — extending instead of rewriting. Without super(), you\'d have to duplicate all 5 base fields.','It converts the parent object to a dictionary','super().to_dict() returns a tuple, not dict'],ans:1,exp:'Inheritance + DRY: Student.to_dict() builds the base 5-field dict. ScholarStudent.to_dict() gets that dict with super().to_dict(), then ADDS one more field. Zero code duplication. Change Student.to_dict() → ScholarStudent automatically benefits. This is Month 1 OOP (Days 12-13) in action.'},
+  {q:'main.py uses: for rank, s in enumerate(gb.leaderboard(), 1). What does enumerate() add here?',opts:['It adds medal emoji automatically','It pairs each student with their rank number (1,2,3...) as they come from leaderboard(). Without it, you\'d need i=0, i+=1 in the loop.','It converts the leaderboard to a numbered dict','enumerate() is required for sorting'],ans:1,exp:'Day 14 (enumerate) + Day 8 (lambda) + Day 12 (OOP): leaderboard() returns sorted Student objects. enumerate(..., 1) pairs each with (1, s), (2, s), (3, s)... Unpack in for loop: for rank, s in enumerate(...). Clean, no manual counter. Classic Python pattern.'},
+  {q:'The complete project has 3 files: student.py, gradebook.py, main.py. gradebook.py has: from student import Student. What concept is this?',opts:['This is a syntax error — you cannot import from your own files','This is modules (Day 9) — student.py IS a module. gradebook.py imports the Student class from it. main.py imports GradeBook. Each file has one responsibility. This is real project structure.','This requires __init__.py to work','from student import is the same as import student'],ans:1,exp:'Day 9 (modules) + real project structure: any .py file is a module. gradebook.py puts "from student import Student" at the top. Python finds student.py in the same folder and imports Student. This is how all professional Python projects are organised — one class per file, clean imports.'},
+];
+function buildQuiz(){
+  document.getElementById('quiz-wrap').innerHTML=qs.map((q,i)=>`
+    <div class="mini-quiz">
+      <div style="font-family:'DM Mono',monospace;font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:8px">Month 1 Final · Question ${i+1} of 10</div>
+      <div class="mq-q">${q.q}</div>
+      <div class="mq-opts">${q.opts.map((o,j)=>`<div class="mq-opt" id="mq${i}_${j}" onclick="pickQ(${i},${j})"><div class="mq-ind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.83rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div>
+      <div class="mq-exp" id="mqe${i}"></div>
+    </div>`).join('');
+}
+function pickQ(qi,oi){
+  if(quizSet.has(qi))return;quizSet.add(qi);
+  const q=qs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mq'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mqe'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){quizS++;document.getElementById('live-sc').textContent=quizS;}
+  if(quizSet.size===10)document.getElementById('fin-btn').style.display='inline-flex';
+  updateProg();
+}
+function showGrad(){
+  const pct=Math.round(quizS/10*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--green) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-btn').style.display='none';
+  const gc=document.getElementById('grad-card');gc.classList.add('show');
+  gc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildQuiz();
+
+// ── AI TUTOR ──
+const replies={
+  student:`The Student class has 3 key parts:\n\n1. @property marks + @marks.setter:\n   student.marks = 150 → setter fires → raises ValueError\n   This PREVENTS bad data from entering the object.\n\n2. @property grade:\n   Computed from self._marks each time accessed.\n   No () needed: student.grade → "A"\n\n3. to_dict():\n   Returns a dict of all data — needed by csv.DictWriter.\n   Without this, you cannot save to CSV.\n\nQuick test to confirm it works:\n  s = Student("101", "Ali", 88)\n  print(s.grade)      # A\n  print(s.is_passing) # True\n  print(s.to_dict())  # full dict\n\n  try:\n      Student("102","Bad",150)  # should raise ValueError\n  except ValueError as e:\n      print(e)`,
+  gradebook:`GradeBook key methods:\n\n_load() — called on __init__:\n  Reads students.csv using csv.DictReader\n  Creates Student objects from each row\n  try/except handles bad rows — skips them!\n\nadd(roll, name, marks):\n  Creates Student (validates!)\n  Appends to self.students\n  Calls _save() automatically\n\nleaderboard():\n  sorted(self.students, key=lambda s: s.marks, reverse=True)\n  Returns students sorted highest-first\n\nstats():\n  Uses list comprehension for all_marks\n  Uses set comprehension for unique grades\n  Uses sum(1 for s in... if s.is_passing) for count\n\nbatch_report():\n  Uses yield — one line at a time\n  enumerate(leaderboard(), 1) for ranking`,
+  files:`Project file structure:\n\nmy_project/\n  ├── student.py      ← Student, ScholarStudent classes\n  ├── gradebook.py    ← GradeBook class (imports from student.py)\n  ├── main.py         ← menu loop (imports from both)\n  └── students.csv    ← auto-created when first student added\n\nTo run:\n  python main.py\n\nImport chain:\n  main.py → from gradebook import GradeBook\n  main.py → from student import ScholarStudent\n  gradebook.py → from student import Student\n\nAll 3 files must be in the SAME folder!\nThis is real Python project structure (Day 9 modules).`,
+  error:`Error handling in this project:\n\n1. In Student.marks setter:\n   if not isinstance(val, (int,float)): raise TypeError\n   if not (0 <= val <= 100): raise ValueError\n\n2. In GradeBook._load():\n   try:\n       s = Student(row["roll"], row["name"], float(row["marks"]))\n   except (ValueError, KeyError) as e:\n       print(f"⚠️ Skipped: {e}")  # bad row → skip, continue\n\n3. In GradeBook.add():\n   try:\n       s = Student(roll, name, marks)  # validation happens here\n   except (ValueError, TypeError) as e:\n       print(f"❌ {e}")  # show message, don't add\n\n4. In main.py:\n   try:\n       marks = float(input("Marks: "))  # user might type "abc"\n   except ValueError:\n       print("Please enter a number!")`,
+  default:`This capstone uses EVERYTHING from Month 1. Here are the key connections:\n\n📦 OOP (Days 12-13):\n  Student class, ScholarStudent inheritance, @property\n\n🛡️ Error handling (Day 11):\n  @setter raises, _load() catches, add() catches\n\n📄 File I/O (Day 10):\n  csv.DictReader loads, csv.DictWriter saves, json.dump exports\n\n⚡ Comprehensions (Day 14):\n  [s.marks for s in students], {n:s for n,s in zip(...)}\n\n⚙️ Generators (Day 14):\n  batch_report() with yield\n\n🔗 zip/enumerate (Day 14):\n  enumerate(leaderboard(), 1) for ranking\n\n📦 Modules (Day 9):\n  3-file project structure: student.py, gradebook.py, main.py\n\nWhat specific part do you need help with?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('student')||lm.includes('property')||lm.includes('setter'))r=replies.student;
+    else if(lm.includes('gradebook')||lm.includes('grade book')||lm.includes('leaderboard'))r=replies.gradebook;
+    else if(lm.includes('file')||lm.includes('folder')||lm.includes('import')||lm.includes('structure'))r=replies.files;
+    else if(lm.includes('error')||lm.includes('except')||lm.includes('try'))r=replies.error;
+    addMsg(r,'ai');},700+Math.random()*500);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+setTimeout(()=>{document.getElementById('prog-fill').style.width='2%';},500);
+</script>
+</body>
+</html>

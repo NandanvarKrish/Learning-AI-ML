@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 14 — AI Task: Comprehensions & Generators</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0fdf4;--paper:#fff;--p2:#dcfce7;
+  --ink:#052010;--ink2:#1a4028;--ink3:#5a9070;
+  --rule:#bbf7d0;
+  --green:#15803d;--gs:#f0fdf4;--gb:#86efac;
+  --blue:#0369a1;--bs:#e0f2fb;--bb:#7dd3fc;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#6d28d9;--ps:#f5f3ff;--pb:#c4b5fd;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --sh:0 1px 4px rgba(5,32,16,.07),0 4px 18px rgba(5,32,16,.07);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bbf7d055,transparent 42%),radial-gradient(circle at 5% 92%,#6ee7b740,transparent 40%);min-height:100vh}
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(5,32,16,.06)}
+.bar-in{max-width:860px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--gs);border-color:var(--gb);color:var(--green)}
+.page{max-width:860px;margin:0 auto;padding:40px 20px 90px}
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--green)}
+.hsub{font-size:.92rem;color:var(--ink2);max-width:590px;line-height:1.75;margin-bottom:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:99px;transition:width .7s ease}
+.recap{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--green);border-radius:var(--r);padding:13px 18px;margin-bottom:22px;font-size:.87rem;color:var(--ink2);line-height:1.8}
+.recap code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-ttl{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700}
+.sh-sub{font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-bdg{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:24px 28px;margin-bottom:16px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.tb{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.15rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+.cb{border-radius:10px;padding:12px 16px;font-size:.86rem;line-height:1.7;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:1px;font-style:normal}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* ── TASK CARD WITH PUZZLE LOCK ── */
+.task-card{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);margin-bottom:20px;overflow:hidden;box-shadow:var(--sh)}
+.task-head{padding:18px 22px;display:flex;align-items:flex-start;gap:14px;cursor:default}
+.task-num{width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.task-body{flex:1}
+.task-title{font-family:'Fraunces',Georgia,serif;font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.3}
+.task-desc{font-size:.9rem;color:var(--ink2);line-height:1.75}
+.task-desc code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+.task-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.task-tag{font-family:'DM Mono',monospace;font-size:.65rem;padding:3px 10px;border-radius:99px;font-weight:600}
+.tag-skill{background:var(--gs);border:1px solid var(--gb);color:var(--green)}
+.tag-real{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.tag-level{background:var(--as);border:1px solid var(--ab);color:var(--amber)}
+
+/* puzzle lock */
+.puzzle-lock{border-top:1.5px dashed var(--rule);padding:16px 22px;background:#f8fefb}
+.lock-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lock-icon{font-size:1.1rem}
+.lock-title{font-size:.84rem;font-weight:700;color:var(--ink2)}
+.lock-sub{font-size:.75rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:1px}
+.puzzle-q{font-size:.88rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5}
+.puzzle-opts{display:flex;flex-direction:column;gap:6px}
+.popt{display:flex;align-items:flex-start;gap:9px;padding:9px 13px;border:1.5px solid var(--rule);border-radius:8px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;background:var(--paper);user-select:none}
+.popt:hover:not(.disabled){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.popt.correct{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600;cursor:default}
+.popt.wrong{background:var(--rs);border-color:var(--rb);color:var(--red);cursor:default}
+.popt.disabled{cursor:default;opacity:.6}
+.popt-label{width:20px;height:20px;border-radius:5px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.popt.correct .popt-label{background:var(--green);border-color:var(--green);color:#fff}
+.popt.wrong .popt-label{background:var(--red);border-color:var(--red);color:#fff}
+.puzzle-fb{margin-top:9px;padding:9px 13px;border-radius:8px;font-size:.8rem;line-height:1.6;display:none}
+.puzzle-fb.show{display:block}
+.puzzle-fb.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.puzzle-fb.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* code reveal */
+.code-reveal{display:none;border-top:2px solid var(--gb);padding:16px 22px;background:#f2fdf5}
+.code-reveal.show{display:block}
+.cr-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cr-icon{font-size:1.1rem}
+.cr-title{font-size:.84rem;font-weight:700;color:var(--green)}
+.code-block{background:#052010;border-radius:10px;overflow:hidden}
+.code-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:#0a2818;border-bottom:1px solid #164030}
+.code-dots{display:flex;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot-r{background:#ef4444}.dot-y{background:#f59e0b}.dot-g{background:#22c55e}
+.code-lang{font-family:'DM Mono',monospace;font-size:.6rem;color:#4a9060;letter-spacing:.1em;text-transform:uppercase}
+.code-body{padding:16px 18px;font-family:'DM Mono',monospace;font-size:.83rem;line-height:2;overflow-x:auto;color:#c8f0d8}
+.cm{color:#2a6040;font-style:italic}.kw{color:#4ade80}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#c8f0d8}.op{color:#4a9060}
+
+/* done checkbox */
+.task-done-row{display:flex;align-items:center;gap:10px;padding:12px 22px;border-top:1px solid var(--rule);background:var(--bg)}
+.done-cb{width:20px;height:20px;border:2px solid #6ab88a;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700;flex-shrink:0;transition:all .2s}
+.done-cb.checked{background:var(--green);border-color:var(--green)}
+.done-lbl{font-size:.84rem;color:var(--ink2);cursor:pointer;user-select:none}
+
+/* live explorer */
+.explorer{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.exp-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.exp-lbl{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--ink3);min-width:100px}
+.exp-inp,.exp-sel{flex:1;padding:8px 12px;border:1.5px solid var(--rule);border-radius:8px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink);background:var(--paper);outline:none;min-width:120px;transition:border-color .2s}
+.exp-inp:focus,.exp-sel:focus{border-color:var(--green)}
+.exp-out{margin-top:12px;background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink2);line-height:1.9;white-space:pre-wrap;display:none}
+.exp-out.show{display:block}
+.exp-out .ok{color:var(--green);font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#116630}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#025a87}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+
+/* AI chat */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#15803d,#059669);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:320px;overflow-y:auto;background:#f8fefb}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--green);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--gs);border:1px solid var(--gb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--green)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aic-send:hover{background:#116630}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* fill */
+.fq{margin-bottom:14px}
+.fq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:360px;transition:border-color .2s}
+.fi:focus{border-color:var(--green)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+.sq{margin-bottom:16px}
+.sq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:7px;color:var(--ink2);line-height:1.6}
+.sq textarea{width:100%;border:1.5px solid var(--rule);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.7}
+.sq textarea:focus{border-color:var(--green)}
+.cc{font-size:.7rem;color:var(--ink3);text-align:right;margin-top:3px;font-family:'DM Mono',monospace}
+
+/* MCQ */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+.final{background:linear-gradient(135deg,#052010,#1a4028);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.fin-emoji{font-size:2.5rem;margin-bottom:10px}
+.fin-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.fin-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.fin-cta{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 22px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.fin-cta:hover{background:rgba(255,255,255,.25)}
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+@media(max-width:600px){
+  .card,.task-card{padding:18px 16px}
+  .exp-row{flex-direction:column;align-items:flex-start}
+  .exp-inp,.exp-sel{width:100%}
+  .aic-msgs{max-height:260px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">📅 Day 14</div>
+      <div class="btl">AI Task — Comprehensions · Generators · zip · enumerate</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 1 · Week 3 · Day 14 Task · Last Python lesson before Capstone!</div>
+  <h1>Your AI Task:<br><em>Comprehensions & Generators</em></h1>
+  <p class="hsub">Today you learn the Pythonic way of thinking. These patterns are in <strong>every single ML project</strong> — from normalising pixels to pairing predictions with true labels. Solve the puzzle to unlock the solution code for each task. 🔐</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">⚡ List Comprehension</span>
+    <span class="pill">📚 Dict Comprehension</span>
+    <span class="pill">🔗 zip()</span>
+    <span class="pill">🔢 enumerate()</span>
+    <span class="pill">⚙️ Generators</span>
+    <span class="pill">🔐 Puzzle-Locked Code</span>
+    <span class="pill">🧠 15 MCQs</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- RECAP -->
+<div class="recap">
+  ✅ <strong>What you learned today:</strong>
+  <code>[expr for x in list]</code> — list comprehension. One line replaces a loop+append.
+  <code>[expr for x in list if condition]</code> — filter + transform in one line.
+  <code>{k:v for k,v in zip(a,b)}</code> — dict comprehension.
+  <code>zip(a, b)</code> — pairs two lists together. Perfect for pairing names with scores.
+  <code>enumerate(list, start=1)</code> — gives index + value together.
+  <code>(x**2 for x in range(n))</code> — generator expression. Uses almost no memory — computes one value at a time.
+  <code>yield</code> — pauses a function and returns a value. Resumes from the same point next call.
+</div>
+
+<!-- HOW IT WORKS BANNER -->
+<div class="cb cbp" style="margin-bottom:24px">
+  <i>🔐</i>
+  <span><strong>How this works:</strong> Each task shows you <strong>what to do</strong> and <strong>why it matters in AI</strong>. To see the <strong>solution code</strong>, you must first solve a short puzzle about the same topic. Get it right → code unlocks instantly. This trains you to think BEFORE you look!</span>
+</div>
+
+<!-- ===== LIVE EXPLORER ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">⚡</div>
+  <div><div class="sh-ttl">Live Comprehension Explorer</div><div class="sh-sub">Try different operations on your scores before starting tasks</div></div>
+  <div class="sh-bdg">⏱ 5 min warm-up</div>
+</div>
+
+<div class="card">
+  <div class="ctag tg">⚡ Warm Up</div>
+  <h2>See List Comprehensions in Action</h2>
+  <p>Enter any scores separated by commas. Pick an operation and see the list comprehension result instantly — this is exactly how Pandas processes columns internally.</p>
+  <div class="explorer">
+    <div class="exp-row">
+      <span class="exp-lbl">Your scores:</span>
+      <input class="exp-inp" id="exp-scores" value="85, 45, 72, 33, 91, 58" placeholder="e.g. 85, 45, 72, 33, 91"/>
+    </div>
+    <div class="exp-row">
+      <span class="exp-lbl">Operation:</span>
+      <select class="exp-sel" id="exp-op">
+        <option value="norm">Normalise (÷100) — ML preprocessing</option>
+        <option value="pass">Filter passing scores (≥50)</option>
+        <option value="grade">Label Pass/Fail — ML labels</option>
+        <option value="aboveavg">Keep above-average scores</option>
+        <option value="squares">Square each score</option>
+        <option value="zip_grade">zip with grade letters</option>
+      </select>
+    </div>
+    <button class="btn btn-g" style="width:100%;justify-content:center;margin-top:4px" onclick="runExplorer()">▶ Run Comprehension</button>
+    <div class="exp-out" id="exp-out"></div>
+  </div>
+</div>
+
+<!-- ===== TASKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">🎯</div>
+  <div><div class="sh-ttl">Tasks — Solve Puzzle → See Code</div><div class="sh-sub">Understand the task, attempt it, then unlock the solution</div></div>
+  <div class="sh-bdg">⏱ 3–4 Hours</div>
+</div>
+
+<!-- TASK 1 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">1</div>
+    <div class="task-body">
+      <div class="task-title">📊 Normalise Student Scores — The ML Way</div>
+      <div class="task-desc">
+        You have a list of 6 student scores. In Machine Learning, before training a model, we <strong>normalise</strong> all numbers to the 0–1 range. Why? Because a model treats 88 as "88 times bigger" than 1 — but 0.88 and 0.01 mean something sensible as probabilities.<br><br>
+        Write a list comprehension that divides each score by 100. Then write a second one that only normalises scores of 50 or above (the passing ones).<br><br>
+        <strong>Expected output:</strong><br>
+        All normalised: <code>[0.85, 0.45, 0.72, 0.33, 0.91, 0.58]</code><br>
+        Passing only: <code>[0.85, 0.72, 0.91, 0.58]</code>
+      </div>
+      <div class="task-meta">
+        <span class="task-tag tag-skill">List Comprehension</span>
+        <span class="task-tag tag-real">ML Preprocessing</span>
+        <span class="task-tag tag-level">⭐ Beginner</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-lock">
+    <div class="lock-header">
+      <span class="lock-icon">🔐</span>
+      <div><div class="lock-title">Solve to unlock solution code</div><div class="lock-sub">Get the answer right → code appears instantly</div></div>
+    </div>
+    <div class="puzzle-q">What does <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">[s/100 for s in scores if s >= 50]</code> do to the list <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">[85, 45, 72, 33, 91, 58]</code>?</div>
+    <div class="puzzle-opts" id="pz1-opts">
+      <div class="popt" onclick="puzzle(1,'A',false)"><span class="popt-label">A</span> Divides ALL scores by 100 → [0.85, 0.45, 0.72, 0.33, 0.91, 0.58]</div>
+      <div class="popt" onclick="puzzle(1,'B',true)"><span class="popt-label">B</span> Keeps only scores ≥50, THEN divides each by 100 → [0.85, 0.72, 0.91, 0.58]</div>
+      <div class="popt" onclick="puzzle(1,'C',false)"><span class="popt-label">C</span> Returns True/False for each score</div>
+      <div class="popt" onclick="puzzle(1,'D',false)"><span class="popt-label">D</span> Sums all scores above 50</div>
+    </div>
+    <div class="puzzle-fb" id="pz1-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr1">
+    <div class="cr-header"><span class="cr-icon">🔓</span><span class="cr-title">Solution Code — Unlocked!</span></div>
+    <div class="code-block">
+      <div class="code-bar"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="code-lang">Python — List Comprehension · Task 1</div></div>
+      <div class="code-body">
+<span class="vr">scores</span> = [<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>]
+
+<span class="cm"># Step 1: Normalise ALL scores (divide by 100)</span>
+<span class="cm"># [expression  for item in list]</span>
+<span class="vr">all_norm</span> = [<span class="vr">s</span>/<span class="nm">100</span>  <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>]
+<span class="fn">print</span>(<span class="st">"All normalised:"</span>, <span class="vr">all_norm</span>)
+<span class="cm"># [0.85, 0.45, 0.72, 0.33, 0.91, 0.58]</span>
+
+<span class="cm"># Step 2: Normalise ONLY passing scores (≥50)</span>
+<span class="cm"># [expression  for item in list  if condition]</span>
+<span class="cm"># ↑ filter runs FIRST — only scores ≥50 get divided</span>
+<span class="vr">pass_norm</span> = [<span class="vr">s</span>/<span class="nm">100</span>  <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>  <span class="kw">if</span> <span class="vr">s</span> >= <span class="nm">50</span>]
+<span class="fn">print</span>(<span class="st">"Passing only:"</span>, <span class="vr">pass_norm</span>)
+<span class="cm"># [0.85, 0.72, 0.91, 0.58]  ← 45 and 33 excluded</span>
+
+<span class="cm"># 💡 This is EXACTLY what Pandas does:</span>
+<span class="cm"># df["marks_norm"] = df["marks"] / 100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="task-done-row">
+    <div class="done-cb" id="done1" onclick="markDone(1)"></div>
+    <span class="done-lbl" onclick="markDone(1)">I completed this task in IDLE ✓</span>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">2</div>
+    <div class="task-body">
+      <div class="task-title">🏷️ Assign Pass/Fail Labels — Building ML Training Data</div>
+      <div class="task-desc">
+        In supervised ML, every data point needs a <strong>label</strong> — "spam" or "not spam", "pass" or "fail", 1 or 0. You'll create labels for your student scores using a <strong>ternary expression</strong> inside a list comprehension.<br><br>
+        Write a list comprehension that produces <code>"Pass"</code> for scores ≥ 50 and <code>"Fail"</code> for anything below. Then make a second version that produces <code>1</code> and <code>0</code> (the format ML models actually use).<br><br>
+        <strong>Real world:</strong> This is how you create the <code>y</code> (labels) column for training an ML model!
+      </div>
+      <div class="task-meta">
+        <span class="task-tag tag-skill">Ternary in Comprehension</span>
+        <span class="task-tag tag-real">ML Labels (y)</span>
+        <span class="task-tag tag-level">⭐ Beginner</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-lock">
+    <div class="lock-header">
+      <span class="lock-icon">🔐</span>
+      <div><div class="lock-title">Solve to unlock solution code</div></div>
+    </div>
+    <div class="puzzle-q">In <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">["Pass" if s>=50 else "Fail" for s in scores]</code> — where does the condition go?</div>
+    <div class="puzzle-opts" id="pz2-opts">
+      <div class="popt" onclick="puzzle(2,'A',false)"><span class="popt-label">A</span> After "for s in scores" — like [s for s in scores if s>=50]</div>
+      <div class="popt" onclick="puzzle(2,'B',true)"><span class="popt-label">B</span> BEFORE "for" — it's a ternary expression: ["A" if cond else "B" for x in list]. The if/else is part of the output value, not a filter.</div>
+      <div class="popt" onclick="puzzle(2,'C',false)"><span class="popt-label">C</span> In a separate if statement before the comprehension</div>
+      <div class="popt" onclick="puzzle(2,'D',false)"><span class="popt-label">D</span> Both before and after "for" — double condition</div>
+    </div>
+    <div class="puzzle-fb" id="pz2-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr2">
+    <div class="cr-header"><span class="cr-icon">🔓</span><span class="cr-title">Solution Code — Unlocked!</span></div>
+    <div class="code-block">
+      <div class="code-bar"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="code-lang">Python — Ternary in Comprehension · Task 2</div></div>
+      <div class="code-body">
+<span class="vr">scores</span> = [<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>]
+
+<span class="cm"># Pattern: [value_if_true if condition else value_if_false  for x in list]</span>
+<span class="cm"># The condition is part of the OUTPUT expression — not a filter!</span>
+
+<span class="cm"># Text labels (human-readable)</span>
+<span class="vr">labels</span> = [<span class="st">"Pass"</span> <span class="kw">if</span> <span class="vr">s</span> >= <span class="nm">50</span> <span class="kw">else</span> <span class="st">"Fail"</span>  <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>]
+<span class="fn">print</span>(<span class="st">"Labels:"</span>, <span class="vr">labels</span>)
+<span class="cm"># ['Pass', 'Fail', 'Pass', 'Fail', 'Pass', 'Pass']</span>
+
+<span class="cm"># Binary labels (1/0) — this is y in ML!</span>
+<span class="vr">y</span> = [<span class="nm">1</span> <span class="kw">if</span> <span class="vr">s</span> >= <span class="nm">50</span> <span class="kw">else</span> <span class="nm">0</span>  <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>]
+<span class="fn">print</span>(<span class="st">"Binary (y):"</span>, <span class="vr">y</span>)
+<span class="cm"># [1, 0, 1, 0, 1, 1]  ← THIS is your ML training label!</span>
+
+<span class="cm"># Combine scores (X) with labels (y) — this is your training dataset</span>
+<span class="vr">dataset</span> = [{<span class="st">"marks"</span>: <span class="vr">s</span>, <span class="st">"passed"</span>: <span class="nm">1</span> <span class="kw">if</span> <span class="vr">s</span> >= <span class="nm">50</span> <span class="kw">else</span> <span class="nm">0</span>} <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>]
+<span class="fn">print</span>(<span class="st">"Dataset:"</span>, <span class="vr">dataset</span>)
+      </div>
+    </div>
+  </div>
+
+  <div class="task-done-row">
+    <div class="done-cb" id="done2" onclick="markDone(2)"></div>
+    <span class="done-lbl" onclick="markDone(2)">I completed this task in IDLE ✓</span>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">3</div>
+    <div class="task-body">
+      <div class="task-title">🔗 Build a Student Dictionary Using zip() — No More Index Errors</div>
+      <div class="task-desc">
+        You have two lists — names and scores. You want to combine them into a dictionary. The old way would be using a counter variable and risking index errors. <code>zip()</code> is cleaner, safer, and what every Python developer uses.<br><br>
+        Use <code>zip()</code> inside a dict comprehension to create <code>{"Ali": 88, "Sara": 45, ...}</code>. Then use <code>zip()</code> in a for loop to print each student's report.<br><br>
+        <strong>Also:</strong> Compute accuracy using <code>zip(y_true, y_pred)</code> — the exact line used in every ML evaluation script.
+      </div>
+      <div class="task-meta">
+        <span class="task-tag tag-skill">zip() + dict comprehension</span>
+        <span class="task-tag tag-real">ML Accuracy Calculation</span>
+        <span class="task-tag tag-level">⭐⭐ Intermediate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-lock">
+    <div class="lock-header">
+      <span class="lock-icon">🔐</span>
+      <div><div class="lock-title">Solve to unlock solution code</div></div>
+    </div>
+    <div class="puzzle-q">You have <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">y_true=[1,0,1,1]</code> and <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">y_pred=[1,0,0,1]</code>. What does <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">sum(1 for t,p in zip(y_true,y_pred) if t==p)</code> return?</div>
+    <div class="puzzle-opts" id="pz3-opts">
+      <div class="popt" onclick="puzzle(3,'A',false)"><span class="popt-label">A</span> 4 — sums all values in both lists</div>
+      <div class="popt" onclick="puzzle(3,'B',false)"><span class="popt-label">B</span> 2 — counts where y_true and y_pred are different</div>
+      <div class="popt" onclick="puzzle(3,'C',true)"><span class="popt-label">C</span> 3 — counts positions where prediction matches truth (index 0, 1, 3 match)</div>
+      <div class="popt" onclick="puzzle(3,'D',false)"><span class="popt-label">D</span> 0.75 — gives accuracy as a decimal directly</div>
+    </div>
+    <div class="puzzle-fb" id="pz3-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr3">
+    <div class="cr-header"><span class="cr-icon">🔓</span><span class="cr-title">Solution Code — Unlocked!</span></div>
+    <div class="code-block">
+      <div class="code-bar"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="code-lang">Python — zip() · Task 3</div></div>
+      <div class="code-body">
+<span class="vr">names</span>  = [<span class="st">"Ali"</span>, <span class="st">"Sara"</span>, <span class="st">"Usman"</span>, <span class="st">"Zara"</span>]
+<span class="vr">scores</span> = [<span class="nm">88</span>,    <span class="nm">45</span>,     <span class="nm">72</span>,      <span class="nm">33</span>  ]
+
+<span class="cm"># Dict comprehension using zip() — clean, no index errors!</span>
+<span class="vr">grade_map</span> = {<span class="vr">n</span>: <span class="vr">s</span>  <span class="kw">for</span> <span class="vr">n</span>, <span class="vr">s</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="vr">names</span>, <span class="vr">scores</span>)}
+<span class="fn">print</span>(<span class="vr">grade_map</span>)
+<span class="cm"># {'Ali': 88, 'Sara': 45, 'Usman': 72, 'Zara': 33}</span>
+
+<span class="cm"># Print each student's report</span>
+<span class="kw">for</span> <span class="vr">name</span>, <span class="vr">score</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="vr">names</span>, <span class="vr">scores</span>):
+    <span class="vr">status</span> = <span class="st">"✅ Pass"</span> <span class="kw">if</span> <span class="vr">score</span> >= <span class="nm">50</span> <span class="kw">else</span> <span class="st">"❌ Fail"</span>
+    <span class="fn">print</span>(<span class="st">f"{name}: {score} → {status}"</span>)
+
+<span class="cm"># ─────────────────────────────────────────</span>
+<span class="cm"># ML ACCURACY — the exact formula used everywhere</span>
+<span class="vr">y_true</span> = [<span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">1</span>]   <span class="cm"># actual answers</span>
+<span class="vr">y_pred</span> = [<span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">0</span>, <span class="nm">1</span>]   <span class="cm"># model's guesses</span>
+
+<span class="vr">correct</span>  = <span class="fn">sum</span>(<span class="nm">1</span> <span class="kw">for</span> <span class="vr">t</span>, <span class="vr">p</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="vr">y_true</span>, <span class="vr">y_pred</span>) <span class="kw">if</span> <span class="vr">t</span> == <span class="vr">p</span>)
+<span class="vr">accuracy</span> = <span class="vr">correct</span> / <span class="fn">len</span>(<span class="vr">y_true</span>) * <span class="nm">100</span>
+<span class="fn">print</span>(<span class="st">f"Correct: {correct}/4 → Accuracy: {accuracy:.1f}%"</span>)
+<span class="cm"># Correct: 3/4 → Accuracy: 75.0%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="task-done-row">
+    <div class="done-cb" id="done3" onclick="markDone(3)"></div>
+    <span class="done-lbl" onclick="markDone(3)">I completed this task in IDLE ✓</span>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">4</div>
+    <div class="task-body">
+      <div class="task-title">🔢 Number Every Item With enumerate() — Training Loop Style</div>
+      <div class="task-desc">
+        When printing reports or running training epochs, you often need both the <strong>index</strong> AND the <strong>value</strong>. Without <code>enumerate()</code>, beginners write <code>i = 0</code> then <code>i += 1</code> inside the loop — messy and error-prone.<br><br>
+        Use <code>enumerate(scores, start=1)</code> to print student reports numbered from 1. Then simulate a training loop with epoch numbers and loss values.<br><br>
+        <strong>Real world:</strong> Every ML training loop uses: <code>for epoch, loss in enumerate(losses, 1):</code>
+      </div>
+      <div class="task-meta">
+        <span class="task-tag tag-skill">enumerate()</span>
+        <span class="task-tag tag-real">Training Loop Pattern</span>
+        <span class="task-tag tag-level">⭐ Beginner</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-lock">
+    <div class="lock-header">
+      <span class="lock-icon">🔐</span>
+      <div><div class="lock-title">Solve to unlock solution code</div></div>
+    </div>
+    <div class="puzzle-q">What is the difference between <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">enumerate(scores)</code> and <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">enumerate(scores, start=1)</code>?</div>
+    <div class="puzzle-opts" id="pz4-opts">
+      <div class="popt" onclick="puzzle(4,'A',false)"><span class="popt-label">A</span> No difference — both start from 0</div>
+      <div class="popt" onclick="puzzle(4,'B',true)"><span class="popt-label">B</span> enumerate(scores) starts index from 0. enumerate(scores, start=1) starts from 1. For student reports, start=1 is more natural: "Student 1" not "Student 0".</div>
+      <div class="popt" onclick="puzzle(4,'C',false)"><span class="popt-label">C</span> start=1 skips the first score</div>
+      <div class="popt" onclick="puzzle(4,'D',false)"><span class="popt-label">D</span> enumerate(scores, start=1) only works on numbers</div>
+    </div>
+    <div class="puzzle-fb" id="pz4-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr4">
+    <div class="cr-header"><span class="cr-icon">🔓</span><span class="cr-title">Solution Code — Unlocked!</span></div>
+    <div class="code-block">
+      <div class="code-bar"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="code-lang">Python — enumerate() · Task 4</div></div>
+      <div class="code-body">
+<span class="vr">scores</span> = [<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>]
+
+<span class="cm"># WITHOUT enumerate() — messy! ❌</span>
+<span class="vr">i</span> = <span class="nm">0</span>
+<span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>:
+    <span class="fn">print</span>(<span class="st">f"Student {i}: {s}"</span>)  <span class="cm"># starts from 0 — not natural</span>
+    <span class="vr">i</span> += <span class="nm">1</span>  <span class="cm"># easy to forget or mess up</span>
+
+<span class="cm"># WITH enumerate() — clean! ✅</span>
+<span class="kw">for</span> <span class="vr">i</span>, <span class="vr">score</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="vr">scores</span>, <span class="vr">start</span>=<span class="nm">1</span>):
+    <span class="vr">status</span> = <span class="st">"✅"</span> <span class="kw">if</span> <span class="vr">score</span> >= <span class="nm">50</span> <span class="kw">else</span> <span class="st">"❌"</span>
+    <span class="fn">print</span>(<span class="st">f"Student {i}: {score} {status}"</span>)
+<span class="cm"># Student 1: 85 ✅</span>
+<span class="cm"># Student 2: 45 ❌</span>
+<span class="cm"># Student 3: 72 ✅ ... </span>
+
+<span class="cm"># ─────────────────────────────────────────</span>
+<span class="cm"># TRAINING LOOP — this is the real ML pattern</span>
+<span class="vr">losses</span> = [<span class="nm">2.1</span>, <span class="nm">1.4</span>, <span class="nm">0.8</span>, <span class="nm">0.4</span>, <span class="nm">0.2</span>]
+
+<span class="kw">for</span> <span class="vr">epoch</span>, <span class="vr">loss</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="vr">losses</span>, <span class="nm">1</span>):
+    <span class="fn">print</span>(<span class="st">f"Epoch {epoch}/5 — loss: {loss:.1f}"</span>)
+<span class="cm"># Epoch 1/5 — loss: 2.1</span>
+<span class="cm"># Epoch 2/5 — loss: 1.4  ...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="task-done-row">
+    <div class="done-cb" id="done4" onclick="markDone(4)"></div>
+    <span class="done-lbl" onclick="markDone(4)">I completed this task in IDLE ✓</span>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">5</div>
+    <div class="task-body">
+      <div class="task-title">⚙️ Generator vs List — Processing 1 Million Images</div>
+      <div class="task-desc">
+        Imagine you are training an AI image classifier on 1 million images. You <strong>cannot</strong> load all 1 million images into memory at once — your computer only has 16GB RAM but the images take 200GB. This is exactly the problem generators solve.<br><br>
+        Write both versions: a list comprehension (loads everything now) and a generator expression (lazy — loads one at a time). Print the type of each. Then write a generator function using <code>yield</code> that simulates loading images in batches.<br><br>
+        <strong>Real world:</strong> PyTorch DataLoader uses this exact generator pattern.
+      </div>
+      <div class="task-meta">
+        <span class="task-tag tag-skill">Generator Expression + yield</span>
+        <span class="task-tag tag-real">Large Dataset Processing</span>
+        <span class="task-tag tag-level">⭐⭐⭐ Advanced</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-lock">
+    <div class="lock-header">
+      <span class="lock-icon">🔐</span>
+      <div><div class="lock-title">Solve to unlock solution code</div></div>
+    </div>
+    <div class="puzzle-q">What is the KEY difference between <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">[x**2 for x in range(1000)]</code> and <code style="font-family:'DM Mono',monospace;background:var(--p2);padding:1px 6px;border-radius:4px">(x**2 for x in range(1000))</code>?</div>
+    <div class="puzzle-opts" id="pz5-opts">
+      <div class="popt" onclick="puzzle(5,'A',false)"><span class="popt-label">A</span> No difference — both create a list immediately</div>
+      <div class="popt" onclick="puzzle(5,'B',false)"><span class="popt-label">B</span> () creates a tuple instead of a list</div>
+      <div class="popt" onclick="puzzle(5,'C',true)"><span class="popt-label">C</span> [] creates ALL 1000 values in memory right now. () creates a lazy generator — values are computed ONE AT A TIME when you ask for them. The generator uses almost no memory.</div>
+      <div class="popt" onclick="puzzle(5,'D',false)"><span class="popt-label">D</span> [] is faster, () is just shorthand</div>
+    </div>
+    <div class="puzzle-fb" id="pz5-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr5">
+    <div class="cr-header"><span class="cr-icon">🔓</span><span class="cr-title">Solution Code — Unlocked!</span></div>
+    <div class="code-block">
+      <div class="code-bar"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="code-lang">Python — Generators · Task 5</div></div>
+      <div class="code-body">
+<span class="cm"># LIST comprehension — ALL values in RAM now</span>
+<span class="vr">list_version</span> = [<span class="vr">x</span>**<span class="nm">2</span> <span class="kw">for</span> <span class="vr">x</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1000</span>)]
+<span class="fn">print</span>(<span class="fn">type</span>(<span class="vr">list_version</span>))   <span class="cm"># &lt;class 'list'&gt;</span>
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="vr">list_version</span>))    <span class="cm"># 1000 values ALL in RAM</span>
+
+<span class="cm"># GENERATOR expression — lazy, tiny memory</span>
+<span class="vr">gen_version</span>  = (<span class="vr">x</span>**<span class="nm">2</span> <span class="kw">for</span> <span class="vr">x</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1000</span>))
+<span class="fn">print</span>(<span class="fn">type</span>(<span class="vr">gen_version</span>))    <span class="cm"># &lt;class 'generator'&gt;</span>
+<span class="fn">print</span>(<span class="fn">next</span>(<span class="vr">gen_version</span>))    <span class="cm"># 0  ← yields FIRST value</span>
+<span class="fn">print</span>(<span class="fn">next</span>(<span class="vr">gen_version</span>))    <span class="cm"># 1  ← yields SECOND value</span>
+<span class="fn">print</span>(<span class="fn">next</span>(<span class="vr">gen_version</span>))    <span class="cm"># 4  ← third, and so on</span>
+
+<span class="cm"># ─────────────────────────────────────────</span>
+<span class="cm"># GENERATOR FUNCTION — using yield (AI batch loader)</span>
+<span class="kw">def</span> <span class="fn">batch_loader</span>(<span class="vr">data</span>, <span class="vr">batch_size</span>=<span class="nm">2</span>):
+    <span class="st">"""Yields one batch at a time — never loads all data at once"""</span>
+    <span class="kw">for</span> <span class="vr">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, <span class="fn">len</span>(<span class="vr">data</span>), <span class="vr">batch_size</span>):
+        <span class="kw">yield</span> <span class="vr">data</span>[<span class="vr">i</span> : <span class="vr">i</span> + <span class="vr">batch_size</span>]  <span class="cm"># ← pauses here, resumes next call</span>
+
+<span class="vr">images</span> = [<span class="st">"img1"</span>, <span class="st">"img2"</span>, <span class="st">"img3"</span>, <span class="st">"img4"</span>, <span class="st">"img5"</span>, <span class="st">"img6"</span>]
+
+<span class="kw">for</span> <span class="vr">batch_num</span>, <span class="vr">batch</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="fn">batch_loader</span>(<span class="vr">images</span>), <span class="nm">1</span>):
+    <span class="fn">print</span>(<span class="st">f"Batch {batch_num}: {batch}"</span>)
+<span class="cm"># Batch 1: ['img1', 'img2']</span>
+<span class="cm"># Batch 2: ['img3', 'img4']</span>
+<span class="cm"># Batch 3: ['img5', 'img6']</span>
+<span class="cm"># 💡 PyTorch DataLoader works EXACTLY like this!</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="task-done-row">
+    <div class="done-cb" id="done5" onclick="markDone(5)"></div>
+    <span class="done-lbl" onclick="markDone(5)">I completed this task in IDLE ✓</span>
+  </div>
+</div>
+
+<!-- TASK 6 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">6</div>
+    <div class="task-body">
+      <div class="task-title">🏗️ Complete Mini ML Pipeline — Combining Everything</div>
+      <div class="task-desc">
+        Put it all together! Write a real mini ML preprocessing pipeline using all today's patterns. You have raw student data. The pipeline should:<br><br>
+        1. <strong>Load</strong> names and scores into a dict using <code>zip()</code><br>
+        2. <strong>Normalise</strong> scores using list comprehension (÷100)<br>
+        3. <strong>Create labels</strong> using ternary comprehension (1/0)<br>
+        4. <strong>Filter</strong> only passing students into a new dict<br>
+        5. <strong>Print</strong> a numbered report using <code>enumerate()</code><br><br>
+        This is a simplified version of what happens every time you run <code>pd.read_csv()</code> and prepare data for sklearn!
+      </div>
+      <div class="task-meta">
+        <span class="task-tag tag-skill">All Patterns Combined</span>
+        <span class="task-tag tag-real">Full ML Preprocessing</span>
+        <span class="task-tag tag-level">⭐⭐⭐ Challenge</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-lock">
+    <div class="lock-header">
+      <span class="lock-icon">🔐</span>
+      <div><div class="lock-title">Final challenge puzzle — show me you know it all</div></div>
+    </div>
+    <div class="puzzle-q">To build a dict of ONLY passing students (marks ≥ 50) from two lists, which is the correct one-liner?</div>
+    <div class="puzzle-opts" id="pz6-opts">
+      <div class="popt" onclick="puzzle(6,'A',false)"><span class="popt-label">A</span> {n: s for n, s in zip(names, scores)} — no filter needed</div>
+      <div class="popt" onclick="puzzle(6,'B',true)"><span class="popt-label">B</span> {n: s for n, s in zip(names, scores) if s >= 50} — dict comprehension with zip AND a filter condition</div>
+      <div class="popt" onclick="puzzle(6,'C',false)"><span class="popt-label">C</span> dict(names, scores) if scores >= 50</div>
+      <div class="popt" onclick="puzzle(6,'D',false)"><span class="popt-label">D</span> {names: scores for scores >= 50}</div>
+    </div>
+    <div class="puzzle-fb" id="pz6-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr6">
+    <div class="cr-header"><span class="cr-icon">🔓</span><span class="cr-title">Complete ML Pipeline — Unlocked! 🎉</span></div>
+    <div class="code-block">
+      <div class="code-bar"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="code-lang">Python — Full Mini ML Pipeline · Task 6</div></div>
+      <div class="code-body">
+<span class="cm"># ============================================</span>
+<span class="cm">#   MINI ML PREPROCESSING PIPELINE</span>
+<span class="cm">#   Using: zip, dict comprehension,</span>
+<span class="cm">#          list comprehension, enumerate</span>
+<span class="cm"># ============================================</span>
+
+<span class="cm"># Raw data (imagine this came from a CSV file)</span>
+<span class="vr">names</span>  = [<span class="st">"Ali"</span>, <span class="st">"Sara"</span>, <span class="st">"Usman"</span>, <span class="st">"Zara"</span>, <span class="st">"Ahmed"</span>]
+<span class="vr">scores</span> = [<span class="nm">88</span>,    <span class="nm">45</span>,     <span class="nm">72</span>,      <span class="nm">33</span>,     <span class="nm">91</span>   ]
+
+<span class="cm"># STEP 1: Build full dataset dict using zip()</span>
+<span class="vr">full_data</span> = {<span class="vr">n</span>: <span class="vr">s</span>  <span class="kw">for</span> <span class="vr">n</span>, <span class="vr">s</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="vr">names</span>, <span class="vr">scores</span>)}
+<span class="fn">print</span>(<span class="st">"Full data:"</span>, <span class="vr">full_data</span>)
+
+<span class="cm"># STEP 2: Normalise ALL scores (list comprehension)</span>
+<span class="vr">X</span> = [<span class="vr">s</span>/<span class="nm">100</span>  <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>]  <span class="cm"># Features</span>
+<span class="fn">print</span>(<span class="st">"Normalised X:"</span>, <span class="vr">X</span>)
+
+<span class="cm"># STEP 3: Create binary labels (ternary comprehension)</span>
+<span class="vr">y</span> = [<span class="nm">1</span> <span class="kw">if</span> <span class="vr">s</span> >= <span class="nm">50</span> <span class="kw">else</span> <span class="nm">0</span>  <span class="kw">for</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">scores</span>]  <span class="cm"># Labels</span>
+<span class="fn">print</span>(<span class="st">"Labels y:"</span>, <span class="vr">y</span>)
+
+<span class="cm"># STEP 4: Filter passing students only (dict comprehension + filter)</span>
+<span class="vr">passing</span> = {<span class="vr">n</span>: <span class="vr">s</span>  <span class="kw">for</span> <span class="vr">n</span>, <span class="vr">s</span> <span class="kw">in</span> <span class="fn">zip</span>(<span class="vr">names</span>, <span class="vr">scores</span>)  <span class="kw">if</span> <span class="vr">s</span> >= <span class="nm">50</span>}
+<span class="fn">print</span>(<span class="st">"Passing students:"</span>, <span class="vr">passing</span>)
+
+<span class="cm"># STEP 5: Numbered report using enumerate()</span>
+<span class="fn">print</span>(<span class="st">"\n=== STUDENT REPORT ==="</span>)
+<span class="kw">for</span> <span class="vr">i</span>, (<span class="vr">name</span>, <span class="vr">score</span>, <span class="vr">norm</span>, <span class="vr">label</span>) <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="fn">zip</span>(<span class="vr">names</span>,<span class="vr">scores</span>,<span class="vr">X</span>,<span class="vr">y</span>), <span class="nm">1</span>):
+    <span class="vr">status</span> = <span class="st">"✅"</span> <span class="kw">if</span> <span class="vr">label</span> <span class="kw">else</span> <span class="st">"❌"</span>
+    <span class="fn">print</span>(<span class="st">f"{i}. {name:<8} | raw:{score} | norm:{norm:.2f} | y={label} {status}"</span>)
+
+<span class="cm"># Output:</span>
+<span class="cm"># 1. Ali      | raw:88 | norm:0.88 | y=1 ✅</span>
+<span class="cm"># 2. Sara     | raw:45 | norm:0.45 | y=0 ❌</span>
+<span class="cm"># ...</span>
+<span class="fn">print</span>(<span class="st">f"\nTotal: {len(names)} | Passed: {sum(y)} | Accuracy feature ready ✅"</span>)
+      </div>
+    </div>
+  </div>
+
+  <div class="task-done-row">
+    <div class="done-cb" id="done6" onclick="markDone(6)"></div>
+    <span class="done-lbl" onclick="markDone(6)">I completed this task in IDLE ✓</span>
+  </div>
+</div>
+
+<!-- ===== AI TUTOR ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">💬</div>
+  <div><div class="sh-ttl">AI Tutor Chat</div><div class="sh-sub">Stuck? Ask anything about comprehensions, zip, enumerate, or generators</div></div>
+  <div class="sh-bdg">⏱ Any time</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Chat — Get Unstuck Instantly</h2>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">Python AI Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">Day 14 Specialist · Comprehensions · zip · enumerate · Generators</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Hello! I am your Day 14 tutor. Ask me about <strong>list comprehensions</strong>, <strong>dict comprehensions</strong>, <strong>zip()</strong>, <strong>enumerate()</strong>, or <strong>generators</strong>. What are you stuck on?</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Quick rule:</strong><br>• <code>[expr for x in list]</code> → list (all in memory)<br>• <code>[expr for x in list if cond]</code> → filtered list<br>• <code>{k:v for k,v in zip(a,b)}</code> → dict<br>• <code>(expr for x in list)</code> → generator (lazy!)</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask anything about today's topics..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FILL BLANKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">✏️</div>
+  <div><div class="sh-ttl">Fill in the Blanks</div><div class="sh-sub">Complete from memory — no peeking!</div></div>
+  <div class="sh-bdg">⏱ 10 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Quick Check</div>
+  <h2>Complete Each Expression</h2>
+  <div id="fill-wrap"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <button class="btn btn-b" onclick="checkFill()">Check Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- ===== MCQ ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-ttl">MCQ Quiz (15 Questions)</div><div class="sh-sub">Answer from memory — every answer shows a full explanation</div></div>
+  <div class="sh-bdg">📝 15 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 15</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 12/15 (80%). Last Python quiz before the Capstone!</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="fin-emoji" id="fin-emoji">🎉</div>
+  <div class="fin-title" id="fin-title">—</div>
+  <div class="fin-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">🎓 Day 15 — <strong>Month 1 Capstone: Student Grade System</strong> — build your first complete Python ML project!</p>
+  <button class="fin-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+</div>
+<footer>Day 14 of 300+ · AI/ML 15-Month Curriculum · Month 1, Week 3 · Last Python lesson before Month 1 Capstone!<br>List Comprehensions · Dict Comprehensions · zip() · enumerate() · Generators · yield</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let tasksD=0,mcqS=0,fillS=0,mcqSet=new Set();
+function updateProg(){const t=Math.min(Math.round((tasksD/6)*40+(mcqS/15)*40+(fillS/8)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function markDone(n){const cb=document.getElementById('done'+n);const checked=cb.classList.toggle('checked');cb.textContent=checked?'✓':'';const all=document.querySelectorAll('.done-cb.checked').length;tasksD=all;updateProg();}
+
+// ── LIVE EXPLORER ──
+function runExplorer(){
+  const raw=document.getElementById('exp-scores').value;
+  const op=document.getElementById('exp-op').value;
+  const scores=raw.split(',').map(s=>parseFloat(s.trim())).filter(s=>!isNaN(s));
+  const out=document.getElementById('exp-out');
+  if(!scores.length){out.className='exp-out show';out.textContent='Please enter some scores!';return;}
+  const avg=scores.reduce((a,b)=>a+b,0)/scores.length;
+  let result,expr,note='';
+  const grades=['A','B','C','D','F'];
+  const gradeFor=s=>s>=80?'A':s>=70?'B':s>=60?'C':s>=50?'D':'F';
+
+  if(op==='norm'){result=scores.map(s=>+(s/100).toFixed(2));expr='[s/100 for s in scores]';}
+  else if(op==='pass'){result=scores.filter(s=>s>=50);expr='[s for s in scores if s >= 50]';note=`\n${result.length}/${scores.length} passing`;}
+  else if(op==='grade'){result=scores.map(s=>s>=50?'"Pass"':'"Fail"');expr='["Pass" if s>=50 else "Fail" for s in scores]';}
+  else if(op==='aboveavg'){result=scores.filter(s=>s>avg);expr=`[s for s in scores if s > avg]  # avg=${avg.toFixed(1)}`;note=`\n${result.length} above average`;}
+  else if(op==='squares'){result=scores.map(s=>s*s);expr='[s**2 for s in scores]';}
+  else{const gs=scores.map(gradeFor);result=scores.map((s,i)=>`"${gradeFor(s)}"(${s})`);expr='{name:grade for name,grade in zip(names, [gradeFor(s) for s in scores])}';note='\nPaired using zip()';}
+
+  out.className='exp-out show';
+  out.innerHTML=`<span class="ok">Input:</span>  [${scores.join(', ')}]\n\n<span class="ok">Expression:</span>  ${expr}\n\n<span class="ok">Result:</span>  [${result.join(', ')}]${note?`\n<b style="color:var(--green)">${note}</b>`:''}`;
+}
+
+// ── PUZZLE SYSTEM ──
+const PUZZLE_FB={
+  1:{ok:`✅ Correct! The "if s >= 50" FILTERS first — only passing scores enter. Then each is divided by 100. Result: [0.85, 0.72, 0.91, 0.58]. The 45 and 33 are excluded completely. Think: filter → transform.`,no:`❌ Option A divides ALL scores. But the "if s >= 50" part filters first — only scores ≥50 survive, then get divided. Re-read: [s/100 for s in scores if s >= 50]`},
+  2:{ok:`✅ Perfect! Ternary goes BEFORE "for": ["Pass" if s>=50 else "Fail" for s in scores]. This is different from filtering — EVERY item gets a label. The "if/else" is the output value. No item is skipped.`,no:`❌ Option A is filtering (removes items). Ternary assigns a value to EVERY item — all scores get "Pass" or "Fail". Pattern: [value_if_true if cond else value_if_false for x in list]`},
+  3:{ok:`✅ Correct! zip pairs (y_true[i], y_pred[i]) together. Positions 0,1,3 match (both 1,0,1), position 2 doesn't (1 vs 0). sum(1 for t,p if t==p) counts the matches → 3. Divide by 4 → 75% accuracy.`,no:`❌ Count the matches: index 0: (1,1)✓ index 1: (0,0)✓ index 2: (1,0)✗ index 3: (1,1)✓ = 3 correct. The function returns the COUNT (3), not the percentage.`},
+  4:{ok:`✅ Right! enumerate(scores) starts at 0 (Student 0, Student 1...). enumerate(scores, start=1) starts at 1 (Student 1, Student 2...). For human-readable reports, start=1 is much more natural.`,no:`❌ enumerate(scores) gives indices 0,1,2,3... enumerate(scores, start=1) gives 1,2,3,4... start=1 does NOT skip any scores — it just changes where the counter begins.`},
+  5:{ok:`✅ Excellent! [] = list comprehension: all 1000 values computed and stored in RAM immediately. () = generator expression: a lazy object that computes ONE value at a time when you call next(). For range(1M), list ≈ 8MB, generator ≈ 120 bytes!`,no:`❌ () does NOT create a tuple here! It creates a GENERATOR. The key difference: [] = everything in memory NOW. () = lazy, computed on demand. Memory: list 8MB vs generator 120 bytes for 1 million items.`},
+  6:{ok:`✅ Perfect! {n: s for n, s in zip(names, scores) if s >= 50} — zip pairs names with scores, then "if s >= 50" filters to only passing students. This is a dict comprehension combining zip AND a filter condition.`,no:`❌ Option B is correct. You need: (1) zip(names, scores) to pair them, (2) "if s >= 50" to filter, (3) {n: s ...} to create the dict. All three in one line!`},
+};
+function puzzle(task,opt,correct){
+  const opts=document.getElementById('pz'+task+'-opts').querySelectorAll('.popt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  event.currentTarget.classList.add(correct?'correct':'wrong');
+  if(correct){const allOpts=[...opts];allOpts.find(o=>o.getAttribute('onclick')&&o.getAttribute('onclick').includes(',true)'))?.classList.add('correct');}
+  else{opts.forEach(o=>{if(o.getAttribute('onclick')&&o.getAttribute('onclick').includes(',true)'))o.classList.add('correct');});}
+  const fb=document.getElementById('pz'+task+'-fb');
+  fb.className='puzzle-fb show '+(correct?'ok':'no');
+  fb.textContent=correct?PUZZLE_FB[task].ok:PUZZLE_FB[task].no;
+  if(correct){setTimeout(()=>{document.getElementById('cr'+task).classList.add('show');document.getElementById('cr'+task).scrollIntoView({behavior:'smooth',block:'nearest'});},400);}
+}
+
+// ── AI TUTOR ──
+const replies={
+  comprehension:`List comprehension = one clean line instead of loop+append:\n\n# Old way:\nnorm = []\nfor s in scores:\n    norm.append(s/100)\n\n# Pythonic way:\nnorm = [s/100 for s in scores]\n\nPatterns:\n[expr for x in list]            → transform all\n[expr for x in list if cond]    → filter + transform\n["A" if x>=80 else "B" for x]   → label every item\n[x for row in matrix for x in row] → flatten 2D\n\nML use: normalise pixels, create labels, filter data`,
+  dict:`Dict comprehension = one line creates a dict:\n\nnames  = ["Ali","Sara","Usman"]\nscores = [88, 45, 72]\n\n# From two lists:\ngrade_map = {n:s for n,s in zip(names,scores)}\n# {'Ali':88, 'Sara':45, 'Usman':72}\n\n# Filter — only passing:\npassing = {n:s for n,s in zip(names,scores) if s>=50}\n# {'Ali':88, 'Usman':72}\n\n# Invert a dict:\norig = {'a':1,'b':2}\nflip = {v:k for k,v in orig.items()}\n# {1:'a', 2:'b'}`,
+  zip:`zip() pairs two or more lists together:\n\nnames  = ["Ali","Sara","Usman"]\nscores = [88, 45, 72]\n\nfor name, score in zip(names, scores):\n    print(f"{name}: {score}")\n\n# ML accuracy — the real formula:\ny_true = [1,0,1,1]\ny_pred = [1,0,0,1]\n\ncorrect = sum(1 for t,p in zip(y_true,y_pred) if t==p)\naccuracy = correct / len(y_true) * 100\n# 75.0%\n\nKey: zip stops at the SHORTEST list!`,
+  enumerate:`enumerate() gives index + value together:\n\nscores = [85, 45, 72, 33]\n\n# Without enumerate (messy):\ni = 0\nfor s in scores:\n    print(f"Student {i}: {s}")\n    i += 1\n\n# With enumerate (clean):\nfor i, score in enumerate(scores, start=1):\n    print(f"Student {i}: {score}")\n# Student 1: 85\n# Student 2: 45\n\n# Training loop:\nfor epoch, loss in enumerate([2.1,1.4,0.8], 1):\n    print(f"Epoch {epoch}: {loss}")`,
+  generator:`Generator vs List:\n\n# List: ALL in memory NOW\nall_sq = [x**2 for x in range(1000)]  # 8MB RAM\n\n# Generator: ONE at a time (lazy)\ngen_sq = (x**2 for x in range(1000))  # ~120 bytes\nprint(next(gen_sq))  # 0\nprint(next(gen_sq))  # 1\nprint(next(gen_sq))  # 4\n\n# Generator FUNCTION using yield:\ndef batch_loader(data, size=2):\n    for i in range(0, len(data), size):\n        yield data[i:i+size]  # pauses here!\n\nfor batch in batch_loader([1,2,3,4,5,6]):\n    print(batch)  # [1,2], [3,4], [5,6]\n\nyield = pause + return. Resumes next call.`,
+  default:`Day 14 quick reference:\n\n⚡ List comprehension:\n  [s/100 for s in scores]          → transform\n  [s for s in scores if s >= 50]   → filter\n  ["P" if s>=50 else "F" for s in scores] → label\n\n📚 Dict comprehension:\n  {n:s for n,s in zip(names,scores)}\n  {n:s for n,s in zip(names,scores) if s>=50}\n\n🔗 zip() — pair lists:\n  for n,s in zip(names,scores): ...\n\n🔢 enumerate() — index+value:\n  for i,s in enumerate(scores, start=1): ...\n\n⚙️ Generator — lazy, tiny memory:\n  (x**2 for x in range(n))  ← () not []\n  def f(): yield value  ← pause + resume\n\nWhat would you like explained?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('comp')||lm.includes('[s/')|| lm.includes('list comp'))r=replies.comprehension;
+    else if(lm.includes('dict'))r=replies.dict;
+    else if(lm.includes('zip'))r=replies.zip;
+    else if(lm.includes('enum'))r=replies.enumerate;
+    else if(lm.includes('gen')||lm.includes('yield'))r=replies.generator;
+    addMsg(r,'ai');},700+Math.random()*500);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ── FILL ──
+const fillData=[
+  {q:'1. To normalise a list of scores by dividing by 100: [s/___ for s in scores]',ans:['100'],hint:'100'},
+  {q:'2. To filter only passing scores: [s for s in scores ___ s >= 50]',ans:['if'],hint:'if'},
+  {q:'3. To label every score: ["Pass" ___ s>=50 else "Fail" for s in scores]',ans:['if'],hint:'if'},
+  {q:'4. Dict comprehension from two lists: {n: s for n, s in ___(names, scores)}',ans:['zip'],hint:'zip'},
+  {q:'5. Get index + value: for i, s in ___(scores, start=1):',ans:['enumerate'],hint:'enumerate'},
+  {q:'6. Generator expression uses ___ brackets: (x**2 for x in range(n))',ans:['round','()','parentheses'],hint:'()'},
+  {q:'7. "yield" ___ a function — unlike return which ends it.',ans:['pauses','pause'],hint:'pauses'},
+  {q:'8. For 1 million items: generator uses ~120 bytes; list uses ~___',ans:['8mb','8 mb','8MB'],hint:'8MB'},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+}
+function checkFill(){
+  fillS=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase();
+    const ok=q.ans.some(a=>v===a.toLowerCase()||v.includes(a.toLowerCase()));
+    if(ok){fillS++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.hint;}
+  });
+  updateProg();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillS===8?'<span style="color:var(--green)">🎉 Perfect — 8/8!</span>':fillS>=6?`<span style="color:var(--amber)">${fillS}/8 — almost!</span>`:`<span style="color:var(--red)">${fillS}/8 — re-read today's patterns.</span>`;
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ── MCQ ──
+const mcqs=[
+  {q:'What does [s/100 for s in scores if s >= 50] do to [85, 45, 72, 33, 91]?',opts:['Divides all 5 scores by 100','Divides only scores ≥50 by 100 → [0.85, 0.72, 0.91]','Returns True/False for each score','Sums scores above 50'],ans:1,exp:'The "if s >= 50" filters FIRST — only 85, 72, 91 pass. Then each is divided by 100 → [0.85, 0.72, 0.91]. Scores 45 and 33 are excluded entirely. Pattern: [transform for x in list if filter].'},
+  {q:'["Pass" if s>=50 else "Fail" for s in [85, 45, 72]] produces:',opts:['["Pass", "Pass", "Pass"] — all pass','["Pass", "Fail", "Pass"] — ternary labels every item','"Pass", "Fail", "Pass" printed on 3 lines','[True, False, True]'],ans:1,exp:'Ternary in comprehension labels EVERY item — nothing is skipped. 85≥50→"Pass", 45<50→"Fail", 72≥50→"Pass". Result: ["Pass", "Fail", "Pass"]. This is different from filtering which removes items.'},
+  {q:'zip(["Ali","Sara"], [88, 45]) produces:',opts:['["Ali88", "Sara45"]','[("Ali",88), ("Sara",45)] — pairs of (name, score)','{"Ali":88, "Sara":45} — a dict','[88, 45] — just the scores'],ans:1,exp:'zip() pairs corresponding elements into tuples: [("Ali",88), ("Sara",45)]. You can unpack them: for name, score in zip(names,scores): — this is the most used pattern for combining two lists.'},
+  {q:'sum(1 for t,p in zip([1,0,1],[1,0,0]) if t==p) returns:',opts:['3','2','1','0'],ans:1,exp:'zip pairs: (1,1)✓, (0,0)✓, (1,0)✗. sum counts 1 for each match. Result: 2. This is the exact formula for ML accuracy: correct_count = sum(1 for t,p in zip(y_true,y_pred) if t==p).'},
+  {q:'enumerate(["a","b","c"], start=1) produces:',opts:['[0,1,2] — just indices','[("a","b","c")] — a tuple','[(1,"a"), (2,"b"), (3,"c")] — (index, value) pairs starting from 1','["a1","b2","c3"] — concatenated'],ans:2,exp:'enumerate() pairs each item with its index. start=1 makes it human-friendly (1,2,3 instead of 0,1,2). Result: [(1,"a"),(2,"b"),(3,"c")]. Unpack in loop: for i, item in enumerate(list, start=1).'},
+  {q:'What is the difference between [x**2 for x in range(5)] and (x**2 for x in range(5))?',opts:['No difference — both create a list','[] creates all values NOW. () creates a lazy generator — tiny memory, computes on demand.','() creates a tuple','[] is faster, () uses more memory'],ans:1,exp:'[] = list comprehension: [0,1,4,9,16] in memory immediately. () = generator expression: a generator object that yields values one at a time when requested. For range(1M), list≈8MB, generator≈120 bytes!'},
+  {q:'yield vs return — what does yield do differently?',opts:['yield is just a synonym for return','yield pauses the function and returns a value — execution resumes from the same point next time next() is called','yield ends the function permanently','yield returns all remaining values at once'],ans:1,exp:'yield = pause + return + resume. The function\'s state is preserved. Next next() call resumes right after yield. return ends the function permanently. A function with yield is a generator function.'},
+  {q:'{n:s for n,s in zip(names,scores) if s>=50} — what does this create?',opts:['A list of passing scores','A dict with only passing students as keys and their scores as values','A tuple of (name, score) pairs','A set of passing names'],ans:1,exp:'Dict comprehension: {key:value for k,v in iterable if condition}. zip pairs names with scores. "if s>=50" keeps only passing students. Result: {"Ali":88,"Usman":72} — Sara with 45 is excluded.'},
+  {q:'def f():\n    yield 1\n    yield 2\n    yield 3\n\ng = f()\nprint(next(g)) — what prints?',opts:['All three values: 1, 2, 3','3 — the last yield','1 — yields first value and pauses','Nothing — must call f() again'],ans:2,exp:'g = f() creates the generator but doesn\'t run any code yet. next(g) runs until the first yield, returns 1, and PAUSES. Another next(g) resumes from after yield 1, reaches yield 2, returns 2, pauses. This is the pause-and-resume pattern.'},
+  {q:'What is the ML use of [1 if s>=50 else 0 for s in scores]?',opts:['Normalises scores to 0-1 range','Creates binary target labels (y) — 1=pass, 0=fail — for training an ML model','Filters out failing scores','Counts the number of passing students'],ans:1,exp:'This creates y (the target labels) for supervised learning. y=[1,0,1,0,1] means student 1 passed, student 2 failed, etc. The ML model learns to predict these 1s and 0s from the features (X). This is data labelling — a core step before training.'},
+  {q:'for i, loss in enumerate([2.1, 1.4, 0.8], 1): — in a training loop, what does i represent?',opts:['The index of the loss value starting from 0','The epoch number starting from 1 — human-friendly','The model accuracy','The batch size'],ans:1,exp:'enumerate([...], 1) starts the counter at 1 — perfect for epoch numbers. Without start=1, you\'d get Epoch 0, 1, 2 (confusing). With start=1: Epoch 1, 2, 3. This is the standard training loop pattern.'},
+  {q:'[x for row in [[1,2],[3,4],[5,6]] for x in row] produces:',opts:['[[1,2],[3,4],[5,6]] — unchanged','[(1,2),(3,4),(5,6)] — tuples','[1, 2, 3, 4, 5, 6] — flattened list','[6] — last element'],ans:2,exp:'Nested list comprehension: outer loop goes over rows, inner loop goes over elements in each row. Reads: "for each row, for each x in that row, take x". Result: [1,2,3,4,5,6]. This flattens a 2D list into 1D — used in image processing.'},
+  {q:'Why are generators better than lists for processing 1 million images?',opts:['Generators are faster to compute','Generators use almost no memory — they yield one image at a time instead of loading all 1M images into RAM at once','Generators work in parallel','Lists cannot store image data'],ans:1,exp:'Memory is the key advantage. list = all 1M images in RAM immediately (could be 100GB+). generator = yields ONE image at a time, processes it, moves to next. RAM usage stays tiny. This is how PyTorch DataLoader works — it\'s a generator feeding batches.'},
+  {q:'{v:k for k,v in {"a":1,"b":2}.items()} produces:',opts:['{"a":1,"b":2} — unchanged','{"1":"a","2":"b"} — but as strings','{1:"a", 2:"b"} — keys and values swapped','An error — cannot invert dicts'],ans:2,exp:'Dict comprehension with .items(): for each (k,v) pair, make the new key=v and value=k. {"a":1,"b":2} → {1:"a",2:"b"}. Useful when you need to look up by value instead of key — e.g. inverting a label encoder: {0:"cat",1:"dog"} → {"cat":0,"dog":1}.'},
+  {q:'What is the output of: list(zip([1,2,3],[4,5]))?',opts:['[(1,4),(2,5),(3,None)] — fills missing with None','[(1,4),(2,5)] — stops at shortest list','[(1,4),(2,5),(3,None,None)]','Error — lists must be same length'],ans:1,exp:'zip() stops at the SHORTEST list. [1,2,3] has 3 items, [4,5] has 2 — zip produces only 2 pairs: [(1,4),(2,5)]. The 3 is silently dropped. This is important to know when pairing features with labels — mismatched lengths lose data silently.'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 15</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.83rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqSet.has(qi))return;mcqSet.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqS++;document.getElementById('live-sc').textContent=mcqS;}
+  if(mcqSet.size===15){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProg();
+}
+function showFinal(){
+  const pct=Math.round(mcqS/15*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--green) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent!':pct>=60?'Good Work!':'Keep Going!';
+  document.getElementById('fin-msg').textContent=`Score: ${mcqS}/15 (${pct}%) — ${pct>=80?'Pythonic patterns mastered! You are ready for the Month 1 Capstone tomorrow.':pct>=60?'Good foundation. Review the patterns you got wrong.':'Re-read the comprehension and generator sections.'}`;
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

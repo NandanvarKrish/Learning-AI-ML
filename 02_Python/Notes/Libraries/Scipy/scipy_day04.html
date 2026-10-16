@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SciPy – Day 4 | Linear Algebra & Signal Processing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F1F5F9;--surface:#FFFFFF;--border:#CBD5E1;--accent:#1E40AF;--accent2:#1E3A5F;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--purple:#7C3AED;--teal:#0891B2;--slate:#334155;
+    --text:#0F172A;--muted:#1E40AF;--code-bg:#070E1A;--code-text:#CBD5E1;--tag-bg:#DBEAFE;--tag-text:#1E3A5F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(30,64,175,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#1E40AF 0%,#1E3A5F 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#BFDBFE;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#60A5FA;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#93C5FD;} .fn{color:#7DD3FC;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#334155;font-style:italic;} .op{color:#CBD5E1;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.yellow .callout-title{color:#92400E;} .callout.green .callout-title{color:var(--green);}
+  .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#1E3A5F,#1E40AF);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .wave-visual{height:70px;background:var(--code-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;margin:14px 0;overflow:hidden;position:relative;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#1E40AF,#1E3A5F);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#1E40AF,#7C3AED);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔬 SciPy</div><span class="sep">|</span><span class="day-label">Day 4 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">80%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:80%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">SciPy Full Course · Day 4</div>
+  <h1>Linear Algebra &amp; <span>Signal Processing</span></h1>
+  <p>Solve linear systems, decompose matrices, and extract frequency content from noisy signals — scipy.linalg and scipy.signal.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🧮 scipy.linalg Basics</span>
+    <span class="hero-pill">🔢 Solving Ax=b</span>
+    <span class="hero-pill">🧩 Matrix Decompositions</span>
+    <span class="hero-pill">📡 Filtering Signals</span>
+    <span class="hero-pill">🌊 Fourier Transform</span>
+    <span class="hero-pill">🔊 Spectral Analysis</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🧮</div>
+    <div><h2>scipy.linalg vs numpy.linalg</h2><p>When to reach for SciPy's version instead</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>NumPy has its own <code>numpy.linalg</code> module. <strong>scipy.linalg</strong> offers a SUPERSET of that functionality — always safe to use, sometimes faster (uses optimized LAPACK/BLAS routines), and includes advanced decompositions NumPy lacks.</p>
+
+    <div class="fbox">
+      <div class="ft">🧮 When to Prefer scipy.linalg</div>
+      <div class="fm">✅ scipy.linalg is ALWAYS at least as capable as numpy.linalg</div>
+      <div class="fm">✅ Needed for: LU decomposition, Schur decomposition, matrix exponentials, Cholesky variants</div>
+      <div class="fm">✅ Often faster for large matrices due to optimized backend libraries</div>
+      <div class="fnote">Rule of thumb: if you're already using SciPy elsewhere in a project, use scipy.linalg consistently rather than mixing with numpy.linalg.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy <span class="kw">import</span> linalg
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">4</span>,<span class="nm">3</span>], [<span class="nm">6</span>,<span class="nm">3</span>]])
+
+<span class="cm"># Determinant</span>
+<span class="fn">print</span>(linalg.<span class="fn">det</span>(A))
+
+<span class="cm"># Inverse</span>
+<span class="fn">print</span>(linalg.<span class="fn">inv</span>(A))
+
+<span class="cm"># Norm — magnitude of a vector or matrix</span>
+v = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">3</span>,<span class="nm">4</span>])
+<span class="fn">print</span>(linalg.<span class="fn">norm</span>(v))   <span class="cm"># 5.0 — Euclidean length</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔢</div>
+    <div><h2>Solving Linear Systems — Ax = b</h2><p>The most common linear algebra task in practice</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Solve a system of linear equations:
+#   2x + 3y = 8
+#   5x + 4y = 13</span>
+A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">2</span>,<span class="nm">3</span>], [<span class="nm">5</span>,<span class="nm">4</span>]])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">8</span>, <span class="nm">13</span>])
+
+<span class="cm"># linalg.solve() is PREFERRED over manually computing inv(A) @ b</span>
+x = linalg.<span class="fn">solve</span>(A, b)
+<span class="fn">print</span>(x)   <span class="cm"># [x, y] solution</span>
+
+<span class="cm"># Verify: A @ x should equal b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(A @ x, b))   <span class="cm"># True</span>
+
+<span class="cm"># Least-squares solution — for OVERDETERMINED systems (more equations than unknowns)</span>
+<span class="cm"># Common in fitting a line: y = mx + c, given many (x,y) data points</span>
+A_over = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">1</span>], [<span class="nm">2</span>,<span class="nm">1</span>], [<span class="nm">3</span>,<span class="nm">1</span>], [<span class="nm">4</span>,<span class="nm">1</span>]])   <span class="cm"># [x, 1] columns for y=mx+c</span>
+b_over = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">2.1</span>, <span class="nm">3.9</span>, <span class="nm">6.2</span>, <span class="nm">7.8</span>])
+
+result = linalg.<span class="fn">lstsq</span>(A_over, b_over)
+m, c = result[<span class="nm">0</span>]   <span class="cm"># slope, intercept — same idea as manual linear regression!</span>
+<span class="fn">print</span>(<span class="st">f"y = {m:.2f}x + {c:.2f}"</span>)</pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Never Solve Ax=b via inv(A) @ b</h4></div>
+      Computing <code>linalg.inv(A) @ b</code> works mathematically but is SLOWER and LESS NUMERICALLY STABLE than <code>linalg.solve(A, b)</code>, which uses specialized, more accurate algorithms internally. Always prefer <code>solve()</code> for solving systems — reserve <code>inv()</code> for when you genuinely need the inverse matrix itself.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🧩</div>
+    <div><h2>Matrix Decompositions</h2><p>Breaking a matrix into simpler, more useful pieces</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Eigenvalues &amp; eigenvectors — used in PCA, stability analysis, and more</span>
+A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">4</span>,<span class="nm">-2</span>], [<span class="nm">1</span>,<span class="nm">1</span>]])
+eigenvalues, eigenvectors = linalg.<span class="fn">eig</span>(A)
+<span class="fn">print</span>(eigenvalues)     <span class="cm"># complex numbers in general, real if symmetric</span>
+
+<span class="cm"># SVD (Singular Value Decomposition) — the workhorse behind PCA, recommender systems, compression</span>
+M = <span class="op">np</span>.random.<span class="fn">rand</span>(<span class="nm">4</span>, <span class="nm">3</span>)
+U, s, Vt = linalg.<span class="fn">svd</span>(M)
+<span class="fn">print</span>(<span class="st">f"U shape: {U.shape}, singular values: {s}, Vt shape: {Vt.shape}"</span>)
+
+<span class="cm"># LU decomposition — factor A into Lower * Upper triangular matrices (used internally by solve())</span>
+P, L, U = linalg.<span class="fn">lu</span>(A)
+
+<span class="cm"># Cholesky decomposition — for SYMMETRIC POSITIVE-DEFINITE matrices only (e.g., covariance matrices)</span>
+cov_matrix = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">4</span>,<span class="nm">2</span>], [<span class="nm">2</span>,<span class="nm">3</span>]])
+L_chol = linalg.<span class="fn">cholesky</span>(cov_matrix, lower=<span class="kw">True</span>)
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(L_chol @ L_chol.T, cov_matrix))   <span class="cm"># True — L @ L.T reconstructs the original</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Decomposition</th><th>Common Use</th></tr>
+        <tr><td>Eigendecomposition</td><td>PCA, stability analysis, understanding matrix transformations</td></tr>
+        <tr><td>SVD</td><td>PCA, dimensionality reduction, recommender systems, image compression</td></tr>
+        <tr><td>LU</td><td>Efficiently solving multiple systems with the same A but different b</td></tr>
+        <tr><td>Cholesky</td><td>Fast, stable factorization for covariance/positive-definite matrices</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📡</div>
+    <div><h2>scipy.signal — Filtering Noisy Data</h2><p>Removing noise while preserving the true underlying signal</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="wave-visual" id="waveVisual"><canvas id="waveCanvas" style="width:100%;height:100%"></canvas></div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy <span class="kw">import</span> signal
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># Generate a noisy signal: true sine wave + random noise</span>
+t = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">500</span>)
+true_signal = <span class="op">np</span>.<span class="fn">sin</span>(<span class="nm">2</span>*<span class="op">np</span>.pi*<span class="nm">5</span>*t)          <span class="cm"># 5 Hz sine wave</span>
+noisy_signal = true_signal + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">0.3</span>, <span class="fn">len</span>(t))
+
+<span class="cm"># SAVITZKY-GOLAY filter — smooths while preserving peak shapes better than simple moving average</span>
+smoothed = signal.<span class="fn">savgol_filter</span>(noisy_signal, window_length=<span class="nm">31</span>, polyorder=<span class="nm">3</span>)
+
+<span class="cm"># BUTTERWORTH low-pass filter — removes high-frequency noise, keeps low-frequency trend</span>
+b, a = signal.<span class="fn">butter</span>(N=<span class="nm">4</span>, Wn=<span class="nm">0.1</span>, btype=<span class="st">'low'</span>)   <span class="cm"># N=filter order, Wn=cutoff frequency (normalized 0-1)</span>
+filtered = signal.<span class="fn">filtfilt</span>(b, a, noisy_signal)     <span class="cm"># filtfilt = zero-phase filtering (no time shift introduced)</span>
+
+<span class="cm"># MEDIAN filter — great for removing sharp spike/outlier noise specifically</span>
+despiked = signal.<span class="fn">medfilt</span>(noisy_signal, kernel_size=<span class="nm">5</span>)
+
+<span class="cm"># Find PEAKS in a signal — critical for detecting events (heartbeats, spectral peaks)</span>
+peaks, properties = signal.<span class="fn">find_peaks</span>(noisy_signal, height=<span class="nm">0.5</span>, distance=<span class="nm">20</span>)
+<span class="fn">print</span>(<span class="st">f"Found {len(peaks)} peaks at indices: {peaks}"</span>)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Filter</th><th>Best For</th></tr>
+        <tr><td><code>savgol_filter</code></td><td>Smoothing while preserving peak height/shape (spectroscopy, sensor data)</td></tr>
+        <tr><td><code>butter + filtfilt</code></td><td>Removing specific frequency ranges (low-pass, high-pass, band-pass)</td></tr>
+        <tr><td><code>medfilt</code></td><td>Removing sharp spikes/outliers without blurring edges</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🌊</div>
+    <div><h2>Fourier Transform — Time Domain to Frequency Domain</h2><p>What frequencies make up a signal?</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>The <strong>Fast Fourier Transform (FFT)</strong> decomposes a signal into the sum of sine/cosine waves at different frequencies, revealing WHICH frequencies are present and how strong each is.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy.fft <span class="kw">import</span> fft, fftfreq
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="cm"># A signal made of TWO combined frequencies: 5 Hz and 20 Hz</span>
+sample_rate = <span class="nm">500</span>          <span class="cm"># samples per second</span>
+duration = <span class="nm">2</span>                <span class="cm"># seconds</span>
+t = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, duration, sample_rate*duration, endpoint=<span class="kw">False</span>)
+signal_data = <span class="op">np</span>.<span class="fn">sin</span>(<span class="nm">2</span>*<span class="op">np</span>.pi*<span class="nm">5</span>*t) + <span class="nm">0.5</span>*<span class="op">np</span>.<span class="fn">sin</span>(<span class="nm">2</span>*<span class="op">np</span>.pi*<span class="nm">20</span>*t)
+
+<span class="cm"># Compute the FFT</span>
+N = <span class="fn">len</span>(signal_data)
+yf = <span class="fn">fft</span>(signal_data)
+xf = <span class="fn">fftfreq</span>(N, <span class="nm">1</span>/sample_rate)[:N<span class="op">//</span><span class="nm">2</span>]   <span class="cm"># only need the positive-frequency half</span>
+
+magnitude = <span class="nm">2.0</span>/N * <span class="op">np</span>.<span class="fn">abs</span>(yf[<span class="nm">0</span>:N<span class="op">//</span><span class="nm">2</span>])
+
+<span class="op">plt</span>.<span class="fn">plot</span>(xf, magnitude)
+<span class="op">plt</span>.<span class="fn">xlabel</span>(<span class="st">'Frequency (Hz)'</span>)
+<span class="op">plt</span>.<span class="fn">ylabel</span>(<span class="st">'Magnitude'</span>)
+<span class="cm"># Result: TWO clear spikes at 5 Hz and 20 Hz — revealing the hidden component frequencies!</span></pre>
+    </div>
+
+    <div class="fbox">
+      <div class="ft">🌊 Reading an FFT Spectrum</div>
+      <div class="fm">X-axis  → frequency (Hz) — what rate of oscillation</div>
+      <div class="fm">Y-axis  → magnitude — how STRONG that frequency's contribution is</div>
+      <div class="fm">Spikes  → dominant/significant frequency components in the original signal</div>
+      <div class="fnote">A signal that LOOKS like noise in the time domain can reveal clear, meaningful structure once viewed in the frequency domain.</div>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-title">💡 Real-World FFT Uses</div>
+      Audio processing (identifying musical notes/pitch), vibration analysis (detecting machine faults from characteristic frequencies), ECG/EEG analysis (heart rate, brainwave bands), and removing periodic noise (like 50/60Hz electrical hum) from sensor data.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔊</div>
+    <div><h2>Spectral Analysis &amp; the Spectrogram</h2><p>How frequency content CHANGES over time</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy <span class="kw">import</span> signal
+
+<span class="cm"># A signal whose frequency CHANGES over time (a "chirp") — FFT alone can't show WHEN each frequency occurs</span>
+t = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">5000</span>)
+chirp_signal = signal.<span class="fn">chirp</span>(t, f0=<span class="nm">1</span>, f1=<span class="nm">20</span>, t1=<span class="nm">10</span>, method=<span class="st">'linear'</span>)   <span class="cm"># frequency sweeps 1Hz → 20Hz</span>
+
+<span class="cm"># Spectrogram — shows frequency content AS IT CHANGES over time (time AND frequency together)</span>
+frequencies, times, Sxx = signal.<span class="fn">spectrogram</span>(chirp_signal, fs=<span class="nm">500</span>)
+
+<span class="op">plt</span>.<span class="fn">pcolormesh</span>(times, frequencies, <span class="nm">10</span>*<span class="op">np</span>.<span class="fn">log10</span>(Sxx+<span class="nm">1e-10</span>), shading=<span class="st">'auto'</span>)
+<span class="op">plt</span>.<span class="fn">ylabel</span>(<span class="st">'Frequency (Hz)'</span>)
+<span class="op">plt</span>.<span class="fn">xlabel</span>(<span class="st">'Time (s)'</span>)
+<span class="op">plt</span>.<span class="fn">colorbar</span>(label=<span class="st">'Power (dB)'</span>)
+<span class="cm"># Shows a diagonal line RISING over time — visualizing the frequency sweep directly!</span>
+
+<span class="cm"># Power Spectral Density — how signal power is distributed across frequency (averaged over time)</span>
+freqs, psd = signal.<span class="fn">welch</span>(noisy_signal, fs=<span class="nm">500</span>)
+<span class="op">plt</span>.<span class="fn">semilogy</span>(freqs, psd)   <span class="cm"># log scale often clearer for PSD</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 FFT vs Spectrogram — When Frequencies Change Over Time</div>
+      A plain FFT gives ONE overall frequency breakdown for an entire signal — it can't tell you WHEN a particular frequency occurred if the signal's content changes over time. A <strong>spectrogram</strong> solves this by computing many small FFTs over sliding time windows, showing frequency content AS A FUNCTION OF TIME — essential for music, speech, and any signal with evolving frequency content.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">linalg.solve(A,b)</div><div class="mc-desc">Solve linear systems</div><div class="mc-ex">preferred over inv(A)@b</div></div>
+      <div class="mini-card"><div class="mc-name">linalg.svd()</div><div class="mc-desc">Singular value decomposition</div><div class="mc-ex">U, s, Vt</div></div>
+      <div class="mini-card"><div class="mc-name">signal.butter()+filtfilt()</div><div class="mc-desc">Frequency-based filtering</div><div class="mc-ex">low/high/band-pass</div></div>
+      <div class="mini-card"><div class="mc-name">signal.find_peaks()</div><div class="mc-desc">Detect peaks in a signal</div><div class="mc-ex">height, distance</div></div>
+      <div class="mini-card"><div class="mc-name">fft() / fftfreq()</div><div class="mc-desc">Time → frequency domain</div><div class="mc-ex">reveals hidden frequencies</div></div>
+      <div class="mini-card"><div class="mc-name">signal.spectrogram()</div><div class="mc-desc">Frequency content over time</div><div class="mc-ex">for time-varying signals</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>Linear systems, decompositions, filtering, FFT, spectrograms. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#1E40AF">🏆</div>
+    <div><h2>Real-World Task — Vibration Sensor Fault Detection System</h2><p>Estimated time: 90–105 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Signal Processing Engineer</strong> at an industrial equipment monitoring company. Build a complete pipeline analyzing motor vibration sensor data to detect a developing bearing fault.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#1E40AF">1</div><h4>Phase 1 — Generate Realistic Vibration Data</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Simulate Motor Vibration with a Fault Signature</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> scipy <span class="kw">import</span> signal, linalg
+<span class="kw">from</span> scipy.fft <span class="kw">import</span> fft, fftfreq
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">8</span>)
+fs = <span class="nm">2000</span>              <span class="cm"># sample rate: 2000 Hz</span>
+duration = <span class="nm">2</span>            <span class="cm"># seconds</span>
+t = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, duration, fs*duration, endpoint=<span class="kw">False</span>)
+
+<span class="cm"># Base motor rotation frequency: 30 Hz (1800 RPM)</span>
+motor_signal = <span class="nm">1.0</span> * <span class="op">np</span>.<span class="fn">sin</span>(<span class="nm">2</span>*<span class="op">np</span>.pi*<span class="nm">30</span>*t)
+
+<span class="cm"># FAULT SIGNATURE: a developing bearing fault adds energy at 187 Hz (a characteristic fault frequency)</span>
+fault_signature = <span class="nm">0.3</span> * <span class="op">np</span>.<span class="fn">sin</span>(<span class="nm">2</span>*<span class="op">np</span>.pi*<span class="nm">187</span>*t)
+
+<span class="cm"># Realistic sensor noise</span>
+noise = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">0.4</span>, <span class="fn">len</span>(t))
+
+vibration_signal = motor_signal + fault_signature + noise</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Denoise the Signal</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Apply and Compare Filtering Methods</h5>
+          <p>Apply a Savitzky-Golay filter AND a Butterworth low-pass filter (cutoff removing frequencies above 250Hz) to the noisy vibration signal. Plot both alongside the raw signal for comparison over a short 0.1-second window.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Frequency Domain Fault Detection</h4><span class="phase-time">~35 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Compute the FFT and Identify the Fault Frequency</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>N = <span class="fn">len</span>(vibration_signal)
+yf = <span class="fn">fft</span>(vibration_signal)
+xf = <span class="fn">fftfreq</span>(N, <span class="nm">1</span>/fs)[:N<span class="op">//</span><span class="nm">2</span>]
+magnitude = <span class="nm">2.0</span>/N * <span class="op">np</span>.<span class="fn">abs</span>(yf[:N<span class="op">//</span><span class="nm">2</span>])
+
+<span class="cm"># Use find_peaks to automatically detect BOTH the motor frequency and fault frequency spikes</span>
+peak_indices, _ = signal.<span class="fn">find_peaks</span>(magnitude, height=<span class="nm">0.1</span>)
+<span class="fn">print</span>(<span class="st">"Detected frequency peaks (Hz):"</span>, xf[peak_indices])</pre></div>
+          <p>Plot the FFT magnitude spectrum. Confirm you can see BOTH the 30 Hz motor frequency spike AND the 187 Hz fault signature spike clearly separated.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Build a Fault Alert Function</h5>
+          <p>Write a function that takes a vibration signal, computes its FFT, checks if there's significant energy (above a threshold) in the 180-195 Hz band, and returns True/False for "fault detected."</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div><h4>Phase 4 — Track Fault Progression Over Time</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Spectrogram Showing the Fault Emerging</h5>
+          <p>Simulate a longer recording (10 seconds) where the fault_signature amplitude GROWS linearly from 0 to 0.3 over time (representing a worsening bearing). Build a spectrogram to visualize the 187 Hz fault band becoming progressively stronger — a realistic "early warning" detection scenario.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated realistic motor + fault + noise vibration signal</li>
+        <li>Applied Savitzky-Golay and Butterworth filters, compared results</li>
+        <li>Computed FFT and plotted the frequency spectrum</li>
+        <li>Used find_peaks to automatically detect the motor and fault frequencies</li>
+        <li>Built a fault-alert function checking energy in the 180-195 Hz band</li>
+        <li>Simulated a worsening fault over a 10-second recording</li>
+        <li>Built a spectrogram visualizing the fault signature strengthening over time</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 20 min)</div>
+      Use scipy.linalg.svd() on a matrix of multiple sensors' vibration readings (simulate 5 sensors × many time samples) to perform a simple Principal Component Analysis, identifying the dominant shared vibration pattern across all sensors.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">SciPy Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Intro &amp; Distributions</span>
+    <span class="day-pill done">Day 2 · Hypothesis Testing</span>
+    <span class="day-pill done">Day 3 · Optimization &amp; Interpolation</span>
+    <span class="day-pill done active">Day 4 · Linear Algebra &amp; Signal Processing</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+// Simple decorative wave animation
+const wc = document.getElementById('waveCanvas');
+const wctx = wc.getContext('2d');
+function resizeWave(){wc.width = wc.clientWidth*devicePixelRatio; wc.height = wc.clientHeight*devicePixelRatio; wctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);}
+resizeWave(); window.addEventListener('resize', resizeWave);
+let waveFrame=0;
+function drawWave(){
+  const w=wc.clientWidth,h=wc.clientHeight;
+  wctx.clearRect(0,0,w,h);
+  wctx.strokeStyle='#3B82F6'; wctx.lineWidth=2; wctx.beginPath();
+  for(let x=0;x<=w;x+=2){
+    const xv=(x/w)*8*Math.PI;
+    const y = h/2 + Math.sin(xv+waveFrame*0.03)*(h/2-10)*0.5 + Math.sin(xv*3+waveFrame*0.05)*(h/2-10)*0.2;
+    if(x===0) wctx.moveTo(x,y); else wctx.lineTo(x,y);
+  }
+  wctx.stroke();
+  waveFrame++; requestAnimationFrame(drawWave);
+}
+drawWave();
+
+const questions=[
+  {q:"When should you prefer scipy.linalg over numpy.linalg?",opts:["Never — they are identical","scipy.linalg offers a SUPERSET of numpy.linalg's functionality (including LU, Schur, and more decompositions numpy lacks), often uses more optimized backend routines, and is generally the safer/more capable default choice, especially if SciPy is already used elsewhere in the project", "numpy.linalg is always better","scipy.linalg only works with square matrices"],ans:1,explain:"scipy.linalg is built to be at least as capable as numpy.linalg, adding additional decompositions (LU, Schur, matrix exponentials, etc.) and often leveraging more optimized LAPACK/BLAS backend routines. For consistency and access to more features, it's generally the recommended default when working within the SciPy ecosystem."},
+  {code:"x = linalg.solve(A, b)",q:"Why is this preferred over computing `linalg.inv(A) @ b` to solve the same system?",opts:["There's no real difference","solve() uses specialized numerical algorithms that are both FASTER and more NUMERICALLY STABLE than explicitly computing the matrix inverse and multiplying; computing inv(A) unnecessarily introduces additional numerical error and computational cost", "inv(A) @ b gives a different, incorrect answer","solve() only works for 2x2 matrices"],ans:1,explain:"While mathematically equivalent, explicitly computing the inverse (inv(A)) is both computationally more expensive and can introduce more numerical error, especially for poorly-conditioned matrices. linalg.solve() uses specialized algorithms (like LU decomposition internally) that solve the system more directly and reliably without the extra step and error-amplification risk of forming the full inverse."},
+  {q:"What kind of problem does `linalg.lstsq()` (least-squares) solve that `linalg.solve()` cannot handle directly?",opts:["Problems with fewer equations than unknowns only","OVERDETERMINED systems — where there are MORE equations than unknowns (e.g., many data points but only 2 parameters like slope and intercept to fit) — lstsq() finds the best-fitting APPROXIMATE solution that minimizes overall error, since no exact solution typically exists", "Systems with complex numbers","Nonlinear equations"],ans:1,explain:"linalg.solve() requires a square, well-determined system (same number of equations as unknowns) with an exact solution. When you have MORE equations than unknowns (like fitting a line through many noisy data points), there's typically no single (x,y) that satisfies ALL equations exactly — lstsq() finds the best APPROXIMATE solution minimizing the overall squared error, which is exactly what linear regression does under the hood."},
+  {q:"What is Singular Value Decomposition (SVD) commonly used for in data science?",opts:["Only for solving simple 2-variable equations","PCA (Principal Component Analysis), dimensionality reduction, recommender systems, and image/data compression — SVD decomposes any matrix into components that reveal its most important underlying patterns/directions of variation", "Only for symmetric positive-definite matrices","Exclusively for signal processing, unrelated to linear algebra"],ans:1,explain:"SVD (U, s, Vt = linalg.svd(M)) is one of the most versatile and widely-used matrix decompositions in data science and machine learning, forming the mathematical backbone of PCA (dimensionality reduction), recommender systems (like Netflix's original algorithm), image compression, and many other applications where identifying a matrix's most important underlying structure matters."},
+  {code:"L = linalg.cholesky(cov_matrix, lower=True)",q:"What special requirement must cov_matrix satisfy for Cholesky decomposition to work?",opts:["It must be any square matrix","It must be SYMMETRIC and POSITIVE-DEFINITE (a common property of valid covariance matrices) — Cholesky decomposition is specifically designed for this matrix class and is faster/more numerically stable than general decompositions when applicable", "It must have only positive entries","It must be a 2x2 matrix specifically"],ans:1,explain:"Cholesky decomposition only works for symmetric, positive-definite matrices (a mathematical property meaning, among other things, that the matrix could represent valid variances/covariances of real data). When this condition is met, Cholesky is faster and more numerically stable than general-purpose decompositions like LU, which is why it's the go-to choice specifically for covariance matrices in statistics and machine learning."},
+  {code:"smoothed = signal.savgol_filter(noisy_signal, window_length=31, polyorder=3)",q:"What makes the Savitzky-Golay filter distinct from a simple moving average for smoothing noisy data?",opts:["They produce identical results","Savitzky-Golay fits a LOCAL POLYNOMIAL (here, degree 3) within each sliding window rather than just averaging, which tends to better preserve the HEIGHT and SHAPE of peaks/features in the data compared to a simple moving average, which tends to flatten and broaden peaks", "Savitzky-Golay only works on already-smooth data","It requires the data to be normally distributed"],ans:1,explain:"A simple moving average just computes the mean within each window, which tends to flatten sharp peaks and broaden features. Savitzky-Golay instead fits a local polynomial (of the specified order) to each window, which can better follow and preserve the true shape and height of peaks/features while still reducing random noise — valuable in spectroscopy, chromatography, and sensor data analysis where peak shape matters."},
+  {code:"b, a = signal.butter(N=4, Wn=0.1, btype='low')\nfiltered = signal.filtfilt(b, a, noisy_signal)",q:"Why use filtfilt() rather than simply applying the filter coefficients once (e.g., via lfilter)?",opts:["filtfilt() and lfilter() are identical in effect","filtfilt() applies the filter FORWARD and then BACKWARD through the signal, resulting in ZERO PHASE SHIFT (no time-delay distortion introduced) — a single-pass filter (lfilter) would shift the filtered signal in time relative to the original, which can distort feature timing", "filtfilt() only works with low-pass filters","lfilter() is always faster and equally accurate"],ans:1,explain:"Standard single-pass filtering (lfilter) introduces a phase shift/time delay in the filtered signal relative to the original — problematic when precise timing of features (like peak locations) matters. filtfilt() runs the filter forward then backward, which cancels out this phase distortion entirely, producing a filtered result that's still perfectly time-aligned with the original signal (at some computational cost of running the filter twice)."},
+  {code:"peaks, properties = signal.find_peaks(signal_data, height=0.5, distance=20)",q:"What do the height and distance parameters control?",opts:["They have no effect on the results","height sets a MINIMUM required peak value to be counted (filters out small noise bumps); distance sets the MINIMUM required spacing between consecutive detected peaks (prevents detecting multiple close 'peaks' from the same noisy bump)", "They only affect the plotting appearance","distance controls the total number of peaks allowed"],ans:1,explain:"find_peaks() offers several filtering criteria to avoid false-positive peak detections in noisy data. height ensures only sufficiently large peaks are counted (ignoring small noise fluctuations), while distance ensures detected peaks are sufficiently spaced apart (preventing multiple detections from what's really one broader peak with some jitter at its top)."},
+  {q:"What does the Fast Fourier Transform (FFT) fundamentally accomplish?",opts:["It removes noise from a signal automatically","It decomposes a signal (viewed over TIME) into its constituent sine/cosine wave components at different FREQUENCIES, revealing which frequencies are present in the signal and how strong each one's contribution is", "It only works with already-clean, noise-free signals","It converts a signal into a completely different type of data (text, images, etc.)"],ans:1,explain:"The FFT transforms a signal from the TIME DOMAIN (amplitude vs time) into the FREQUENCY DOMAIN (magnitude vs frequency), revealing the underlying sinusoidal components that combine to form the original signal — even components that aren't visually obvious when just looking at the raw noisy time-series data."},
+  {code:"xf = fftfreq(N, 1/sample_rate)[:N//2]",q:"Why is only the FIRST HALF of the FFT frequency array typically used ([:N//2])?",opts:["The second half contains completely unrelated data","For REAL-valued input signals, the FFT output is symmetric — the second half is essentially a mirror image (specifically, the complex conjugate) of the first half and contains no NEW information, so only the first half (up to the Nyquist frequency) is needed for interpretation", "This is an arbitrary convention with no mathematical reason","Using the full array would cause an error"],ans:1,explain:"For real-valued (non-complex) input signals — which covers virtually all real-world sensor/audio data — the FFT's output has a symmetric property: the second half of the frequency spectrum is the complex conjugate mirror of the first half, containing no additional independent information. By convention, only the first half (from 0 up to the Nyquist frequency = sample_rate/2) is examined."},
+  {q:"What key limitation of a plain FFT does a SPECTROGRAM address?",opts:["Spectrograms don't actually address any FFT limitation","A single FFT gives ONE overall frequency breakdown for an ENTIRE signal, unable to show WHEN specific frequencies occurred if the signal's frequency content changes over time; a spectrogram computes many FFTs over sliding time windows, revealing frequency content AS A FUNCTION OF TIME", "Spectrograms work on completely different, unrelated data types","FFT cannot handle noisy signals; spectrograms remove noise automatically"],ans:1,explain:"A single, whole-signal FFT answers 'what frequencies are present overall' but loses all information about WHEN each frequency occurred if the signal's characteristics change over time (like a chirp sweeping from low to high frequency, or a fault that emerges partway through a recording). A spectrogram solves this by computing FFTs over many small, overlapping TIME WINDOWS, producing a 2D visualization (time × frequency) showing how the frequency content evolves."},
+  {code:"frequencies, times, Sxx = signal.spectrogram(chirp_signal, fs=500)",q:"What do the three returned values collectively represent?",opts:["Three unrelated random arrays","frequencies = the frequency bins analyzed; times = the time window centers; Sxx = a 2D array of POWER/MAGNITUDE values at each (frequency, time) combination — together forming the complete time-varying frequency spectrum for visualization (e.g., via pcolormesh)", "Only frequencies matters; the other two are unused","Sxx represents the raw unfiltered signal"],ans:1,explain:"spectrogram() returns everything needed to build a 2D time-frequency visualization: the array of frequency bins analyzed, the array of time points (window centers) analyzed, and a 2D matrix Sxx where each entry represents the signal's power/intensity at that specific (frequency, time) combination — typically visualized as a heatmap using something like plt.pcolormesh(times, frequencies, Sxx)."},
+  {q:"In the vibration fault detection scenario, why would checking for elevated ENERGY SPECIFICALLY in the 180-195 Hz band (rather than just looking at the overall signal amplitude) be a more targeted fault detection approach?",opts:["Overall amplitude and specific frequency band energy are always identical","A bearing fault produces energy at a SPECIFIC, CHARACTERISTIC frequency (187 Hz in this scenario) distinct from the normal motor operating frequency (30 Hz); monitoring that SPECIFIC frequency band directly targets the fault signature, rather than being potentially masked or diluted by normal variations in overall signal amplitude from unrelated causes", "Checking specific frequency bands is always less accurate than overall amplitude", "This approach only works for audio signals, not vibration"],ans:1,explain:"Different physical fault mechanisms (bearing defects, gear mesh issues, imbalance, etc.) each tend to generate elevated energy at SPECIFIC, characteristic frequencies related to their physical geometry and rotation rates. Monitoring a specific frequency band associated with a KNOWN fault signature is a much more targeted and reliable early-detection approach than just watching overall vibration amplitude, which could increase for many unrelated benign reasons (like normal load changes) and wouldn't specifically indicate this particular fault type."},
+  {q:"Why might an engineer build a SPECTROGRAM (rather than just a single FFT) to monitor a bearing fault that DEVELOPS GRADUALLY over a long recording period?",opts:["A single FFT would work equally well for this purpose","A single FFT of the ENTIRE long recording would show the presence of the fault frequency (187 Hz) but couldn't reveal HOW its strength changed over time; a spectrogram directly visualizes the fault signature's energy INCREASING over the recording, providing crucial 'early warning' insight into fault progression that a single overall FFT would average away", "Spectrograms are only used for audio applications","This choice makes no practical difference to the analysis"],ans:1,explain:"If a fault gradually worsens over a long recording (say, the 187 Hz energy grows from barely-detectable to strong over 10 seconds), a single FFT covering the WHOLE recording would show SOME average energy at 187 Hz but completely obscure the fact that it was GROWING over time — critical information for early warning and maintenance scheduling. A spectrogram directly visualizes this progression, showing the fault band's intensity increasing as time progresses."},
+  {q:"What is the conceptual link between SVD (used in linear algebra for PCA) and analyzing MULTIPLE vibration sensors simultaneously, as suggested in the stretch challenge?",opts:["There is no meaningful connection","If you arrange multiple sensors' readings as columns of a matrix (rows = time samples, columns = sensors), SVD can identify the DOMINANT shared patterns of variation across all sensors simultaneously — similar to how PCA finds the main axes of variation in any multivariate dataset, revealing common vibration modes affecting multiple sensors together", "SVD only works with exactly 2 sensors","This connection only applies to audio data, not vibration"],ans:1,explain:"Framing multi-sensor time-series data as a matrix (time samples × sensors) and applying SVD is EXACTLY the mathematical machinery behind PCA — it identifies the dominant 'directions' (combinations of sensors) along which most of the shared variation occurs. For vibration monitoring, this could reveal a common vibration mode or pattern affecting multiple sensors together, distinct from sensor-specific noise, which is valuable for holistic multi-sensor fault diagnosis."},
+  {q:"Why is it important that filtfilt() introduces ZERO phase shift when filtering a vibration signal intended for later FFT/spectrogram analysis to pinpoint fault frequencies?",opts:["Phase shift has no relevance to frequency analysis","While a pure TIME shift doesn't change the FREQUENCY CONTENT magnitude shown in an FFT (frequency information is preserved), maintaining zero phase shift IS important when you need to correlate filtered signal features with EXACT timing (e.g., aligning with other sensors, or precisely locating WHEN in time a transient event occurred) — filtfilt keeps this timing accurate", "filtfilt() and phase shift have no relationship in signal processing", "Phase shift always corrupts frequency magnitude information"],ans:1,explain:"For a PURE frequency magnitude analysis (like a simple FFT of an entire signal), the specific phase/timing introduced by a single-pass filter wouldn't change WHICH frequencies show up or their relative magnitudes. However, when precise TIMING matters — like correlating an event across multiple sensors, or pinpointing exactly when in time a transient spike occurred (relevant for the spectrogram progression analysis) — maintaining zero phase distortion via filtfilt() ensures the filtered signal's timing remains accurately aligned with the original, unfiltered event timing."},
+  {q:"If a bearing fault's characteristic frequency (187 Hz) happened to be very close to a HARMONIC of the motor's base frequency (e.g., if 6×30Hz=180Hz were close to 187Hz), why might this make fault detection via frequency analysis more challenging?",opts:["Harmonics never occur near fault frequencies in real equipment","Motor harmonics (multiples of the base rotation frequency) are a NORMAL, expected part of the vibration spectrum; if a fault frequency happens to be very close to one of these normal harmonics, distinguishing the fault signature from ordinary/expected motor harmonics becomes harder, potentially requiring finer frequency resolution or more sophisticated signal processing techniques to reliably separate the two", "This scenario is impossible mathematically", "Harmonics only affect audio signals, not vibration measurements"],ans:1,explain:"Rotating machinery naturally produces vibration energy not just at its fundamental rotation frequency but also at HARMONICS (integer multiples) of that frequency, as a completely normal characteristic of mechanical systems. If a fault's characteristic frequency happens to fall close to one of these expected harmonics, separating the ABNORMAL fault signal from the NORMAL harmonic content becomes more challenging, potentially requiring higher frequency resolution (longer FFT windows) or more advanced techniques (like envelope analysis) to reliably distinguish fault indicators from benign harmonic content."},
+  {q:"Why does the vibration analysis pipeline in this lesson APPLY FILTERING (Savitzky-Golay/Butterworth) BEFORE examining the FFT spectrum, rather than just running FFT directly on the raw noisy signal?",opts:["Filtering before FFT is never actually beneficial or necessary","While FFT CAN reveal true signal frequencies even amid noise (since random noise spreads across all frequencies while a real signal concentrates at specific frequencies), pre-filtering can still help REDUCE broadband noise energy that might otherwise obscure or compete with the visibility of smaller/weaker but important signal components (like an early-stage, still-weak fault signature) in the resulting FFT magnitude spectrum", "Filtering makes FFT analysis completely unnecessary afterward", "Raw noisy signals cannot technically be processed by FFT at all"],ans:1,explain:"While FFT can inherently distinguish a concentrated true signal frequency from broadband random noise (since noise energy spreads across all frequencies rather than concentrating at one), pre-filtering to reduce OVERALL noise levels can still improve the clarity and detectability of RELATIVELY WEAK signal components in the resulting spectrum — particularly valuable for catching an EARLY-STAGE fault signature that might otherwise be partially obscured by a very noisy raw signal, making the combination of filtering + FFT more robust for practical, real-world fault detection than either technique used in complete isolation."},
+  {q:"What is the practical benefit of the exercise's Phase 4 approach (simulating a fault that GRADUALLY GROWS over a 10-second recording, then building a spectrogram) compared to simply testing with a fault at ONE fixed intensity level?",opts:["There is no meaningful additional benefit","This more realistically mirrors how REAL mechanical faults actually develop — gradually worsening over time rather than appearing instantly at full severity — and demonstrates that a spectrogram-based monitoring approach can provide EARLY WARNING by detecting the fault signature's energy increasing progressively, well before it might reach a severity level that would be obvious even in a simple, single-snapshot analysis", "Gradual fault simulation is purely for computational convenience with no diagnostic value", "This approach only works for testing purposes and has no real-world analogy"],ans:1,explain:"Real mechanical faults (bearing wear, gear damage, etc.) typically develop GRADUALLY over time rather than appearing instantly at full severity. By simulating this realistic gradual progression and visualizing it with a spectrogram, the exercise demonstrates the PRACTICAL VALUE of continuous frequency-domain monitoring: catching a fault's characteristic frequency signature EARLY, while it's still relatively weak, provides a genuine early-warning capability for predictive maintenance — arguably far more valuable in practice than only being able to detect a fault once it's already severe enough to show up as an obvious, large-amplitude event in the raw time-domain signal."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review linear systems and FFT basics, then try again! 📚"],[50,75,"Good progress! Focus on filtering and spectrograms. 💪"],[75,90,"Strong Day 4! Linear algebra and signal processing skills are solid. 🎉"],[90,101,"Excellent! Day 4 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

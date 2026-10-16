@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 08 — AI Task: *args, **kwargs & Lambda Functions</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0fdf4;--paper:#fff;--p2:#dcfce7;
+  --ink:#052010;--ink2:#1a4028;--ink3:#5a9070;
+  --rule:#bbf7d0;
+  --green:#15803d;--gs:#f0fdf4;--gb:#86efac;
+  --blue:#0369a1;--bs:#e0f2fb;--bb:#7dd3fc;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#6d28d9;--ps:#f5f3ff;--pb:#c4b5fd;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --teal:#0d9488;--ts:#f0fdfa;--tb:#99f6e4;
+  --sh:0 1px 4px rgba(5,32,16,.07),0 4px 18px rgba(5,32,16,.07);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bbf7d055,transparent 42%),radial-gradient(circle at 5% 92%,#6ee7b740,transparent 40%);min-height:100vh}
+
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(5,32,16,.06)}
+.bar-in{max-width:860px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--gs);border-color:var(--gb);color:var(--green)}
+
+.page{max-width:860px;margin:0 auto;padding:40px 20px 90px}
+
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--green)}
+.hsub{font-size:.92rem;color:var(--ink2);max-width:590px;line-height:1.75;margin-bottom:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:99px;transition:width .7s ease}
+
+.recap{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--green);border-radius:var(--r);padding:13px 18px;margin-bottom:22px;font-size:.87rem;color:var(--ink2);line-height:1.8}
+.recap code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-ttl{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700}
+.sh-sub{font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-bdg{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:24px 28px;margin-bottom:16px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.tb{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.tt{background:var(--ts);color:var(--teal);border:1px solid var(--tb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.15rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+
+.cb{border-radius:10px;padding:12px 16px;font-size:.86rem;line-height:1.7;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:1px;font-style:normal}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbt{background:var(--ts);border:1px solid var(--tb);color:var(--teal)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+.cw{background:#052010;border-radius:10px;margin:14px 0;overflow:hidden}
+.cbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0a2818;border-bottom:1px solid #164030}
+.cdots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}
+.cdr{background:#ef4444}.cdy{background:#f59e0b}.cdg{background:#22c55e}
+.clang{font-family:'DM Mono',monospace;font-size:.63rem;color:#4a9060;letter-spacing:.1em;text-transform:uppercase}
+.cbody{padding:18px;font-family:'DM Mono',monospace;font-size:.83rem;line-height:2;overflow-x:auto;color:#c8f0d8}
+.cm{color:#2a6040;font-style:italic}.kw{color:#4ade80}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#c8f0d8}.op{color:#4a9060}
+
+/* comparison boxes */
+.cmp{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+@media(max-width:600px){.cmp{grid-template-columns:1fr}}
+.cmp-box{border-radius:12px;padding:16px;border:1.5px solid}
+.cmp-box.args{background:#f0f9ff;border-color:var(--bb)}
+.cmp-box.kwargs{background:var(--gs);border-color:var(--gb)}
+.cmp-box.lam{background:var(--ps);border-color:var(--pb)}
+.cmp-icon{font-size:1.3rem;margin-bottom:6px}
+.cmp-name{font-weight:700;font-size:.9rem;margin-bottom:5px}
+.cmp-box.args .cmp-name{color:var(--blue)}
+.cmp-box.kwargs .cmp-name{color:var(--green)}
+.cmp-box.lam .cmp-name{color:var(--purple)}
+.cmp-desc{font-size:.78rem;color:var(--ink2);line-height:1.5}
+.cmp-eg{font-family:'DM Mono',monospace;font-size:.72rem;margin-top:6px;color:var(--ink3)}
+
+/* lambda table */
+.lt{width:100%;border-collapse:collapse;margin:14px 0;font-size:.85rem}
+.lt th{background:var(--p2);font-weight:600;padding:9px 14px;text-align:left;border:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.lt td{padding:9px 14px;border:1px solid var(--rule);color:var(--ink2);vertical-align:top}
+.lt tr:nth-child(even) td{background:#f6fdf8}
+.lt td:first-child{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--green);font-weight:600}
+.lt td:nth-child(2){font-family:'DM Mono',monospace;font-size:.78rem;color:var(--blue)}
+
+/* interactive simulators */
+.sim{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.sim-title{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+.sim-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.sim-lbl{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink3);min-width:120px}
+.sim-inp{border:1.5px solid var(--rule);border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;flex:1;min-width:120px;transition:border-color .2s}
+.sim-inp:focus{border-color:var(--green)}
+.sim-out{margin-top:12px;background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink2);line-height:2;white-space:pre-wrap;min-height:52px}
+.sim-out.ok{border-color:var(--gb);background:var(--gs);color:var(--green)}
+.sim-out.warn{border-color:var(--ab);background:var(--as);color:var(--amber)}
+
+/* lambda live builder */
+.lambda-builder{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.lb-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.lb-kw{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:700;color:var(--green)}
+.lb-inp{border:1.5px solid var(--rule);border-radius:8px;padding:7px 11px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;transition:border-color .2s}
+.lb-inp:focus{border-color:var(--green)}
+.lb-inp.wide{width:160px}.lb-inp.narrow{width:80px}
+.lb-code{background:#052010;border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:.83rem;color:#c8f0d8;margin:10px 0}
+.lb-out{display:flex;flex-wrap:wrap;gap:7px;min-height:40px;padding:10px 14px;background:var(--paper);border:1.5px solid var(--rule);border-radius:8px}
+.lb-chip{background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-size:.78rem;font-weight:600;padding:4px 11px;border-radius:6px;animation:pop .2s ease both}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+
+/* map/filter visualiser */
+.mf-vis{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.mf-head{background:#f0fdf4;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.mf-title{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink2);font-weight:600;letter-spacing:.07em}
+.mf-btns{display:flex;gap:7px;flex-wrap:wrap}
+.mf-btn{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink2);font-family:'DM Mono',monospace;transition:all .2s}
+.mf-btn:hover,.mf-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.mf-body{padding:16px 20px}
+.mf-pipeline{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.mf-stage{background:var(--p2);border:1.5px solid var(--rule);border-radius:8px;padding:8px 13px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink2);line-height:1.5}
+.mf-stage.input{background:#f0f9ff;border-color:var(--bb);color:var(--blue)}
+.mf-stage.operation{background:var(--ps);border-color:var(--pb);color:var(--purple)}
+.mf-stage.output{background:var(--gs);border-color:var(--gb);color:var(--green)}
+.mf-arrow{color:var(--ink3);font-size:1rem}
+.mf-items{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mf-item{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:600;padding:4px 11px;border-radius:6px;transition:all .4s}
+.mf-item.kept{background:var(--green);color:#fff}
+.mf-item.filtered{background:var(--rs);border:1px solid var(--rb);color:var(--red);text-decoration:line-through;opacity:.6}
+.mf-item.mapped{background:var(--blue);color:#fff}
+
+/* playground */
+.pg{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.pgh{background:#f0fdf4;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pgt{font-family:'DM Mono',monospace;font-size:.71rem;color:var(--ink2);font-weight:500;letter-spacing:.07em}
+.pgb{display:flex;gap:7px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#116630}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#025a87}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+.pge{padding:14px 18px;background:#f8fefb}
+.pge textarea{width:100%;border:1.5px solid var(--rule);border-radius:8px;padding:11px 14px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:130px;transition:border-color .2s;line-height:1.8}
+.pge textarea:focus{border-color:var(--green)}
+.out-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:4px;font-family:'DM Mono',monospace}
+.pgo{border-top:1px solid var(--rule);padding:12px 18px;background:#f2fdf5;font-family:'DM Mono',monospace;font-size:.82rem;min-height:44px;white-space:pre-wrap;line-height:1.8;color:var(--ink2)}
+.pgo.ok{color:var(--green)}.pgo.err{color:var(--red)}
+
+/* task list */
+.tlist{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.ti{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;background:var(--bg);border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;transition:all .2s;user-select:none}
+.ti:hover{border-color:var(--gb);background:var(--gs)}
+.ti.done{background:var(--gs);border-color:var(--gb)}
+.tcb{width:20px;height:20px;border:2px solid #6ab88a;border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700}
+.ti.done .tcb{background:var(--green);border-color:var(--green)}
+.tlbl{font-size:.88rem;color:var(--ink2);line-height:1.55}
+.ti.done .tlbl{color:var(--green);text-decoration:line-through}
+.thint{font-size:.75rem;color:var(--ink3);margin-top:2px;display:block}
+
+/* scenarios */
+.scenario{background:var(--p2);border:1.5px solid var(--rule);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.sc-q{font-size:.91rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5;white-space:pre-wrap}
+.sc-opts{display:flex;flex-direction:column;gap:7px}
+.sc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.sc-opt:hover:not(.done){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.sc-opt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.sc-opt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.sc-opt.done{cursor:default}
+.sc-l{width:22px;height:22px;border-radius:6px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.sc-opt.cor .sc-l{background:var(--green);border-color:var(--green);color:#fff}
+.sc-opt.wrg .sc-l{background:var(--red);border-color:var(--red);color:#fff}
+.sc-exp{margin-top:9px;padding:9px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.sc-exp.show{display:block}
+.sc-exp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.sc-exp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* AI chat */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#15803d,#059669);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:340px;overflow-y:auto;background:#f8fefb}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--green);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--gs);border:1px solid var(--gb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--green)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+.aic-send:hover{background:#116630}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* fill blanks */
+.fq{margin-bottom:14px}
+.fq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fq label code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:360px;transition:border-color .2s}
+.fi:focus{border-color:var(--green)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+
+/* short answer */
+.sq{margin-bottom:16px}
+.sq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:7px;color:var(--ink2);line-height:1.6}
+.sq textarea{width:100%;border:1.5px solid var(--rule);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.7}
+.sq textarea:focus{border-color:var(--green)}
+.cc{font-size:.7rem;color:var(--ink3);text-align:right;margin-top:3px;font-family:'DM Mono',monospace}
+
+/* MCQ */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+
+.final{background:linear-gradient(135deg,#052010,#1a4028);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.fin-emoji{font-size:2.5rem;margin-bottom:10px}
+.fin-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.fin-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.fin-cta{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 22px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.fin-cta:hover{background:rgba(255,255,255,.25)}
+
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+
+@media(max-width:600px){
+  .card{padding:18px 16px}
+  .mf-btns{gap:5px}
+  .aic-msgs{max-height:260px}
+  .lb-row,.sim-row{flex-direction:column;align-items:flex-start}
+  .lb-inp,.sim-inp{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">📅 Day 08</div>
+      <div class="btl">AI Task — *args · **kwargs · Lambda · map() · filter()</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 1 · Week 2 · Day 08 Task</div>
+  <h1>Your AI Task:<br><em>*args, **kwargs & Lambda</em></h1>
+  <p class="hsub">Today you learned the advanced function patterns that power <strong>every ML library</strong>. When you call <code style="font-family:'DM Mono',monospace;color:var(--green)">RandomForestClassifier(n_estimators=100, max_depth=5)</code> — that is <code style="font-family:'DM Mono',monospace;color:var(--green)">**kwargs</code>. When Pandas calls <code style="font-family:'DM Mono',monospace;color:var(--green)">.apply(lambda x: x*2)</code> — that is a lambda. These are not optional extras — they are the language of ML.</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">🐍 Python</span>
+    <span class="pill">📦 *args</span>
+    <span class="pill">🏷️ **kwargs</span>
+    <span class="pill">⚡ lambda</span>
+    <span class="pill">🔁 map()</span>
+    <span class="pill">🔍 filter()</span>
+    <span class="pill">↕ sorted()</span>
+    <span class="pill">🧠 20 MCQs</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- RECAP -->
+<div class="recap">
+  ✅ <strong>What you learned today:</strong>
+  <code>*args</code> — collects any number of positional arguments into a <strong>tuple</strong>.
+  <code>**kwargs</code> — collects any number of keyword arguments into a <strong>dict</strong>.
+  <code>lambda x: expression</code> — anonymous one-line function with implicit return.
+  <code>map(func, iterable)</code> — applies a function to EVERY item. Returns map object → wrap with <code>list()</code>.
+  <code>filter(func, iterable)</code> — keeps only items where func returns True.
+  <code>sorted(list, key=lambda x: x["field"])</code> — sort by any custom key.
+  Pandas <code>.apply(lambda x: x*2)</code> uses this exact lambda pattern every day in Month 2.
+</div>
+
+<!-- ===== PART 1: CONCEPT VISUAL ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">🔬</div>
+  <div><div class="sh-ttl">Part 1 — *args vs **kwargs vs lambda</div><div class="sh-sub">Know the type each collects and when to use each</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tg">🔬 Concept Overview</div>
+  <h2>Three Advanced Function Patterns — Side by Side</h2>
+  <div class="cmp">
+    <div class="cmp-box args">
+      <div class="cmp-icon">📦</div>
+      <div class="cmp-name">*args</div>
+      <div class="cmp-desc">Any number of <strong>positional</strong> arguments. Collected into a <strong>tuple</strong>. Good for: functions that work on any number of values.</div>
+      <div class="cmp-eg">average(80, 90, 70, 95)<br>→ args = (80, 90, 70, 95)</div>
+    </div>
+    <div class="cmp-box kwargs">
+      <div class="cmp-icon">🏷️</div>
+      <div class="cmp-name">**kwargs</div>
+      <div class="cmp-desc">Any number of <strong>keyword</strong> arguments. Collected into a <strong>dict</strong>. Good for: flexible config functions (like sklearn).</div>
+      <div class="cmp-eg">config(lr=0.01, epochs=50)<br>→ kwargs = {"lr":0.01, "epochs":50}</div>
+    </div>
+    <div class="cmp-box lam">
+      <div class="cmp-icon">⚡</div>
+      <div class="cmp-name">lambda</div>
+      <div class="cmp-desc">Anonymous one-line function. Implicit return. Best as an argument to <code style="font-family:'DM Mono',monospace">map()</code>, <code style="font-family:'DM Mono',monospace">filter()</code>, <code style="font-family:'DM Mono',monospace">sorted()</code>.</div>
+      <div class="cmp-eg">lambda x: x**2<br>→ same as def f(x): return x**2</div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:20px">⚡ Lambda — Full Pattern Reference</h2>
+  <table class="lt">
+    <thead><tr><th>Lambda Expression</th><th>Equivalent def</th><th>ML Use Case</th></tr></thead>
+    <tbody>
+      <tr><td>lambda x: x**2</td><td>def f(x): return x**2</td><td>Square activation, feature engineering</td></tr>
+      <tr><td>lambda x: max(0, x)</td><td>def relu(x): return max(0,x)</td><td>ReLU activation function</td></tr>
+      <tr><td>lambda x: x/255</td><td>def norm(x): return x/255</td><td>Pixel normalisation (0→1)</td></tr>
+      <tr><td>lambda x: 1 if x>0.5 else 0</td><td>def thresh(x): ...</td><td>Binary classification threshold</td></tr>
+      <tr><td>lambda s: s["marks"]</td><td>def key(s): return s["marks"]</td><td>Sort students by marks</td></tr>
+      <tr><td>lambda x, mn, mx: (x-mn)/(mx-mn)</td><td>def minmax(x,mn,mx): ...</td><td>Min-max normalisation</td></tr>
+      <tr><td>lambda r: r["marks"]>=50 and r["att"]>=75</td><td>def eligible(r): ...</td><td>Filter eligible students</td></tr>
+    </tbody>
+  </table>
+
+  <div class="cb cbr">
+    <i>⚠️</i>
+    <span><strong>Key type facts:</strong> <code style="font-family:'DM Mono',monospace">*args</code> gives you a <strong>tuple</strong> — so you can use <code style="font-family:'DM Mono',monospace">sum(args)</code>, <code style="font-family:'DM Mono',monospace">len(args)</code>, loop with <code style="font-family:'DM Mono',monospace">for</code>. <code style="font-family:'DM Mono',monospace">**kwargs</code> gives you a <strong>dict</strong> — so you can use <code style="font-family:'DM Mono',monospace">.items()</code>, <code style="font-family:'DM Mono',monospace">.get()</code>, and all dict methods.</span>
+  </div>
+</div>
+
+<!-- ===== PART 2: LIVE SIMULATORS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">🎮</div>
+  <div><div class="sh-ttl">Part 2 — Live Simulators</div><div class="sh-sub">Call *args, **kwargs and lambda functions with your own values</div></div>
+  <div class="sh-bdg">⏱ 25 min</div>
+</div>
+
+<!-- *args SIMULATOR -->
+<div class="card">
+  <div class="ctag ta">🎮 Simulator 1 — *args</div>
+  <h2>average(*args) — Call With Any Number of Values</h2>
+  <p>Type comma-separated scores and call <code style="font-family:'DM Mono',monospace;color:var(--green)">average(*args)</code>. The simulator shows what args contains (the tuple) and the computed result.</p>
+  <div class="sim">
+    <div class="sim-title">📦 *args Simulator</div>
+    <div class="sim-row">
+      <span class="sim-lbl">Scores (comma-sep):</span>
+      <input class="sim-inp" id="args-inp" value="85, 92, 78, 91, 64" oninput="runArgs()"/>
+    </div>
+    <div class="sim-out ok" id="args-out">Loading...</div>
+  </div>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Python — *args</div></div>
+    <div class="cbody">
+<span class="kw">def</span> <span class="fn">average</span>(*<span class="vr">args</span>):
+    <span class="cm"># args is a TUPLE — can use sum(), len(), loop</span>
+    <span class="fn">print</span>(<span class="st">f"args type: {type(args)}"</span>)   <span class="cm"># &lt;class 'tuple'&gt;</span>
+    <span class="fn">print</span>(<span class="st">f"args value: {args}"</span>)
+    <span class="kw">return</span> <span class="fn">sum</span>(<span class="vr">args</span>) / <span class="fn">len</span>(<span class="vr">args</span>)
+
+<span class="cm"># Call with ANY number of positional args</span>
+<span class="fn">print</span>(<span class="fn">average</span>(<span class="nm">80</span>, <span class="nm">90</span>, <span class="nm">70</span>))           <span class="cm"># 80.0</span>
+<span class="fn">print</span>(<span class="fn">average</span>(<span class="nm">85</span>, <span class="nm">92</span>, <span class="nm">78</span>, <span class="nm">91</span>, <span class="nm">64</span>))  <span class="cm"># 82.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- **kwargs SIMULATOR -->
+<div class="card">
+  <div class="ctag ta">🎮 Simulator 2 — **kwargs</div>
+  <h2>model_config(**kwargs) — Build Any ML Config</h2>
+  <p>Type key=value pairs to simulate calling an sklearn-style function. See exactly what <code style="font-family:'DM Mono',monospace;color:var(--green)">kwargs</code> contains (a dict) and how it iterates.</p>
+  <div class="sim">
+    <div class="sim-title">🏷️ **kwargs Simulator</div>
+    <div class="sim-row">
+      <span class="sim-lbl">Config param 1:</span>
+      <input class="sim-inp" id="kw-k1" value="n_estimators" style="width:140px" oninput="runKwargs()"/>
+      <span style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--green)">=</span>
+      <input class="sim-inp" id="kw-v1" value="100" style="width:80px" oninput="runKwargs()"/>
+    </div>
+    <div class="sim-row">
+      <span class="sim-lbl">Config param 2:</span>
+      <input class="sim-inp" id="kw-k2" value="max_depth" style="width:140px" oninput="runKwargs()"/>
+      <span style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--green)">=</span>
+      <input class="sim-inp" id="kw-v2" value="5" style="width:80px" oninput="runKwargs()"/>
+    </div>
+    <div class="sim-row">
+      <span class="sim-lbl">Config param 3:</span>
+      <input class="sim-inp" id="kw-k3" value="random_state" style="width:140px" oninput="runKwargs()"/>
+      <span style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--green)">=</span>
+      <input class="sim-inp" id="kw-v3" value="42" style="width:80px" oninput="runKwargs()"/>
+    </div>
+    <div class="sim-out ok" id="kwargs-out">Loading...</div>
+  </div>
+</div>
+
+<!-- LAMBDA LIVE BUILDER -->
+<div class="card">
+  <div class="ctag ta">🎮 Simulator 3 — Lambda Builder</div>
+  <h2>Build Lambda Functions Live — See Results Instantly</h2>
+  <p>Type a lambda expression and a range of input values. The builder generates the lambda code and shows the output for each value.</p>
+  <div class="lambda-builder">
+    <div class="lb-row">
+      <span class="lb-kw">result = [</span>
+      <span class="lb-kw">lambda x:</span>
+      <input class="lb-inp wide" id="lb-expr" value="x**2" oninput="updateLambda()"/>
+      <span class="lb-kw">for x in range(</span>
+      <input class="lb-inp" id="lb-start" type="number" value="1" style="width:60px" oninput="updateLambda()"/>
+      <span class="lb-kw">,</span>
+      <input class="lb-inp" id="lb-stop" type="number" value="11" style="width:60px" oninput="updateLambda()"/>
+      <span class="lb-kw">)]</span>
+    </div>
+    <div class="lb-code" id="lb-code">Loading...</div>
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);margin:8px 0">Results:</div>
+    <div class="lb-out" id="lb-out"></div>
+    <div id="lb-info" style="margin-top:8px;font-size:.78rem;font-family:'DM Mono',monospace;color:var(--ink3)"></div>
+  </div>
+  <div class="cb cba">
+    <i>💡</i>
+    <span><strong>Try these ML lambda patterns:</strong><br>
+    • <code style="font-family:'DM Mono',monospace">max(0, x)</code> — ReLU activation (range -5 to 5)<br>
+    • <code style="font-family:'DM Mono',monospace">round(x/255, 3)</code> — pixel normalisation (range 0 to 256 step 32)<br>
+    • <code style="font-family:'DM Mono',monospace">1 if x>50 else 0</code> — binary threshold (range 1 to 100 step 10)<br>
+    • <code style="font-family:'DM Mono',monospace">x*0.7</code> — decay factor</span>
+  </div>
+</div>
+
+<!-- MAP/FILTER VISUALISER -->
+<div class="card">
+  <div class="ctag ta">🎮 Simulator 4 — map() & filter()</div>
+  <h2>map() and filter() Pipeline Visualiser</h2>
+  <p>See exactly which items pass through <code style="font-family:'DM Mono',monospace;color:var(--green)">filter()</code> (kept vs removed) and how <code style="font-family:'DM Mono',monospace;color:var(--green)">map()</code> transforms every item. Click each operation to visualise it step by step.</p>
+  <div class="mf-vis">
+    <div class="mf-head">
+      <span class="mf-title">Input: scores = [85, 45, 72, 33, 91, 58, 22, 77]</span>
+      <div class="mf-btns">
+        <button class="mf-btn active" id="mf-btn-filter" onclick="showMF('filter',this)">filter(x>=50)</button>
+        <button class="mf-btn" id="mf-btn-map" onclick="showMF('map',this)">map(x/100)</button>
+        <button class="mf-btn" id="mf-btn-sort" onclick="showMF('sort',this)">sorted(reverse)</button>
+        <button class="mf-btn" id="mf-btn-chain" onclick="showMF('chain',this)">filter+map chain</button>
+      </div>
+    </div>
+    <div class="mf-body" id="mf-body">Loading...</div>
+  </div>
+  <div class="cb cbg">
+    <i>🎯</i>
+    <span><strong>Pandas .apply() connection:</strong> When you write <code style="font-family:'DM Mono',monospace">df["grade"] = df["marks"].apply(lambda x: "A" if x>=80 else "B")</code> in Month 2 — Python applies that lambda to EVERY row using the same map() pattern you see here.</span>
+  </div>
+</div>
+
+<!-- ===== PART 3: CHECKLIST ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">📋</div>
+  <div><div class="sh-ttl">Part 3 — IDLE Checklist</div><div class="sh-sub">Complete each task in Python IDLE — tick when done</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✅ Checklist</div>
+  <h2>8 Hands-On Tasks</h2>
+  <ul class="tlist">
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Write <code style="font-family:'DM Mono',monospace">average(*args)</code> — test with 2, 3, and 5 arguments. Print <code style="font-family:'DM Mono',monospace">type(args)</code> to confirm it is a tuple.</span>
+      <span class="thint">💡 def average(*args): return sum(args)/len(args) — args is ALWAYS a tuple inside the function</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Write <code style="font-family:'DM Mono',monospace">model_config(**kwargs)</code> that prints each hyperparameter using <code style="font-family:'DM Mono',monospace">.items()</code>. Test with RandomForest params AND Keras-style params in the same function.</span>
+      <span class="thint">💡 for key, val in kwargs.items(): print(f"  {key} = {val}") — kwargs is a DICT</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Write a <code style="font-family:'DM Mono',monospace">train_model(name, *datasets, **params)</code> function that combines both. Call it with a model name, 2 file paths, and 3 hyperparameters.</span>
+      <span class="thint">💡 train_model("RF", "train.csv", "val.csv", n_estimators=100, max_depth=5)</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Create 5 lambda functions: square, ReLU (<code style="font-family:'DM Mono',monospace">max(0,x)</code>), normalise, grade (Pass/Fail), binary threshold. Call each and print the result.</span>
+      <span class="thint">💡 relu = lambda x: max(0, x) — normalise = lambda x, mn, mx: (x-mn)/(mx-mn)</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">sorted(students, key=lambda s: s["marks"], reverse=True)</code> to rank a list of 5 student dicts. Print the ranked list.</span>
+      <span class="thint">💡 The lambda extracts the "marks" field from each dict — sorted() uses it as the comparison key</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">list(map(lambda s: s/100, scores))</code> to normalise a list of scores. Then use <code style="font-family:'DM Mono',monospace">list(filter(lambda s: s>=50, scores))</code> to keep only passing scores.</span>
+      <span class="thint">💡 Always wrap map() and filter() with list() — they return lazy objects, not a list!</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Chain map() and filter(): normalise ONLY the passing scores in one expression using <code style="font-family:'DM Mono',monospace">list(map(lambda x: x/100, filter(lambda x: x>=50, scores)))</code>.</span>
+      <span class="thint">💡 Read inside-out: filter first (keep >=50), then map each result to /100</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Build a full mini-Pandas simulation: a list of 4 student dicts. Apply a grade lambda, an eligibility lambda, and sort by marks — all in 3 lines using map/filter/sorted.</span>
+      <span class="thint">💡 grade_fn = lambda r: "A" if r["marks"]>=80 else "B" if r["marks"]>=60 else "F"</span></div>
+    </li>
+  </ul>
+</div>
+
+<!-- ===== PART 4: PLAYGROUNDS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">⚙️</div>
+  <div><div class="sh-ttl">Part 4 — Code Playgrounds</div><div class="sh-sub">Write *args, **kwargs and lambda code — simulators validate</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<!-- PLAYGROUND 1 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 1</div>
+  <h2>Complete ML Pipeline with *args + **kwargs + lambda</h2>
+  <p>Write a complete program combining all 3 patterns: use <code style="font-family:'DM Mono',monospace;color:var(--green)">*args</code> for a stats function, <code style="font-family:'DM Mono',monospace;color:var(--green)">**kwargs</code> for model config, and lambda+map/filter for data processing.</p>
+  <div class="cb cbb"><i>💡</i><span><strong>Expected output:</strong><br>
+=== Stats for Class A ===<br>
+Count: 5 | Sum: 436 | Avg: 87.2 | Max: 91<br>
+<br>
+=== Model Config ===<br>
+  n_estimators = 100<br>
+  max_depth = 5<br>
+  random_state = 42<br>
+<br>
+Normalised: [0.88, 0.45, 0.91, 0.72, 0.84]<br>
+Passed: [88, 91, 72, 84]<br>
+Ranked: Sara(91) > Ali(88) > Ahmed(84) > Usman(72) > Zara(45)</span></div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Full ML Pipeline</span><div class="pgb"><button class="btn btn-g" onclick="runPipeline()">▶ Run</button><button class="btn btn-o" onclick="clearPG('p1-code','p1-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="p1-code" spellcheck="false" placeholder="# 1. *args — class statistics&#10;def class_stats(title, *scores):&#10;    print(f'\n=== Stats for {title} ===')&#10;    print(f'Count: {len(scores)} | Sum: {sum(scores)} | Avg: {sum(scores)/len(scores):.1f} | Max: {max(scores)}')&#10;&#10;class_stats('Class A', 88, 45, 91, 72, 84)&#10;&#10;# 2. **kwargs — model config&#10;def model_config(**kwargs):&#10;    print('\n=== Model Config ===')&#10;    for k, v in kwargs.items():&#10;        print(f'  {k} = {v}')&#10;&#10;model_config(n_estimators=100, max_depth=5, random_state=42)&#10;&#10;# 3. Lambda + map/filter/sorted&#10;students = [&#10;    {'name':'Ali',  'marks':88},{'name':'Sara', 'marks':91},&#10;    {'name':'Usman','marks':72},{'name':'Zara', 'marks':45},&#10;    {'name':'Ahmed','marks':84}&#10;]&#10;scores = [s['marks'] for s in students]&#10;&#10;normalised = list(map(lambda x: round(x/100, 2), scores))&#10;passed = list(filter(lambda x: x >= 50, scores))&#10;ranked = sorted(students, key=lambda s: s['marks'], reverse=True)&#10;&#10;print(f'\nNormalised: {normalised}')&#10;print(f'Passed: {passed}')&#10;print('Ranked: ' + ' > '.join(f&quot;{s['name']}({s['marks']})&quot; for s in ranked))"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="p1-out">Click ▶ Run...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkPipeline()">✓ Check My Code</button></div>
+  <div id="p1-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 2 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 2</div>
+  <h2>Lambda Activation Function Library</h2>
+  <p>Build a dictionary of ML activation and preprocessing lambdas, then apply them to test inputs. This is how neural network layers choose their activation function at runtime.</p>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Lambda Activation Library</span><div class="pgb"><button class="btn btn-g" onclick="runActivations()">▶ Run</button><button class="btn btn-o" onclick="clearPG('ac-code','ac-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="ac-code" spellcheck="false" placeholder="# Build a library of ML functions as lambdas&#10;ops = {&#10;    'relu'      : lambda x: max(0, x),&#10;    'sigmoid'   : lambda x: round(1 / (1 + 2.718**(-x)), 4),&#10;    'square'    : lambda x: x**2,&#10;    'normalise' : lambda x: round(x/255, 4),&#10;    'threshold' : lambda x: 1 if x > 0.5 else 0,&#10;    'grade'     : lambda x: 'A' if x>=80 else 'B' if x>=60 else 'C' if x>=50 else 'F',&#10;}&#10;&#10;test_values = [-3, 0, 0.7, 75, 128, 255]&#10;&#10;for name, fn in ops.items():&#10;    print(f'{name}:')&#10;    for v in test_values:&#10;        try:&#10;            print(f'  {name}({v}) = {fn(v)}')&#10;        except:&#10;            print(f'  {name}({v}) = N/A')"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="ac-out">Click ▶ Run...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkActivations()">✓ Check</button></div>
+  <div id="ac-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 3: BUG HUNT -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 3 — Bug Hunt</div>
+  <h2>Find and Fix the 4 *args/**kwargs/lambda Bugs</h2>
+  <p>4 bugs below — wrong star syntax, kwargs accessed like args, lambda with explicit return, and map result not converted to list.</p>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Buggy Code — Fix All 4</div></div>
+    <div class="cbody">
+<span class="cm"># Bug 1: missing * — just a regular parameter named args</span>
+<span class="kw">def</span> <span class="fn">total</span>(<span class="vr" style="color:#ef4444">args</span>):           <span class="cm" style="color:#ef4444"># Bug 1: should be *args</span>
+    <span class="kw">return</span> <span class="fn">sum</span>(<span class="vr">args</span>)
+
+<span class="cm"># Bug 2: accessing kwargs like a positional param</span>
+<span class="kw">def</span> <span class="fn">config</span>(**<span class="vr">kwargs</span>):
+    <span class="fn">print</span>(<span class="vr">kwargs</span>[<span class="nm">0</span>])    <span class="cm" style="color:#ef4444"># Bug 2: kwargs is a DICT — use .items(), not [0]!</span>
+
+<span class="cm"># Bug 3: lambda with explicit return keyword</span>
+<span class="vr">square</span> = <span class="kw">lambda</span> <span class="vr">x</span>: <span class="kw" style="color:#ef4444">return</span> <span class="vr">x</span>**<span class="nm">2</span>   <span class="cm" style="color:#ef4444"># Bug 3: lambda has implicit return — no keyword!</span>
+
+<span class="cm"># Bug 4: map() result not converted to list</span>
+<span class="vr">scores</span> = [<span class="nm">80</span>, <span class="nm">60</span>, <span class="nm">90</span>]
+<span class="vr">result</span> = <span class="fn">map</span>(<span class="kw">lambda</span> <span class="vr">x</span>: <span class="vr">x</span>/<span class="nm">100</span>, <span class="vr">scores</span>)
+<span class="fn">print</span>(<span class="vr">result</span>[<span class="nm">0</span>])            <span class="cm" style="color:#ef4444"># Bug 4: map object is NOT a list!</span>
+    </div>
+  </div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Write the Fixed Version</span><div class="pgb"><button class="btn btn-g" onclick="runBugFix()">▶ Simulate</button><button class="btn btn-o" onclick="clearPG('bf-code','bf-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="bf-code" spellcheck="false" placeholder="# Fix Bug 1: add * before args&#10;def total(*args):&#10;    return sum(args)&#10;&#10;# Fix Bug 2: use .items() on kwargs dict&#10;def config(**kwargs):&#10;    for k, v in kwargs.items():&#10;        print(f'{k}: {v}')&#10;&#10;# Fix Bug 3: remove 'return' — lambda has implicit return&#10;square = lambda x: x**2&#10;&#10;# Fix Bug 4: wrap map() with list()&#10;scores = [80, 60, 90]&#10;result = list(map(lambda x: x/100, scores))&#10;print(result[0])"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Validation</div><div class="pgo" id="bf-out">Click ▶ Simulate...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkBugFix()">✓ Check All 4 Fixes</button></div>
+  <div id="bf-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- ===== PART 5: SCENARIOS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">🌍</div>
+  <div><div class="sh-ttl">Part 5 — Real AI Scenarios</div><div class="sh-sub">Choose the correct *args/**kwargs/lambda approach for each ML situation</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div id="sc-wrap"></div>
+<div id="sc-score" style="display:none;margin-top:12px;font-size:.9rem;font-weight:600"></div>
+
+<!-- ===== PART 6: AI TUTOR ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">💬</div>
+  <div><div class="sh-ttl">Part 6 — AI Tutor Chat</div><div class="sh-sub">Ask anything about *args, **kwargs, lambda, map(), or filter()</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Chat With Your Advanced Functions Tutor</h2>
+  <p>Ask anything about <strong>*args</strong>, <strong>**kwargs</strong>, <strong>lambda</strong>, <strong>map()</strong>, <strong>filter()</strong>, or <strong>sorted()</strong>. Try: <em>"What is the difference between *args and **kwargs?"</em> or <em>"Show me how map() and filter() work together"</em></p>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">Python AI Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">Day 08 Specialist · *args · **kwargs · lambda · map · filter · sorted</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Hello! I am your Day 08 tutor. Ask me anything about <strong>*args</strong>, <strong>**kwargs</strong>, <strong>lambda</strong>, <strong>map()</strong>, or <strong>filter()</strong>. What would you like to understand better?</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Day 08 key mistake:</strong> Forgetting to wrap <code>map()</code> and <code>filter()</code> with <code>list()</code>! In Python 3, both return lazy "iterator" objects — not actual lists. So <code>map(lambda x: x*2, scores)</code> gives you a map object, not [160, 90...]. Always write <code>list(map(...))</code>!</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask about *args, **kwargs, lambda, map(), filter(), sorted()..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PART 7: FILL BLANKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">✏️</div>
+  <div><div class="sh-ttl">Part 7 — Fill in the Blanks</div><div class="sh-sub">Complete each statement from memory</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Complete the Code</div>
+  <h2>Fill in the Missing Parts</h2>
+  <div id="fill-wrap"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-b" onclick="checkFill()">Check All Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- ===== PART 8: DEEP THINKING ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">🧠</div>
+  <div><div class="sh-ttl">Part 8 — Deep Thinking Questions</div><div class="sh-sub">Build your advanced ML engineering mindset</div></div>
+  <div class="sh-bdg">⏱ 30 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">🧠 Think Deeply</div>
+  <h2>5 Questions — Write Thorough Answers</h2>
+  <div class="sq"><label>Q1. <code style="font-family:'DM Mono',monospace">*args</code> collects into a tuple and <code style="font-family:'DM Mono',monospace">**kwargs</code> collects into a dict. Why does this type difference matter? Give a specific example showing what tuple operation you would use on args and what dict operation you would use on kwargs.</label><textarea id="dq1" placeholder="Think about sum(args) vs kwargs.items() and why the types enable different operations..." oninput="cc(this,'dc1')"></textarea><div class="cc" id="dc1">0 chars</div></div>
+  <div class="sq"><label>Q2. Explain why sklearn's <code style="font-family:'DM Mono',monospace">RandomForestClassifier(n_estimators=100, max_depth=5)</code> uses <code style="font-family:'DM Mono',monospace">**kwargs</code> internally. What would happen if it used fixed parameters instead? What benefit does **kwargs give to ML library developers?</label><textarea id="dq2" placeholder="Think about how many possible hyperparameters an ML model could have..." oninput="cc(this,'dc2')"></textarea><div class="cc" id="dc2">0 chars</div></div>
+  <div class="sq"><label>Q3. Compare using a <code style="font-family:'DM Mono',monospace">def</code> function vs a <code style="font-family:'DM Mono',monospace">lambda</code> in <code style="font-family:'DM Mono',monospace">sorted(students, key=...)</code>. When is lambda better, when is def better? Give a concrete example of each case.</label><textarea id="dq3" placeholder="When is the function complex enough to warrant a def instead of a lambda?" oninput="cc(this,'dc3')"></textarea><div class="cc" id="dc3">0 chars</div></div>
+  <div class="sq"><label>Q4. <code style="font-family:'DM Mono',monospace">map()</code> and <code style="font-family:'DM Mono',monospace">filter()</code> return lazy iterators in Python 3. Explain: (1) what "lazy" means, (2) why you must wrap with <code style="font-family:'DM Mono',monospace">list()</code> to use the results, (3) one advantage of lazy evaluation in large ML datasets.</label><textarea id="dq4" placeholder="Think about memory efficiency for datasets of 1 million rows..." oninput="cc(this,'dc4')"></textarea><div class="cc" id="dc4">0 chars</div></div>
+  <div class="sq"><label>Q5. Pandas' <code style="font-family:'DM Mono',monospace">.apply(lambda x: ...)</code> is used millions of times per day in data science. Explain what .apply() does, how it relates to the Python <code style="font-family:'DM Mono',monospace">map()</code> pattern you learned today, and write 3 real-world Pandas .apply() examples you would use in an ML project.</label><textarea id="dq5" placeholder="Connect map() + lambda to Pandas .apply() — what is the relationship?" oninput="cc(this,'dc5')"></textarea><div class="cc" id="dc5">0 chars</div></div>
+  <button class="btn btn-g" onclick="saveDQ()">✓ Save All Answers</button>
+  <div id="dq-msg" style="display:none;margin-top:10px;font-size:.84rem"></div>
+</div>
+
+<!-- ===== PART 9: MCQ ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-ttl">Part 9 — MCQ Quiz (20 Questions)</div><div class="sh-sub">Answer from memory — every answer shows a full explanation</div></div>
+  <div class="sh-bdg">📝 20 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 20</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 16/20 (80%). Read each explanation!</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="fin-emoji" id="fin-emoji">🎉</div>
+  <div class="fin-title" id="fin-title">—</div>
+  <div class="fin-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">Day 09 tomorrow: <strong>Modules, Imports &amp; Standard Library</strong> — import math, random, os and build reusable code files!</p>
+  <button class="fin-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+</div>
+<footer>Day 08 of 300+ · AI/ML 15-Month Curriculum · Month 1, Week 2<br>*args · **kwargs · lambda · map() · filter() · sorted() · Pandas .apply() Foundation</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let tasksDone=0,mcqScore=0,fillScore=0,mcqDoneSet=new Set();
+function updateProgress(){const t=Math.min(Math.round((tasksDone/8)*30+(mcqScore/20)*50+(fillScore/10)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function tick(el){const done=el.classList.toggle('done');el.querySelector('.tcb').textContent=done?'✓':'';tasksDone=document.querySelectorAll('.ti.done').length;updateProgress();}
+
+// ── *args SIMULATOR ──
+function runArgs(){
+  const raw=document.getElementById('args-inp').value;
+  const nums=raw.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n));
+  const out=document.getElementById('args-out');
+  if(!nums.length){out.textContent='Enter comma-separated numbers';out.className='sim-out';return;}
+  const avg=(nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(2);
+  out.textContent=`Call: average(${nums.join(', ')})\n\nInside function:\n  type(args) → <class 'tuple'>\n  args = (${nums.join(', ')})\n  sum(args) = ${nums.reduce((a,b)=>a+b,0)}\n  len(args) = ${nums.length}\n\n  return sum(args)/len(args) = ${avg}\n\nResult: ${avg}`;
+  out.className='sim-out ok';
+}
+setTimeout(runArgs,200);
+
+// ── **kwargs SIMULATOR ──
+function runKwargs(){
+  const pairs=[];
+  for(let i=1;i<=3;i++){
+    const k=document.getElementById('kw-k'+i).value.trim();
+    const v=document.getElementById('kw-v'+i).value.trim();
+    if(k&&v)pairs.push({k,v});
+  }
+  const out=document.getElementById('kwargs-out');
+  if(!pairs.length){out.textContent='Fill in at least one key and value';out.className='sim-out';return;}
+  const callArgs=pairs.map(p=>`${p.k}=${p.v}`).join(', ');
+  const dictStr='{'+pairs.map(p=>`"${p.k}": ${p.v}`).join(', ')+'}';
+  out.textContent=`Call: model_config(${callArgs})\n\nInside function:\n  type(kwargs) → <class 'dict'>\n  kwargs = ${dictStr}\n\n  Iterating with .items():\n${pairs.map(p=>`  "${p.k}" = ${p.v}`).join('\n')}\n\nThis is exactly how sklearn handles hyperparameters! ✅`;
+  out.className='sim-out ok';
+}
+setTimeout(runKwargs,200);
+
+// ── LAMBDA BUILDER ──
+function updateLambda(){
+  const expr=document.getElementById('lb-expr').value||'x';
+  const start=parseInt(document.getElementById('lb-start').value)||1;
+  const stop=parseInt(document.getElementById('lb-stop').value)||6;
+  const code=document.getElementById('lb-code');
+  const out=document.getElementById('lb-out');
+  const info=document.getElementById('lb-info');
+  code.textContent=`result = [lambda x: ${expr}  for x in range(${start}, ${stop})]`;
+  out.innerHTML='';
+  const results=[];
+  try{
+    for(let x=start;x<stop&&results.length<50;x++){
+      const val=Function('x',`with(Math){return ${expr.replace(/\b(max|min|abs|round|sqrt|pow|floor|ceil)\b/g,'Math.$1')}}`)(x);
+      if(typeof val==='number'||typeof val==='string'||typeof val==='boolean'){
+        results.push(val);
+        const chip=document.createElement('span');chip.className='lb-chip';
+        chip.textContent=typeof val==='number'?(Number.isInteger(val)?val:val.toFixed(3)):String(val);
+        chip.style.animationDelay=(results.length*0.05)+'s';out.appendChild(chip);
+      }
+    }
+    info.textContent=`Generated ${results.length} values. f(${start})=${results[0] instanceof Number?results[0].toFixed(3):results[0]}`;
+  }catch(e){out.innerHTML='<span style="color:var(--red);font-size:.78rem">Expression error — check syntax</span>';info.textContent='';}
+}
+setTimeout(updateLambda,200);
+
+// ── MAP/FILTER VISUALISER ──
+const MF_SCORES=[85,45,72,33,91,58,22,77];
+function showMF(mode,el){
+  document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const body=document.getElementById('mf-body');
+  let html='';
+  if(mode==='filter'){
+    const kept=MF_SCORES.filter(x=>x>=50);
+    html=`<div class="mf-pipeline">
+      <div class="mf-stage input">scores = [${MF_SCORES.join(', ')}]</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage operation">filter(lambda x: x >= 50, scores)</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage output">list() → ${JSON.stringify(kept)}</div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);margin-bottom:8px">Each value: ✅ kept if x>=50 &nbsp; ❌ removed if x&lt;50</div>
+    <div class="mf-items">${MF_SCORES.map(x=>`<div class="mf-item ${x>=50?'kept':'filtered'}">${x}${x>=50?'✅':'❌'}</div>`).join('')}</div>`;
+  } else if(mode==='map'){
+    const mapped=MF_SCORES.map(x=>+(x/100).toFixed(2));
+    html=`<div class="mf-pipeline">
+      <div class="mf-stage input">scores = [${MF_SCORES.join(', ')}]</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage operation">map(lambda x: x/100, scores)</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage output">list() → ${JSON.stringify(mapped)}</div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);margin-bottom:8px">Every item transformed: x/100 = normalised value</div>
+    <div class="mf-items">${MF_SCORES.map((x,i)=>`<div class="mf-item mapped">${x}→${mapped[i]}</div>`).join('')}</div>`;
+  } else if(mode==='sort'){
+    const sorted=[...MF_SCORES].sort((a,b)=>b-a);
+    html=`<div class="mf-pipeline">
+      <div class="mf-stage input">scores = [${MF_SCORES.join(', ')}]</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage operation">sorted(scores, key=lambda x: x, reverse=True)</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage output">${JSON.stringify(sorted)}</div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);margin-bottom:8px">Sorted highest → lowest. Lambda extracts the sort key from each item.</div>
+    <div class="mf-items">${sorted.map(x=>`<div class="mf-item kept">${x}</div>`).join('')}</div>`;
+  } else if(mode==='chain'){
+    const chained=MF_SCORES.filter(x=>x>=50).map(x=>+(x/100).toFixed(2));
+    html=`<div class="mf-pipeline">
+      <div class="mf-stage input">[${MF_SCORES.join(', ')}]</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage operation">filter(x>=50)</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage operation">map(x/100)</div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-stage output">${JSON.stringify(chained)}</div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);margin-bottom:8px">Read inside-out: filter first → then map the filtered results</div>
+    <div style="font-family:'DM Mono',monospace;font-size:.8rem;background:var(--p2);padding:10px 14px;border-radius:8px;margin-top:8px;color:var(--ink2)">result = list(map(lambda x: x/100, filter(lambda x: x>=50, scores)))<br>= ${JSON.stringify(chained)}</div>`;
+  }
+  body.innerHTML=html;
+}
+setTimeout(()=>showMF('filter',document.getElementById('mf-btn-filter')),200);
+
+// ── PLAYGROUND 1 ──
+function runPipeline(){
+  const code=document.getElementById('p1-code').value;
+  const out=document.getElementById('p1-out');
+  if(!code.trim()){out.textContent='Write the code first!';out.className='pgo';return;}
+  const hasArgs=code.includes('*args')||code.includes('*scores');
+  const hasKwargs=code.includes('**kwargs');
+  const hasLambda=code.includes('lambda');
+  const hasMap=code.includes('map(');
+  const hasFilter=code.includes('filter(');
+  if(hasArgs&&hasKwargs&&hasLambda&&hasMap&&hasFilter){
+    out.textContent=`\n=== Stats for Class A ===\nCount: 5 | Sum: 436 | Avg: 87.2 | Max: 91\n\n=== Model Config ===\n  n_estimators = 100\n  max_depth = 5\n  random_state = 42\n\nNormalised: [0.88, 0.45, 0.91, 0.72, 0.84]\nPassed: [88, 91, 72, 84]\nRanked: Sara(91) > Ali(88) > Ahmed(84) > Usman(72) > Zara(45)`;
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasArgs)h.push('Need *args in a stats function');
+    if(!hasKwargs)h.push('Need **kwargs in a config function');
+    if(!hasLambda)h.push('Need at least one lambda');
+    if(!hasMap)h.push('Need map() for normalisation');
+    if(!hasFilter)h.push('Need filter() for passing scores');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkPipeline(){
+  const code=document.getElementById('p1-code').value;
+  const fb=document.getElementById('p1-fb');fb.style.display='block';
+  const msgs=[
+    (code.includes('*args')||code.includes('*scores'))&&code.includes('sum(')&&code.includes('len(')?'✅ *args function with sum/len used':'❌ Write a function with *args that computes count, sum, avg, max',
+    code.includes('**kwargs')&&code.includes('.items()')?'✅ **kwargs with .items() iteration':'❌ Write def config(**kwargs): for k,v in kwargs.items():',
+    code.includes('lambda')&&code.includes('sorted(')?'✅ lambda + sorted() for ranking':'❌ Use sorted(students, key=lambda s: s["marks"], reverse=True)',
+    code.includes('map(')&&code.includes('lambda')?'✅ map() with lambda for normalisation':'❌ Use list(map(lambda x: round(x/100,2), scores))',
+    code.includes('filter(')&&code.includes('lambda')?'✅ filter() with lambda for passed scores':'❌ Use list(filter(lambda x: x>=50, scores))',
+  ];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===5?'var(--green)':sc>=3?'var(--amber)':'var(--red)'}">${sc===5?'🎉 Perfect! All 5 advanced patterns used!':sc>=3?`${sc}/5 — fix remaining`:'Add more patterns'}</div></div>`;
+}
+
+// ── PLAYGROUND 2 ──
+function runActivations(){
+  const code=document.getElementById('ac-code').value;
+  const out=document.getElementById('ac-out');
+  if(!code.trim()){out.textContent='Write the code first!';out.className='pgo';return;}
+  const hasDict=code.includes('ops')&&code.includes('{');
+  const hasLambda=(code.match(/lambda/g)||[]).length>=4;
+  const hasLoop=code.includes('for name')&&code.includes('fn(');
+  if(hasDict&&hasLambda&&hasLoop){
+    out.textContent='relu:\n  relu(-3) = 0\n  relu(0) = 0\n  relu(0.7) = 0.7\n  relu(75) = 75\n\nsigmoid:\n  sigmoid(-3) = 0.0474\n  sigmoid(0) = 0.5\n  sigmoid(0.7) = 0.668\n\nsquare:\n  square(5) = 25\n  square(0.7) = 0.49\n\nnormalise:\n  normalise(0) = 0.0\n  normalise(128) = 0.502\n  normalise(255) = 1.0\n\nthreshold:\n  threshold(0.7) = 1\n  threshold(0.3) = 0\n\ngrade:\n  grade(75) = B\n  grade(45) = F\n  grade(91) = A';
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasDict)h.push('Build ops = {} dict of lambda functions');
+    if(!hasLambda)h.push('Need at least 4 lambda functions in the dict');
+    if(!hasLoop)h.push('Loop: for name, fn in ops.items(): then fn(value)');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkActivations(){
+  const code=document.getElementById('ac-code').value;
+  const fb=document.getElementById('ac-fb');fb.style.display='block';
+  const b1=code.includes('ops')&&code.includes('{')&&code.includes(':');
+  const b2=(code.match(/lambda/g)||[]).length>=4;
+  const b3=code.includes('max(0')&&code.includes('relu');
+  const b4=code.includes('for name')&&code.includes('fn(');
+  const msgs=[b1?'✅ ops dict with lambda functions defined':'❌ ops = {"relu": lambda x: ..., "sigmoid": lambda x: ...}',b2?`✅ ${(code.match(/lambda/g)||[]).length} lambda functions found`:'❌ Add at least 4 lambda functions',b3?'✅ ReLU lambda: max(0, x)':'⚠️ Add ReLU: "relu": lambda x: max(0, x)',b4?'✅ Loop iterates ops.items() and calls fn(v)':'❌ for name, fn in ops.items(): then fn(value)'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 Perfect lambda library!':sc>=2?`${sc}/4 — fix remaining`:'Review the lambda dict pattern'}</div></div>`;
+}
+
+// ── BUG FIX ──
+function runBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const out=document.getElementById('bf-out');
+  if(!code.trim()){out.textContent='Write the fixed code!';out.className='pgo';return;}
+  const b1=code.includes('def total(*args)');
+  const b2=code.includes('.items()')&&!code.includes('kwargs[0]');
+  const b3=(code.includes('square = lambda x: x**2')||code.includes('lambda x: x**2'))&&!code.includes('return x**2');
+  const b4=code.includes('list(map(');
+  if(b1&&b2&&b3&&b4){out.textContent='total(1,2,3) = 6\nn_estimators: 100\nmax_depth: 5\nsquare(5) = 25\nresult[0] = 0.8\n\n✅ All 4 bugs fixed!';out.className='pgo ok';}
+  else{let e=[];if(!b1)e.push('Bug 1: def total(*args): — add * before args');if(!b2)e.push('Bug 2: use for k,v in kwargs.items(): — not kwargs[0]');if(!b3)e.push('Bug 3: lambda x: x**2 — no "return" keyword in lambda');if(!b4)e.push('Bug 4: list(map(lambda x: x/100, scores)) — wrap with list()');out.textContent=e.join('\n');out.className='pgo err';}
+}
+function clearPG(c,o){document.getElementById(c).value='';document.getElementById(o).textContent='Click ▶ to see output...';document.getElementById(o).className='pgo';}
+function checkBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const fb=document.getElementById('bf-fb');fb.style.display='block';
+  const b1=code.includes('*args')&&code.includes('def total');
+  const b2=code.includes('.items()')&&!code.includes('kwargs[0]');
+  const b3=!code.match(/lambda\s+x\s*:\s*return/)&&(code.includes('lambda x: x**2')||code.includes('lambda x:x**2'));
+  const b4=code.includes('list(map(');
+  const msgs=[b1?'✅ Bug 1: def total(*args): — star added correctly':'❌ Bug 1: change def total(args) to def total(*args)',b2?'✅ Bug 2: .items() iterates kwargs as dict':'❌ Bug 2: kwargs is a dict — use for k,v in kwargs.items(): not kwargs[0]',b3?'✅ Bug 3: lambda without return keyword':'❌ Bug 3: remove "return" — write lambda x: x**2 not lambda x: return x**2',b4?'✅ Bug 4: list(map()) — result is now a real list':'❌ Bug 4: wrap with list(): result = list(map(lambda x: x/100, scores))'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 All 4 bugs fixed! Expert level!':sc>=2?`${sc}/4 fixed`:'Review each bug above'}</div></div>`;
+}
+
+// ── SCENARIOS ──
+const scData=[
+  {q:'1. What type does *args collect into, and what type does **kwargs collect into?',opts:['*args → list, **kwargs → list','*args → tuple, **kwargs → dict','*args → dict, **kwargs → tuple','Both collect into a set'],ans:1,exp:'*args collects positional arguments into a TUPLE. **kwargs collects keyword arguments into a DICT. This matters because tuples support sum(), len(), looping with for — while dicts support .items(), .get(), .keys(). Getting the types wrong means using the wrong methods inside your function.'},
+  {q:'2. What is the output of:\nlist(filter(lambda x: x > 50, [30, 60, 45, 80]))?',opts:['[30, 45]','[60, 80]','[True, False, True, False]','[30, 60, 45, 80]'],ans:1,exp:'filter(lambda x: x > 50, [...]) keeps only values where the lambda returns True. 60 > 50 → True (kept). 80 > 50 → True (kept). 30 > 50 → False (removed). 45 > 50 → False (removed). Result: [60, 80]. Always wrap with list() in Python 3!'},
+  {q:"3. sorted(students, key=lambda s: s['marks'], reverse=True) — what does the lambda do here?",opts:["Returns True/False to filter students","Extracts the 'marks' value from each dict to use as the sort key","Creates a new list of marks","Reverses the list"],ans:1,exp:"The lambda s: s['marks'] takes each student dict and returns just the marks value. sorted() uses this value to decide the order. Without a key, sorted() would compare entire dicts (which fails or gives wrong results). This pattern is used everywhere: sort by accuracy, loss, probability, date, etc."},
+  {q:'4. Why must you write list(map(lambda x: x*2, scores)) in Python 3?',opts:['map() returns None in Python 3','map() returns a lazy map object — not a list. list() forces evaluation','list() is required before any function call','Python 3 deprecated map()'],ans:1,exp:'In Python 3, map() and filter() return lazy "iterator" objects — they do not compute results immediately. This saves memory for large datasets. To get an actual list you can index or print: wrap with list(). Without list(): type(map(...)) → <class "map">. map(...)[0] → TypeError.'},
+  {q:'5. lambda x: x**2 is equivalent to which regular function?',opts:['def f(): return x**2','def f(x): return x**2','def f(x): print(x**2)','def f: x**2'],ans:1,exp:'lambda x: x**2 = def f(x): return x**2 exactly. Lambda takes x as input, evaluates x**2, and returns the result implicitly (no return keyword needed or allowed). Lambda is just a compact form for simple one-expression functions.'},
+];
+let scDone=new Set(),scScore=0;
+function buildScenarios(){
+  document.getElementById('sc-wrap').innerHTML=scData.map((s,i)=>`
+    <div class="scenario"><div class="sc-q">${s.q}</div><div class="sc-opts">${s.opts.map((o,j)=>`<div class="sc-opt" id="ss${i}_${j}" onclick="pickSc(${i},${j})"><div class="sc-l">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="sc-exp" id="sexp${i}"></div></div>`).join('');
+}
+function pickSc(qi,oi){
+  if(scDone.has(qi))return;scDone.add(qi);
+  const s=scData[qi];
+  for(let j=0;j<s.opts.length;j++){const el=document.getElementById('ss'+qi+'_'+j);el.classList.add('done');if(j===s.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('sexp'+qi);exp.textContent=s.exp;exp.classList.add('show',oi===s.ans?'ok':'no');
+  if(oi===s.ans)scScore++;
+  if(scDone.size===scData.length){const sc=document.getElementById('sc-score');sc.style.display='block';sc.innerHTML=scScore===5?'<span style="color:var(--green)">🎉 Perfect — 5/5!</span>':`<span style="color:var(--amber)">${scScore}/5 — review explanations above.</span>`;}
+}
+buildScenarios();
+
+// ── AI TUTOR ──
+const replies={
+  args:`*args lets a function accept ANY number of positional arguments:\n\ndef average(*args):\n    print(type(args))   # <class 'tuple'>\n    return sum(args) / len(args)\n\naverage(80, 90, 70)        # works!\naverage(85, 92, 78, 91, 64)  # also works!\naverage(100, 50)           # and this!\n\nInside the function, args is a TUPLE.\nYou can: sum(args), len(args), max(args), loop with for.\n\nYou can also combine:\ndef report(title, *scores):  # title is required, rest are *args\n    print(title)\n    print(f"Average: {sum(scores)/len(scores):.1f}")\n\nreport("Class A", 88, 45, 91)  # title="Class A", scores=(88,45,91)`,
+  kwargs:`**kwargs lets a function accept ANY keyword arguments:\n\ndef model_config(**kwargs):\n    print(type(kwargs))   # <class 'dict'>\n    for key, val in kwargs.items():\n        print(f"  {key} = {val}")\n\nmodel_config(n_estimators=100, max_depth=5)  # works!\nmodel_config(learning_rate=0.01, epochs=50)  # also works!\n\nInside, kwargs is a DICT. Use all dict methods:\n  kwargs.items()  → loop all key-value pairs\n  kwargs.get("lr", 0.001)  → safe access with default\n  len(kwargs)  → number of params passed\n\nML connection: sklearn does this:\ndef RandomForestClassifier(**kwargs):\n    n_estimators = kwargs.get("n_estimators", 100)\n    max_depth = kwargs.get("max_depth", None)\n    ...`,
+  lambda:`lambda is an anonymous one-line function with implicit return:\n\nlambda x: x**2            # takes x, returns x²\nlambda a, b: a + b        # two params\nlambda x: "Pass" if x>=50 else "Fail"  # conditional\n\nCommon uses:\n\n# sorted() key:\nranked = sorted(students, key=lambda s: s["marks"], reverse=True)\n\n# map() — apply to every item:\nnorm = list(map(lambda x: x/100, scores))\n\n# filter() — keep only matching:\npassed = list(filter(lambda x: x>=50, scores))\n\nAlways remember:\n  lambda x: return x**2  → WRONG (no return keyword!)\n  lambda x: x**2         → CORRECT\n\nPandas connection:\n  df["grade"] = df["marks"].apply(lambda x: "A" if x>=80 else "B")`,
+  map:`map(function, iterable) applies the function to EVERY item.\n\nscores = [80, 45, 90, 60]\n\n# With lambda:\nnorm = list(map(lambda x: x/100, scores))\n# → [0.8, 0.45, 0.9, 0.6]\n\n# With a named function:\ndef double(x): return x*2\ndoubled = list(map(double, scores))\n# → [160, 90, 180, 120]\n\nCRITICAL: always wrap with list() in Python 3!\nmap(lambda x: x/100, scores)  → <map object> (useless without list())\nlist(map(lambda x: x/100, scores))  → [0.8, 0.45, 0.9, 0.6] ✅\n\nPandas equivalent:\ndf["norm"] = df["marks"].apply(lambda x: x/100)`,
+  filter:`filter(function, iterable) keeps only items where function is True.\n\nscores = [85, 45, 72, 33, 91]\n\npassed = list(filter(lambda x: x >= 50, scores))\n# → [85, 72, 91]  (45 and 33 removed)\n\nhigh = list(filter(lambda x: x >= 80, scores))\n# → [85, 91]\n\nChain with map: normalise only passing scores:\nresult = list(map(\n    lambda x: x/100,\n    filter(lambda x: x >= 50, scores)\n))\n# → [0.85, 0.72, 0.91]\n\nRead inside-out: filter first → map the filtered results.\n\nList comprehension equivalent:\n[x/100 for x in scores if x >= 50]  # same result, cleaner syntax`,
+  default:`Great questions about Day 08! Key concepts:\n\n📦 *args: accepts ANY positional args → tuple inside\n  sum(args), len(args), for x in args:\n\n🏷️ **kwargs: accepts ANY keyword args → dict inside\n  kwargs.items(), kwargs.get("key", default)\n\n⚡ lambda x: expression → implicit return, one line\n  lambda x: x**2  (NOT lambda x: return x**2)\n\n🔁 map(lambda, iterable) → apply to ALL → wrap with list()\n🔍 filter(lambda, iterable) → keep if True → wrap with list()\n↕ sorted(list, key=lambda x: x["field"], reverse=True)\n\nML connections:\n  sklearn **kwargs: RandomForestClassifier(n_estimators=100)\n  Pandas .apply(): df["col"].apply(lambda x: x*2)\n  map() = .apply() for plain Python lists\n\nWhat specific part would you like explained?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('*args')||lm.includes('args'))r=replies.args;
+    else if(lm.includes('**kwargs')||lm.includes('kwargs'))r=replies.kwargs;
+    else if(lm.includes('lambda'))r=replies.lambda;
+    else if(lm.includes('map('))r=replies.map;
+    else if(lm.includes('filter('))r=replies.filter;
+    addMsg(r,'ai');},700+Math.random()*500);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ── FILL BLANKS ──
+const fillData=[
+  {q:'1. *args collects positional arguments into a ___.',ans:['tuple'],hint:'tuple'},
+  {q:'2. **kwargs collects keyword arguments into a ___.',ans:['dict','dictionary'],hint:'dict'},
+  {q:'3. Inside a **kwargs function, you iterate with: for k, v in kwargs.___():',ans:['items'],hint:'items'},
+  {q:'4. lambda x: x**2 — this lambda has an ___ return (no return keyword needed).',ans:['implicit'],hint:'implicit'},
+  {q:'5. map() and filter() in Python 3 return lazy ___ objects — wrap with list().',ans:['iterator','iterable','map','filter'],hint:'iterator'},
+  {q:'6. list(filter(lambda x: x>50, [30,60,80])) returns: ___',ans:['[60, 80]','[60,80]'],hint:'[60, 80]'},
+  {q:'7. To sort a list of dicts by "marks" descending: sorted(students, key=lambda s: s[___], reverse=True)',ans:['"marks"',"'marks'",'marks'],hint:'"marks"'},
+  {q:'8. lambda x: x**2 is identical to: def f(x): ___ x**2',ans:['return'],hint:'return'},
+  {q:'9. In *args, you can call sum(args) because args is a ___.',ans:['tuple'],hint:'tuple'},
+  {q:'10. map(lambda x: x*2, [1,2,3]) without list() returns a ___ object.',ans:['map','map object'],hint:'map object'},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Your answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+}
+function checkFill(){
+  fillScore=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase();
+    const ok=q.ans.some(a=>v.includes(a.toLowerCase())||v===a.toLowerCase());
+    if(ok){fillScore++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.hint;}
+  });
+  updateProgress();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillScore===10?'<span style="color:var(--green)">🎉 Perfect — 10/10!</span>':fillScore>=7?`<span style="color:var(--amber)">${fillScore}/10 — good! Check the ones above.</span>`:`<span style="color:var(--red)">${fillScore}/10 — re-read Day 08.</span>`;
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ── DEEP Q ──
+function cc(el,id){document.getElementById(id).textContent=(el.value||'').length+' chars';}
+function saveDQ(){
+  const empty=['dq1','dq2','dq3','dq4','dq5'].some(id=>!(document.getElementById(id).value||'').trim());
+  const m=document.getElementById('dq-msg');m.style.display='block';
+  if(empty){m.style.color='var(--red)';m.textContent='⚠️ Please answer all 5 questions.';}
+  else{m.style.color='var(--green)';m.textContent='✅ All 5 answers saved! Now tackle the MCQ Quiz!';}
+}
+
+// ── MCQ ──
+const mcqs=[
+  {q:'What does *args collect arguments into?',opts:['A list','A set','A tuple','A dictionary'],ans:2,exp:'*args collects positional arguments into a TUPLE. def f(*args): print(type(args)) → <class "tuple">. You can use sum(args), len(args), max(args), and loop with "for x in args:". This is the key distinction from **kwargs which gives a dict.'},
+  {q:'What does **kwargs collect arguments into?',opts:['A list','A tuple','A set','A dictionary'],ans:3,exp:'**kwargs collects keyword arguments into a DICT. def f(**kwargs): print(type(kwargs)) → <class "dict">. You iterate with kwargs.items(), access with kwargs.get("key", default), and use all dict methods. This is why sklearn config functions work with any hyperparameter.'},
+  {q:'Which function signature is correct for a function that accepts any positional arguments?',opts:['def f(args):','def f(*args):','def f(**args):','def f(args[]):'],ans:1,exp:'def f(*args): — the single asterisk * before the parameter name tells Python to collect all remaining positional arguments into a tuple called args. No asterisk = just a regular parameter named args (only accepts one argument). ** = keyword arguments.'},
+  {q:'lambda x: x**2 is equivalent to:',opts:['def f(): return x**2','def f(x): print(x**2)','def f(x): return x**2','def f: return x**2'],ans:2,exp:'lambda x: x**2 is exactly equivalent to def f(x): return x**2. Lambda takes x as a parameter, evaluates x**2, and returns it implicitly. Lambda NEVER uses the return keyword — it is implicit. The only difference is lambda has no name and must be one expression.'},
+  {q:'What is wrong with: lambda x: return x**2?',opts:['Nothing — it is valid','SyntaxError: lambda cannot use the return keyword','It should be lambda x: yield x**2','return needs parentheses'],ans:1,exp:'SyntaxError! Lambda functions have an IMPLICIT return — you must never write the return keyword. Correct: lambda x: x**2. The expression after the colon IS the return value automatically. Writing return inside a lambda is a syntax error.'},
+  {q:'list(filter(lambda x: x >= 60, [80, 45, 60, 90, 30])) returns:',opts:['[45, 30]','[80, 60, 90]','[True, False, True, True, False]','[80, 45, 60, 90, 30]'],ans:1,exp:'filter() keeps only items where the lambda returns True. 80>=60 ✅, 45>=60 ❌, 60>=60 ✅, 90>=60 ✅, 30>=60 ❌. Result: [80, 60, 90]. Note: 60 is included because >= (not just >).'},
+  {q:'Why must you wrap map() with list() in Python 3?',opts:['list() makes it faster','map() returns a lazy iterator object — not a list. list() forces evaluation','map() is deprecated in Python 3','list() converts the data types'],ans:1,exp:'In Python 3, map() returns a lazy iterator to save memory. The values are only computed when needed. list() forces immediate evaluation of all values into a real list. Without list(): you get a useless map object. map_obj[0] → TypeError. list(map_obj) → [actual values].'},
+  {q:'sorted(students, key=lambda s: s["marks"], reverse=True) — what role does the lambda play?',opts:['It filters students with high marks','It returns True/False to decide order','It extracts the "marks" value from each dict to use as the sort key','It converts marks to a string'],ans:2,exp:'The lambda s: s["marks"] is the KEY function. sorted() calls it on each item to get a comparable value. Without key=, sorted() would compare entire dicts (which fails). With key=lambda s: s["marks"], sorted() compares just the marks values. reverse=True makes it highest first.'},
+  {q:'def train(*datasets, **params): — how would you call this function?',opts:['train("file.csv", n_estimators=100)','train([datasets], {params})','train(datasets, params)','train(("file.csv",), {"n":100})'],ans:0,exp:'train("file.csv", n_estimators=100) — positional arguments go to *datasets (as a tuple), keyword arguments go to **params (as a dict). Inside: datasets=("file.csv",), params={"n_estimators":100}. You can pass multiple files: train("a.csv","b.csv", lr=0.01, epochs=100).'},
+  {q:'What does map(lambda x: x*2, [1, 2, 3]) produce without list()?',opts:['[2, 4, 6]','None','A map object (lazy iterator)','Error — missing list()'],ans:2,exp:'Without list(): map() returns a map object like "<map object at 0x...>". It is not computed yet. This is "lazy evaluation" — Python delays computation until you actually need the values. list(map(lambda x: x*2, [1,2,3])) forces evaluation → [2,4,6].'},
+  {q:'Which correctly uses **kwargs to print model hyperparameters?',opts:['def config(**kwargs): print(kwargs[0])','def config(**kwargs):\n  for k, v in kwargs.items(): print(f"{k}={v}")','def config(*kwargs): print(kwargs)','def config(kwargs): print(kwargs.items())'],ans:1,exp:'for k, v in kwargs.items(): is the correct way to iterate a **kwargs dict. kwargs[0] fails (dicts use string keys, not integer indices). *kwargs is wrong syntax for keyword arguments. def config(kwargs) makes it a regular parameter, not **kwargs.'},
+  {q:'Pandas .apply(lambda x: x*2) is most similar to which Python pattern?',opts:['filter(lambda x: x>0, data)','list(map(lambda x: x*2, data))','sorted(data, key=lambda x: x)','sum(lambda x: x, data)'],ans:1,exp:'Pandas .apply(lambda x: x*2) applies the lambda to every element — identical to list(map(lambda x: x*2, data)). Both transform every item using the function. .apply() works on DataFrame rows/columns; map() works on plain Python iterables. This is why learning map+lambda NOW makes Pandas .apply() in Month 2 immediately familiar.'},
+  {q:'def f(*args, **kwargs): — what does this signature mean?',opts:['Accept exactly 2 arguments','Accept any combination of positional AND keyword arguments','Accept only lists and dicts','This is invalid syntax'],ans:1,exp:'def f(*args, **kwargs) accepts EVERYTHING: any number of positional args (→ tuple) AND any number of keyword args (→ dict). This is the most flexible function signature possible. Inside: args is a tuple of positional values, kwargs is a dict of keyword values. Many Python library functions use this.'},
+  {q:'What is the output of:\nlist(map(lambda x: x**2, range(1,4)))?',opts:['[1, 2, 3]','[1, 4, 9]','[2, 4, 6]','[1, 4, 9, 16]'],ans:1,exp:'range(1,4) → 1,2,3. map(lambda x: x**2, ...) applies x**2 to each: 1²=1, 2²=4, 3²=9. Result: [1,4,9]. range(1,4) gives 1,2,3 (stop 4 excluded). list() converts the lazy map object to a real list.'},
+  {q:'Which code correctly chains filter and map?',opts:['filter(map(lambda x: x/100), scores, lambda x: x>=50)','list(map(lambda x: x/100, filter(lambda x: x>=50, scores)))','list(filter(lambda x: x/100, map(lambda x: x>=50, scores)))','map(filter(scores, lambda x: x>=50), lambda x: x/100)'],ans:1,exp:'list(map(lambda x: x/100, filter(lambda x: x>=50, scores))) — read inside-out: (1) filter keeps only >=50 values, (2) map divides each by 100, (3) list() materialises the lazy result. The order matters: filter first (reduces data), then map (transforms remaining).'},
+  {q:'def average(*args): return sum(args)/len(args)\nprint(average(80, 90, 70))',opts:['[80, 90, 70]','Error — needs a list argument','(80, 90, 70)','80.0'],ans:3,exp:'average(80, 90, 70) passes 3 positional args. Inside: args=(80,90,70) as a tuple. sum((80,90,70))=240, len((80,90,70))=3. Returns 240/3=80.0. The args tuple supports both sum() and len() because tuples are sequences.'},
+  {q:'What does sorted(scores, key=lambda x: -x) do?',opts:['Sorts ascending (0 to highest)','Sorts descending (highest to 0) — negative key reverses order','Removes negative numbers','Raises an error'],ans:1,exp:'key=lambda x: -x negates each value before comparing. Highest value gets most negative key → sorted last? No — most negative sorts first. So 91 → -91 (most negative → first), 85 → -85 (second). This is an alternative to reverse=True. Both give the same result: highest first.'},
+  {q:'A lambda can only contain:',opts:['Multiple statements using semicolons','A single expression (no statements like if/for/while as statements)','Class definitions','Multiple return values'],ans:1,exp:'Lambda is limited to a single EXPRESSION. No statements (no assignment, no loops, no multi-line). You can use: conditional expressions (x if cond else y), function calls, arithmetic. You cannot use: if/else as a statement, for loops, variable assignments. For complex logic, use a def function instead.'},
+  {q:'Why does sklearn use **kwargs in its constructor methods?',opts:['**kwargs makes functions run faster in Python','sklearn can not pre-define every possible hyperparameter combination — **kwargs lets users pass any named config value','Python requires **kwargs in class __init__ methods','**kwargs prevents users from passing wrong values'],ans:1,exp:'RandomForestClassifier has dozens of possible hyperparameters (n_estimators, max_depth, min_samples_split, min_samples_leaf, max_features, etc.). It is impossible to pre-define every combination. **kwargs lets the user pass any subset of parameters they want, and the function internally checks which were provided with .get(key, default_value).'},
+  {q:'list(filter(lambda r: r["marks"]>=50 and r["att"]>=75, students)) — what does this do?',opts:['Sorts students by marks and attendance','Returns only students where marks>=50 AND attendance>=75','Adds marks and attendance together','Removes students from the list'],ans:1,exp:'filter() with a lambda that accesses dict fields keeps only students where BOTH conditions are True. r["marks"]>=50 and r["att"]>=75 → both must be True. This is the Pandas equivalent of: df[(df["marks"]>=50) & (df["att"]>=75)] — the same filtering logic you will use every day in Month 2!'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 20</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.83rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqDoneSet.has(qi))return;mcqDoneSet.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqScore++;document.getElementById('live-sc').textContent=mcqScore;}
+  if(mcqDoneSet.size===20){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProgress();
+}
+function showFinal(){
+  const pct=Math.round(mcqScore/20*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--green) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent Work!':pct>=60?'Good Effort!':'Keep Practising!';
+  document.getElementById('fin-msg').textContent=`Score: ${mcqScore}/20 (${pct}%) — ${pct>=80?'Advanced functions mastered! Ready for Day 09: Modules & Imports.':pct>=60?'Good foundation. Review incorrect answers before Day 09.':'Re-read Day 08 and retry.'}`;
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

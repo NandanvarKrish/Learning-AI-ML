@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 7 — Classification with Excel</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(94,53,177,0.05),transparent 65%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:540px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:var(--accent);box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov{font-size:14px;font-weight:700;}
+
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-warn{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+
+/* CONFUSION MATRIX */
+.cm-wrap{display:flex;justify-content:center;margin:14px 0;}
+.cm-table{border-collapse:collapse;font-family:var(--mono);font-size:13px;}
+.cm-table td,.cm-table th{padding:12px 18px;text-align:center;border:1.5px solid var(--border2);}
+.cm-table th{background:var(--accent);color:#fff;font-size:11px;letter-spacing:1px;}
+.cm-table .tp{background:#d4f5e5;color:#0a6640;font-weight:700;font-size:15px;}
+.cm-table .tn{background:#d4f5e5;color:#0a6640;font-weight:700;font-size:15px;}
+.cm-table .fp{background:#fff0f2;color:#b0112b;font-weight:700;font-size:15px;}
+.cm-table .fn2{background:#fff0f2;color:#b0112b;font-weight:700;font-size:15px;}
+.cm-table .lbl{background:var(--card2);font-size:11px;color:var(--text3);font-weight:600;}
+
+/* METRIC CARDS */
+.metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0;}
+@media(max-width:580px){.metric-row{grid-template-columns:1fr 1fr;}}
+.mc{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center;box-shadow:var(--sh);}
+.mc-val{font-size:1.6rem;font-weight:900;color:var(--accent);letter-spacing:-1px;line-height:1;}
+.mc-name{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
+.mc-formula{font-family:var(--mono);font-size:10px;color:var(--text2);margin-top:4px;}
+
+/* THRESHOLD TABLE */
+.tt2{width:100%;border-collapse:collapse;margin-top:10px;border-radius:8px;overflow:hidden;}
+.tt2 th{font-family:var(--mono);font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:1px;padding:9px 13px;text-align:left;background:var(--accent);}
+.tt2 td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--border);}
+.tt2 tr:last-child td{border-bottom:none;}
+.tt2 tr:nth-child(even) td{background:var(--card2);}
+.tt2 .ok{color:var(--green);font-weight:700;}.tt2 .bad{color:var(--red);}
+
+/* FORMULA GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.rb{display:flex;gap:10px;background:var(--rl);border:1px solid rgba(176,17,43,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+.tip{background:linear-gradient(135deg,var(--al),var(--pl));border:1.5px solid var(--ag);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:#0b6650;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 7 of 10</div>
+    <div class="db">DAY 7</div>
+  </div>
+  <h1>Classification<br><span class="hl">with Excel</span></h1>
+  <div class="tagline">Predict categories — pass or fail, churn or stay, spam or not. Build a logistic classifier, calculate Precision, Recall and F1, tune your threshold, and deploy a live prediction engine.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: ML Models</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●●</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">🔧 Solver Required</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pd"></div><div class="pd"></div><div class="pd"></div>
+    <div class="pl">Day 7 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">🎯</div><div class="ol2">Focus</div><div class="ov">Classification</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Topics</div><div class="ov">8 Class. Concepts</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Outcomes</div><div class="ov">4 Skills Mastered</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Key Metric</div><div class="ov">F1 Score</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Topics Covered Today</div>
+<div class="tg">
+  <div class="ti"><div class="tn">01</div><div><div class="tt">Binary Classification Concept</div><div class="ts">Decision boundaries — predicting 0 or 1 from features</div></div></div>
+  <div class="ti"><div class="tn">02</div><div><div class="tt">Logistic Regression with Solver</div><div class="ts">Sigmoid function, log-odds, Solver optimisation</div></div></div>
+  <div class="ti"><div class="tn">03</div><div><div class="tt">NORM.S.DIST for Probability</div><div class="ts">Convert log-odds to 0–1 probability scores</div></div></div>
+  <div class="ti"><div class="tn">04</div><div><div class="tt">Confusion Matrix</div><div class="ts">TP, TN, FP, FN — the four cells that tell everything</div></div></div>
+  <div class="ti"><div class="tn">05</div><div><div class="tt">Accuracy, Precision, Recall, F1</div><div class="ts">Four metrics — when each one matters and when it misleads</div></div></div>
+  <div class="ti"><div class="tn">06</div><div><div class="tt">Threshold Tuning</div><div class="ts">0.3, 0.4, 0.5, 0.6 — trading precision for recall</div></div></div>
+  <div class="ti"><div class="tn">07</div><div><div class="tt">KNN Simulation</div><div class="ts">Euclidean distance, K nearest neighbours, majority vote</div></div></div>
+  <div class="ti"><div class="tn">08</div><div><div class="tt">Decision Tree Logic with IF</div><div class="ts">Nested IF as a hand-crafted decision tree</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sl">🧠 Key Concepts Deep Dive</div>
+
+<!-- Sigmoid -->
+<div class="cc">
+  <div class="ct">🔵 The Sigmoid Function — Heart of Logistic Regression <span class="cb cb-core">CORE MATH</span></div>
+  <div class="cd">Linear regression predicts numbers. Logistic regression predicts probabilities (0–1). The sigmoid function squashes any number — no matter how large or small — into the 0–1 range. It's the bridge between a linear equation and a probability score.</div>
+  <div class="code">
+<span class="cm">// Log-odds (linear combination of features)</span>
+Log_Odds = β₀ + β₁*StudyHours + β₂*Attendance + β₃*Is_Eng
+
+<span class="cm">// Sigmoid: converts log-odds to probability 0–1</span>
+P(Pass) = 1 / (1 + EXP(-Log_Odds))
+        = <span class="fn">1</span>/(<span class="fn">1</span>+<span class="fn">EXP</span>(-[@Log_Odds]))
+
+<span class="cm">// Interpretation:</span>
+<span class="cm">// Log_Odds = 0   → P = 0.50  (50/50 boundary)</span>
+<span class="cm">// Log_Odds = 2   → P = 0.88  (likely to pass)</span>
+<span class="cm">// Log_Odds = -2  → P = 0.12  (likely to fail)</span>
+<span class="cm">// Log_Odds = 4   → P = 0.98  (almost certain to pass)</span>
+
+<span class="cm">// Class prediction using threshold (default = 0.5)</span>
+Predicted_Class = <span class="fn">IF</span>([@Probability] >= <span class="num">0.5</span>, <span class="num">1</span>, <span class="num">0</span>)
+
+<span class="cm">// Equivalent using NORM.S.DIST (alternative approach)</span>
+P_alt = <span class="fn">NORM.S.DIST</span>([@Log_Odds], <span class="kw">TRUE</span>)
+  </div>
+</div>
+
+<!-- Confusion Matrix -->
+<div class="cc">
+  <div class="ct">📋 The Confusion Matrix — Your Model's Report Card <span class="cb cb-warn">READ THIS FIRST</span></div>
+  <div class="cd">Every classification metric — Accuracy, Precision, Recall, F1 — is derived from 4 numbers in the confusion matrix. If you don't understand the confusion matrix, you don't understand your classifier. Period.</div>
+  <div class="cm-wrap">
+    <table class="cm-table">
+      <tr>
+        <th colspan="2" rowspan="2" style="background:#f7f9fd;color:#7f90aa;">Confusion Matrix</th>
+        <th colspan="2">Actual Class</th>
+      </tr>
+      <tr>
+        <th>Actual = 1 (Pass)</th>
+        <th>Actual = 0 (Fail)</th>
+      </tr>
+      <tr>
+        <td class="lbl" rowspan="2" style="writing-mode:vertical-rl;text-align:center;">Predicted</td>
+        <td class="lbl">Predicted = 1</td>
+        <td class="tp">TP ✓<br><small>True Positive</small></td>
+        <td class="fp">FP ✗<br><small>False Positive<br>(Type I Error)</small></td>
+      </tr>
+      <tr>
+        <td class="lbl">Predicted = 0</td>
+        <td class="fn2">FN ✗<br><small>False Negative<br>(Type II Error)</small></td>
+        <td class="tn">TN ✓<br><small>True Negative</small></td>
+      </tr>
+    </table>
+  </div>
+  <div class="metric-row" style="margin-top:14px;">
+    <div class="mc"><div class="mc-val">ACC</div><div class="mc-name">Accuracy</div><div class="mc-formula">(TP+TN)/(TP+TN+FP+FN)</div></div>
+    <div class="mc"><div class="mc-val">PRE</div><div class="mc-name">Precision</div><div class="mc-formula">TP/(TP+FP)</div></div>
+    <div class="mc"><div class="mc-val">REC</div><div class="mc-name">Recall</div><div class="mc-formula">TP/(TP+FN)</div></div>
+    <div class="mc"><div class="mc-val">F1</div><div class="mc-name">F1 Score</div><div class="mc-formula">2×P×R/(P+R)</div></div>
+  </div>
+</div>
+
+<!-- Precision vs Recall -->
+<div class="cc">
+  <div class="ct">⚖️ Precision vs Recall — The Fundamental Trade-off <span class="cb cb-pow">BUSINESS CRITICAL</span></div>
+  <div class="cd">Precision and Recall always trade off. When you lower the threshold (predict positive more aggressively), Recall goes up but Precision goes down — you catch more true positives but also more false positives. The business context determines which matters more.</div>
+  <table class="tt2">
+    <tr><th>Use Case</th><th>Prioritise</th><th>Why</th><th>Cost of Error</th></tr>
+    <tr><td><strong>Cancer Screening</strong></td><td class="ok">Recall (high)</td><td>Missing a cancer is catastrophic</td><td>FN = patient dies</td></tr>
+    <tr><td><strong>Spam Filter</strong></td><td class="ok">Precision (high)</td><td>Deleting real emails is annoying</td><td>FP = lost email</td></tr>
+    <tr><td><strong>Fraud Detection</strong></td><td class="ok">Recall (high)</td><td>Missing fraud costs money</td><td>FN = financial loss</td></tr>
+    <tr><td><strong>Loan Approval</strong></td><td class="ok">Precision (high)</td><td>Approving bad loans is risky</td><td>FP = default loss</td></tr>
+    <tr><td><strong>Search Results</strong></td><td class="ok">F1 (balanced)</td><td>Both relevance and coverage matter</td><td>Balance both</td></tr>
+  </table>
+  <div class="code" style="margin-top:14px;">
+<span class="cm">// Excel formulas for all four metrics</span>
+TP = <span class="fn">COUNTIFS</span>(Actual,<span class="num">1</span>, Predicted,<span class="num">1</span>)
+TN = <span class="fn">COUNTIFS</span>(Actual,<span class="num">0</span>, Predicted,<span class="num">0</span>)
+FP = <span class="fn">COUNTIFS</span>(Actual,<span class="num">0</span>, Predicted,<span class="num">1</span>)
+FN = <span class="fn">COUNTIFS</span>(Actual,<span class="num">1</span>, Predicted,<span class="num">0</span>)
+
+Accuracy  = (TP+TN)/(TP+TN+FP+FN)
+Precision = TP/(TP+FP)
+Recall    = TP/(TP+FN)
+F1        = <span class="num">2</span>*Precision*Recall/(Precision+Recall)
+  </div>
+</div>
+
+<!-- Threshold Tuning -->
+<div class="cc">
+  <div class="ct">🎛 Threshold Tuning — One Lever, Four Metrics <span class="cb cb-tip">OPTIMISATION</span></div>
+  <div class="cd">By default, classifiers use 0.5 as the decision boundary. But changing the threshold changes your Precision and Recall — and sometimes dramatically changes business outcomes. Building a threshold sweep table lets you choose the right operating point for your specific problem.</div>
+  <div class="code">
+<span class="cm">// Predicted class with variable threshold (T in cell $K$1)</span>
+=<span class="fn">IF</span>([@Probability] >= $K$1, <span class="num">1</span>, <span class="num">0</span>)
+
+<span class="cm">// Threshold sweep table — build for T = 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8</span>
+<span class="cm">// For each threshold, recalculate: Accuracy, Precision, Recall, F1</span>
+<span class="cm">// Best threshold = highest F1 (or highest Recall if that's your priority)</span>
+
+<span class="cm">// F1 is highest at the "sweet spot" — neither too aggressive nor too conservative</span>
+
+<span class="cm">// Precision-Recall trade-off rule:</span>
+<span class="cm">// Lower T (0.3) → catch more positives → Recall↑ Precision↓</span>
+<span class="cm">// Higher T (0.7) → be more selective → Precision↑ Recall↓</span>
+<span class="cm">// T = 0.5 → balanced default (good starting point only)</span>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build a logistic sigmoid classifier using Excel Solver</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build a confusion matrix and derive Precision, Recall, F1</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Tune classification threshold for your business context</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Simulate K-Nearest Neighbours with Euclidean distance</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Task Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#b84f00;flex:12"></div>
+  <div class="hs" style="background:#5e35b1;flex:16"></div>
+  <div class="hs" style="background:#1558c0;flex:14"></div>
+  <div class="hs" style="background:#1558c0;flex:10"></div>
+  <div class="hs" style="background:#0d7a5f;flex:8"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#0d7a5f"></div>Project</div>
+  <div class="li"><div class="ld" style="background:#5e35b1"></div>Solver / Optimise</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>Practice</div>
+  <div class="li"><div class="ld" style="background:#b84f00"></div>Theory + Build</div>
+</div>
+
+<!-- ══ TASKS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bo">0 – 12 min</div>
+    <div class="tw"><div class="tm">🔵 Logistic Sigmoid Setup — Manual First</div><div class="ts2">Build the sigmoid classifier by hand before Solver trains it automatically</div></div>
+    <div class="typ bo">Theory + Build</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Just like Day 6 built regression manually before using ToolPak, today you build logistic regression manually before using Solver. Understanding the sigmoid formula makes the Solver output meaningful — not just magic numbers from a black box.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Enable Solver if not already active: File → Options → Add-ins → Manage: Excel Add-ins → Go → ✓ Solver Add-in → OK. Solver appears in the Data tab.<br>Create <strong>Day7_Classification.xlsx</strong>. In sheet "LogisticData", build a 70-row table: <strong>StudentID, StudyHours, Attendance, Is_Eng, Pass (1/0 — your target)</strong>. Make Pass realistic: high study hours + high attendance → mostly 1.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Set up coefficient cells</strong> (initial guesses — Solver will optimise these):<br>
+        K1: "β₀ (Intercept)" → L1: <code>0</code><br>
+        K2: "β₁ (StudyHours)" → L2: <code>0</code><br>
+        K3: "β₂ (Attendance)" → L3: <code>0</code><br>
+        K4: "β₃ (Is_Eng)" → L4: <code>0</code><br>
+        Starting at zero is fine — Solver will find the optimal values.</div></div>
+      <div class="si2"><div class="sn">3</div><div>Add column <strong>"Log_Odds"</strong>: <code>=$L$1 + $L$2*[@StudyHours] + $L$3*[@Attendance] + $L$4*[@Is_Eng]</code>. With all β=0, every Log_Odds = 0. That's fine — Solver will fix it.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Add column <strong>"Probability"</strong> (sigmoid): <code>=1/(1+EXP(-[@Log_Odds]))</code>. All values = 0.5 right now (since Log_Odds=0 → sigmoid(0) = 0.5). This is the baseline — predicting 50% for everyone.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Add column <strong>"Predicted_Class"</strong>: <code>=IF([@Probability]>=0.5,1,0)</code>. With all coefficients at 0, every student gets predicted 1 (probability=0.5 ≥ 0.5). This is a useless baseline model — watch it transform after Solver runs.</div></div>
+      <div class="si2"><div class="sn">6</div><div>Add column <strong>"Log_Loss"</strong> (what Solver will minimise — cross-entropy loss per row):<br><code>=-([@Pass]*LN(MAX([@Probability],0.0001)) + (1-[@Pass])*LN(MAX(1-[@Probability],0.0001)))</code><br>The MAX(...,0.0001) prevents LN(0) errors. In cell L6, sum all Log_Loss values: <code>=SUM(LogLoss_column)</code>. This is Solver's target — it will minimise this total.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Log-odds (linear equation)</span>
+=<span class="fn">$L$1</span> + <span class="fn">$L$2</span>*[@StudyHours] + <span class="fn">$L$3</span>*[@Attendance] + <span class="fn">$L$4</span>*[@Is_Eng]
+
+<span class="cm">// Sigmoid function → probability 0 to 1</span>
+=<span class="num">1</span>/(<span class="num">1</span>+<span class="fn">EXP</span>(-[@Log_Odds]))
+
+<span class="cm">// Class prediction at threshold 0.5</span>
+=<span class="fn">IF</span>([@Probability]>=<span class="num">0.5</span>, <span class="num">1</span>, <span class="num">0</span>)
+
+<span class="cm">// Binary cross-entropy loss (log-loss) per row</span>
+=-([@Pass]*<span class="fn">LN</span>(<span class="fn">MAX</span>([@Probability],<span class="num">0.0001</span>)) + (<span class="num">1</span>-[@Pass])*<span class="fn">LN</span>(<span class="fn">MAX</span>(<span class="num">1</span>-[@Probability],<span class="num">0.0001</span>)))
+
+<span class="cm">// Total loss (Solver minimises this)</span>
+=<span class="fn">SUM</span>(LogLoss_column)
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>Why LN (natural log) for loss?</strong> Log-loss penalises confident wrong predictions severely. Predicting P=0.99 when the true class is 0 gives a huge loss (−LN(0.01) ≈ 4.6). Predicting P=0.51 on a wrong case gives a small loss (−LN(0.49) ≈ 0.71). This encourages the model to be calibrated — confident only when right.</div></div>
+    <div class="cks">
+      <div class="ck">Solver enabled</div><div class="ck">4 β coefficient cells at 0</div>
+      <div class="ck">Log_Odds column built</div><div class="ck">Probability (sigmoid) column</div>
+      <div class="ck">Predicted_Class column</div><div class="ck">Log_Loss column + SUM cell</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bb">12 – 28 min</div>
+    <div class="tw"><div class="tm">⚙ Solver Optimisation — Train the Classifier</div><div class="ts2">Let Solver find the optimal coefficients by minimising log-loss — this IS model training</div></div>
+    <div class="typ bb">Solver</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Running Solver to minimise log-loss is literally training a logistic regression model. The same mathematics happens inside scikit-learn's LogisticRegression — just at vastly larger scale. When Solver finds the optimal β values, you'll see probabilities shift and accuracy jump. This is the moment ML becomes real.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div><strong>Open Solver:</strong> Data tab → Solver. Configure it:<br>
+        Set Objective: your L6 total Log-Loss cell<br>
+        To: Min<br>
+        By Changing Variable Cells: L1:L4 (your 4 β coefficients)<br>
+        Method: GRG Nonlinear (required for sigmoid — it's non-linear)<br>
+        Click Solve.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Wait for Solver to converge (usually 5–15 seconds). When it says "Solver found a solution", click <strong>Keep Solver Solution</strong>. Your β cells now contain the optimal coefficients — the model has been trained.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Observe the transformation:</strong> Before Solver: total Log-Loss was high, all probabilities = 0.5, accuracy ≈ 50%. After Solver: Log-Loss is much lower, probabilities are spread from near-0 to near-1, accuracy should be 75–90%.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Interpret the trained coefficients</strong> — write one sentence per β:<br>
+        β₁ (StudyHours): "Each extra study hour increases log-odds of passing by [β₁]. A positive value means more study = higher probability of passing."<br>
+        β₂ (Attendance): "Each 1% increase in attendance changes log-odds by [β₂]."<br>
+        β₃ (Is_Eng): "Being in Engineering changes log-odds by [β₃] vs reference category."<br>
+        β₀ (Intercept): "Log-odds of passing when all features = 0."</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Calculate accuracy manually:</strong><br>
+        <code>=COUNTIF(Predicted_Class,"=Pass_column")</code> — or more precisely:<br>
+        <code>=SUMPRODUCT(([@Predicted_Class]=[@Pass])*1)/ROWS(table)</code><br>
+        This counts how many rows have Predicted_Class matching actual Pass. Divide by 70 for accuracy %.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Note the limitations:</strong> Solver does gradient descent in Excel — it works well for small datasets (≤1000 rows) but becomes slow for larger ones. In Python, sklearn trains logistic regression on millions of rows in milliseconds using the same maths. What you just did by hand is exactly what <code>LogisticRegression().fit(X, y)</code> does automatically.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Solver configuration:</span>
+<span class="cm">// Objective Cell: SUM(Log_Loss) → Minimize</span>
+<span class="cm">// Changing Cells: β₀, β₁, β₂, β₃ (the 4 coefficient cells)</span>
+<span class="cm">// Method: GRG Nonlinear</span>
+
+<span class="cm">// After Solver — verify coefficients look sensible:</span>
+<span class="cm">// β₁ (StudyHours) should be POSITIVE (more study = more likely to pass)</span>
+<span class="cm">// β₂ (Attendance) should be POSITIVE (better attendance = more likely to pass)</span>
+<span class="cm">// If a coefficient has wrong sign → check your data has Pass coded as 1=pass, 0=fail</span>
+
+<span class="cm">// Overall accuracy after Solver</span>
+=<span class="fn">SUMPRODUCT</span>((Pred_col=Actual_col)*<span class="num">1</span>)/<span class="fn">ROWS</span>(data)
+
+<span class="cm">// Compare to baseline (always predict majority class)</span>
+<span class="cm">// If 60% pass → baseline accuracy = 60% (predict everyone passes)</span>
+<span class="cm">// Your model must BEAT the baseline to be worth using</span>
+    </div>
+    <div class="wb"><div class="ni">⚠️</div><div><strong>Solver may find a local minimum.</strong> Try running it twice with different starting values for the β cells (e.g., set all to 1 instead of 0, then re-run). If you get very similar coefficients both times, Solver found the global minimum — your model is stable. Very different coefficients = unstable problem (check for multicollinearity in features).</div></div>
+    <div class="cks">
+      <div class="ck">Solver configured correctly</div><div class="ck">Solution kept (not cancelled)</div>
+      <div class="ck">β values changed from 0</div><div class="ck">Log-Loss decreased</div>
+      <div class="ck">Coefficients interpreted</div><div class="ck">Accuracy beats baseline</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bp">28 – 42 min</div>
+    <div class="tw"><div class="tm">📋 Confusion Matrix + All 4 Metrics</div><div class="ts2">Build TP/TN/FP/FN from scratch and derive every classification metric</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Your model predicts. The confusion matrix judges. Four numbers — TP, TN, FP, FN — tell you everything about what your model gets right, what it gets wrong, and in what direction. Every downstream metric (Precision, Recall, F1, AUC) flows from these four cells.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "ConfusionMatrix". Reference your Pass (actual) and Predicted_Class columns from LogisticData. Calculate the four confusion matrix cells using COUNTIFS:<br>
+        TP: <code>=COUNTIFS(LogisticData[Pass],1, LogisticData[Predicted_Class],1)</code><br>
+        TN: <code>=COUNTIFS(LogisticData[Pass],0, LogisticData[Predicted_Class],0)</code><br>
+        FP: <code>=COUNTIFS(LogisticData[Pass],0, LogisticData[Predicted_Class],1)</code><br>
+        FN: <code>=COUNTIFS(LogisticData[Pass],1, LogisticData[Predicted_Class],0)</code></div></div>
+      <div class="si2"><div class="sn">2</div><div>Lay the four values out in a 2×2 grid matching the confusion matrix diagram. Add row/column headers: Predicted 1/0 for rows, Actual 1/0 for columns. Apply colour coding: TP and TN = green fill, FP and FN = red fill. Now it matches industry standard visualisation.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Sanity check:</strong> <code>=TP+TN+FP+FN</code> must equal 70 (your total rows). If it doesn't, your COUNTIFS ranges are mismatched. Fix before proceeding.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Calculate all 4 metrics:</strong><br>
+        Accuracy: <code>=(TP+TN)/(TP+TN+FP+FN)</code><br>
+        Precision: <code>=TP/(TP+FP)</code><br>
+        Recall (Sensitivity): <code>=TP/(TP+FN)</code><br>
+        Specificity: <code>=TN/(TN+FP)</code> (True Negative Rate)<br>
+        F1 Score: <code>=2*Precision*Recall/(Precision+Recall)</code><br>
+        Format all as % with 1 decimal place.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Contextualise each metric:</strong> In the cells next to each metric, write: "Is this good for our use case?" Remember — you're predicting student pass/fail. A missed failure (FN) means a student who needed support didn't get it. A false alarm (FP) means a student got extra help they didn't need. Which error is more costly in your context?</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Class balance check:</strong> <code>=COUNTIF(LogisticData[Pass],1)/70</code>. If this is above 80% or below 20%, your dataset is imbalanced. Accuracy is misleading on imbalanced data — a model predicting "all pass" gets 80% accuracy but is useless. Write your class balance finding.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Confusion matrix cells</span>
+TP = <span class="fn">COUNTIFS</span>(LogisticData[Pass],<span class="num">1</span>, LogisticData[Predicted_Class],<span class="num">1</span>)
+TN = <span class="fn">COUNTIFS</span>(LogisticData[Pass],<span class="num">0</span>, LogisticData[Predicted_Class],<span class="num">0</span>)
+FP = <span class="fn">COUNTIFS</span>(LogisticData[Pass],<span class="num">0</span>, LogisticData[Predicted_Class],<span class="num">1</span>)
+FN = <span class="fn">COUNTIFS</span>(LogisticData[Pass],<span class="num">1</span>, LogisticData[Predicted_Class],<span class="num">0</span>)
+
+<span class="cm">// All metrics</span>
+Accuracy  = (TP+TN)/(TP+TN+FP+FN)
+Precision = TP/(TP+FP)           <span class="cm">→ "Of predicted Pass, how many actually passed?"</span>
+Recall    = TP/(TP+FN)           <span class="cm">→ "Of actual Pass, how many did we catch?"</span>
+F1        = <span class="num">2</span>*Precision*Recall/(Precision+Recall)
+Specificity = TN/(TN+FP)         <span class="cm">→ True Negative Rate</span>
+
+<span class="cm">// Sanity check</span>
+=TP+TN+FP+FN                     <span class="cm">→ Must equal 70 ✓</span>
+    </div>
+    <div class="rb"><div class="ni">🚨</div><div><strong>Accuracy is dangerous on imbalanced data.</strong> If 90% of students pass, a model that predicts "everyone passes" gets 90% accuracy — with zero ability to identify at-risk students. Always report Precision, Recall, and F1 alongside Accuracy. And always check class balance before trusting any metric.</div></div>
+    <div class="cks">
+      <div class="ck">TP/TN/FP/FN calculated</div><div class="ck">2×2 grid with colour coding</div>
+      <div class="ck">TP+TN+FP+FN = 70 verified</div><div class="ck">All 5 metrics calculated</div>
+      <div class="ck">Business context written</div><div class="ck">Class balance checked</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bp">42 – 52 min</div>
+    <div class="tw"><div class="tm">🎛 Threshold Tuning + KNN Simulation</div><div class="ts2">Build a threshold sweep table and simulate K-Nearest Neighbours from scratch</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Threshold tuning is one of the most powerful and underused techniques in ML deployment. You'll build a full sweep table showing how every metric changes as threshold moves from 0.2 to 0.8 — then find the optimal operating point. As a bonus, you'll simulate KNN using Euclidean distance.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "ThresholdTuning". In column A, list thresholds: 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80.</div></div>
+      <div class="si2"><div class="sn">2</div><div>For each threshold row, calculate Predicted_Class dynamically. Use a named cell (say M1) as the threshold. Add a "Pred_Thresh" column to LogisticData: <code>=IF([@Probability]>=$M$1,1,0)</code>. Now changing M1 updates all predictions instantly.</div></div>
+      <div class="si2"><div class="sn">3</div><div>For each threshold in column A, compute TP, TN, FP, FN using COUNTIFS referencing the Pred_Thresh column — then derive Precision, Recall, F1. Your sweep table columns:<br>
+        Threshold | TP | TN | FP | FN | Accuracy | Precision | Recall | F1</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Find optimal threshold:</strong> Add a column "Best_F1": highlight the row with the highest F1 score with conditional formatting (green fill on MAX). Also highlight the row with highest Recall (if you care more about catching failures). What threshold maximises F1?</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>KNN Simulation:</strong> Create sheet "KNN". Paste 20 students with 2 features (Score, StudyHours) and their Pass label. Add a "New Student" row with features (e.g., Score=72, StudyHours=4). For each of the 20 training rows calculate Euclidean distance to the new student:<br><code>=SQRT(([@Score]-$P$2)^2 + ([@StudyHours]-$Q$2)^2)</code></div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>KNN classification (K=3):</strong> Find the 3 smallest distances using <code>=SMALL(Distance_col, 1)</code>, <code>=SMALL(Distance_col, 2)</code>, <code>=SMALL(Distance_col, 3)</code>. Use MATCH to identify which rows those are, and pull their Pass labels. The majority vote of those 3 labels = the KNN prediction. If 2 out of 3 say Pass → predict Pass.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Dynamic threshold — change this cell, all predictions update</span>
+Pred_Thresh = <span class="fn">IF</span>([@Probability]>=$M$1, <span class="num">1</span>, <span class="num">0</span>)
+
+<span class="cm">// Threshold sweep metrics (one row per threshold)</span>
+TP_t = <span class="fn">COUNTIFS</span>(LogisticData[Pass],<span class="num">1</span>, LogisticData[Pred_Thresh],<span class="num">1</span>)
+<span class="cm">// Repeat for TN, FP, FN then derive metrics</span>
+
+<span class="cm">// Find threshold with max F1</span>
+=<span class="fn">INDEX</span>(Threshold_col, <span class="fn">MATCH</span>(<span class="fn">MAX</span>(F1_col), F1_col, <span class="num">0</span>))
+
+<span class="cm">// KNN — Euclidean distance to new point (P2=target Score, Q2=target Hours)</span>
+=<span class="fn">SQRT</span>(([@Score]-$P$2)^<span class="num">2</span> + ([@StudyHours]-$Q$2)^<span class="num">2</span>)
+
+<span class="cm">// 3 nearest neighbours</span>
+Dist_1st = <span class="fn">SMALL</span>(Distance_col, <span class="num">1</span>)
+Dist_2nd = <span class="fn">SMALL</span>(Distance_col, <span class="num">2</span>)
+Dist_3rd = <span class="fn">SMALL</span>(Distance_col, <span class="num">3</span>)
+
+<span class="cm">// Majority vote (2 out of 3 → final prediction)</span>
+=<span class="fn">IF</span>(<span class="fn">SUMPRODUCT</span>((Distance_col<=Dist_3rd)*Pass_col)>=<span class="num">2</span>, <span class="str">"Pass"</span>, <span class="str">"Fail"</span>)
+    </div>
+    <div class="nb"><div class="ni">🧠</div><div><strong>KNN is the most intuitive ML algorithm:</strong> "You're similar to your neighbours, so you probably have the same label." The only hyperparameter is K — too small (K=1) overfits, too large (K=n) predicts the majority class for everyone. K=3 to K=7 is the usual starting range for small datasets.</div></div>
+    <div class="cks">
+      <div class="ck">Threshold sweep table built (13 rows)</div><div class="ck">Dynamic threshold cell works</div>
+      <div class="ck">Best F1 threshold highlighted</div><div class="ck">Best Recall threshold noted</div>
+      <div class="ck">KNN distances calculated (20 rows)</div><div class="ck">K=3 majority vote prediction done</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bg">52 – 60 min</div>
+    <div class="tw"><div class="tm">🏆 Classification Scoring Engine + Model Card</div><div class="ts2">Deploy your classifier as a live churn/pass predictor with full metrics dashboard</div></div>
+    <div class="typ bg">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Deploy your trained logistic classifier as a live scoring engine. A user enters student features, the model outputs probability, predicted class, confidence level, and recommended action — automatically. Add a model performance dashboard and you have a production-ready ML report.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "ClassifierEngine". Title: "🎯 Pass/Fail Classifier — Logistic Regression". Yellow input cells:<br>
+        B4: Study Hours/Day<br>
+        B5: Attendance %<br>
+        B6: Department (dropdown: Eng/Mkt/Sci/Fin)<br>
+        B7: Threshold (default 0.5, user can adjust)</div></div>
+      <div class="si2"><div class="sn">2</div><div>Auto-derived cells (grey):<br>
+        B10: Is_Eng: <code>=IF(B6="Eng",1,0)</code><br>
+        B11: Log_Odds: <code>=$L$1+$L$2*B4+$L$3*B5+$L$4*B10</code> (referencing your trained β cells)<br>
+        B12: Probability: <code>=ROUND(1/(1+EXP(-B11)),3)</code></div></div>
+      <div class="si2"><div class="sn">3</div><div>Output cells (green):<br>
+        B15: Predicted Class: <code>=IF(B12>=B7,"PASS ✓","FAIL ✗")</code><br>
+        B16: Confidence: <code>=IF(B12>=0.5, TEXT(B12,"0%"), TEXT(1-B12,"0%")) &amp; " confident"</code><br>
+        B17: Risk Level: <code>=IFS(B12>=0.8,"Low Risk",B12>=0.6,"Moderate Risk",B12>=0.4,"High Risk",TRUE,"Critical Risk")</code><br>
+        B18: Recommended Action: <code>=IFS(B12>=0.7,"No intervention needed",B12>=0.5,"Monitor progress",B12>=0.3,"Schedule tutoring",TRUE,"Urgent support required")</code></div></div>
+      <div class="si2"><div class="sn">4</div><div>Add a <strong>Model Performance Panel</strong> (right side of sheet): Reference your confusion matrix sheet cells to display live metrics:<br>
+        Accuracy: [=ConfusionMatrix!Accuracy_cell]<br>
+        Precision: [=ConfusionMatrix!Precision_cell]<br>
+        Recall: [=ConfusionMatrix!Recall_cell]<br>
+        F1 Score: [=ConfusionMatrix!F1_cell]<br>
+        Trained on: 70 students | Threshold: [=B7]</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Model Card section:</strong> Add a text box at the bottom:<br>
+        Model Type: Logistic Regression | Target: Pass/Fail<br>
+        Features Used: StudyHours, Attendance, Is_Eng<br>
+        Training Method: Solver (GRG Nonlinear, minimise log-loss)<br>
+        Known Limitations: Trained on 70 rows — small sample. Does not account for prior academic history. Department effect may be confounded with study habits. Retrain monthly as new student data arrives.</div></div>
+      <div class="si2"><div class="sn">6</div><div>Test 3 scenarios and record outputs in a table: (1) High performer: 7hrs, 95%, Eng. (2) Average: 4hrs, 75%, Mkt. (3) At-risk: 1hr, 50%, Fin. Save as <strong>Day7_Complete.xlsx</strong>.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Full prediction pipeline in the scoring engine</span>
+Log_Odds    = β₀ + β₁*B4 + β₂*B5 + β₃*B10
+Probability = <span class="num">1</span>/(<span class="num">1</span>+<span class="fn">EXP</span>(-Log_Odds))
+Prediction  = <span class="fn">IF</span>(Probability >= Threshold, <span class="str">"PASS ✓"</span>, <span class="str">"FAIL ✗"</span>)
+
+<span class="cm">// Risk level from probability</span>
+=<span class="fn">IFS</span>(Prob>=<span class="num">0.8</span>,<span class="str">"🟢 Low Risk"</span>, Prob>=<span class="num">0.6</span>,<span class="str">"🟡 Moderate"</span>, Prob>=<span class="num">0.4</span>,<span class="str">"🟠 High Risk"</span>, <span class="kw">TRUE</span>,<span class="str">"🔴 Critical"</span>)
+
+<span class="cm">// Confidence display</span>
+=<span class="fn">TEXT</span>(<span class="fn">MAX</span>(Prob, <span class="num">1</span>-Prob), <span class="str">"0%"</span>) &amp; <span class="str">" confident"</span>
+
+<span class="cm">// Action recommendation</span>
+=<span class="fn">IFS</span>(Prob>=<span class="num">0.7</span>,<span class="str">"No intervention"</span>, Prob>=<span class="num">0.5</span>,<span class="str">"Monitor"</span>, Prob>=<span class="num">0.3</span>,<span class="str">"Tutoring"</span>, <span class="kw">TRUE</span>,<span class="str">"Urgent support"</span>)
+    </div>
+    <div class="gb"><div class="ni">🎖️</div><div><strong>What you just built is a real AI decision support system.</strong> Schools, hospitals, and banks use exactly this architecture — a trained model whose coefficients are stored, a scoring engine that applies them to new cases, and a recommendation system that converts probabilities into actions. The only difference at scale is that the β values come from cloud ML platforms instead of Excel Solver — the logic is identical.</div></div>
+    <div class="cks">
+      <div class="ck">ClassifierEngine sheet built</div><div class="ck">Yellow/grey/green cell zones</div>
+      <div class="ck">Probability + Risk + Action outputs</div><div class="ck">Live metrics panel linked</div>
+      <div class="ck">Model card written</div><div class="ck">3 test scenarios recorded</div>
+      <div class="ck">Day7_Complete.xlsx saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <div class="tpi">🎯</div>
+  <div>
+    <div class="tpt">Day 7 Pro Tip — Accuracy is a Vanity Metric. F1 is the Truth.</div>
+    <div class="tpd">In the real world, imbalanced datasets are the norm — not the exception. 95% of transactions are not fraud. 99% of X-rays are not cancer. 80% of loans are repaid. A model predicting "nothing is ever wrong" gets 95%, 99%, 80% accuracy — and is completely useless. F1, Precision, and Recall measure whether your model actually finds the rare but important events. Always report all three. Accuracy alone should make any serious ML practitioner deeply suspicious.</div>
+  </div>
+</div>
+
+<!-- QUICK REF -->
+<div class="sl">📋 Day 7 Formula Quick Reference</div>
+<div class="fg" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">1/(1+EXP(-x))</div><div class="fd">Sigmoid — converts log-odds to probability 0–1</div></div>
+  <div class="fr"><div class="ff">NORM.S.DIST(x,TRUE)</div><div class="fd">Alternative probability conversion (CDF)</div></div>
+  <div class="fr"><div class="ff">COUNTIFS(act,1,pred,1)</div><div class="fd">True Positives — correctly predicted positive</div></div>
+  <div class="fr"><div class="ff">COUNTIFS(act,0,pred,1)</div><div class="fd">False Positives — wrongly predicted positive</div></div>
+  <div class="fr"><div class="ff">TP/(TP+FP)</div><div class="fd">Precision — quality of positive predictions</div></div>
+  <div class="fr"><div class="ff">TP/(TP+FN)</div><div class="fd">Recall — coverage of actual positives</div></div>
+  <div class="fr"><div class="ff">2×P×R/(P+R)</div><div class="fd">F1 Score — harmonic mean, balanced metric</div></div>
+  <div class="fr"><div class="ff">IF(prob>=threshold,1,0)</div><div class="fd">Apply threshold — convert prob to class label</div></div>
+  <div class="fr"><div class="ff">SMALL(dist_col, 1/2/3)</div><div class="fd">KNN — find 1st, 2nd, 3rd nearest neighbour</div></div>
+  <div class="fr"><div class="ff">SQRT((x1-x2)²+(y1-y2)²)</div><div class="fd">Euclidean distance — heart of KNN</div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a class="nb2" href="Day6_Regression.html">← Day 6: Regression</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">Day 7 Complete ✓<br><span style="color:var(--accent);">Day 8: Clustering →</span></div>
+  <a class="nb2 pr" href="#">Day 8: Clustering →</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>

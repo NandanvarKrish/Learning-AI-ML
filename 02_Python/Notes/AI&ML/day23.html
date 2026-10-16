@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 23 — What Is a Derivative?</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+table{width:100%; border-collapse:collapse; margin:12px 0; font-family:var(--font-mono); font-size:13px;}
+th,td{border:1px solid var(--line); padding:7px 8px; text-align:center;}
+th{background:var(--accent-soft); color:var(--accent);}
+.rule-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+.rule-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px;}
+.rule-box .name{font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:bold; margin-bottom:6px;}
+.rule-box .formula{font-family:var(--font-mono); font-size:14px;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:110px;}
+.solver input[type=range]{flex:1; min-width:120px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:50px; text-align:center;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:14px; line-height:1.9;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 23 of 210 · Phase 1: Calculus Basics</span>
+    <h1>What Is a Derivative?</h1>
+    <div class="subtitle">~2 hours · The math behind how every ML model "learns"</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>When a model "learns" from data, what's actually happening is: an algorithm repeatedly asks "which direction should I nudge each parameter to reduce error?" — and the derivative is exactly what answers that question. Gradient descent, the algorithm that trains almost every ML model you'll build, is built entirely on derivatives. You don't need heavy calculus — just this one concept, deeply understood.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> From slope of a line to slope of a curve</h2>
+  <p>Recall Day 3: slope of a straight line = rise/run, and it's the <strong>same</strong> everywhere on that line. But most interesting real-world relationships aren't straight lines — they're curves, where the steepness changes at every point. A derivative answers: <strong>"what is the slope, right at this exact point on the curve?"</strong></p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Building intuition: secant line → tangent line</h2>
+  <div class="panel">
+    <p>Take f(x) = x². Pick a point, say x=2 (where f(2)=4). To estimate the slope there, first pick a nearby second point and draw a line between them (called a "secant line") — then keep bringing that second point closer and closer:</p>
+    <table>
+      <tr><th>Second point x</th><th>Distance from x=2</th><th>Slope of secant line</th></tr>
+      <tr><td>3</td><td>1</td><td>(9-4)/(3-2) = 5</td></tr>
+      <tr><td>2.5</td><td>0.5</td><td>(6.25-4)/(2.5-2) = 4.5</td></tr>
+      <tr><td>2.1</td><td>0.1</td><td>(4.41-4)/(2.1-2) = 4.1</td></tr>
+      <tr><td>2.01</td><td>0.01</td><td>(4.0401-4)/(2.01-2) = 4.01</td></tr>
+    </table>
+    <p>As the second point gets closer and closer to x=2, the slope keeps approaching exactly <strong>4</strong>. That limiting value — the slope of the "tangent line" that just barely touches the curve at one point — IS the derivative at that point.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> The power rule (the only formula you need today)</h2>
+  <p>For a function f(x) = xⁿ, the derivative is:</p>
+  <div class="eq">f'(x) = n × x^(n-1)</div>
+  <p>Read "f'(x)" as "f prime of x" — it just means "the derivative of f."</p>
+  <div class="rule-grid">
+    <div class="rule-box"><div class="name">f(x) = x²</div><div class="formula">f'(x) = 2x</div></div>
+    <div class="rule-box"><div class="name">f(x) = x³</div><div class="formula">f'(x) = 3x²</div></div>
+    <div class="rule-box"><div class="name">f(x) = 5x²</div><div class="formula">f'(x) = 10x</div></div>
+    <div class="rule-box"><div class="name">f(x) = 7 (constant)</div><div class="formula">f'(x) = 0</div></div>
+    <div class="rule-box"><div class="name">f(x) = 4x</div><div class="formula">f'(x) = 4</div></div>
+    <div class="rule-box"><div class="name">f(x) = x² + 3x</div><div class="formula">f'(x) = 2x + 3</div></div>
+  </div>
+  <p>Check the table example: f(x)=x² → f'(x)=2x → at x=2, f'(2) = 2(2) = <strong>4</strong>. Matches exactly what the secant lines converged toward.</p>
+  <details>
+    <summary>Why is the derivative of a constant always 0?</summary>
+    <div class="details-body">
+      <p>A constant function like f(x)=7 is a perfectly flat horizontal line — it never rises or falls no matter what x is. Slope of a flat line = 0, everywhere. This matches the power rule too: think of 7 as 7x⁰, and the rule gives 0×7x⁻¹ = 0.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (marginal cost/profit)</h2>
+  <div class="panel">
+    <p class="example-tag">Business/commerce example — you may recognize this term</p>
+    <p>A company's profit function based on units sold (x): <code>Profit(x) = -2x² + 400x - 5000</code> (profit rises, then falls as overproduction increases costs — a realistic curve, not a straight line).</p>
+    <p>Derivative: <code>Profit'(x) = -4x + 400</code></p>
+    <p>This derivative is exactly what economists call <strong>"marginal profit"</strong> — how much profit changes for one more unit sold, at any given production level. Setting it to 0 finds the point where profit stops increasing (the peak):</p>
+    <p><code>-4x + 400 = 0 → x = 100</code></p>
+    <p>At exactly 100 units, profit is at its maximum — sell fewer, you're leaving profit on the table; sell more, costs eat into profit. <strong>This exact technique — using the derivative to find where a function is at its best (or worst) point — is precisely how gradient descent finds a model's best parameters in Phase 3, just automated and repeated thousands of times.</strong></p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Confusing f(x) with f'(x).</strong> f(x) tells you the height/value of the curve; f'(x) tells you the slope at that point — two completely different pieces of information.</p>
+    <p><strong>Mistake 2 — Forgetting the derivative of a constant is 0, not the constant itself.</strong> The derivative of "5" is 0, not 5.</p>
+    <p><strong>Mistake 3 — Applying the power rule incorrectly.</strong> The exponent comes down as a multiplier, AND the exponent itself decreases by 1 — both steps are required, not just one.</p>
+    <p><strong>Mistake 4 — Thinking the derivative is a single number for the whole function.</strong> Except for straight lines, the derivative is usually itself a function — it gives a different slope value depending on which x you plug in.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Tangent Line Visualizer</h2>
+  <div class="solver">
+    <h3>f(x) = x² — drag to move the point, watch the tangent line's slope</h3>
+    <div class="solver-row">
+      <label>Point x₀</label>
+      <input type="range" id="x0Slider" min="-4" max="4" step="0.5" value="2">
+      <span class="val" id="x0Val">2</span>
+    </div>
+    <canvas id="plot" width="600" height="320"></canvas>
+    <div class="solver-result" id="result"></div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Notice: on the left side of the curve, the tangent line slopes downward (negative derivative); on the right side, it slopes upward (positive). Exactly at x=0, the tangent is flat (derivative = 0) — the bottom of the curve.</p>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Tomorrow: gradients — the natural extension of today's derivative to functions with more than one input variable. This is the exact concept behind the name "gradient descent," the algorithm that trains virtually every ML model you'll build.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 23 of 210 · AI & ML Study Plan · Phase 1: Calculus Basics</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Find the derivative of f(x) = x⁴.", steps: "f'(x) = 4x³" },
+  { q: "Find the derivative of f(x) = 6x².", steps: "f'(x) = 12x" },
+  { q: "Find the derivative of f(x) = 10 (a constant).", steps: "f'(x) = 0" },
+  { q: "Find the derivative of f(x) = 3x.", steps: "f'(x) = 3 (the slope of a straight line is constant everywhere)" },
+  { q: "Find the derivative of f(x) = x² + 5x + 2.", steps: "f'(x) = 2x + 5 (apply power rule to each term; derivative of the constant 2 is 0)" },
+  { q: "For f(x) = x², find f'(3) — the slope exactly at x=3.", steps: "f'(x)=2x → f'(3) = 2(3) = 6" },
+  { q: "For f(x) = x³, find f'(2).", steps: "f'(x)=3x² → f'(2) = 3(4) = 12" },
+  { q: "A cost function C(x) = 3x² - 60x + 500. Find the marginal cost function C'(x).", steps: "C'(x) = 6x - 60" },
+  { q: "Using the marginal cost function above, at what x is marginal cost exactly 0 (the cost-minimizing point)?", steps: "6x - 60 = 0 → x = 10" },
+  { q: "Why does f'(x) = 0 typically mark a peak or valley of a curve, rather than a random point?", steps: "At a peak or valley, the curve momentarily stops rising or falling — the tangent line is flat (slope 0) right at that turning point, which is exactly what setting the derivative to 0 finds." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const x0Slider = document.getElementById('x0Slider');
+const x0Val = document.getElementById('x0Val');
+const result = document.getElementById('result');
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+
+function f(x){ return x*x; }
+function fPrime(x){ return 2*x; }
+
+function draw(){
+  const x0 = parseFloat(x0Slider.value);
+  x0Val.textContent = x0;
+  const y0 = f(x0);
+  const slope = fPrime(x0);
+  result.innerHTML = `At x = ${x0}: f(x) = ${y0.toFixed(2)} &nbsp;|&nbsp; f'(x) = 2(${x0}) = <strong style="color:#e8a86b;">${slope.toFixed(2)}</strong> (slope of the tangent line)`;
+
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const originX = w/2, originY = h - 40;
+  const scale = 20;
+
+  ctx.strokeStyle = '#e5ded0'; ctx.lineWidth = 1;
+  for(let gx=0; gx<=w; gx+=scale){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
+  for(let gy=0; gy<=h; gy+=scale){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+  // curve f(x) = x^2
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for(let px=0; px<=w; px++){
+    const x = (px-originX)/scale;
+    const y = f(x);
+    const py = originY - y*scale;
+    if(px===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+
+  // tangent line at x0
+  const tangentX1 = x0 - 3, tangentX2 = x0 + 3;
+  const tangentY1 = y0 + slope*(tangentX1-x0);
+  const tangentY2 = y0 + slope*(tangentX2-x0);
+  ctx.strokeStyle = '#c05621'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(originX+tangentX1*scale, originY-tangentY1*scale);
+  ctx.lineTo(originX+tangentX2*scale, originY-tangentY2*scale);
+  ctx.stroke();
+
+  // point marker
+  ctx.fillStyle = '#2f6d4f';
+  ctx.beginPath();
+  ctx.arc(originX+x0*scale, originY-y0*scale, 6, 0, 2*Math.PI);
+  ctx.fill();
+}
+x0Slider.addEventListener('input', draw);
+draw();
+
+const quizData = [
+  { q: "A derivative measures:", opts: ["The height of a curve at a point","The instantaneous slope of a curve at a point","The area under a curve","The total distance traveled"], correct: 1, explain: "Derivative = instantaneous rate of change = slope of the tangent line at that exact point." },
+  { q: "Using the power rule, find the derivative of f(x) = x⁵.", opts: ["5x⁴","x⁴","5x⁵","4x⁴"], correct: 0, explain: "Bring the exponent down as a multiplier, reduce exponent by 1: 5x⁴." },
+  { q: "What is the derivative of a constant, like f(x) = 12?", opts: ["12","1","0","x"], correct: 2, explain: "Constants never change, so their rate of change (slope) is always 0." },
+  { q: "For f(x) = x², what is f'(4)?", opts: ["4","8","16","2"], correct: 1, explain: "f'(x)=2x → f'(4) = 2×4 = 8." },
+  { q: "If f'(x) = 0 at a particular point, what does that typically indicate?", opts: ["The function is undefined there","A peak, valley, or flat point on the curve","The function equals zero there","An error in calculation"], correct: 1, explain: "Zero slope marks a turning point (max/min) or a flat stretch of the curve." },
+  { q: "A profit function's derivative (marginal profit) tells a business:", opts: ["The total profit earned so far","How much profit changes for one more unit produced/sold","The company's total revenue","Nothing useful"], correct: 1, explain: "The derivative gives the rate of change — exactly what 'marginal' means in economics/commerce." },
+  { q: "In the tangent line visualizer, why does the tangent line's slope change as you move the point along the curve?", opts: [
+      "It shouldn't change, this is a bug",
+      "Because the curve's steepness genuinely differs at each point — that's what a derivative captures",
+      "Only the y-value changes, not slope",
+      "The visualizer is not using real math"
+    ], correct: 1, explain: "Unlike a straight line, a curve's steepness varies continuously — the derivative function gives the correct slope value at every different point." },
+  { q: "Why is the derivative described as central to how ML models 'learn'?", opts: [
+      "It isn't actually used in ML training",
+      "Gradient descent uses derivatives to determine which direction to adjust each parameter to reduce error",
+      "It's only used for generating random weights initially",
+      "Derivatives are only relevant for image-based models"
+    ], correct: 1, explain: "Gradient descent (Phase 3) repeatedly uses derivatives to find the direction that reduces a model's error, adjusting parameters step by step." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

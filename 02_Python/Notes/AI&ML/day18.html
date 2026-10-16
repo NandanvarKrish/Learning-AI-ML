@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 18 — What Is a Matrix?</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+table{width:100%; border-collapse:collapse; margin:12px 0; font-family:var(--font-mono); font-size:14px;}
+th,td{border:1px solid var(--line); padding:8px 10px; text-align:center;}
+th{background:var(--accent-soft); color:var(--accent);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.matrix-editor{display:grid; grid-template-columns:repeat(4, 50px); gap:4px; margin:14px 0;}
+.matrix-editor input{width:50px; height:40px; text-align:center; font-family:var(--font-mono); border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff;}
+.pixel-grid{display:grid; grid-template-columns:repeat(4, 40px); gap:0; margin:14px 0; border:1px solid #444;}
+.pixel-cell{width:40px; height:40px;}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px;}
+.solver-row select, .solver-row input[type=number]{padding:6px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:15px;}
+.side-by-side{display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 18 of 210 · Phase 1: Linear Algebra Week</span>
+    <h1>What Is a Matrix?</h1>
+    <div class="subtitle">~2 hours · A table of vectors, and the shape behind every dataset and image</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>When you load a dataset into Pandas in a few weeks, what you're loading is, mathematically, a matrix. When a neural network processes an image, that image starts life as a matrix of pixel brightness values. When a model has "weights," those weights are stored as matrices. Understanding a matrix as simply <strong>a table of numbers with rows and columns</strong> demystifies a huge amount of ML terminology instantly.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> What is a matrix?</h2>
+  <p>A matrix is a rectangular grid of numbers, arranged in rows and columns:</p>
+  <div class="eq">A = [ [1, 2, 3], [4, 5, 6] ]</div>
+  <table>
+    <tr><td>1</td><td>2</td><td>3</td></tr>
+    <tr><td>4</td><td>5</td><td>6</td></tr>
+  </table>
+  <p>This matrix has <strong>2 rows and 3 columns</strong>. We describe its size as <strong>2 × 3</strong> (always rows × columns, in that order — never the reverse).</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Recall Day 16: a matrix is just stacked vectors</h2>
+  <div class="panel">
+    <p>Remember the customer vector from Day 16? <code>[28, 1200, 15]</code> — one customer's age, order value, order count. If you have 500 customers, you have 500 of these vectors. Stack them all as rows, and you get a <strong>500 × 3 matrix</strong> — exactly what a spreadsheet or a Pandas DataFrame looks like. This is the single most important mental model in this whole week: <strong>a dataset IS a matrix, and each row IS a vector.</strong></p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Indexing — finding a specific element</h2>
+  <p>To refer to a specific number inside a matrix, you give its row and column position, written <code>A[row, column]</code> (row first, always):</p>
+  <div class="panel">
+    <p>For the matrix above: <code>A[1,1] = 1</code>, <code>A[1,3] = 3</code>, <code>A[2,2] = 5</code></p>
+    <p>(Note: some languages/libraries, including Python, start counting from 0 instead of 1 — you'll hit this directly once you reach NumPy in Phase 2. For today, we count from 1 to keep things simple.)</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (image as a matrix)</h2>
+  <div class="panel">
+    <p class="example-tag">The example that makes computer vision click</p>
+    <p>A tiny 4×4 grayscale image is literally a 4×4 matrix, where each number (0–255) represents brightness — 0 is pure black, 255 is pure white:</p>
+    <div class="eq">[ [0,0,0,0], [0,255,255,0], [0,255,255,0], [0,0,0,0] ]</div>
+    <p>Play with the interactive tool below — every image your phone camera takes, and every image a computer vision model processes, is fundamentally this same idea, just with millions of pixels (and 3 layered matrices for Red, Green, Blue in color images) instead of 16.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Reversing rows and columns.</strong> A "3×5 matrix" means 3 rows and 5 columns — mixing this up is extremely common and causes real errors once you reach NumPy array shapes.</p>
+    <p><strong>Mistake 2 — Assuming all matrices are square.</strong> A matrix can be any rectangular shape — 2×3, 500×10, 1×1 — it doesn't need equal rows and columns.</p>
+    <p><strong>Mistake 3 — Confusing a vector with a 1-row or 1-column matrix.</strong> They're closely related (a vector is technically a special case of a matrix), but conceptually, keep "one data point" (vector) separate from "many data points stacked" (matrix) while you're building intuition.</p>
+    <p><strong>Mistake 4 — Getting index order backwards.</strong> A[row, column] always means row first — A[2,5] is row 2, column 5, not the reverse.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Build Your Own Pixel Matrix</h2>
+  <div class="solver">
+    <h3>Enter values 0–255 (black to white), watch the image render</h3>
+    <div class="side-by-side">
+      <div>
+        <p style="color:#cfc8b8; font-size:13px; margin-bottom:6px;">The matrix (editable)</p>
+        <div class="matrix-editor" id="matrixEditor"></div>
+      </div>
+      <div>
+        <p style="color:#cfc8b8; font-size:13px; margin-bottom:6px;">Rendered image</p>
+        <div class="pixel-grid" id="pixelGrid"></div>
+      </div>
+    </div>
+    <div class="solver-row" style="margin-top:16px;">
+      <label>Look up element at row</label>
+      <input type="number" id="rowLookup" min="1" max="4" value="2" style="width:50px;">
+      <label>col</label>
+      <input type="number" id="colLookup" min="1" max="4" value="2" style="width:50px;">
+      <button onclick="lookupElement()" style="background:var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:4px; cursor:pointer;">Find A[row,col]</button>
+    </div>
+    <div class="solver-result" id="result"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Tomorrow: matrix multiplication — the operation that combines two matrices together, and the single most computationally important operation in all of deep learning. Today's grid mental model makes tomorrow's mechanics far easier to follow.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 18 of 210 · AI & ML Study Plan · Phase 1: Linear Algebra Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "A matrix has 5 rows and 2 columns. What are its dimensions, written correctly?", steps: "5 × 2 (rows × columns, always in that order)" },
+  { q: "Matrix B = [[7,2],[4,9],[1,6]]. How many rows and columns does it have?", steps: "3 rows, 2 columns → dimensions 3×2" },
+  { q: "Using B from above, find B[2,1].", steps: "Row 2, column 1 → 4" },
+  { q: "Using B from above, find B[3,2].", steps: "Row 3, column 2 → 6" },
+  { q: "A spreadsheet has 200 customer rows and 6 feature columns. What matrix dimensions does this represent?", steps: "200 × 6" },
+  { q: "Is a single vector [3,7,9] more like a 1×3 matrix or a 3×1 matrix?", steps: "It depends on convention, but written as a single horizontal row, it's a 1×3 matrix (a 'row vector'). Written vertically, it would be 3×1 (a 'column vector')." },
+  { q: "A grayscale image is 100 pixels wide and 80 pixels tall. What are the matrix's dimensions?", steps: "80 × 100 (rows=height=80, columns=width=100 — height/rows always come first)" },
+  { q: "Matrix C = [[0,255],[128,64]]. Which pixel is darkest, and which is brightest?", steps: "C[1,1]=0 is darkest (pure black). C[1,2]=255 is brightest (pure white)." },
+  { q: "True or false: all matrices must have the same number of rows and columns.", steps: "False — matrices can be any rectangular shape (e.g., 2×5, 100×3); only 'square' matrices have equal rows and columns." },
+  { q: "Why is understanding 'dataset = matrix, row = vector' useful before starting Pandas in Phase 2?", steps: "Because every operation you'll do in Pandas (selecting a row, a column, filtering) maps directly onto matrix/vector concepts you already understand — the syntax will feel like a natural extension of today's ideas." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+let matrixData = [
+  [0, 0, 0, 0],
+  [0, 255, 255, 0],
+  [0, 255, 255, 0],
+  [0, 0, 0, 0]
+];
+
+const editorEl = document.getElementById('matrixEditor');
+const gridEl = document.getElementById('pixelGrid');
+
+function buildEditor(){
+  editorEl.innerHTML = '';
+  gridEl.innerHTML = '';
+  for(let r=0; r<4; r++){
+    for(let c=0; c<4; c++){
+      const input = document.createElement('input');
+      input.type = 'number'; input.min=0; input.max=255;
+      input.value = matrixData[r][c];
+      input.addEventListener('input', () => {
+        let v = parseInt(input.value);
+        if(isNaN(v)) v = 0;
+        v = Math.max(0, Math.min(255, v));
+        matrixData[r][c] = v;
+        renderPixels();
+      });
+      editorEl.appendChild(input);
+
+      const cell = document.createElement('div');
+      cell.className = 'pixel-cell';
+      gridEl.appendChild(cell);
+    }
+  }
+  renderPixels();
+}
+
+function renderPixels(){
+  const cells = gridEl.children;
+  let idx = 0;
+  for(let r=0; r<4; r++){
+    for(let c=0; c<4; c++){
+      const v = matrixData[r][c];
+      cells[idx].style.background = `rgb(${v},${v},${v})`;
+      idx++;
+    }
+  }
+}
+buildEditor();
+
+function lookupElement(){
+  const r = parseInt(document.getElementById('rowLookup').value);
+  const c = parseInt(document.getElementById('colLookup').value);
+  const res = document.getElementById('result');
+  if(r<1||r>4||c<1||c>4){
+    res.textContent = "Row and column must be between 1 and 4.";
+    return;
+  }
+  res.innerHTML = `A[${r},${c}] = <strong style="color:#e8a86b;">${matrixData[r-1][c-1]}</strong>`;
+}
+lookupElement();
+
+const quizData = [
+  { q: "A matrix with 4 rows and 7 columns has dimensions written as:", opts: ["7×4","4×7","28","4+7"], correct: 1, explain: "Always rows × columns: 4×7." },
+  { q: "In A[row, column] notation, which comes first?", opts: ["Column","Row","Neither, order doesn't matter","Depends on the matrix size"], correct: 1, explain: "Row is always specified first by convention." },
+  { q: "A dataset with 1,000 rows (samples) and 8 columns (features) is best described as:", opts: ["An 8×1000 matrix","A 1000×8 matrix","8 separate matrices","A single vector"], correct: 1, explain: "Rows come first: 1000 rows × 8 columns = 1000×8 matrix." },
+  { q: "Can a matrix have different numbers of rows and columns (e.g., 3 rows, 7 columns)?", opts: ["No, matrices must always be square","Yes, matrices can be any rectangular shape","Only in ML, not in pure math","Only if all values are 0"], correct: 1, explain: "Rectangular (non-square) matrices are completely normal and common." },
+  { q: "A grayscale image pixel value of 0 represents:", opts: ["Pure white","Pure black","Mid-gray","An error"], correct: 1, explain: "0 = no brightness = pure black; 255 = maximum brightness = pure white." },
+  { q: "Each row of a dataset matrix represents:", opts: ["A single feature/column","A single data point (like one customer or one image)","The total number of columns","An error in the data"], correct: 1, explain: "Rows = individual samples/data points; columns = features describing them." },
+  { q: "Matrix D = [[9,3],[1,7]]. What is D[2,2]?", opts: ["9","3","1","7"], correct: 3, explain: "Row 2, column 2 → 7." },
+  { q: "Why does 'dataset = matrix' matter for ML in practice?", opts: [
+      "It's just a coincidence of naming",
+      "Because libraries like NumPy/Pandas and ML algorithms are built to operate directly on this row/column matrix structure",
+      "Only image data uses matrices",
+      "Matrices are only used for storage, never computation"
+    ], correct: 1, explain: "Nearly all ML tooling assumes data in matrix form — recognizing this connection makes the tools far less mysterious." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NumPy – Day 2 | Math, Stats & Random</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+
+  :root {
+    --bg:        #F6FBF9;
+    --surface:   #FFFFFF;
+    --border:    #D9EDE6;
+    --accent:    #0D9373;
+    --accent2:   #065F46;
+    --green:     #059669;
+    --red:       #EF233C;
+    --yellow:    #F59E0B;
+    --blue:      #3B82F6;
+    --purple:    #7C3AED;
+    --text:      #0F1F18;
+    --muted:     #5E7A6F;
+    --code-bg:   #1A2421;
+    --code-text: #C3E8DC;
+    --tag-bg:    #ECFDF5;
+    --tag-text:  #065F46;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  /* NAV */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 32px; height: 58px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  }
+  .topnav .logo { font-family:'Sora',sans-serif; font-size:18px; font-weight:800; color:var(--accent); }
+  .topnav .sep  { color:var(--border); font-size:22px; }
+  .topnav .day-label { background:var(--tag-bg); color:var(--tag-text); font-size:12px; font-weight:600; padding:3px 10px; border-radius:20px; }
+  .topnav .spacer { flex:1; }
+  .topnav .progress-label { font-size:12px; color:var(--muted); }
+  .progress-bar-wrap { width:120px; height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--accent); border-radius:99px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0D9373 0%, #065F46 100%);
+    color:#fff; padding:64px 40px 56px; text-align:center;
+  }
+  .hero .eyebrow { font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; opacity:.7; margin-bottom:14px; }
+  .hero h1 { font-family:'Sora',sans-serif; font-size:clamp(28px,5vw,48px); font-weight:800; line-height:1.15; margin-bottom:18px; }
+  .hero h1 span { color:#A7F3D0; }
+  .hero p { max-width:620px; margin:0 auto 28px; opacity:.88; font-size:15px; }
+  .hero-pills { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .hero-pill { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); border-radius:99px; padding:5px 14px; font-size:12px; font-weight:500; }
+
+  /* LAYOUT */
+  .container { max-width:960px; margin:0 auto; padding:0 24px; }
+
+  /* SECTION */
+  .section { background:var(--surface); border:1px solid var(--border); border-radius:14px; margin:28px 0; overflow:hidden; }
+  .section-header { display:flex; align-items:center; gap:14px; padding:20px 28px; border-bottom:1px solid var(--border); background:var(--bg); }
+  .section-icon { width:40px; height:40px; border-radius:10px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .section-header h2 { font-family:'Sora',sans-serif; font-size:18px; font-weight:700; }
+  .section-header p  { font-size:13px; color:var(--muted); margin-top:2px; }
+  .section-body { padding:28px; }
+
+  h3 { font-size:16px; font-weight:600; margin:24px 0 8px; color:var(--accent2); }
+  h3:first-child { margin-top:0; }
+  p  { margin-bottom:10px; }
+  ul,ol { padding-left:22px; margin-bottom:10px; }
+  li { margin-bottom:5px; }
+  strong { font-weight:600; }
+  code { font-family:'JetBrains Mono',monospace; font-size:12.5px; background:#E8F5F0; color:#065F46; padding:1px 5px; border-radius:4px; }
+
+  /* CODE BLOCK */
+  .code-wrap { background:var(--code-bg); border-radius:10px; margin:14px 0; overflow:hidden; }
+  .code-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.06); }
+  .code-lang { font-size:11px; color:#6B8F80; font-weight:500; letter-spacing:.5px; }
+  .copy-btn { font-size:11px; padding:3px 10px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); color:#aaa; border-radius:5px; cursor:pointer; transition:all .2s; }
+  .copy-btn:hover { background:rgba(255,255,255,.2); color:#fff; }
+  pre { padding:18px 20px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; color:var(--code-text); }
+  .kw  { color:#88D5B5; }
+  .fn  { color:#67C3F3; }
+  .st  { color:#F4D67A; }
+  .nm  { color:#F8A97D; }
+  .cm  { color:#4B7A65; font-style:italic; }
+  .op  { color:#A5D6C4; }
+  .hl  { color:#FFFFFF; font-weight:500; }
+
+  /* CALLOUT */
+  .callout { border-left:4px solid var(--accent); background:var(--tag-bg); padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; font-size:14px; }
+  .callout.blue   { border-color:var(--blue);   background:#EFF6FF; }
+  .callout.yellow { border-color:var(--yellow); background:#FFFBEB; }
+  .callout.red    { border-color:var(--red);    background:#FFF1F2; }
+  .callout.purple { border-color:var(--purple); background:#F5F3FF; }
+  .callout .callout-title { font-weight:700; font-size:12px; letter-spacing:.5px; text-transform:uppercase; margin-bottom:4px; }
+  .callout       .callout-title { color:var(--accent); }
+  .callout.blue  .callout-title { color:var(--blue); }
+  .callout.yellow .callout-title { color:#92400E; }
+  .callout.red   .callout-title { color:var(--red); }
+  .callout.purple .callout-title { color:var(--purple); }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x:auto; margin:14px 0; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { background:var(--accent); color:#fff; padding:10px 14px; text-align:left; font-weight:600; }
+  td { padding:9px 14px; border-bottom:1px solid var(--border); }
+  tr:last-child td { border-bottom:none; }
+  tr:nth-child(even) td { background:var(--bg); }
+
+  /* CARD GRID */
+  .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; margin:16px 0; }
+  .mini-card { border:1px solid var(--border); border-radius:10px; padding:14px 16px; background:var(--bg); }
+  .mini-card .mc-name { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:500; color:var(--accent); margin-bottom:4px; }
+  .mini-card .mc-desc { font-size:12.5px; color:var(--muted); }
+  .mini-card .mc-ex   { margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#059669; background:#ECFDF5; padding:2px 7px; border-radius:5px; display:inline-block; }
+
+  /* DISTRIBUTION VISUAL */
+  .dist-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .dist-card { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .dist-header { padding:10px 14px; font-weight:600; font-size:13px; }
+  .dist-body { padding:12px 14px; font-size:13px; color:var(--muted); }
+  .dist-body li { margin-bottom:4px; }
+  .dist-bar { height:60px; display:flex; align-items:flex-end; gap:2px; padding:0 12px 8px; }
+  .dist-b { background: var(--accent); border-radius:3px 3px 0 0; opacity:.8; }
+
+  /* QUIZ */
+  .quiz-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
+  .quiz-stat .num { font-family:'Sora',sans-serif; font-size:26px; font-weight:800; color:var(--accent); }
+  .quiz-stat .lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  .q-card { border:1.5px solid var(--border); border-radius:12px; margin-bottom:20px; overflow:hidden; transition:border-color .2s; }
+  .q-card.correct { border-color:var(--green); }
+  .q-card.wrong   { border-color:var(--red); }
+  .q-header { display:flex; align-items:flex-start; gap:12px; padding:16px 20px; background:var(--bg); border-bottom:1px solid var(--border); }
+  .q-num { width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+  .q-text { font-weight:500; font-size:14.5px; }
+  .q-code { font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--code-bg); color:var(--code-text); padding:8px 12px; border-radius:7px; margin:8px 0; display:block; white-space:pre; }
+  .q-options { padding:14px 20px; display:grid; gap:8px; }
+  .opt { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all .15s; font-size:14px; user-select:none; }
+  .opt:hover { border-color:var(--accent); background:var(--tag-bg); }
+  .opt.selected { border-color:var(--accent); background:var(--tag-bg); }
+  .opt.correct-ans { border-color:var(--green); background:#ECFDF5; }
+  .opt.wrong-ans   { border-color:var(--red);   background:#FFF1F2; }
+  .opt-letter { width:24px; height:24px; border-radius:6px; background:var(--border); color:var(--muted); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .opt.selected .opt-letter    { background:var(--accent); color:#fff; }
+  .opt.correct-ans .opt-letter { background:var(--green);  color:#fff; }
+  .opt.wrong-ans .opt-letter   { background:var(--red);    color:#fff; }
+  .q-explain { margin:0 20px 14px; padding:10px 14px; border-radius:8px; font-size:13px; display:none; }
+  .q-explain.show { display:block; }
+  .q-explain.exp-correct { background:#ECFDF5; border-left:3px solid var(--green); color:#065F46; }
+  .q-explain.exp-wrong   { background:#FFF1F2; border-left:3px solid var(--red);   color:#9B1C1C; }
+  .quiz-btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
+  .btn { padding:11px 24px; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all .2s; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:var(--accent2); }
+  .btn-outline { background:transparent; color:var(--accent); border:2px solid var(--accent); }
+  .btn-outline:hover { background:var(--tag-bg); }
+  .score-box { background:linear-gradient(135deg,#0D9373,#065F46); color:#fff; border-radius:14px; padding:28px; text-align:center; display:none; margin-top:20px; }
+  .score-box.show { display:block; }
+  .score-box .big-score { font-family:'Sora',sans-serif; font-size:52px; font-weight:800; }
+  .score-box .score-msg { font-size:16px; opacity:.9; margin-top:6px; }
+  .score-box .score-detail { font-size:13px; opacity:.7; margin-top:4px; }
+
+  /* TASK */
+  .task-hero { background:linear-gradient(135deg,#0D9373 0%,#0369A1 100%); padding:28px; border-radius:10px; color:#fff; margin-bottom:22px; }
+  .task-hero h3 { color:#fff; margin:0 0 8px; font-size:18px; }
+  .task-hero p  { margin:0; opacity:.9; }
+  .task-phase { border:1px solid var(--border); border-radius:10px; margin-bottom:16px; overflow:hidden; }
+  .task-phase-header { background:var(--bg); padding:12px 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .task-phase-header:hover { background:var(--tag-bg); }
+  .phase-num { width:28px; height:28px; border-radius:50%; font-size:12px; font-weight:700; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .task-phase-header h4 { font-size:14.5px; font-weight:600; flex:1; }
+  .phase-time { font-size:12px; color:var(--muted); background:var(--border); padding:2px 8px; border-radius:99px; }
+  .chevron { font-size:14px; transition:transform .3s; }
+  .chevron.open { transform:rotate(180deg); }
+  .task-phase-body { padding:18px; display:none; }
+  .task-phase-body.open { display:block; }
+  .task-step { display:flex; gap:14px; margin-bottom:18px; align-items:flex-start; }
+  .step-dot { width:22px; height:22px; border-radius:50%; border:2px solid var(--accent); color:var(--accent); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-content h5 { font-size:14px; font-weight:600; margin-bottom:5px; }
+  .step-content p  { font-size:13.5px; color:#374151; margin-bottom:6px; }
+  .checklist { list-style:none; padding:0; }
+  .checklist li { display:flex; align-items:flex-start; gap:8px; font-size:13.5px; margin-bottom:6px; color:#374151; }
+  .checklist li::before { content:'☐'; font-size:15px; color:var(--accent); flex-shrink:0; line-height:1.5; }
+
+  /* FORMULA BOX */
+  .formula-box {
+    background: linear-gradient(135deg, #065F46, #0D9373);
+    color: #fff;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 14px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 2;
+  }
+  .formula-box .f-title { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .7; margin-bottom: 8px; }
+  .formula-box .f-main { font-size: 18px; font-weight: 500; }
+  .formula-box .f-note { font-size: 12px; opacity: .75; font-family: 'Inter', sans-serif; margin-top: 6px; }
+
+  /* DAY FOOTER */
+  .day-footer { background:var(--surface); border-top:2px solid var(--border); padding:28px 40px; text-align:center; margin-top:40px; }
+  .day-footer .series { font-size:13px; color:var(--muted); margin-bottom:8px; }
+  .day-footer .days-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .day-pill { padding:5px 12px; border-radius:99px; font-size:12px; font-weight:500; border:1px solid var(--border); color:var(--muted); cursor:default; }
+  .day-pill.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .day-pill.done   { background:var(--green);  color:#fff; border-color:var(--green); }
+
+  @media(max-width:600px){
+    .topnav{padding:0 16px;}
+    .hero{padding:44px 20px 40px;}
+    .section-body{padding:18px;}
+    .dist-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="logo">🔢 NumPy</div>
+  <span class="sep">|</span>
+  <span class="day-label">Day 2 of 5</span>
+  <div class="spacer"></div>
+  <span class="progress-label" style="margin-right:8px">40%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:40%"></div></div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="eyebrow">NumPy Full Course · Day 2</div>
+  <h1>Math, Stats &amp; <span>Random</span></h1>
+  <p>Master NumPy's powerful mathematical engine — universal functions, statistical analysis, probability distributions, sorting, and set operations.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">⚡ Universal Functions</span>
+    <span class="hero-pill">📐 Math Constants</span>
+    <span class="hero-pill">📊 Deep Statistics</span>
+    <span class="hero-pill">🎲 Distributions</span>
+    <span class="hero-pill">🔃 Sorting &amp; Searching</span>
+    <span class="hero-pill">🔣 Set Operations</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1 — UNIVERSAL FUNCTIONS (ufuncs)
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">⚡</div>
+    <div>
+      <h2>Universal Functions (ufuncs)</h2>
+      <p>Vectorised C-speed functions that operate on entire arrays instantly</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>A <strong>ufunc</strong> (universal function) is a function that operates <strong>element-by-element</strong> on an array. Instead of writing a Python loop, one ufunc call processes millions of elements using compiled C/Fortran — making them <strong>10–100× faster</strong> than explicit loops.</p>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Key Rule</div>
+      If you are about to write <code>for x in arr:</code> to apply a math function, STOP — there is almost certainly a NumPy ufunc that does it faster in one line.
+    </div>
+
+    <h3>Arithmetic ufuncs</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+a = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">4</span>, <span class="nm">9</span>, <span class="nm">16</span>, <span class="nm">25</span>, <span class="nm">36</span>])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">2</span>, <span class="nm">3</span>,  <span class="nm">4</span>,  <span class="nm">5</span>,  <span class="nm">6</span>])
+
+<span class="cm"># All operators are ufuncs under the hood</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">add</span>(a, b))        <span class="cm"># [ 6 12 20 30 42]  same as a + b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">subtract</span>(a, b))   <span class="cm"># [ 2  6 12 20 30]  same as a - b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">multiply</span>(a, b))   <span class="cm"># [ 8 27 64 125 216]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">divide</span>(a, b))     <span class="cm"># [2. 3. 4. 5. 6.]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">power</span>(a, <span class="nm">2</span>))      <span class="cm"># [16 81 256 625 1296]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">mod</span>(a, <span class="nm">3</span>))        <span class="cm"># [1 0 1 1 0]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">floor_divide</span>(a,b)) <span class="cm"># [2 3 4 5 6]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">absolute</span>(<span class="op">np</span>.<span class="fn">array</span>([-<span class="nm">3</span>, -<span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">2</span>, -<span class="nm">5</span>])))  <span class="cm"># [3 1 0 2 5]</span></pre>
+    </div>
+
+    <h3>Exponential &amp; Logarithm ufuncs</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>x = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">4</span>, <span class="nm">8</span>, <span class="nm">16</span>], dtype=<span class="fn">float</span>)
+
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">exp</span>(x))    <span class="cm"># [  2.72   7.39  54.60  2980.96  8886111.0]  → e^x</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">exp2</span>(x))   <span class="cm"># [  2.   4.  16.  256.  65536.]              → 2^x</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">log</span>(x))    <span class="cm"># [0.    0.693 1.386 2.079 2.773]             → ln(x)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">log2</span>(x))   <span class="cm"># [0. 1. 2. 3. 4.]                            → log₂(x)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">log10</span>(x))  <span class="cm"># [0.    0.301 0.602 0.903 1.204]             → log₁₀(x)</span>
+
+<span class="cm"># Real-world: Compound interest — A = P × e^(rt)</span>
+principal = <span class="nm">10000</span>
+rate = <span class="nm">0.08</span>
+years = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">1</span>, <span class="nm">11</span>)   <span class="cm"># years 1–10</span>
+amounts = principal * <span class="op">np</span>.<span class="fn">exp</span>(rate * years)
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(amounts, <span class="nm">2</span>))</pre>
+    </div>
+
+    <h3>Trigonometric ufuncs</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>angles_deg = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">30</span>, <span class="nm">45</span>, <span class="nm">60</span>, <span class="nm">90</span>, <span class="nm">180</span>])
+
+<span class="cm"># Convert degrees → radians first</span>
+angles_rad = <span class="op">np</span>.<span class="fn">deg2rad</span>(angles_deg)
+
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">sin</span>(angles_rad))   <span class="cm"># [0.  0.5  0.707  0.866  1.   0.  ]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">cos</span>(angles_rad))   <span class="cm"># [1.  0.866  0.707  0.5  0.  -1.  ]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">tan</span>(angles_rad))   <span class="cm"># [0.  0.577  1.  1.732  huge  ~0  ]</span>
+
+<span class="cm"># Inverse trig</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">rad2deg</span>(<span class="op">np</span>.<span class="fn">arcsin</span>(<span class="nm">0.5</span>)))   <span class="cm"># 30.0</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">rad2deg</span>(<span class="op">np</span>.<span class="fn">arccos</span>(<span class="nm">0.5</span>)))   <span class="cm"># 60.0</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">rad2deg</span>(<span class="op">np</span>.<span class="fn">arctan</span>(<span class="nm">1.0</span>)))   <span class="cm"># 45.0</span></pre>
+    </div>
+
+    <h3>Rounding ufuncs</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>vals = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">2.1</span>, <span class="nm">2.5</span>, <span class="nm">2.9</span>, -<span class="nm">1.4</span>, -<span class="nm">1.6</span>, <span class="nm">3.75</span>])
+
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(vals, <span class="nm">1</span>))  <span class="cm"># [ 2.1  2.5  2.9 -1.4 -1.6  3.8]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">floor</span>(vals))      <span class="cm"># [ 2.  2.  2. -2. -2.  3.]  ← round DOWN</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">ceil</span>(vals))       <span class="cm"># [ 3.  3.  3. -1. -1.  4.]  ← round UP</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">trunc</span>(vals))      <span class="cm"># [ 2.  2.  2. -1. -1.  3.]  ← towards zero</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">fix</span>(vals))        <span class="cm"># [ 2.  2.  2. -1. -1.  3.]  same as trunc</span></pre>
+    </div>
+
+    <h3>Comparison &amp; Logical ufuncs</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>a = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">5</span>, <span class="nm">10</span>, <span class="nm">15</span>, <span class="nm">20</span>])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">6</span>,  <span class="nm">9</span>, <span class="nm">15</span>, <span class="nm">18</span>])
+
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">greater</span>(a, b))         <span class="cm"># [F T F T]  same as a > b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">less_equal</span>(a, b))      <span class="cm"># [T F T F]  same as a &lt;= b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">equal</span>(a, b))           <span class="cm"># [F F T F]  same as a == b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">maximum</span>(a, b))         <span class="cm"># [ 6 10 15 20]  element-wise max</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">minimum</span>(a, b))         <span class="cm"># [ 5  9 15 18]  element-wise min</span>
+
+<span class="cm"># Logical</span>
+x = <span class="op">np</span>.<span class="fn">array</span>([<span class="kw">True</span>, <span class="kw">False</span>, <span class="kw">True</span>, <span class="kw">False</span>])
+y = <span class="op">np</span>.<span class="fn">array</span>([<span class="kw">True</span>, <span class="kw">True</span>,  <span class="kw">False</span>, <span class="kw">False</span>])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">logical_and</span>(x, y))  <span class="cm"># [T F F F]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">logical_or</span>(x, y))   <span class="cm"># [T T T F]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">logical_not</span>(x))     <span class="cm"># [F T F T]</span></pre>
+    </div>
+
+    <h3>Quick ufunc Cheat Sheet</h3>
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">np.sqrt(x)</div><div class="mc-desc">Square root of each element</div><div class="mc-ex">√x</div></div>
+      <div class="mini-card"><div class="mc-name">np.square(x)</div><div class="mc-desc">Square of each element</div><div class="mc-ex">x²</div></div>
+      <div class="mini-card"><div class="mc-name">np.cbrt(x)</div><div class="mc-desc">Cube root of each element</div><div class="mc-ex">∛x</div></div>
+      <div class="mini-card"><div class="mc-name">np.sign(x)</div><div class="mc-desc">-1, 0, or +1 for each</div><div class="mc-ex">-1/0/+1</div></div>
+      <div class="mini-card"><div class="mc-name">np.clip(x,a,b)</div><div class="mc-desc">Clamp values between a and b</div><div class="mc-ex">min=a max=b</div></div>
+      <div class="mini-card"><div class="mc-name">np.reciprocal(x)</div><div class="mc-desc">1/x for each element</div><div class="mc-ex">1/x</div></div>
+      <div class="mini-card"><div class="mc-name">np.isnan(x)</div><div class="mc-desc">True where value is NaN</div><div class="mc-ex">bool mask</div></div>
+      <div class="mini-card"><div class="mc-name">np.isinf(x)</div><div class="mc-desc">True where value is ±infinity</div><div class="mc-ex">bool mask</div></div>
+      <div class="mini-card"><div class="mc-name">np.nan_to_num(x)</div><div class="mc-desc">Replace NaN with 0, inf with large number</div><div class="mc-ex">clean data</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2 — MATH CONSTANTS
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📐</div>
+    <div>
+      <h2>Mathematical Constants &amp; Special Values</h2>
+      <p>Built-in constants and handling of special floating-point values</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Mathematical constants</span>
+<span class="fn">print</span>(<span class="op">np</span>.pi)        <span class="cm"># 3.141592653589793  → π</span>
+<span class="fn">print</span>(<span class="op">np</span>.e)         <span class="cm"># 2.718281828459045  → Euler's number</span>
+<span class="fn">print</span>(<span class="op">np</span>.inf)       <span class="cm"># inf                → positive infinity</span>
+<span class="fn">print</span>(-<span class="op">np</span>.inf)      <span class="cm"># -inf               → negative infinity</span>
+<span class="fn">print</span>(<span class="op">np</span>.nan)       <span class="cm"># nan                → Not a Number</span>
+<span class="fn">print</span>(<span class="op">np</span>.PINF)      <span class="cm"># inf  (alias)</span>
+<span class="fn">print</span>(<span class="op">np</span>.NINF)      <span class="cm"># -inf (alias)</span>
+<span class="fn">print</span>(<span class="op">np</span>.PZERO)     <span class="cm"># 0.0</span>
+<span class="fn">print</span>(<span class="op">np</span>.euler_gamma) <span class="cm"># 0.5772... → Euler–Mascheroni constant</span>
+
+<span class="cm"># Largest representable float</span>
+<span class="fn">print</span>(<span class="op">np</span>.finfo(<span class="fn">float</span>).max)   <span class="cm"># 1.7976931348623157e+308</span>
+<span class="fn">print</span>(<span class="op">np</span>.finfo(<span class="fn">float</span>).eps)   <span class="cm"># 2.22e-16 → machine epsilon</span>
+<span class="fn">print</span>(<span class="op">np</span>.iinfo(<span class="op">np</span>.int32).max) <span class="cm"># 2147483647</span>
+<span class="fn">print</span>(<span class="op">np</span>.iinfo(<span class="op">np</span>.int8).min)  <span class="cm"># -128</span></pre>
+    </div>
+
+    <h3>Handling NaN and Infinity</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>data = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1.0</span>, <span class="op">np</span>.nan, <span class="nm">3.0</span>, <span class="op">np</span>.inf, <span class="nm">5.0</span>, -<span class="op">np</span>.inf])
+
+<span class="cm"># Detect special values</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">isnan</span>(data))    <span class="cm"># [F T F F F F]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">isinf</span>(data))    <span class="cm"># [F F F T F T]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">isfinite</span>(data)) <span class="cm"># [T F T F T F]</span>
+
+<span class="cm"># Clean the data</span>
+clean = <span class="op">np</span>.<span class="fn">nan_to_num</span>(data, nan=<span class="nm">0.0</span>, posinf=<span class="nm">999</span>, neginf=-<span class="nm">999</span>)
+<span class="fn">print</span>(clean)  <span class="cm"># [1.   0.   3.  999.  5. -999.]</span>
+
+<span class="cm"># NaN-safe aggregations (ignore NaN values)</span>
+data2 = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10.0</span>, <span class="op">np</span>.nan, <span class="nm">30.0</span>, <span class="op">np</span>.nan, <span class="nm">50.0</span>])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">nanmean</span>(data2))  <span class="cm"># 30.0  ← ignores NaN</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">nansum</span>(data2))   <span class="cm"># 90.0  ← ignores NaN</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">nanmax</span>(data2))   <span class="cm"># 50.0</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">nanstd</span>(data2))   <span class="cm"># 16.33</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ NaN Contaminates Everything</div>
+      <code>np.mean([1, np.nan, 3])</code> returns <code>nan</code>. Always check for NaN in real datasets before computing statistics. Use <code>np.nanmean()</code>, <code>np.nanstd()</code> etc. to safely ignore NaN values.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3 — DEEP STATISTICS
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">📊</div>
+    <div>
+      <h2>Deep Statistical Analysis</h2>
+      <p>Descriptive statistics, percentiles, correlation, covariance, and cumulative ops</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>Core Statistical Functions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>heights = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">162</span>, <span class="nm">175</span>, <span class="nm">158</span>, <span class="nm">180</span>, <span class="nm">171</span>, <span class="nm">169</span>, <span class="nm">185</span>, <span class="nm">163</span>, <span class="nm">177</span>, <span class="nm">174</span>])
+
+<span class="cm"># Central tendency</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">mean</span>(heights))    <span class="cm"># 171.4  ← arithmetic mean</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">median</span>(heights))  <span class="cm"># 172.5  ← middle value (sorted)</span>
+
+<span class="cm"># Spread</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">std</span>(heights))     <span class="cm"># 8.12   ← standard deviation</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">var</span>(heights))     <span class="cm"># 65.9   ← variance = std²</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">ptp</span>(heights))     <span class="cm"># 27     ← peak-to-peak (max - min)</span>
+
+<span class="cm"># Percentiles — split data into parts</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">percentile</span>(heights, <span class="nm">25</span>))   <span class="cm"># 164.25  ← Q1 (25th percentile)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">percentile</span>(heights, <span class="nm">50</span>))   <span class="cm"># 172.5   ← Q2 = median</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">percentile</span>(heights, <span class="nm">75</span>))   <span class="cm"># 176.5   ← Q3 (75th percentile)</span>
+
+<span class="cm"># Interquartile Range (IQR) — measure of spread</span>
+q1 = <span class="op">np</span>.<span class="fn">percentile</span>(heights, <span class="nm">25</span>)
+q3 = <span class="op">np</span>.<span class="fn">percentile</span>(heights, <span class="nm">75</span>)
+iqr = q3 - q1
+<span class="fn">print</span>(<span class="st">f"IQR: {iqr}"</span>)       <span class="cm"># 12.25</span>
+
+<span class="cm"># Outlier detection using IQR</span>
+lower = q1 - <span class="nm">1.5</span> * iqr
+upper = q3 + <span class="nm">1.5</span> * iqr
+outliers = heights[(heights &lt; lower) | (heights > upper)]
+<span class="fn">print</span>(<span class="st">f"Outliers: {outliers}"</span>)</pre>
+    </div>
+
+    <div class="formula-box">
+      <div class="f-title">📐 Key Statistical Formulas</div>
+      <div class="f-main">Mean (μ)    = Σx / n</div>
+      <div class="f-main">Variance    = Σ(x - μ)² / n</div>
+      <div class="f-main">Std Dev (σ) = √Variance</div>
+      <div class="f-main">IQR         = Q3 - Q1</div>
+      <div class="f-note">NumPy uses population std (ddof=0) by default. Use ddof=1 for sample std.</div>
+    </div>
+
+    <h3>Population vs Sample Standard Deviation</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>data = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>])
+
+<span class="cm"># Population std (ddof=0) — use when you HAVE the entire population</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">std</span>(data, ddof=<span class="nm">0</span>))   <span class="cm"># 14.14  ← divides by N</span>
+
+<span class="cm"># Sample std (ddof=1) — use when data is a SAMPLE from a larger group</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">std</span>(data, ddof=<span class="nm">1</span>))   <span class="cm"># 15.81  ← divides by N-1 (Bessel's correction)</span></pre>
+    </div>
+
+    <h3>Correlation &amp; Covariance</h3>
+    <p><strong>Correlation</strong> measures how strongly two variables move together (-1 to +1). <strong>Covariance</strong> measures the direction of their relationship but is scale-dependent.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>study_hours  = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">2</span>, <span class="nm">4</span>, <span class="nm">6</span>, <span class="nm">8</span>, <span class="nm">10</span>, <span class="nm">3</span>, <span class="nm">7</span>, <span class="nm">5</span>])
+exam_scores  = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">50</span>, <span class="nm">65</span>, <span class="nm">75</span>, <span class="nm">85</span>, <span class="nm">95</span>, <span class="nm">55</span>, <span class="nm">80</span>, <span class="nm">70</span>])
+
+<span class="cm"># Correlation matrix (2×2 for two variables)</span>
+corr_matrix = <span class="op">np</span>.<span class="fn">corrcoef</span>(study_hours, exam_scores)
+<span class="fn">print</span>(corr_matrix)
+<span class="cm"># [[1.         0.998...]    ← study vs study (always 1)
+#  [0.998...   1.        ]] ← 0.998 = very strong positive correlation!</span>
+
+<span class="cm"># Extract just the correlation value</span>
+r = corr_matrix[<span class="nm">0</span>, <span class="nm">1</span>]
+<span class="fn">print</span>(<span class="st">f"Correlation: {r:.3f}"</span>)   <span class="cm"># 0.998</span>
+
+<span class="cm"># Covariance matrix</span>
+cov_matrix = <span class="op">np</span>.<span class="fn">cov</span>(study_hours, exam_scores)
+<span class="fn">print</span>(cov_matrix)
+
+<span class="cm"># Interpretation of r:
+#  0.9 to 1.0  → Very strong positive
+#  0.7 to 0.9  → Strong positive
+#  0.4 to 0.7  → Moderate positive
+#  0.0 to 0.4  → Weak
+# -1.0 to -0.9 → Very strong NEGATIVE</span></pre>
+    </div>
+
+    <h3>Cumulative Functions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>sales = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">100</span>, <span class="nm">200</span>, <span class="nm">150</span>, <span class="nm">300</span>, <span class="nm">250</span>])
+
+<span class="cm"># Running total — cumsum</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">cumsum</span>(sales))   <span class="cm"># [ 100  300  450  750 1000]</span>
+
+<span class="cm"># Running product — cumprod</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">cumprod</span>(<span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>,<span class="nm">5</span>])))  <span class="cm"># [  1   2   6  24 120]</span>
+
+<span class="cm"># Differences between consecutive elements</span>
+prices = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">100</span>, <span class="nm">105</span>, <span class="nm">98</span>, <span class="nm">112</span>, <span class="nm">108</span>])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">diff</span>(prices))     <span class="cm"># [  5  -7  14  -4]  ← daily change</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">diff</span>(prices, n=<span class="nm">2</span>)) <span class="cm"># [-12  21 -18]       ← 2nd order diff</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 4 — RANDOM DISTRIBUTIONS
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#B45309">🎲</div>
+    <div>
+      <h2>Random Module &amp; Probability Distributions</h2>
+      <p>Simulating real-world randomness with statistical distributions</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>In data science, you often need to <strong>simulate data</strong> — stock prices, customer arrivals, test scores, dice rolls. Each scenario uses a different <strong>probability distribution</strong>.</p>
+
+    <h3>The Modern Random Generator (NumPy 1.17+)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Old style (still works but less flexible)</span>
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">42</span>)
+<span class="op">np</span>.random.<span class="fn">rand</span>(<span class="nm">5</span>)
+
+<span class="cm"># New style — use a Generator object (recommended)</span>
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(seed=<span class="nm">42</span>)
+<span class="fn">print</span>(rng.<span class="fn">random</span>(<span class="nm">5</span>))         <span class="cm"># 5 uniform floats [0, 1)</span>
+<span class="fn">print</span>(rng.<span class="fn">integers</span>(<span class="nm">1</span>, <span class="nm">101</span>, size=<span class="nm">10</span>))  <span class="cm"># 10 integers [1, 100]</span></pre>
+    </div>
+
+    <h3>1. Uniform Distribution</h3>
+    <p>Every value in a range has an <strong>equal chance</strong> of being chosen. Like rolling a fair die.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Floats between 0 and 1</span>
+u1 = rng.<span class="fn">random</span>(<span class="nm">1000</span>)
+
+<span class="cm"># Floats between any two values: uniform(low, high, size)</span>
+u2 = rng.<span class="fn">uniform</span>(low=<span class="nm">50</span>, high=<span class="nm">100</span>, size=<span class="nm">500</span>)
+<span class="fn">print</span>(<span class="st">f"Mean: {u2.mean():.1f}"</span>)   <span class="cm"># ~75  (midpoint)</span>
+
+<span class="cm"># Simulate dice rolls (1 to 6)</span>
+dice = rng.<span class="fn">integers</span>(<span class="nm">1</span>, <span class="nm">7</span>, size=<span class="nm">10</span>)
+<span class="fn">print</span>(dice)  <span class="cm"># [3 1 6 2 4 6 1 5 3 4]</span></pre>
+    </div>
+
+    <h3>2. Normal (Gaussian) Distribution</h3>
+    <p>Bell-curve shape. Most real-world measurements (height, IQ, errors) follow this. Defined by <strong>mean (μ)</strong> and <strong>standard deviation (σ)</strong>.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># normal(mean, std, size)</span>
+heights = rng.<span class="fn">normal</span>(loc=<span class="nm">170</span>, scale=<span class="nm">10</span>, size=<span class="nm">1000</span>)
+
+<span class="fn">print</span>(<span class="st">f"Mean:   {heights.mean():.1f}"</span>)   <span class="cm"># ~170</span>
+<span class="fn">print</span>(<span class="st">f"Std:    {heights.std():.1f}"</span>)    <span class="cm"># ~10</span>
+<span class="fn">print</span>(<span class="st">f"Min:    {heights.min():.1f}"</span>)
+<span class="fn">print</span>(<span class="st">f"Max:    {heights.max():.1f}"</span>)
+
+<span class="cm"># 68-95-99.7 Rule (empirical rule)</span>
+within_1sd = <span class="op">np</span>.<span class="fn">sum</span>(<span class="op">np</span>.<span class="fn">abs</span>(heights - <span class="nm">170</span>) &lt; <span class="nm">10</span>) / <span class="nm">1000</span>
+within_2sd = <span class="op">np</span>.<span class="fn">sum</span>(<span class="op">np</span>.<span class="fn">abs</span>(heights - <span class="nm">170</span>) &lt; <span class="nm">20</span>) / <span class="nm">1000</span>
+within_3sd = <span class="op">np</span>.<span class="fn">sum</span>(<span class="op">np</span>.<span class="fn">abs</span>(heights - <span class="nm">170</span>) &lt; <span class="nm">30</span>) / <span class="nm">1000</span>
+<span class="fn">print</span>(<span class="st">f"Within 1σ: {within_1sd:.1%}"</span>)   <span class="cm"># ~68%</span>
+<span class="fn">print</span>(<span class="st">f"Within 2σ: {within_2sd:.1%}"</span>)   <span class="cm"># ~95%</span>
+<span class="fn">print</span>(<span class="st">f"Within 3σ: {within_3sd:.1%}"</span>)   <span class="cm"># ~99.7%</span></pre>
+    </div>
+
+    <h3>3. Binomial Distribution</h3>
+    <p>Models <strong>number of successes</strong> in n trials, each with probability p. Like flipping a coin 10 times.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># binomial(n, p, size)
+# n = number of trials, p = probability of success</span>
+
+<span class="cm"># Simulate: flip a fair coin 10 times, run 1000 experiments</span>
+coin_flips = rng.<span class="fn">binomial</span>(n=<span class="nm">10</span>, p=<span class="nm">0.5</span>, size=<span class="nm">1000</span>)
+<span class="fn">print</span>(<span class="st">f"Avg heads per 10 flips: {coin_flips.mean():.1f}"</span>)  <span class="cm"># ~5</span>
+
+<span class="cm"># Simulate: 30% customer click rate — 1000 customers
+# How many click ads?</span>
+clicks = rng.<span class="fn">binomial</span>(n=<span class="nm">1</span>, p=<span class="nm">0.30</span>, size=<span class="nm">1000</span>)
+<span class="fn">print</span>(<span class="st">f"Total clicks: {clicks.sum()}"</span>)   <span class="cm"># ~300</span>
+<span class="fn">print</span>(<span class="st">f"Click rate:   {clicks.mean():.1%}"</span>)  <span class="cm"># ~30%</span></pre>
+    </div>
+
+    <h3>4. Poisson Distribution</h3>
+    <p>Models the <strong>number of events in a fixed time period</strong> when events occur at a known average rate. Used for customer arrivals, server requests, accidents.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># poisson(lam, size)  — lam = average rate (λ)</span>
+
+<span class="cm"># A coffee shop gets 12 customers per hour on average
+# Simulate arrivals for 24 hours</span>
+arrivals = rng.<span class="fn">poisson</span>(lam=<span class="nm">12</span>, size=<span class="nm">24</span>)
+<span class="fn">print</span>(arrivals)
+<span class="fn">print</span>(<span class="st">f"Busiest hour: {arrivals.max()} customers"</span>)
+<span class="fn">print</span>(<span class="st">f"Quietest:     {arrivals.min()} customers"</span>)
+<span class="fn">print</span>(<span class="st">f"Daily total:  {arrivals.sum()} customers"</span>)</pre>
+    </div>
+
+    <h3>5. Other Useful Distributions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Exponential — time between events (waiting time)</span>
+wait_times = rng.<span class="fn">exponential</span>(scale=<span class="nm">5</span>, size=<span class="nm">100</span>)  <span class="cm"># avg wait: 5 min</span>
+
+<span class="cm"># Beta — probabilities/proportions (between 0 and 1)</span>
+conversion = rng.<span class="fn">beta</span>(a=<span class="nm">2</span>, b=<span class="nm">8</span>, size=<span class="nm">1000</span>)  <span class="cm"># skewed towards low values</span>
+
+<span class="cm"># Shuffle an array in-place</span>
+arr = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">1</span>, <span class="nm">11</span>)
+rng.<span class="fn">shuffle</span>(arr)
+<span class="fn">print</span>(arr)   <span class="cm"># [7 3 1 9 5 2 8 4 10 6] (shuffled)</span>
+
+<span class="cm"># Choose random samples without replacement</span>
+items = <span class="op">np</span>.<span class="fn">array</span>([<span class="st">'A'</span>,<span class="st">'B'</span>,<span class="st">'C'</span>,<span class="st">'D'</span>,<span class="st">'E'</span>,<span class="st">'F'</span>,<span class="st">'G'</span>,<span class="st">'H'</span>,<span class="st">'I'</span>,<span class="st">'J'</span>])
+sample = rng.<span class="fn">choice</span>(items, size=<span class="nm">5</span>, replace=<span class="kw">False</span>)
+<span class="fn">print</span>(sample)  <span class="cm"># e.g. ['D' 'G' 'A' 'J' 'C']</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Distribution</th><th>Use Case</th><th>Key Parameter</th><th>NumPy Function</th></tr>
+        <tr><td><strong>Uniform</strong></td><td>Equal probability, random prices</td><td>low, high</td><td><code>rng.uniform()</code></td></tr>
+        <tr><td><strong>Normal</strong></td><td>Heights, IQ scores, measurement errors</td><td>mean, std</td><td><code>rng.normal()</code></td></tr>
+        <tr><td><strong>Binomial</strong></td><td>Click rates, pass/fail, coin flips</td><td>n, p</td><td><code>rng.binomial()</code></td></tr>
+        <tr><td><strong>Poisson</strong></td><td>Customers/hr, server requests, accidents</td><td>λ (lam)</td><td><code>rng.poisson()</code></td></tr>
+        <tr><td><strong>Exponential</strong></td><td>Waiting times, time-to-failure</td><td>scale (1/λ)</td><td><code>rng.exponential()</code></td></tr>
+        <tr><td><strong>Beta</strong></td><td>Probabilities, A/B testing, proportions</td><td>a, b</td><td><code>rng.beta()</code></td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 5 — SORTING & SEARCHING
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DC2626">🔃</div>
+    <div>
+      <h2>Sorting &amp; Searching</h2>
+      <p>Order data, find positions, and efficiently search arrays</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>Sorting Arrays</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>scores = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">72</span>, <span class="nm">55</span>, <span class="nm">88</span>, <span class="nm">91</span>, <span class="nm">60</span>, <span class="nm">78</span>, <span class="nm">45</span>, <span class="nm">95</span>])
+
+<span class="cm"># Sort ascending (returns NEW sorted array)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">sort</span>(scores))          <span class="cm"># [45 55 60 72 78 88 91 95]</span>
+
+<span class="cm"># Sort descending</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">sort</span>(scores)[::-<span class="nm">1</span>])   <span class="cm"># [95 91 88 78 72 60 55 45]</span>
+
+<span class="cm"># argsort — get the INDICES that would sort the array</span>
+idx = <span class="op">np</span>.<span class="fn">argsort</span>(scores)
+<span class="fn">print</span>(idx)   <span class="cm"># [6 1 4 0 5 2 3 7]  ← positions in ascending order</span>
+
+<span class="cm"># Rank students: who came 1st, 2nd, 3rd?</span>
+ranked = <span class="op">np</span>.<span class="fn">argsort</span>(scores)[::-<span class="nm">1</span>]  <span class="cm"># descending</span>
+<span class="kw">for</span> rank, i <span class="kw">in</span> <span class="fn">enumerate</span>(ranked, <span class="nm">1</span>):
+    <span class="fn">print</span>(<span class="st">f"Rank {rank}: Student {i+1} — {scores[i]}"</span>)
+
+<span class="cm"># Sort a 2D array by a specific column</span>
+data = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">3</span>, <span class="nm">80</span>], [<span class="nm">1</span>, <span class="nm">95</span>], [<span class="nm">2</span>, <span class="nm">70</span>], [<span class="nm">4</span>, <span class="nm">88</span>]])
+sorted_by_score = data[<span class="op">np</span>.<span class="fn">argsort</span>(data[:, <span class="nm">1</span>])[::-<span class="nm">1</span>]]
+<span class="fn">print</span>(sorted_by_score)
+<span class="cm"># [[1 95]  ← sorted by col 1 (score) descending
+#  [4 88]
+#  [3 80]
+#  [2 70]]</span></pre>
+    </div>
+
+    <h3>Searching Arrays</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>, <span class="nm">30</span>, <span class="nm">60</span>, <span class="nm">30</span>])
+
+<span class="cm"># np.where — find indices where condition is True</span>
+idx = <span class="op">np</span>.<span class="fn">where</span>(arr == <span class="nm">30</span>)
+<span class="fn">print</span>(idx)         <span class="cm"># (array([2, 5, 7]),)  ← 30 appears at index 2, 5, 7</span>
+
+<span class="cm"># np.where with replacement — conditional assignment</span>
+result = <span class="op">np</span>.<span class="fn">where</span>(arr > <span class="nm">30</span>, <span class="st">'High'</span>, <span class="st">'Low'</span>)
+<span class="fn">print</span>(result)   <span class="cm"># ['Low' 'Low' 'Low' 'High' 'High' 'Low' 'High' 'Low']</span>
+
+<span class="cm"># np.searchsorted — find where to INSERT a value in a sorted array</span>
+sorted_arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>])
+pos = <span class="op">np</span>.<span class="fn">searchsorted</span>(sorted_arr, <span class="nm">35</span>)
+<span class="fn">print</span>(pos)   <span class="cm"># 3  ← insert 35 before index 3 to keep sorted order</span>
+
+<span class="cm"># np.nonzero — indices of non-zero (True) elements</span>
+mask = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">5</span>, <span class="nm">0</span>, <span class="nm">3</span>, <span class="nm">0</span>, <span class="nm">8</span>])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">nonzero</span>(mask))    <span class="cm"># (array([1, 3, 5]),)  ← indices of non-zero</span>
+
+<span class="cm"># np.any / np.all — quick boolean checks</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">any</span>(arr > <span class="nm">55</span>))    <span class="cm"># True   ← at least one element > 55</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">all</span>(arr > <span class="nm">5</span>))     <span class="cm"># True   ← ALL elements > 5</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">all</span>(arr > <span class="nm">15</span>))    <span class="cm"># False  ← not all > 15 (10 isn't)</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 6 — SET OPERATIONS
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🔣</div>
+    <div>
+      <h2>Set Operations</h2>
+      <p>Treat arrays like mathematical sets — find unique values, unions, intersections</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>a = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span>, <span class="nm">6</span>, <span class="nm">7</span>])
+
+<span class="cm"># Unique values (removes duplicates + sorts)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">unique</span>(a))              <span class="cm"># [1 2 3 4 5]</span>
+
+<span class="cm"># unique with counts</span>
+vals, counts = <span class="op">np</span>.<span class="fn">unique</span>(a, return_counts=<span class="kw">True</span>)
+<span class="fn">print</span>(vals)    <span class="cm"># [1 2 3 4 5]</span>
+<span class="fn">print</span>(counts)  <span class="cm"># [1 2 2 1 1]  ← 2 appears twice, 3 appears twice</span>
+
+<span class="cm"># Union — all values from both (unique)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">union1d</span>(a, b))     <span class="cm"># [1 2 3 4 5 6 7]</span>
+
+<span class="cm"># Intersection — values in BOTH</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">intersect1d</span>(a, b)) <span class="cm"># [3 4 5]</span>
+
+<span class="cm"># Difference — values in a but NOT in b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">setdiff1d</span>(a, b))   <span class="cm"># [1 2]</span>
+
+<span class="cm"># Symmetric difference — in EITHER but NOT both</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">setxor1d</span>(a, b))    <span class="cm"># [1 2 6 7]</span>
+
+<span class="cm"># Check membership — is each element of a in b?</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">in1d</span>(a, b))        <span class="cm"># [F F T T T F T]</span>
+
+<span class="cm"># Real-world use: find customers who bought both products</span>
+product_A_buyers = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">101</span>,<span class="nm">102</span>,<span class="nm">103</span>,<span class="nm">104</span>,<span class="nm">105</span>])
+product_B_buyers = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">103</span>,<span class="nm">105</span>,<span class="nm">106</span>,<span class="nm">107</span>])
+both = <span class="op">np</span>.<span class="fn">intersect1d</span>(product_A_buyers, product_B_buyers)
+<span class="fn">print</span>(<span class="st">f"Bought both: Customer IDs {both}"</span>)  <span class="cm"># [103 105]</span></pre>
+    </div>
+
+    <div class="callout purple">
+      <div class="callout-title">🎯 Real-World Applications</div>
+      <ul>
+        <li><strong>np.unique()</strong> → Find unique product categories in sales data</li>
+        <li><strong>np.intersect1d()</strong> → Customers who appear in two different datasets</li>
+        <li><strong>np.setdiff1d()</strong> → Items in old stock but NOT new stock (discontinued)</li>
+        <li><strong>np.in1d()</strong> → Filter a large array to rows matching allowed IDs</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 7 — QUIZ
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div>
+      <h2>Practice MCQs — 20 Questions</h2>
+      <p>Covering ufuncs, stats, distributions, sorting, and set operations. Need 16/20 to pass.</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div>
+      <div class="score-msg"  id="score-msg"></div>
+      <div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 8 — REAL WORLD TASK
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0D9373">🏆</div>
+    <div>
+      <h2>Real-World Task — Stock Market Simulator</h2>
+      <p>Estimated time: 80–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Quantitative Analyst</strong> at <em>Vertex Capital</em>. Using only NumPy, simulate <strong>2 years of daily stock prices</strong> for 5 companies, calculate technical indicators, run statistical analysis, detect anomalies, and generate a full performance report — all from simulated realistic market data.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0D9373">1</div>
+        <h4>Phase 1 — Simulate Stock Price Data</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Generate Realistic Stock Prices</h5>
+            <p>Stock prices follow a <strong>random walk</strong> — each day's price = yesterday's price × (1 + random daily return). Use normal distribution with small mean and std.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(seed=<span class="nm">2024</span>)
+
+companies = [<span class="st">'TechCo'</span>, <span class="st">'HealthX'</span>, <span class="st">'EnergyPlus'</span>, <span class="st">'FinBank'</span>, <span class="st">'RetailMart'</span>]
+days = <span class="nm">504</span>          <span class="cm"># ~2 years of trading days</span>
+start_prices = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">500</span>, <span class="nm">250</span>, <span class="nm">180</span>, <span class="nm">320</span>, <span class="nm">90</span>])  <span class="cm"># opening prices</span>
+
+<span class="cm"># Daily returns: mean 0.05% gain, 1.5% daily volatility</span>
+daily_returns = rng.<span class="fn">normal</span>(loc=<span class="nm">0.0005</span>, scale=<span class="nm">0.015</span>, size=(days, <span class="nm">5</span>))
+
+<span class="cm"># Build price matrix using cumulative product</span>
+price_matrix = start_prices * <span class="op">np</span>.<span class="fn">cumprod</span>(<span class="nm">1</span> + daily_returns, axis=<span class="nm">0</span>)
+
+<span class="fn">print</span>(<span class="st">f"Shape: {price_matrix.shape}"</span>)   <span class="cm"># (504, 5)</span>
+<span class="fn">print</span>(<span class="st">"First week prices:\n"</span>, <span class="op">np</span>.<span class="fn">round</span>(price_matrix[:<span class="nm">5</span>], <span class="nm">2</span>))</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Basic Price Exploration</h5>
+            <p>Print for each company: starting price, ending price (last day), all-time high, all-time low, and overall % return over 2 years.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0369A1">2</div>
+        <h4>Phase 2 — Daily Returns &amp; Volatility Analysis</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Calculate Actual Daily Returns from Prices</h5>
+            <p>From the price matrix, compute daily percentage returns using <code>np.diff()</code>. The formula is: <code>(today - yesterday) / yesterday × 100</code>.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>returns = <span class="op">np</span>.<span class="fn">diff</span>(price_matrix, axis=<span class="nm">0</span>) / price_matrix[:-<span class="nm">1</span>] * <span class="nm">100</span>
+<span class="fn">print</span>(<span class="st">f"Returns shape: {returns.shape}"</span>)   <span class="cm"># (503, 5)</span></pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Annualised Volatility (Risk Measure)</h5>
+            <p>Volatility = std of daily returns × √252 (trading days per year). Calculate annualised volatility for each company. The riskiest company has the highest volatility.</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Best and Worst Single Days</h5>
+            <p>For each company, find its best single day gain (%) and worst single day loss (%). Use <code>np.max()</code> and <code>np.min()</code> with <code>axis=0</code>.</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">4</div>
+          <div class="step-content">
+            <h5>Count Positive vs Negative Days</h5>
+            <p>For each company, how many of the 503 days had positive returns and how many had negative returns? Use boolean masking.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#B45309">3</div>
+        <h4>Phase 3 — Moving Averages (Technical Indicators)</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>20-Day Simple Moving Average (SMA)</h5>
+            <p>For each company, calculate the 20-day rolling average price using a loop + slicing. This is a key technical indicator traders use to spot trends.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">GUIDE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># For company 0 (TechCo):</span>
+window = <span class="nm">20</span>
+techco_prices = price_matrix[:, <span class="nm">0</span>]
+sma_20 = <span class="op">np</span>.<span class="fn">array</span>([
+    <span class="op">np</span>.<span class="fn">mean</span>(techco_prices[i:i+window])
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(techco_prices) - window + <span class="nm">1</span>)
+])
+<span class="fn">print</span>(<span class="st">f"SMA-20 length: {len(sma_20)}"</span>)  <span class="cm"># 485</span>
+
+<span class="cm"># Do this for all 5 companies</span></pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>50-Day SMA and Trading Signal</h5>
+            <p>Also calculate 50-day SMA. A <strong>Golden Cross</strong> occurs when the 20-day SMA crosses above the 50-day SMA — a classic BUY signal. Count how many golden crosses occurred for TechCo over the 2 years.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">4</div>
+        <h4>Phase 4 — Correlation &amp; Anomaly Detection</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Full Correlation Matrix</h5>
+            <p>Use <code>np.corrcoef(returns.T)</code> to get a 5×5 correlation matrix of all companies' daily returns. Print it rounded to 2 decimal places. Which two companies move most together?</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Detect Crash Days — Z-Score Method</h5>
+            <p>A "crash day" is when returns are more than 3 standard deviations below the mean (z-score &lt; -3). For each company, find crash days using the formula:</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">FORMULA</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>z_scores = (returns - <span class="op">np</span>.<span class="fn">mean</span>(returns, axis=<span class="nm">0</span>)) / <span class="op">np</span>.<span class="fn">std</span>(returns, axis=<span class="nm">0</span>)
+crash_days = <span class="op">np</span>.<span class="fn">sum</span>(z_scores &lt; -<span class="nm">3</span>, axis=<span class="nm">0</span>)
+<span class="fn">print</span>(<span class="st">f"Crash days per company: {crash_days}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Value at Risk (VaR) at 95% Confidence</h5>
+            <p>VaR tells you the worst expected daily loss 95% of the time. Calculate by finding the 5th percentile of each company's daily returns.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">FORMULA</span></div>
+<pre>var_95 = <span class="op">np</span>.<span class="fn">percentile</span>(returns, <span class="nm">5</span>, axis=<span class="nm">0</span>)
+<span class="fn">print</span>(<span class="st">"VaR (95% confidence):"</span>)
+<span class="kw">for</span> i, company <span class="kw">in</span> <span class="fn">enumerate</span>(companies):
+    <span class="fn">print</span>(<span class="st">f"  {company}: worst day loss = {var_95[i]:.2f}%"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#DC2626">5</div>
+        <h4>Phase 5 — Final Portfolio Report</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Equal-Weight Portfolio Performance</h5>
+            <p>Build a portfolio where each company has 20% weight. The portfolio daily return = average of all 5 companies' returns. Calculate portfolio total return, annual volatility, and Sharpe Ratio (return / risk).</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Print the Full Executive Report</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED OUTPUT FORMAT</span></div>
+<pre>══════════════════════════════════════
+   VERTEX CAPITAL — 2-YEAR REPORT
+══════════════════════════════════════
+COMPANY PERFORMANCE
+  Company       Start   End    Return  Risk(σ)
+  TechCo        500.0   ???    +??%    ??%
+  HealthX       250.0   ???    +??%    ??%
+  EnergyPlus    180.0   ???    +??%    ??%
+  FinBank       320.0   ???    +??%    ??%
+  RetailMart     90.0   ???    +??%    ??%
+
+WINNER:  [Company with best return]
+RISKIEST:[Company with highest volatility]
+
+PORTFOLIO (Equal Weight 20%)
+  Total Return   : +??%
+  Annual Vol     : ??%
+  Sharpe Ratio   : ??
+
+ANOMALIES DETECTED
+  Total crash days across all stocks: ??
+══════════════════════════════════════</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px; padding:20px; background:var(--bg); border-radius:10px; border:1px solid var(--border);">
+      <div style="font-weight:700; font-size:15px; margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated 504×5 price matrix using random walk (normal distribution)</li>
+        <li>Computed starting price, ending price, high, low, and total % return per company</li>
+        <li>Calculated daily returns matrix using np.diff (shape 503×5)</li>
+        <li>Computed annualised volatility (std × √252) for each company</li>
+        <li>Found best day gain and worst day loss per company</li>
+        <li>Counted positive and negative return days per company</li>
+        <li>Built 20-day and 50-day simple moving averages</li>
+        <li>Counted golden cross events for TechCo</li>
+        <li>Printed a 5×5 correlation matrix for all companies</li>
+        <li>Detected crash days using z-score method (z &lt; -3)</li>
+        <li>Calculated 95% Value at Risk (VaR) for each company</li>
+        <li>Computed equal-weight portfolio return, volatility, and Sharpe Ratio</li>
+        <li>Printed a complete formatted final report</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 30 min)</div>
+      Simulate a <strong>market crash event</strong>: on day 250, multiply ALL companies' prices by a random factor drawn from <code>rng.uniform(0.7, 0.85)</code> to simulate a 15–30% crash. Then recalculate all stats and compare pre-crash vs post-crash average returns.
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="day-footer">
+  <div class="series">NumPy Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Arrays</span>
+    <span class="day-pill done active">Day 2 · Math &amp; Stats</span>
+    <span class="day-pill">Day 3 · Broadcasting</span>
+    <span class="day-pill">Day 4 · Linear Algebra</span>
+    <span class="day-pill">Day 5 · Real Project</span>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ── QUIZ DATA ─────────────────────────────────────────────────────────────
+const questions = [
+  {
+    q: "What is a NumPy 'ufunc'?",
+    opts: [
+      "A user-defined function that loops over arrays",
+      "A vectorised function that operates element-by-element using compiled C code",
+      "A function that only works on 1D arrays",
+      "A function for creating new arrays"
+    ],
+    ans: 1,
+    explain: "Ufuncs (universal functions) are vectorised operations implemented in C. They process entire arrays without Python loops, making them 10–100× faster."
+  },
+  {
+    code: "np.log(np.array([1, np.e, np.e**2]))",
+    q: "What does this return?",
+    opts: ["[0, 1, 2]", "[1, e, e²]", "[0, 2.718, 7.389]", "Error — can't take log of e"],
+    ans: 0,
+    explain: "np.log computes the natural log (base e). ln(1)=0, ln(e)=1, ln(e²)=2. Result: [0. 1. 2.]"
+  },
+  {
+    q: "What does `np.nan_to_num(x, nan=0.0)` do?",
+    opts: [
+      "Deletes all NaN values from the array",
+      "Replaces NaN values with 0.0 and keeps inf values",
+      "Raises an error if NaN is found",
+      "Converts all zeros to NaN"
+    ],
+    ans: 1,
+    explain: "nan_to_num replaces NaN with the specified value (default 0). You can also specify replacements for +inf and -inf separately."
+  },
+  {
+    code: "data = np.array([10, np.nan, 30, 40])\nprint(np.mean(data))",
+    q: "What is printed?",
+    opts: ["26.67", "20.0", "nan", "30.0"],
+    ans: 2,
+    explain: "np.mean() returns nan if ANY element is NaN. Use np.nanmean() to compute the mean while ignoring NaN values. np.nanmean(data) would give 26.67."
+  },
+  {
+    q: "What does `np.std(data, ddof=1)` compute?",
+    opts: [
+      "Population standard deviation (divide by N)",
+      "Sample standard deviation (divide by N-1)",
+      "Standard deviation of the squared values",
+      "The variance, not standard deviation"
+    ],
+    ans: 1,
+    explain: "ddof=1 applies Bessel's correction — divides by N-1 instead of N. Use ddof=1 when your data is a SAMPLE from a larger population, ddof=0 for the full population."
+  },
+  {
+    q: "np.corrcoef() returns values in what range?",
+    opts: ["0 to 1", "-1 to 1", "0 to ∞", "-∞ to ∞"],
+    ans: 1,
+    explain: "Pearson correlation coefficient always ranges from -1 (perfect negative correlation) to +1 (perfect positive correlation). 0 means no linear relationship."
+  },
+  {
+    code: "arr = np.array([10, 20, 30, 40, 50])\nprint(np.cumsum(arr))",
+    q: "What is printed?",
+    opts: ["150", "[10, 30, 60, 100, 150]", "[10, 20, 30, 40, 50]", "[1, 2, 3, 4, 5]"],
+    ans: 1,
+    explain: "cumsum returns the running total: [10, 10+20, 10+20+30, 10+20+30+40, 10+20+30+40+50] = [10, 30, 60, 100, 150]."
+  },
+  {
+    q: "Which distribution would you use to model the number of website visitors per minute?",
+    opts: ["Normal distribution", "Binomial distribution", "Poisson distribution", "Uniform distribution"],
+    ans: 2,
+    explain: "Poisson distribution models the number of events occurring in a fixed time period at a known average rate. Website visitors per minute is a classic Poisson use case."
+  },
+  {
+    q: "What does `rng.normal(loc=100, scale=15, size=1000)` generate?",
+    opts: [
+      "1000 uniform integers from 100 to 115",
+      "1000 values from a normal distribution centered at 100 with std dev 15",
+      "1000 values from 0 to 100",
+      "A 1000×15 matrix"
+    ],
+    ans: 1,
+    explain: "loc is the mean (center), scale is the standard deviation (spread). This simulates something like IQ scores — mean 100, std 15."
+  },
+  {
+    code: "arr = np.array([5, 3, 8, 1, 9, 2, 7])\nprint(np.argsort(arr))",
+    q: "What is printed?",
+    opts: [
+      "[1 2 3 5 7 8 9]",
+      "[3 5 1 0 6 2 4]",
+      "[0 1 2 3 4 5 6]",
+      "[9 8 7 5 3 2 1]"
+    ],
+    ans: 1,
+    explain: "argsort returns the INDICES that would sort the array. The smallest is 1 (at index 3), then 2 (at index 5), then 3 (at index 1), etc. So: [3,5,1,0,6,2,4]."
+  },
+  {
+    q: "What is the 68-95-99.7 rule in a Normal distribution?",
+    opts: [
+      "68% of data lies within 2σ, 95% within 3σ, 99.7% within 4σ",
+      "68% of data lies within 1σ, 95% within 2σ, 99.7% within 3σ",
+      "Only applies to uniform distributions",
+      "The sum of mean, median, and mode"
+    ],
+    ans: 1,
+    explain: "The empirical rule: ~68% of values fall within ±1 standard deviation, ~95% within ±2σ, and ~99.7% within ±3σ of the mean."
+  },
+  {
+    code: "a = np.array([1,2,3,4,5])\nb = np.array([3,4,5,6,7])\nprint(np.intersect1d(a, b))",
+    q: "What is printed?",
+    opts: ["[1 2 3 4 5 6 7]", "[3 4 5]", "[1 2 6 7]", "[1 2]"],
+    ans: 1,
+    explain: "intersect1d finds values that are in BOTH arrays. Values 3, 4, and 5 appear in both a and b."
+  },
+  {
+    q: "What does `np.diff(arr)` return?",
+    opts: [
+      "The differences between each element and the mean",
+      "The cumulative sum of the array",
+      "The differences between consecutive elements",
+      "The absolute value of each element"
+    ],
+    ans: 2,
+    explain: "np.diff computes arr[i+1] - arr[i] for each consecutive pair. For [10, 20, 15, 30], it returns [10, -5, 15]."
+  },
+  {
+    q: "What does `np.where(condition, x, y)` do?",
+    opts: [
+      "Finds the indices where condition is True",
+      "Returns x where condition is True, y where False — element by element",
+      "Returns only True values",
+      "Counts how many elements satisfy the condition"
+    ],
+    ans: 1,
+    explain: "With 3 arguments, np.where is like a vectorised if-else: returns x for True positions, y for False positions. With 1 argument, it returns the indices of True elements."
+  },
+  {
+    code: "arr = np.array([1.7, 2.3, -1.6, 3.9])\nprint(np.ceil(arr))",
+    q: "What is printed?",
+    opts: [
+      "[1. 2. -1. 3.]",
+      "[2. 3. -1. 4.]",
+      "[1. 2. -2. 3.]",
+      "[2. 3. -2. 4.]"
+    ],
+    ans: 1,
+    explain: "np.ceil rounds UP towards positive infinity. ceil(1.7)=2, ceil(2.3)=3, ceil(-1.6)=-1 (towards zero from negative side), ceil(3.9)=4."
+  },
+  {
+    q: "What does `rng.choice(arr, size=3, replace=False)` do?",
+    opts: [
+      "Picks 3 elements with repetition allowed",
+      "Picks 3 unique elements WITHOUT replacement (no repeats)",
+      "Picks the 3 largest elements",
+      "Creates a copy of arr with 3 elements"
+    ],
+    ans: 1,
+    explain: "replace=False means each element can only be picked once (no repeats). Like drawing cards from a deck without putting them back."
+  },
+  {
+    q: "What is `np.ptp(arr)` equivalent to?",
+    opts: [
+      "np.mean(arr) - np.min(arr)",
+      "np.max(arr) - np.min(arr)",
+      "np.std(arr) × np.mean(arr)",
+      "np.sum(arr) / np.size(arr)"
+    ],
+    ans: 1,
+    explain: "ptp stands for 'peak to peak'. It's equivalent to max - min, which gives the range (spread) of the data."
+  },
+  {
+    code: "vals, counts = np.unique([3,1,2,1,3,3,2], return_counts=True)\nprint(counts)",
+    q: "What is printed?",
+    opts: ["[1 2 3]", "[2 2 3]", "[2 2 3] sorted by count", "[1 3 2]"],
+    ans: 1,
+    explain: "np.unique([3,1,2,1,3,3,2]) gives vals=[1,2,3]. Counts: 1 appears 2 times, 2 appears 2 times, 3 appears 3 times → counts=[2,2,3]."
+  },
+  {
+    q: "What does `np.searchsorted([10,20,30,40], 25)` return?",
+    opts: ["2", "3", "1", "None"],
+    ans: 0,
+    explain: "searchsorted finds the index where 25 should be inserted to maintain sorted order. It would go between 20 (index 1) and 30 (index 2), so it returns 2."
+  },
+  {
+    q: "For a Binomial distribution `rng.binomial(n=10, p=0.3, size=1000)`, what is the expected mean?",
+    opts: ["0.3", "3.0", "10.0", "7.0"],
+    ans: 1,
+    explain: "For a binomial distribution, mean = n × p = 10 × 0.3 = 3.0. On average, you'd expect 3 successes in 10 trials with 30% probability."
+  }
+];
+
+let userAnswers = Array(questions.length).fill(null);
+let submitted = false;
+
+function buildQuiz() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  questions.forEach((q, i) => {
+    const letters = ['A','B','C','D'];
+    const codeBlock = q.code ? `<code class="q-code">${q.code}</code>` : '';
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `q${i}`;
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-num">${i+1}</div>
+        <div>
+          <div class="q-text">${q.q}</div>
+          ${codeBlock}
+        </div>
+      </div>
+      <div class="q-options" id="opts${i}">
+        ${q.opts.map((o,j)=>`
+          <div class="opt" onclick="selectOpt(${i},${j})">
+            <div class="opt-letter">${letters[j]}</div>
+            <span>${o}</span>
+          </div>`).join('')}
+      </div>
+      <div class="q-explain" id="exp${i}"></div>`;
+    container.appendChild(card);
+  });
+}
+
+function selectOpt(qi, oi) {
+  if (submitted) return;
+  userAnswers[qi] = oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{
+    el.classList.remove('selected');
+    if(j===oi) el.classList.add('selected');
+  });
+  document.getElementById('answered-live').textContent = userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent = userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+  let correct = 0;
+  questions.forEach((q,i) => {
+    const card = document.getElementById(`q${i}`);
+    const optsDiv = document.getElementById(`opts${i}`);
+    const expDiv = document.getElementById(`exp${i}`);
+    const ua = userAnswers[i];
+    if (ua === q.ans) correct++;
+    optsDiv.querySelectorAll('.opt').forEach((el,j)=>{
+      if(j===q.ans) el.classList.add('correct-ans');
+      else if(j===ua && ua!==q.ans) el.classList.add('wrong-ans');
+    });
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    expDiv.className = `q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    expDiv.textContent = (ua===q.ans?'✅ ':'❌ ') + q.explain;
+  });
+  const pct = Math.round(correct/questions.length*100);
+  const msgs = [[0,50,"Keep going — review ufuncs and distributions carefully! 📚"],[50,75,"Decent effort! Go over the stats formulas again. 💪"],[75,90,"Strong work! You've got Day 2 under control. 🎉"],[90,101,"Perfect! Day 2 mastered completely. 🏆"]];
+  const msg = msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent = `${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent = msg;
+  document.getElementById('score-detail').textContent = `${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent = correct;
+}
+
+function resetQuiz() {
+  submitted = false;
+  userAnswers = Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent = '0';
+  document.getElementById('answered-live').textContent = '0';
+  buildQuiz();
+}
+
+function togglePhase(header) {
+  const body = header.nextElementSibling;
+  const chev = header.querySelector('.chevron');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy', 1800);
+  });
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

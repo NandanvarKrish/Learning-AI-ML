@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 45 — Classes & Objects</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:230px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 45 of 210 · Phase 2: Object-Oriented Programming</span>
+    <h1>Classes & Objects</h1>
+    <div class="subtitle">~2 hours · Bundling data and behavior together — the pattern behind scikit-learn's entire API</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Nearly every ML library you'll use is built around classes. In Phase 3, you'll write things like <code>model = LinearRegression()</code> then <code>model.fit(X, y)</code> — that's creating an <strong>object</strong> from a <strong>class</strong>, then calling a <strong>method</strong> on it. Today you learn exactly what's happening when you write that code, instead of it feeling like memorized magic syntax.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Classes and objects — the core idea</h2>
+  <p>A <strong>class</strong> is a blueprint — it describes what kind of data and behavior something will have, without being any specific instance of it. An <strong>object</strong> (or "instance") is one actual thing built from that blueprint.</p>
+  <div class="code">class Dog:
+    pass   # an empty class for now
+
+my_dog = Dog()    # creates an OBJECT (instance) of the Dog class
+print(type(my_dog))   # <class '__main__.Dog'></div>
+  <p>Think of "Dog" as the general idea/blueprint, and <code>my_dog</code> as one particular, real dog built from that blueprint. You could create many dogs — <code>dog1 = Dog()</code>, <code>dog2 = Dog()</code> — each a separate, independent object.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Attributes — data attached to an object</h2>
+  <div class="code">class Dog:
+    pass
+
+my_dog = Dog()
+my_dog.name = "Bruno"
+my_dog.age = 3
+
+print(my_dog.name)   # Bruno
+print(my_dog.age)    # 3</div>
+  <p>An <strong>attribute</strong> is a piece of data stored ON a specific object. Two different Dog objects can have completely different attribute values — that's the point of an object representing one specific "thing."</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Methods — functions that belong to a class</h2>
+  <div class="code">class Dog:
+    def bark(self):
+        print(self.name + " says woof!")
+
+my_dog = Dog()
+my_dog.name = "Bruno"
+my_dog.bark()   # Bruno says woof!</div>
+  <p>A <strong>method</strong> is just a function defined inside a class. The first parameter is always <code>self</code> — it refers to "this particular object" the method was called on, letting the method access that object's own attributes (like <code>self.name</code> above).</p>
+  <p><strong>You never pass a value for <code>self</code> yourself</strong> — Python fills it in automatically as whichever object you called the method on.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (Customer class)</h2>
+  <div class="panel">
+    <p class="example-tag">Reconnects to Day 27 and Day 37's customer data</p>
+    <div class="code">class Customer:
+    def show_info(self):
+        print(self.name + " is " + str(self.age) + " years old")
+
+    def apply_discount(self, percent):
+        discounted = self.order_value - (self.order_value * percent / 100)
+        return discounted
+
+customer1 = Customer()
+customer1.name = "Rohan"
+customer1.age = 28
+customer1.order_value = 1200
+
+customer1.show_info()                    # Rohan is 28 years old
+print(customer1.apply_discount(20))      # 960.0</div>
+    <p>Compare this to Day 27's separate variables, and Day 37's dictionary — a class bundles the DATA (name, age, order_value) together WITH the BEHAVIOR (show_info, apply_discount) that acts on it, in one organized unit.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (multiple independent objects)</h2>
+  <div class="panel">
+    <p class="example-tag">Each object keeps its own separate data</p>
+    <div class="code">class Product:
+    def describe(self):
+        print(self.name + ": ₹" + str(self.price))
+
+pen = Product()
+pen.name = "Pen"
+pen.price = 20
+
+notebook = Product()
+notebook.name = "Notebook"
+notebook.price = 60
+
+pen.describe()        # Pen: ₹20
+notebook.describe()   # Notebook: ₹60</div>
+    <p><code>pen</code> and <code>notebook</code> are both Product objects, built from the same class, but each holds its own independent set of attribute values.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Forgetting the parentheses when creating an object.</strong> <code>my_dog = Dog</code> (no parentheses) just refers to the CLASS itself, not a new object — you need <code>Dog()</code>.</p>
+    <p><strong>Mistake 2 — Forgetting <code>self</code> as a method's first parameter.</strong> Every method needs it, even if unused — Python automatically passes the calling object as the first argument.</p>
+    <p><strong>Mistake 3 — Confusing the class with an instance.</strong> <code>Dog</code> is the blueprint; <code>my_dog</code> is one specific object built from it.</p>
+    <p><strong>Mistake 4 — Typo'd attribute names silently creating a NEW attribute.</strong> If you accidentally write <code>my_dog.nmae = "Bruno"</code> (typo), Python doesn't error — it just creates a new, different attribute. A genuinely sneaky source of bugs.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now supports classes & objects)</h2>
+  <div class="solver">
+    <h3>Try the Customer or Product examples, or build your own class</h3>
+    <textarea id="codeInput">class Customer:
+    def show_info(self):
+        print(self.name + " is " + str(self.age) + " years old")
+
+    def apply_discount(self, percent):
+        discounted = self.order_value - (self.order_value * percent / 100)
+        return discounted
+
+customer1 = Customer()
+customer1.name = "Rohan"
+customer1.age = 28
+customer1.order_value = 1200
+
+customer1.show_info()
+print(customer1.apply_discount(20))</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 46 covers the constructor (<code>__init__</code>) — a special method that sets up an object's attributes automatically the moment it's created, instead of assigning them one by one after the fact like today.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 45 of 210 · AI & ML Study Plan · Phase 2: Object-Oriented Programming</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Write an empty class called 'Car'.", steps: "class Car:\n    pass" },
+  { q: "Create an object called 'my_car' from the Car class.", steps: "my_car = Car()" },
+  { q: "Set an attribute 'brand' on my_car to 'Toyota', then print it.", steps: 'my_car.brand = "Toyota"\nprint(my_car.brand)' },
+  { q: "Write a method 'honk' inside the Car class that prints 'Beep!'", steps: "class Car:\n    def honk(self):\n        print('Beep!')" },
+  { q: "Why does every method need 'self' as its first parameter?", steps: "self refers to the specific object the method is being called on, letting the method access and use that object's own attributes." },
+  { q: "car1 = Car(); car2 = Car(); car1.color='red'; car2.color='blue'. What is car1.color?", steps: "'red' — each object keeps its own independent attributes, so setting car2's color doesn't affect car1." },
+  { q: "What's the difference between 'Dog' and 'Dog()'?", steps: "'Dog' refers to the class itself (the blueprint). 'Dog()' creates a new object (instance) built from that blueprint." },
+  { q: "class Item:\n    def show(self):\n        print(self.name)\nitem = Item()\nitem.show() — what happens, and why?", steps: "This raises an AttributeError — 'name' was never set on item before calling show(), so self.name doesn't exist yet." },
+  { q: "Write a Product class with a method 'total_price' that returns self.price * self.quantity.", steps: "class Product:\n    def total_price(self):\n        return self.price * self.quantity" },
+  { q: "How does a class differ from Day 37's dictionary approach for representing a customer record?", steps: "A dictionary only holds data (key-value pairs). A class can hold BOTH data (attributes) AND behavior (methods that act on that data) together in one organized unit." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with class/object support ---
+let classes = {};
+
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val && val.__isInstance) return `<${val.__class} object>`;
+  if(Array.isArray(val)) return '[' + val.map(v => typeof v==='string'?`'${v}'`:pyRepr(v)).join(', ') + ']';
+  return String(val);
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))){
+    return value.slice(1,-1);
+  }
+  if(!isNaN(parseFloat(value)) && isFinite(value)){
+    return value.includes('.') ? parseFloat(value) : parseInt(value);
+  }
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || (v && v.__isInstance)) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+
+  let m = arg.match(/^(\w+)\(\)$/);
+  if(m && classes[m[1]]){
+    return {__isInstance:true, __class:m[1], attrs:{}};
+  }
+  m = arg.match(/^(\w+)\.(\w+)\((.*)\)$/);
+  if(m && vars[m[1]] && vars[m[1]].__isInstance){
+    return callMethod(vars[m[1]], m[2], m[3], vars);
+  }
+  m = arg.match(/^(\w+)\.(\w+)$/);
+  if(m && vars[m[1]] && vars[m[1]].__isInstance){
+    const inst = vars[m[1]];
+    if(!inst.attrs.hasOwnProperty(m[2])) throw new Error(`AttributeError: '${inst.__class}' object has no attribute '${m[2]}'`);
+    return inst.attrs[m[2]];
+  }
+
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p => evalComplex(p, vars));
+  }
+  const strMatch = arg.match(/^str\((.+)\)$/);
+  if(strMatch) return pyRepr(evalComplex(strMatch[1], vars)).replace(/^'(.*)'$/, '$1');
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch) return vars[lenMatch[1]].length;
+
+  return evalGeneral(arg, vars);
+}
+
+function callMethod(instance, methodName, argsStr, callerVars){
+  const cls = classes[instance.__class];
+  const method = cls.methods[methodName];
+  if(!method) throw new Error(`AttributeError: '${instance.__class}' object has no attribute '${methodName}'`);
+  const argExprs = splitTopLevel(argsStr, ',').filter(s=>s.trim()!=='');
+  const localVars = Object.assign({}, callerVars);
+  localVars['self'] = instance;
+  for(let idx=1; idx<method.params.length; idx++){
+    const p = method.params[idx];
+    localVars[p] = idx-1 < argExprs.length ? evalComplex(argExprs[idx-1], callerVars) : undefined;
+  }
+  const output = [];
+  let returnValue = null;
+  try{
+    execBlock(method.lines, method.bStart, method.bodyIndent, localVars, output, {count:0});
+  } catch(sig){
+    if(sig && sig.__return) returnValue = sig.value;
+    else throw sig;
+  }
+  return {returnValue, output};
+}
+
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+
+function execLine(line, vars, output){
+  if(line.match(/^return(\s|$)/)){
+    const exprPart = line.replace(/^return\s*/, '').trim();
+    const val = exprPart === '' ? null : evalComplex(exprPart, vars);
+    const sig = new Error('__return__');
+    sig.__return = true;
+    sig.value = val;
+    throw sig;
+  }
+  if(line === 'pass') return;
+
+  const attrAssign = line.match(/^(\w+)\.(\w+)\s*=\s*(.+)$/);
+  if(attrAssign && vars[attrAssign[1]] && vars[attrAssign[1]].__isInstance){
+    vars[attrAssign[1]].attrs[attrAssign[2]] = evalComplex(attrAssign[3], vars);
+    return;
+  }
+
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  const bareMethodCall = line.match(/^(\w+)\.(\w+)\((.*)\)$/);
+
+  if(printMatch){
+    const parts = splitTopLevel(printMatch[1], ',');
+    output.push(parts.map(p => {
+      let v = evalComplex(p, vars);
+      if(v && typeof v === 'object' && v.hasOwnProperty('returnValue')) v = v.returnValue;
+      return typeof v === 'string' ? v : pyRepr(v);
+    }).join(' '));
+  } else if(bareMethodCall && vars[bareMethodCall[1]] && vars[bareMethodCall[1]].__isInstance){
+    const result = callMethod(vars[bareMethodCall[1]], bareMethodCall[2], bareMethodCall[3], vars);
+    result.output.forEach(o => output.push(o));
+  } else if(assignMatch){
+    let v = evalComplex(assignMatch[2], vars);
+    if(v && typeof v === 'object' && v.hasOwnProperty('returnValue')){
+      v.output.forEach(o => output.push(o));
+      v = v.returnValue;
+    }
+    vars[assignMatch[1]] = v;
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+
+    const classMatch = trimmed.match(/^class (\w+):$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+
+    if(classMatch){
+      const className = classMatch[1];
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      const methods = {};
+      let k = bStart;
+      while(k < bEnd){
+        const line2 = lines[k];
+        if(line2.trim()===''){ k++; continue; }
+        const defMatch = line2.trim().match(/^def (\w+)\((.*)\):$/);
+        if(defMatch && getIndent(line2) === baseIndent+4){
+          const mName = defMatch[1];
+          const params = defMatch[2].split(',').map(s=>s.trim()).filter(s=>s!=='');
+          const mStart = k+1, mEnd = findBlockExtent(lines, mStart, baseIndent+4);
+          methods[mName] = {params, bStart:mStart, bEnd:mEnd, bodyIndent: baseIndent+8, lines};
+          k = mEnd;
+        } else k++;
+      }
+      classes[className] = {methods, lines};
+      i = bEnd;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else {
+      try{ execLine(trimmed, vars, output); }
+      catch(err){
+        if(err && err.__return) throw err;
+        output.push(`<span class="error">${escapeHtml(err.message || 'Error')}</span>`);
+      }
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  classes = {};
+  const output = [];
+  try{
+    execBlock(lines, 0, 0, vars, output, {count:0});
+  } catch(err){
+    if(!(err && err.__return)) output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "A class is best described as:", opts: ["A specific real object","A blueprint describing what objects of this type will have/do","A type of loop","A built-in Python function"], correct: 1, explain: "A class defines the structure and behavior; objects are the actual instances built from it." },
+  { q: "class Dog: pass. What does my_dog = Dog() do?", opts: ["Refers to the class itself","Creates a new object (instance) of Dog","Causes an error","Deletes the Dog class"], correct: 1, explain: "The parentheses call the class, creating a new instance." },
+  { q: "What is 'self' inside a method?", opts: ["A random keyword with no purpose","A reference to the specific object the method was called on","Always refers to the class itself","A built-in Python function"], correct: 1, explain: "self lets a method access and modify the calling object's own attributes." },
+  { q: "dog1=Dog(); dog2=Dog(); dog1.name='Rex'. What is dog2.name?", opts: ["'Rex'","Undefined/AttributeError — dog2 has its own separate attributes","Also automatically 'Rex'","Causes a crash immediately"], correct: 1, explain: "Each object has independent attributes — setting dog1's doesn't affect dog2." },
+  { q: "Why does every method need 'self' as its first parameter?", opts: [
+      "It's optional and rarely used",
+      "Python automatically passes the calling object as the first argument, and self is how the method refers to it",
+      "self stores the class name only",
+      "It's required only for methods with no other parameters"
+    ], correct: 1, explain: "This is how a method accesses 'its own' object's data." },
+  { q: "What happens if you forget the parentheses: my_dog = Dog (no call)?", opts: [
+      "Creates a new object anyway",
+      "my_dog just refers to the class itself, not a new instance",
+      "Causes a syntax error",
+      "Automatically adds the parentheses for you"
+    ], correct: 1, explain: "Without (), you're referencing the class blueprint itself, not creating an object." },
+  { q: "class Item: def show(self): print(self.name). x = Item(); x.show() — what happens?", opts: [
+      "Prints an empty string",
+      "Raises an AttributeError since 'name' was never set on x",
+      "Prints 'None'",
+      "Works fine, printing 'Item'"
+    ], correct: 1, explain: "self.name doesn't exist until it's explicitly assigned on that object." },
+  { q: "How does a class improve on a dictionary (Day 37) for representing structured data?", opts: [
+      "It doesn't improve on it at all",
+      "A class can bundle both data (attributes) AND behavior (methods) together, not just data alone",
+      "Dictionaries can't store any data",
+      "Classes are only used for numbers"
+    ], correct: 1, explain: "This data+behavior bundling is the core advantage OOP offers over plain data structures." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

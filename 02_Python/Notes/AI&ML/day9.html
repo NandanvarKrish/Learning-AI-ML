@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 9 — Probability Basics</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:140px;}
+.solver input[type=range]{flex:1; min-width:140px;}
+.solver input[type=number]{width:80px; padding:8px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono); text-align:center;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:44px; text-align:center;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:15px; line-height:1.9;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 9 of 210 · Phase 1: Statistics & Probability Week</span>
+    <h1>Probability Basics</h1>
+    <div class="subtitle">~2 hours · Sample space, events, and your first probability formulas</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>When a classification model says "87% chance this is spam," that number is a probability, produced using the exact same rules you'll learn today, just computed automatically from data. Naive Bayes (a full algorithm you'll build in Phase 3) is literally built entirely out of today's formulas. Probability is the language ML uses to express uncertainty — and almost every prediction a model makes is really a probability in disguise.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> What is probability?</h2>
+  <p>Probability measures how likely an event is to happen, expressed as a number between <strong>0</strong> (impossible) and <strong>1</strong> (certain):</p>
+  <div class="eq">P(event) = (favorable outcomes) / (total possible outcomes)</div>
+  <div class="panel">
+    <p><strong>Example:</strong> A bag has 3 red balls and 7 blue balls (10 total). What's the probability of drawing red?</p>
+    <p>P(red) = 3 / 10 = <strong>0.3</strong> (or 30%)</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Sample space and events</h2>
+  <p>The <strong>sample space</strong> is the set of ALL possible outcomes of an experiment. An <strong>event</strong> is any specific outcome (or group of outcomes) you're interested in — a subset of the sample space.</p>
+  <div class="panel">
+    <p><strong>Example:</strong> Rolling a die. Sample space = {1, 2, 3, 4, 5, 6} — 6 total outcomes.</p>
+    <p>Event "rolling an even number" = {2, 4, 6} — 3 outcomes out of the sample space.</p>
+    <p>P(even) = 3/6 = <strong>0.5</strong></p>
+  </div>
+  <details>
+    <summary>Another sample space example</summary>
+    <div class="details-body">
+      <p>Tossing 2 coins. Sample space = {HH, HT, TH, TT} — 4 total outcomes.</p>
+      <p>Event "at least one Head" = {HH, HT, TH} — 3 outcomes.</p>
+      <p>P(at least one head) = 3/4 = 0.75</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Real-world example (quality control)</h2>
+  <div class="panel">
+    <p class="example-tag">Business example</p>
+    <p>A factory produces 500 units in a batch, and past data shows 15 are typically defective. What's the probability a randomly picked unit is defective?</p>
+    <p>P(defective) = 15 / 500 = <strong>0.03</strong> (3%)</p>
+    <p>This exact calculation — historical frequency used to estimate future probability — is precisely how ML models "learn" probabilities from training data. The model doesn't know the true defect rate; it estimates it from patterns in the data it's seen, just like this factory calculation does.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Complementary events</h2>
+  <p>The complement of an event is "everything except that event." Since all probabilities must add up to 1:</p>
+  <div class="eq">P(not A) = 1 − P(A)</div>
+  <div class="panel">
+    <p><strong>Example:</strong> If P(defective) = 0.03, then P(not defective) = 1 − 0.03 = <strong>0.97</strong> (97% of units are fine).</p>
+    <p>This is often the fastest way to solve a probability problem — sometimes it's much easier to calculate the complement and subtract from 1 than to calculate the event directly.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (loan approval)</h2>
+  <div class="panel">
+    <p class="example-tag">Finance example</p>
+    <p>A bank's records show that out of 1,000 loan applications last year, 720 were approved. Based on this data, what's the probability a new application gets approved?</p>
+    <p>P(approved) = 720/1000 = <strong>0.72</strong>. P(rejected) = 1 − 0.72 = <strong>0.28</strong>.</p>
+    <p>This is genuinely how a real credit-scoring ML model starts — by learning approval probability patterns from thousands of historical applications, then refining that estimate using more detailed features (income, credit history, etc.) which you'll learn to incorporate in Phase 3.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Probability values outside 0 to 1.</strong> If your calculated probability is negative or greater than 1, you've made an error — go back and check your favorable/total counts.</p>
+    <p><strong>Mistake 2 — Miscounting the sample space.</strong> Forgetting an outcome (or double-counting one) throws off every probability calculated from it. List out the sample space explicitly for tricky problems.</p>
+    <p><strong>Mistake 3 — Forgetting all probabilities in a sample space must sum to 1.</strong> If P(A) + P(B) + P(C) ≠ 1 for all possible outcomes A, B, C, something's wrong.</p>
+    <p><strong>Mistake 4 — Assuming past frequency always equals true future probability.</strong> A factory's historical 3% defect rate is an <em>estimate</em>, not a guarantee — real-world probability from data always carries some uncertainty, especially with small sample sizes.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Probability Simulator</h2>
+  <div class="solver">
+    <h3>Watch probability converge over many trials</h3>
+    <div class="solver-row">
+      <label>True probability (p)</label>
+      <input type="range" id="pSlider" min="0.05" max="0.95" step="0.05" value="0.3">
+      <span class="val" id="pVal">0.3</span>
+    </div>
+    <div class="solver-row">
+      <label>Number of trials</label>
+      <input type="number" id="trials" value="200">
+    </div>
+    <button onclick="runSimulation()">Run Simulation</button>
+    <div class="solver-result" id="result"></div>
+    <canvas id="plot" width="600" height="260"></canvas>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Each "trial" is like flipping a biased coin with your chosen probability p. Watch the running average (orange line) wobble early on, then settle close to the true p as trials increase — this is called the <strong>Law of Large Numbers</strong>, and it's the same reason ML models need lots of training data to estimate probabilities reliably.</p>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Tomorrow's topic — conditional probability — asks a sharper question: "given that I already know something happened, how does that change the probability of something else?" This is the exact mechanism behind spam filters, medical diagnosis models, and recommendation systems.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 9 of 210 · AI & ML Study Plan · Phase 1: Statistics & Probability Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "A bag has 5 red, 3 blue, 2 green balls (10 total). Find P(blue).", steps: "P(blue) = 3/10 = 0.3" },
+  { q: "Rolling a fair die, find P(rolling a 5 or 6).", steps: "Favorable outcomes {5,6} = 2, total = 6 → P = 2/6 ≈ 0.33" },
+  { q: "A jar has 20 candies, 4 are sour. Find P(not sour).", steps: "P(sour) = 4/20 = 0.2 → P(not sour) = 1 − 0.2 = 0.8" },
+  { q: "Tossing 2 coins, find P(exactly one head). Sample space: {HH,HT,TH,TT}", steps: "Exactly one head = {HT, TH} = 2 outcomes → P = 2/4 = 0.5" },
+  { q: "Out of 250 customers, 60 made a repeat purchase. Estimate P(repeat purchase).", steps: "P = 60/250 = 0.24" },
+  { q: "Using the answer above, find P(no repeat purchase).", steps: "1 − 0.24 = 0.76" },
+  { q: "A deck has 52 cards, 4 are Aces. Find P(drawing an Ace).", steps: "P(Ace) = 4/52 ≈ 0.077" },
+  { q: "In a batch of 1,000 emails, 40 are spam. Find P(spam) and P(not spam).", steps: "P(spam) = 40/1000 = 0.04. P(not spam) = 1 − 0.04 = 0.96" },
+  { q: "A survey of 500 people found 325 prefer online shopping. Find that probability.", steps: "325/500 = 0.65" },
+  { q: "Why must all probabilities in a sample space add up to exactly 1?", steps: "Because the sample space covers every possible outcome — something must happen, so the total certainty (1) is distributed across all possible events." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const pSlider = document.getElementById('pSlider');
+const pVal = document.getElementById('pVal');
+pSlider.addEventListener('input', () => { pVal.textContent = pSlider.value; });
+
+function runSimulation(){
+  const p = parseFloat(pSlider.value);
+  const n = Math.min(parseInt(document.getElementById('trials').value) || 200, 2000);
+  let successes = 0;
+  const runningAvg = [];
+  for(let i=1; i<=n; i++){
+    if(Math.random() < p) successes++;
+    runningAvg.push(successes/i);
+  }
+  document.getElementById('result').innerHTML = `Final observed frequency after ${n} trials: <strong style="color:#e8a86b;">${(successes/n).toFixed(3)}</strong> (true p = ${p})`;
+  drawConvergence(runningAvg, p);
+}
+
+function drawConvergence(data, p){
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const padding = 40;
+
+  // axes
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, h-padding); ctx.lineTo(w-padding, h-padding); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, h-padding); ctx.stroke();
+
+  // true p reference line
+  const trueY = h - padding - p * (h - padding*2);
+  ctx.strokeStyle = '#2f6d4f'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(padding, trueY); ctx.lineTo(w-padding, trueY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#2f6d4f'; ctx.font = '11px monospace';
+  ctx.fillText(`true p = ${p}`, w-padding-70, trueY-6);
+
+  // running average curve
+  ctx.strokeStyle = '#c05621'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  data.forEach((val, i) => {
+    const px = padding + (i/(data.length-1)) * (w-padding*2);
+    const py = h - padding - val * (h-padding*2);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+
+  ctx.fillStyle = '#6b6459'; ctx.font = '11px monospace';
+  ctx.fillText('trials →', w-padding-30, h-padding+20);
+}
+runSimulation();
+
+const quizData = [
+  { q: "Probability values must always fall between:", opts: ["-1 and 1","0 and 1","0 and 100","1 and 10"], correct: 1, explain: "Probability is always between 0 (impossible) and 1 (certain)." },
+  { q: "What is the sample space when tossing one coin?", opts: ["{H}","{H, T}","{1,2,3,4,5,6}","{0, 1}"], correct: 1, explain: "A single coin toss has exactly two possible outcomes: Heads or Tails." },
+  { q: "A bag has 4 black and 6 white balls. Find P(black).", opts: ["0.4","0.6","4","0.1"], correct: 0, explain: "P(black) = 4/10 = 0.4." },
+  { q: "If P(rain today) = 0.3, what is P(no rain)?", opts: ["0.3","0.7","1.3","-0.3"], correct: 1, explain: "P(not A) = 1 − P(A) = 1 − 0.3 = 0.7." },
+  { q: "All the individual probabilities of every outcome in a sample space must sum to:", opts: ["0","0.5","1","100"], correct: 2, explain: "The sample space covers every possibility, so the total probability is exactly 1 (certainty)." },
+  { q: "Out of 400 products, 20 were returned. Estimate P(a random product being returned).", opts: ["0.02","0.05","0.2","0.5"], correct: 1, explain: "20/400 = 0.05." },
+  { q: "Which best describes an 'event' in probability?", opts: ["The exact same thing as sample space","A specific outcome or group of outcomes from the sample space","Always a single number","Something that never repeats"], correct: 1, explain: "An event is any subset of the sample space you're interested in measuring." },
+  { q: "Why does the Law of Large Numbers matter for ML?", opts: [
+      "It doesn't apply to machine learning",
+      "It explains why models need lots of training data to estimate reliable probabilities",
+      "It only applies to coin flips",
+      "It guarantees a model will always be 100% accurate"
+    ], correct: 1, explain: "Just like your simulation converged to true p only after many trials, ML models need sufficient data before their learned probabilities become reliable." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

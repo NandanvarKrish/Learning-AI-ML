@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pandas – Day 3 | GroupBy, Merge & Reshape</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+
+  :root {
+    --bg:        #EFF6FF;
+    --surface:   #FFFFFF;
+    --border:    #BFDBFE;
+    --accent:    #2563EB;
+    --accent2:   #1E3A8A;
+    --green:     #059669;
+    --red:       #EF233C;
+    --yellow:    #F59E0B;
+    --purple:    #7C3AED;
+    --teal:      #0891B2;
+    --orange:    #EA580C;
+    --text:      #0B1230;
+    --muted:     #1D4ED8;
+    --code-bg:   #0A1128;
+    --code-text: #BFDBFE;
+    --tag-bg:    #DBEAFE;
+    --tag-text:  #1E3A8A;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(37,99,235,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;}
+  .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;}
+  .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+
+  .hero{background:linear-gradient(135deg,#2563EB 0%,#1E3A8A 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#BFDBFE;}
+  .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;}
+  .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);}
+  h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;}
+  ul,ol{padding-left:22px;margin-bottom:10px;}
+  li{margin-bottom:5px;}
+  strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#3B82F6;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#93C5FD;} .fn{color:#67E8F9;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#1E3A8A;font-style:italic;} .op{color:#BFDBFE;} .hl{color:#FFFFFF;font-weight:600;}
+
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout        .callout-title{color:var(--accent);}
+  .callout.green  .callout-title{color:var(--green);}
+  .callout.yellow .callout-title{color:#92400E;}
+  .callout.red    .callout-title{color:var(--red);}
+  .callout.purple .callout-title{color:var(--purple);}
+  .callout.teal   .callout-title{color:var(--teal);}
+
+  .tbl-wrap{overflow-x:auto;margin:14px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:var(--bg);}
+
+  /* JOIN VENN VISUAL */
+  .join-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:16px 0;}
+  .join-card{border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;background:var(--bg);}
+  .join-visual{width:100px;height:60px;margin:0 auto 10px;position:relative;}
+  .join-circle{width:60px;height:60px;border-radius:50%;position:absolute;top:0;opacity:.55;}
+  .join-circle.left{background:#3B82F6;left:8px;}
+  .join-circle.right{background:#F59E0B;left:38px;}
+  .join-name{font-weight:700;font-size:13px;color:var(--accent2);margin-bottom:4px;}
+  .join-desc{font-size:11.5px;color:var(--muted);}
+
+  /* DF Visual */
+  .df-visual{overflow-x:auto;margin:14px 0;}
+  .df-table{border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .df-table th{background:var(--accent);color:#fff;padding:6px 10px;text-align:left;font-weight:600;border:1px solid #1D4ED8;}
+  .df-table td{padding:5px 10px;border:1px solid var(--border);}
+  .df-table td.key{background:var(--tag-bg);color:var(--tag-text);font-weight:600;}
+
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+
+  .fbox{background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;}
+  .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+
+  /* QUIZ */
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);}
+  .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);}
+  .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;}
+  .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;}
+  .opt.correct-ans .opt-letter{background:var(--green);color:#fff;}
+  .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
+  .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;}
+  .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);}
+  .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#2563EB,#1E3A8A);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;}
+  .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;}
+  .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;}
+  .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+
+  /* TASK */
+  .task-hero{background:linear-gradient(135deg,#2563EB,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;}
+  .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;}
+  .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;}
+  .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;}
+  .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;}
+  .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;}
+  .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;}
+  .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}.join-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐼 Pandas</div>
+  <span class="sep">|</span>
+  <span class="day-label">Day 3 of 5</span>
+  <div class="spacer"></div>
+  <span class="progress-label" style="margin-right:8px">60%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:60%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pandas Full Course · Day 3</div>
+  <h1>GroupBy, Merge &amp; <span>Reshape</span></h1>
+  <p>The analytical core of Pandas — split-apply-combine with groupby, combine datasets with merge/join, and reshape tables with pivot, melt, and stack.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔀 GroupBy Basics</span>
+    <span class="hero-pill">📊 Aggregation</span>
+    <span class="hero-pill">🔗 Merge &amp; Join</span>
+    <span class="hero-pill">➕ Concat</span>
+    <span class="hero-pill">📌 Pivot Tables</span>
+    <span class="hero-pill">🔃 Melt &amp; Stack</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════
+     SECTION 1 — GROUPBY BASICS
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔀</div>
+    <div>
+      <h2>GroupBy — Split, Apply, Combine</h2>
+      <p>The single most powerful pattern in data analysis</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>GroupBy</strong> implements the "Split-Apply-Combine" pattern: split your data into groups based on a key, apply a function to each group independently, then combine the results back together.</p>
+
+    <div class="fbox">
+      <div class="ft">🔀 Split → Apply → Combine</div>
+      <div class="fm">1. SPLIT   → data grouped by 'Dept'</div>
+      <div class="fm">2. APPLY   → mean() computed per group</div>
+      <div class="fm">3. COMBINE → results merged into one table</div>
+      <div class="fnote">This is exactly what SQL's GROUP BY does — but with the full power of Python.</div>
+    </div>
+
+    <h3>Basic GroupBy Operations</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+
+df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Dept'</span>  :[<span class="st">'Eng'</span>,<span class="st">'Eng'</span>,<span class="st">'HR'</span>,<span class="st">'HR'</span>,<span class="st">'Mktg'</span>,<span class="st">'Mktg'</span>,<span class="st">'Eng'</span>],
+    <span class="st">'Name'</span>  :[<span class="st">'Alice'</span>,<span class="st">'Bob'</span>,<span class="st">'Carol'</span>,<span class="st">'Dave'</span>,<span class="st">'Eve'</span>,<span class="st">'Frank'</span>,<span class="st">'Grace'</span>],
+    <span class="st">'Salary'</span>:[<span class="nm">90000</span>,<span class="nm">85000</span>,<span class="nm">60000</span>,<span class="nm">65000</span>,<span class="nm">70000</span>,<span class="nm">72000</span>,<span class="nm">95000</span>],
+    <span class="st">'Bonus'</span> :[<span class="nm">9000</span>,<span class="nm">8500</span>,<span class="nm">3000</span>,<span class="nm">3250</span>,<span class="nm">3500</span>,<span class="nm">3600</span>,<span class="nm">9500</span>]
+})
+
+<span class="cm"># Create a groupby object (lazy — nothing computed yet)</span>
+grouped = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)
+<span class="fn">print</span>(<span class="fn">type</span>(grouped))   <span class="cm"># DataFrameGroupBy object</span>
+
+<span class="cm"># Apply an aggregation</span>
+<span class="fn">print</span>(grouped[<span class="st">'Salary'</span>].<span class="fn">mean</span>())
+<span class="cm"># Dept
+# Eng     90000.0
+# HR      62500.0
+# Mktg    71000.0</span>
+
+<span class="cm"># One-liner (most common pattern)</span>
+<span class="fn">print</span>(df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">mean</span>())
+<span class="fn">print</span>(df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">sum</span>())
+<span class="fn">print</span>(df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">count</span>())
+<span class="fn">print</span>(df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">max</span>())
+<span class="fn">print</span>(df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).size())   <span class="cm"># row count per group (all cols)</span>
+
+<span class="cm"># Group by MULTIPLE columns</span>
+df.<span class="fn">groupby</span>([<span class="st">'Dept'</span>, <span class="st">'Name'</span>])[<span class="st">'Salary'</span>].<span class="fn">sum</span>()
+
+<span class="cm"># Iterate over groups</span>
+<span class="kw">for</span> dept, group_df <span class="kw">in</span> df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>):
+    <span class="fn">print</span>(<span class="st">f"\n{dept}:"</span>)
+    <span class="fn">print</span>(group_df)
+
+<span class="cm"># Get a specific group</span>
+eng_group = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).<span class="fn">get_group</span>(<span class="st">'Eng'</span>)</pre>
+    </div>
+
+    <h3>Aggregating Multiple Columns / Multiple Functions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Aggregate ALL numeric columns with one function</span>
+df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).<span class="fn">mean</span>(numeric_only=<span class="kw">True</span>)
+
+<span class="cm"># Multiple statistics on one column with .agg()</span>
+df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">agg</span>([<span class="st">'mean'</span>, <span class="st">'min'</span>, <span class="st">'max'</span>, <span class="st">'std'</span>, <span class="st">'count'</span>])
+<span class="cm">#         mean    min    max     std   count
+# Eng    90000  85000  95000  5000.0      3
+# HR     62500  60000  65000  3535.5      2
+# Mktg   71000  70000  72000  1414.2      2</span>
+
+<span class="cm"># Different functions per column — dict syntax</span>
+df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).<span class="fn">agg</span>({
+    <span class="st">'Salary'</span>: [<span class="st">'mean'</span>, <span class="st">'max'</span>],
+    <span class="st">'Bonus'</span> : <span class="st">'sum'</span>,
+    <span class="st">'Name'</span>  : <span class="st">'count'</span>
+})
+
+<span class="cm"># Named aggregation — clean column names in output (RECOMMENDED)</span>
+df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).<span class="fn">agg</span>(
+    avg_salary  = (<span class="st">'Salary'</span>, <span class="st">'mean'</span>),
+    max_salary  = (<span class="st">'Salary'</span>, <span class="st">'max'</span>),
+    total_bonus = (<span class="st">'Bonus'</span>, <span class="st">'sum'</span>),
+    headcount   = (<span class="st">'Name'</span>, <span class="st">'count'</span>)
+).<span class="fn">reset_index</span>()
+
+<span class="cm"># Custom function with .agg()</span>
+df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">agg</span>(<span class="kw">lambda</span> x: x.<span class="fn">max</span>() - x.<span class="fn">min</span>())  <span class="cm"># range per group</span></pre>
+    </div>
+
+    <h3>transform() vs apply() vs agg()</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Method</th><th>Output Shape</th><th>Use Case</th></tr>
+        <tr><td><strong>agg()</strong></td><td>One row per group (shrinks)</td><td>Summary statistics per group</td></tr>
+        <tr><td><strong>transform()</strong></td><td>Same shape as original (broadcasts back)</td><td>Add group stat as new column, keep all rows</td></tr>
+        <tr><td><strong>apply()</strong></td><td>Flexible — can be either</td><td>Complex custom group operations</td></tr>
+        <tr><td><strong>filter()</strong></td><td>Subset of original rows</td><td>Keep only groups matching a condition</td></tr>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># transform() — add group-level stat back to EVERY row</span>
+df[<span class="st">'DeptAvgSalary'</span>] = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">transform</span>(<span class="st">'mean'</span>)
+<span class="fn">print</span>(df[[<span class="st">'Name'</span>,<span class="st">'Dept'</span>,<span class="st">'Salary'</span>,<span class="st">'DeptAvgSalary'</span>]])
+<span class="cm"># Alice  Eng  90000   90000.0
+# Bob    Eng  85000   90000.0   ← same avg for all Eng rows!
+# Carol  HR   60000   62500.0
+# ...</span>
+
+<span class="cm"># Common use: how much above/below department average?</span>
+df[<span class="st">'SalaryVsDeptAvg'</span>] = df[<span class="st">'Salary'</span>] - df[<span class="st">'DeptAvgSalary'</span>]
+
+<span class="cm"># filter() — keep only groups matching a condition</span>
+big_depts = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).<span class="fn">filter</span>(<span class="kw">lambda</span> g: <span class="fn">len</span>(g) >= <span class="nm">2</span>)  <span class="cm"># depts with 2+ people</span>
+
+<span class="cm"># apply() — full custom logic per group</span>
+<span class="kw">def</span> <span class="fn">top_earner</span>(group):
+    <span class="kw">return</span> group.<span class="fn">nlargest</span>(<span class="nm">1</span>, <span class="st">'Salary'</span>)
+
+top_per_dept = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).<span class="fn">apply</span>(top_earner)</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 agg() vs transform() — The Key Difference</div>
+      <code>groupby('Dept')['Salary'].agg('mean')</code> returns <strong>3 rows</strong> (one per department). <code>groupby('Dept')['Salary'].transform('mean')</code> returns <strong>7 rows</strong> (same as original data) — the group mean repeated for every row in that group. Use transform() when you want to add a group stat as a new column.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 2 — MERGE
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔗</div>
+    <div>
+      <h2>Merging DataFrames — SQL-Style Joins</h2>
+      <p>Combine two datasets based on common columns</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>pd.merge()</strong> combines two DataFrames based on common key columns — exactly like SQL JOIN. This is essential when your data is split across multiple tables (customers table, orders table, products table).</p>
+
+    <h3>The 4 Join Types — Visual Guide</h3>
+    <div class="join-grid">
+      <div class="join-card">
+        <div class="join-visual"><div class="join-circle left"></div><div class="join-circle right"></div></div>
+        <div class="join-name">INNER</div>
+        <div class="join-desc">Only rows with matching keys in BOTH tables</div>
+      </div>
+      <div class="join-card">
+        <div class="join-visual"><div class="join-circle left" style="opacity:.9"></div><div class="join-circle right" style="opacity:.3"></div></div>
+        <div class="join-name">LEFT</div>
+        <div class="join-desc">All rows from left + matches from right (NaN if no match)</div>
+      </div>
+      <div class="join-card">
+        <div class="join-visual"><div class="join-circle left" style="opacity:.3"></div><div class="join-circle right" style="opacity:.9"></div></div>
+        <div class="join-name">RIGHT</div>
+        <div class="join-desc">All rows from right + matches from left</div>
+      </div>
+      <div class="join-card">
+        <div class="join-visual"><div class="join-circle left" style="opacity:.9"></div><div class="join-circle right" style="opacity:.9"></div></div>
+        <div class="join-name">OUTER</div>
+        <div class="join-desc">ALL rows from both — NaN where no match</div>
+      </div>
+    </div>
+
+    <h3>Merge in Practice</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>customers = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'CustID'</span>: [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>],
+    <span class="st">'Name'</span>  : [<span class="st">'Alice'</span>,<span class="st">'Bob'</span>,<span class="st">'Carol'</span>,<span class="st">'Dave'</span>]
+})
+
+orders = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'OrderID'</span>: [<span class="nm">101</span>,<span class="nm">102</span>,<span class="nm">103</span>,<span class="nm">104</span>],
+    <span class="st">'CustID'</span> : [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">2</span>, <span class="nm">5</span>],       <span class="cm"># note: CustID 5 doesn't exist in customers!</span>
+    <span class="st">'Amount'</span> : [<span class="nm">500</span>, <span class="nm">750</span>, <span class="nm">300</span>, <span class="nm">200</span>]
+})
+
+<span class="cm"># INNER join (default) — only matching CustIDs</span>
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">merge</span>(customers, orders, on=<span class="st">'CustID'</span>, how=<span class="st">'inner'</span>))
+<span class="cm">#    CustID   Name  OrderID  Amount
+# 0       1  Alice      101     500
+# 1       2    Bob      102     750
+# 2       2    Bob      103     300
+# (Carol and Dave have no orders — excluded. Order 104's CustID=5 excluded.)</span>
+
+<span class="cm"># LEFT join — keep ALL customers, even without orders</span>
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">merge</span>(customers, orders, on=<span class="st">'CustID'</span>, how=<span class="st">'left'</span>))
+<span class="cm">#    CustID   Name  OrderID  Amount
+# 0       1  Alice    101.0   500.0
+# 1       2    Bob    102.0   750.0
+# 2       2    Bob    103.0   300.0
+# 3       3  Carol      NaN     NaN   ← Carol kept, no order
+# 4       4   Dave      NaN     NaN   ← Dave kept, no order</span>
+
+<span class="cm"># RIGHT join — keep ALL orders, even unmatched customers</span>
+<span class="op">pd</span>.<span class="fn">merge</span>(customers, orders, on=<span class="st">'CustID'</span>, how=<span class="st">'right'</span>)
+
+<span class="cm"># OUTER join — everything from both sides</span>
+<span class="op">pd</span>.<span class="fn">merge</span>(customers, orders, on=<span class="st">'CustID'</span>, how=<span class="st">'outer'</span>)
+
+<span class="cm"># Different column names on each side</span>
+<span class="op">pd</span>.<span class="fn">merge</span>(customers, orders, left_on=<span class="st">'CustID'</span>, right_on=<span class="st">'CustID'</span>)
+
+<span class="cm"># Merge on multiple keys</span>
+<span class="op">pd</span>.<span class="fn">merge</span>(df1, df2, on=[<span class="st">'Year'</span>, <span class="st">'Month'</span>])
+
+<span class="cm"># Merge on the index</span>
+<span class="op">pd</span>.<span class="fn">merge</span>(df1, df2, left_index=<span class="kw">True</span>, right_index=<span class="kw">True</span>)
+
+<span class="cm"># Suffix control for overlapping column names</span>
+<span class="op">pd</span>.<span class="fn">merge</span>(df1, df2, on=<span class="st">'ID'</span>, suffixes=(<span class="st">'_old'</span>, <span class="st">'_new'</span>))
+
+<span class="cm"># indicator=True — shows which side each row came from</span>
+merged = <span class="op">pd</span>.<span class="fn">merge</span>(customers, orders, on=<span class="st">'CustID'</span>, how=<span class="st">'outer'</span>, indicator=<span class="kw">True</span>)
+<span class="fn">print</span>(merged[<span class="st">'_merge'</span>].<span class="fn">value_counts</span>())   <span class="cm"># both / left_only / right_only</span></pre>
+    </div>
+
+    <h3>join() — Merge on Index (Shortcut)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df1 = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'A'</span>:[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>]}, index=[<span class="st">'x'</span>,<span class="st">'y'</span>,<span class="st">'z'</span>])
+df2 = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'B'</span>:[<span class="nm">10</span>,<span class="nm">20</span>]}, index=[<span class="st">'x'</span>,<span class="st">'y'</span>])
+
+<span class="cm"># join() merges on the INDEX by default</span>
+<span class="fn">print</span>(df1.<span class="fn">join</span>(df2))            <span class="cm"># left join by default</span>
+<span class="fn">print</span>(df1.<span class="fn">join</span>(df2, how=<span class="st">'inner'</span>))</pre>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Always Verify Merge Results</div>
+      A common bug: unexpected row multiplication. If CustID 2 appears twice in orders, merging duplicates Bob's row for each order. Always check <code>len(merged)</code> against expectations, and use <code>validate='one_to_many'</code> parameter to catch unexpected duplicates.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 3 — CONCAT
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">➕</div>
+    <div>
+      <h2>Concatenating DataFrames</h2>
+      <p>Stack DataFrames vertically or horizontally — no key matching needed</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>Use <strong>pd.concat()</strong> when you want to simply stack DataFrames together — like combining monthly sales files into one yearly file. Unlike merge, concat doesn't match on keys; it just glues data together.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>jan = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Product'</span>:[<span class="st">'A'</span>,<span class="st">'B'</span>], <span class="st">'Sales'</span>:[<span class="nm">100</span>,<span class="nm">200</span>]})
+feb = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Product'</span>:[<span class="st">'A'</span>,<span class="st">'B'</span>], <span class="st">'Sales'</span>:[<span class="nm">150</span>,<span class="nm">180</span>]})
+
+<span class="cm"># Vertical stack (axis=0, default) — combine rows</span>
+combined = <span class="op">pd</span>.<span class="fn">concat</span>([jan, feb], ignore_index=<span class="kw">True</span>)
+<span class="fn">print</span>(combined)
+<span class="cm">#   Product  Sales
+# 0       A    100
+# 1       B    200
+# 2       A    150   ← Feb data continues
+# 3       B    180</span>
+
+<span class="cm"># Keep track of source with keys</span>
+combined2 = <span class="op">pd</span>.<span class="fn">concat</span>([jan, feb], keys=[<span class="st">'Jan'</span>, <span class="st">'Feb'</span>])
+<span class="fn">print</span>(combined2)   <span class="cm"># MultiIndex: (Jan,0), (Jan,1), (Feb,0), (Feb,1)</span>
+
+<span class="cm"># Horizontal stack (axis=1) — combine columns side by side</span>
+df_a = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'X'</span>:[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>]})
+df_b = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Y'</span>:[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>]})
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">concat</span>([df_a, df_b], axis=<span class="nm">1</span>))
+<span class="cm">#    X  Y
+# 0  1  4
+# 1  2  5
+# 2  3  6</span>
+
+<span class="cm"># Concat with mismatched columns</span>
+df_x = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'A'</span>:[<span class="nm">1</span>,<span class="nm">2</span>], <span class="st">'B'</span>:[<span class="nm">3</span>,<span class="nm">4</span>]})
+df_y = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'B'</span>:[<span class="nm">5</span>,<span class="nm">6</span>], <span class="st">'C'</span>:[<span class="nm">7</span>,<span class="nm">8</span>]})
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">concat</span>([df_x, df_y]))       <span class="cm"># outer join by default — fills NaN for missing cols</span>
+<span class="fn">print</span>(<span class="op">pd</span>.<span class="fn">concat</span>([df_x, df_y], join=<span class="st">'inner'</span>))  <span class="cm"># only keeps common column 'B'</span>
+
+<span class="cm"># Real pattern: combine 12 monthly CSVs</span>
+<span class="kw">import</span> glob
+all_files = <span class="fn">glob</span>.<span class="fn">glob</span>(<span class="st">'sales_2024_*.csv'</span>)
+all_months = <span class="op">pd</span>.<span class="fn">concat</span>([<span class="op">pd</span>.<span class="fn">read_csv</span>(f) <span class="kw">for</span> f <span class="kw">in</span> all_files], ignore_index=<span class="kw">True</span>)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Use</th><th>merge()</th><th>concat()</th></tr>
+        <tr><td>Combines based on</td><td>Matching KEY values (like SQL JOIN)</td><td>Position / order (stacking)</td></tr>
+        <tr><td>Typical use</td><td>Two related tables (customers + orders)</td><td>Same-structure files (12 months of sales)</td></tr>
+        <tr><td>Row count result</td><td>Depends on matches (can grow/shrink)</td><td>Sum of input row counts (vertical)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 4 — PIVOT TABLES
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📌</div>
+    <div>
+      <h2>Pivot Tables — Excel-Style Summarisation</h2>
+      <p>Reshape long data into a summary grid — the Pandas equivalent of Excel PivotTables</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>pivot_table() — Aggregating Grid View</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>sales = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Region'</span>  :[<span class="st">'North'</span>,<span class="st">'North'</span>,<span class="st">'South'</span>,<span class="st">'South'</span>,<span class="st">'North'</span>,<span class="st">'South'</span>],
+    <span class="st">'Product'</span> :[<span class="st">'A'</span>,<span class="st">'B'</span>,<span class="st">'A'</span>,<span class="st">'B'</span>,<span class="st">'A'</span>,<span class="st">'A'</span>],
+    <span class="st">'Quarter'</span> :[<span class="st">'Q1'</span>,<span class="st">'Q1'</span>,<span class="st">'Q1'</span>,<span class="st">'Q1'</span>,<span class="st">'Q2'</span>,<span class="st">'Q2'</span>],
+    <span class="st">'Revenue'</span> :[<span class="nm">1000</span>,<span class="nm">1500</span>,<span class="nm">800</span>,<span class="nm">1200</span>,<span class="nm">1100</span>,<span class="nm">900</span>]
+})
+
+<span class="cm"># Basic pivot: Region as rows, Product as columns, mean Revenue as values</span>
+pivot = <span class="op">pd</span>.<span class="fn">pivot_table</span>(sales,
+                       values=<span class="st">'Revenue'</span>,
+                       index=<span class="st">'Region'</span>,
+                       columns=<span class="st">'Product'</span>,
+                       aggfunc=<span class="st">'sum'</span>)
+<span class="fn">print</span>(pivot)
+<span class="cm"># Product     A       B
+# Region
+# North    2100.0  1500.0
+# South    1700.0  1200.0</span>
+
+<span class="cm"># Multiple index levels</span>
+<span class="op">pd</span>.<span class="fn">pivot_table</span>(sales, values=<span class="st">'Revenue'</span>,
+                index=[<span class="st">'Region'</span>,<span class="st">'Quarter'</span>], columns=<span class="st">'Product'</span>, aggfunc=<span class="st">'sum'</span>)
+
+<span class="cm"># Multiple aggregations at once</span>
+<span class="op">pd</span>.<span class="fn">pivot_table</span>(sales, values=<span class="st">'Revenue'</span>, index=<span class="st">'Region'</span>,
+                columns=<span class="st">'Product'</span>, aggfunc=[<span class="st">'sum'</span>,<span class="st">'mean'</span>,<span class="st">'count'</span>])
+
+<span class="cm"># Fill missing combinations with 0 instead of NaN</span>
+<span class="op">pd</span>.<span class="fn">pivot_table</span>(sales, values=<span class="st">'Revenue'</span>, index=<span class="st">'Region'</span>,
+                columns=<span class="st">'Product'</span>, aggfunc=<span class="st">'sum'</span>, fill_value=<span class="nm">0</span>)
+
+<span class="cm"># Add row/column totals</span>
+<span class="op">pd</span>.<span class="fn">pivot_table</span>(sales, values=<span class="st">'Revenue'</span>, index=<span class="st">'Region'</span>,
+                columns=<span class="st">'Product'</span>, aggfunc=<span class="st">'sum'</span>, margins=<span class="kw">True</span>, margins_name=<span class="st">'Total'</span>)</pre>
+    </div>
+
+    <h3>pivot() — Reshape Without Aggregation</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># pivot() requires UNIQUE index+columns combinations (no aggregation)
+# Use when each (row, col) pair has exactly ONE value</span>
+
+wide = sales.<span class="fn">pivot</span>(index=<span class="st">'Region'</span>, columns=<span class="st">'Quarter'</span>, values=<span class="st">'Revenue'</span>)
+<span class="cm"># Raises error if duplicates exist for same Region+Quarter — use pivot_table instead</span>
+
+<span class="cm"># crosstab — frequency counts between two categorical columns</span>
+<span class="op">pd</span>.<span class="fn">crosstab</span>(sales[<span class="st">'Region'</span>], sales[<span class="st">'Product'</span>])
+<span class="cm"># Product  A  B
+# Region
+# North    2  1
+# South    2  1</span>
+
+<span class="cm"># crosstab with normalisation (percentages)</span>
+<span class="op">pd</span>.<span class="fn">crosstab</span>(sales[<span class="st">'Region'</span>], sales[<span class="st">'Product'</span>], normalize=<span class="st">'index'</span>)  <span class="cm"># row %</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SECTION 5 — MELT & STACK
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">🔃</div>
+    <div>
+      <h2>Melt, Stack &amp; Unstack — Wide ↔ Long</h2>
+      <p>Reshape between wide format (many columns) and long/tidy format (few columns, many rows)</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="fbox">
+      <div class="ft">🔃 Wide vs Long Format</div>
+      <div class="fm">WIDE:  Name | Q1  | Q2  | Q3  | Q4</div>
+      <div class="fm">LONG:  Name | Quarter | Value</div>
+      <div class="fnote">Wide is good for viewing. Long/"tidy" format is required for most plotting libraries (Seaborn) and statistical models.</div>
+    </div>
+
+    <h3>melt() — Wide to Long</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>wide_df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Name'</span>: [<span class="st">'Alice'</span>, <span class="st">'Bob'</span>],
+    <span class="st">'Q1'</span>  : [<span class="nm">100</span>, <span class="nm">150</span>],
+    <span class="st">'Q2'</span>  : [<span class="nm">120</span>, <span class="nm">130</span>],
+    <span class="st">'Q3'</span>  : [<span class="nm">140</span>, <span class="nm">160</span>],
+    <span class="st">'Q4'</span>  : [<span class="nm">160</span>, <span class="nm">170</span>]
+})
+
+<span class="cm"># Melt: turn Q1-Q4 columns into rows</span>
+long_df = <span class="op">pd</span>.<span class="fn">melt</span>(wide_df,
+                  id_vars=<span class="st">'Name'</span>,               <span class="cm"># column(s) to KEEP as-is</span>
+                  value_vars=[<span class="st">'Q1'</span>,<span class="st">'Q2'</span>,<span class="st">'Q3'</span>,<span class="st">'Q4'</span>],  <span class="cm"># columns to MELT</span>
+                  var_name=<span class="st">'Quarter'</span>,           <span class="cm"># name for the new label column</span>
+                  value_name=<span class="st">'Revenue'</span>)         <span class="cm"># name for the new value column</span>
+<span class="fn">print</span>(long_df)
+<span class="cm">#     Name Quarter  Revenue
+# 0  Alice      Q1      100
+# 1    Bob      Q1      150
+# 2  Alice      Q2      120
+# 3    Bob      Q2      130
+# ... 8 rows total (2 names × 4 quarters)</span>
+
+<span class="cm"># Shortcut — melts everything except id_vars automatically</span>
+<span class="op">pd</span>.<span class="fn">melt</span>(wide_df, id_vars=<span class="st">'Name'</span>)</pre>
+    </div>
+
+    <h3>pivot() — Long to Wide (Reverse of Melt)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Go back from long to wide</span>
+back_to_wide = long_df.<span class="fn">pivot</span>(index=<span class="st">'Name'</span>, columns=<span class="st">'Quarter'</span>, values=<span class="st">'Revenue'</span>)
+<span class="fn">print</span>(back_to_wide)
+<span class="cm"># Quarter   Q1   Q2   Q3   Q4
+# Name
+# Alice    100  120  140  160
+# Bob      150  130  160  170</span>
+
+<span class="cm"># Reset to make Name a column again</span>
+back_to_wide = back_to_wide.<span class="fn">reset_index</span>()</pre>
+    </div>
+
+    <h3>stack() &amp; unstack() — MultiIndex Reshaping</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># stack() — columns become an inner index level (wide → long)</span>
+df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Q1'</span>:[<span class="nm">100</span>,<span class="nm">150</span>], <span class="st">'Q2'</span>:[<span class="nm">120</span>,<span class="nm">130</span>]},
+                  index=[<span class="st">'Alice'</span>,<span class="st">'Bob'</span>])
+
+stacked = df.<span class="fn">stack</span>()
+<span class="fn">print</span>(stacked)
+<span class="cm"># Alice  Q1    100
+#        Q2    120
+# Bob    Q1    150
+#        Q2    130
+# dtype: int64   ← now a Series with MultiIndex</span>
+
+<span class="cm"># unstack() — reverse: inner index level becomes columns</span>
+unstacked = stacked.<span class="fn">unstack</span>()
+<span class="fn">print</span>(unstacked)   <span class="cm"># back to original wide DataFrame</span>
+
+<span class="cm"># unstack on a groupby result — very common pattern!</span>
+sales_grouped = sales.<span class="fn">groupby</span>([<span class="st">'Region'</span>,<span class="st">'Product'</span>])[<span class="st">'Revenue'</span>].<span class="fn">sum</span>()
+<span class="fn">print</span>(sales_grouped.<span class="fn">unstack</span>())    <span class="cm"># turns Product index level into columns</span>
+<span class="cm"># (equivalent to pivot_table in this case)</span></pre>
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">pd.melt()</div><div class="mc-desc">Wide → Long (columns become rows)</div><div class="mc-ex">Q1,Q2,Q3 cols → Quarter col</div></div>
+      <div class="mini-card"><div class="mc-name">df.pivot()</div><div class="mc-desc">Long → Wide (no aggregation, unique keys)</div><div class="mc-ex">Reverse of melt</div></div>
+      <div class="mini-card"><div class="mc-name">pd.pivot_table()</div><div class="mc-desc">Long → Wide WITH aggregation</div><div class="mc-ex">Handles duplicate keys</div></div>
+      <div class="mini-card"><div class="mc-name">df.stack()</div><div class="mc-desc">Columns → inner index level</div><div class="mc-ex">Wide → long Series</div></div>
+      <div class="mini-card"><div class="mc-name">df.unstack()</div><div class="mc-desc">Inner index level → columns</div><div class="mc-ex">Long → wide</div></div>
+      <div class="mini-card"><div class="mc-name">pd.crosstab()</div><div class="mc-desc">Frequency table between 2 columns</div><div class="mc-ex">Like a mini pivot_table</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     QUIZ
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div>
+      <h2>Practice MCQs — 20 Questions</h2>
+      <p>GroupBy, merge, concat, pivot, melt, stack. Need 16/20 to pass.</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div>
+      <div class="score-msg" id="score-msg"></div>
+      <div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     REAL WORLD TASK
+════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#2563EB">🏆</div>
+    <div>
+      <h2>Real-World Task — Multi-Table Sales Analytics</h2>
+      <p>Estimated time: 85–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>BI Analyst</strong> at <em>RetailPlus</em>. The company's data lives in 3 separate tables (like a real database): Customers, Products, and Orders. Your job is to <strong>merge everything into one analytical dataset</strong>, then use groupby and pivot tables to answer executive questions about sales performance.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#2563EB">1</div>
+        <h4>Phase 1 — Build the 3 Related Tables</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Create Customers, Products, and Orders Tables</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+<span class="kw">import</span> numpy  <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(<span class="nm">7</span>)
+
+<span class="cm"># Table 1: Customers (30 customers)</span>
+customers = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'CustID'</span> : <span class="fn">range</span>(<span class="nm">1</span>, <span class="nm">31</span>),
+    <span class="st">'Name'</span>   : [<span class="st">f'Customer_{i}'</span> <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>,<span class="nm">31</span>)],
+    <span class="st">'City'</span>   : rng.<span class="fn">choice</span>([<span class="st">'Mumbai'</span>,<span class="st">'Delhi'</span>,<span class="st">'Bangalore'</span>,<span class="st">'Pune'</span>], <span class="nm">30</span>),
+    <span class="st">'Segment'</span>: rng.<span class="fn">choice</span>([<span class="st">'Retail'</span>,<span class="st">'Wholesale'</span>,<span class="st">'Online'</span>], <span class="nm">30</span>)
+})
+
+<span class="cm"># Table 2: Products (10 products)</span>
+products = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'ProductID'</span>: <span class="fn">range</span>(<span class="nm">101</span>, <span class="nm">111</span>),
+    <span class="st">'ProductName'</span>: [<span class="st">'Laptop'</span>,<span class="st">'Mouse'</span>,<span class="st">'Keyboard'</span>,<span class="st">'Monitor'</span>,<span class="st">'Headset'</span>,
+                     <span class="st">'Webcam'</span>,<span class="st">'Desk'</span>,<span class="st">'Chair'</span>,<span class="st">'Cable'</span>,<span class="st">'Charger'</span>],
+    <span class="st">'Category'</span> : [<span class="st">'Electronics'</span>,<span class="st">'Electronics'</span>,<span class="st">'Electronics'</span>,<span class="st">'Electronics'</span>,<span class="st">'Electronics'</span>,
+                     <span class="st">'Electronics'</span>,<span class="st">'Furniture'</span>,<span class="st">'Furniture'</span>,<span class="st">'Accessories'</span>,<span class="st">'Accessories'</span>],
+    <span class="st">'UnitPrice'</span>: [<span class="nm">65000</span>,<span class="nm">800</span>,<span class="nm">2500</span>,<span class="nm">12000</span>,<span class="nm">3500</span>,<span class="nm">2000</span>,<span class="nm">8000</span>,<span class="nm">15000</span>,<span class="nm">300</span>,<span class="nm">1200</span>]
+})
+
+<span class="cm"># Table 3: Orders (500 orders) — some CustIDs deliberately invalid (churned customers)</span>
+n_orders = <span class="nm">500</span>
+orders = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'OrderID'</span>  : <span class="fn">range</span>(<span class="nm">1001</span>, <span class="nm">1001</span>+n_orders),
+    <span class="st">'CustID'</span>   : rng.<span class="fn">choice</span>(<span class="fn">list</span>(<span class="fn">range</span>(<span class="nm">1</span>,<span class="nm">33</span>)), n_orders),  <span class="cm"># 31,32 don't exist!</span>
+    <span class="st">'ProductID'</span>: rng.<span class="fn">choice</span>(<span class="fn">range</span>(<span class="nm">101</span>,<span class="nm">111</span>), n_orders),
+    <span class="st">'Quantity'</span> : rng.<span class="fn">integers</span>(<span class="nm">1</span>, <span class="nm">6</span>, n_orders),
+    <span class="st">'OrderDate'</span>: <span class="op">pd</span>.<span class="fn">to_datetime</span>(<span class="st">'2024-01-01'</span>) + <span class="op">pd</span>.<span class="fn">to_timedelta</span>(rng.<span class="fn">integers</span>(<span class="nm">0</span>,<span class="nm">365</span>,n_orders), unit=<span class="st">'D'</span>)
+})
+
+<span class="fn">print</span>(<span class="st">f"Customers: {customers.shape}, Products: {products.shape}, Orders: {orders.shape}"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div>
+        <h4>Phase 2 — Merge Into One Master Table</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Build the Master Analytical Table</h5>
+            <p>Merge Orders + Customers + Products into a single wide table. Decide carefully which join type to use — you want to KEEP all orders even if the customer record is missing (to catch data quality issues).</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Merge orders with customers (LEFT join — keep all orders)</span>
+master = orders.<span class="fn">merge</span>(customers, on=<span class="st">'CustID'</span>, how=<span class="st">'left'</span>, indicator=<span class="st">'cust_match'</span>)
+
+<span class="cm"># Check for orders with no matching customer (data quality issue!)</span>
+missing_cust = master[master[<span class="st">'cust_match'</span>] == <span class="st">'left_only'</span>]
+<span class="fn">print</span>(<span class="st">f"Orders with invalid CustID: {len(missing_cust)}"</span>)
+<span class="fn">print</span>(missing_cust[<span class="st">'CustID'</span>].<span class="fn">unique</span>())
+
+<span class="cm"># Merge with products</span>
+master = master.<span class="fn">merge</span>(products, on=<span class="st">'ProductID'</span>, how=<span class="st">'left'</span>)
+master = master.<span class="fn">drop</span>(columns=[<span class="st">'cust_match'</span>])
+
+<span class="cm"># Add computed Revenue column</span>
+master[<span class="st">'Revenue'</span>] = master[<span class="st">'Quantity'</span>] * master[<span class="st">'UnitPrice'</span>]
+
+<span class="fn">print</span>(<span class="st">f"Master table: {master.shape}"</span>)
+master.<span class="fn">info</span>()</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div>
+        <h4>Phase 3 — GroupBy Analysis</h4>
+        <span class="phase-time">~25 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Answer 8 Business Questions with GroupBy</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">QUESTIONS TO SOLVE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Q1: Total revenue by City</span>
+<span class="cm"># Q2: Total revenue by Category</span>
+<span class="cm"># Q3: Average order value (Revenue) by Segment</span>
+<span class="cm"># Q4: Top 5 customers by total spend (use named aggregation)</span>
+<span class="cm"># Q5: Number of orders per product (which sells most often?)</span>
+<span class="cm"># Q6: Revenue by City AND Category (multi-column groupby)</span>
+<span class="cm"># Q7: Add a column showing each order's Revenue vs their City's average (use transform)</span>
+<span class="cm"># Q8: Which cities have fewer than 100 total orders? (use filter)</span>
+
+<span class="cm"># Example solution pattern for Q4:</span>
+top_customers = (master.<span class="fn">groupby</span>([<span class="st">'CustID'</span>,<span class="st">'Name'</span>])
+                  .<span class="fn">agg</span>(total_spend=(<span class="st">'Revenue'</span>,<span class="st">'sum'</span>), order_count=(<span class="st">'OrderID'</span>,<span class="st">'count'</span>))
+                  .<span class="fn">reset_index</span>()
+                  .<span class="fn">nlargest</span>(<span class="nm">5</span>, <span class="st">'total_spend'</span>))
+<span class="fn">print</span>(top_customers)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">4</div>
+        <h4>Phase 4 — Pivot Tables for Executive Dashboard</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Build 3 Pivot Tables</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Pivot 1: Revenue by City (rows) × Category (columns)</span>
+pivot1 = <span class="op">pd</span>.<span class="fn">pivot_table</span>(master, values=<span class="st">'Revenue'</span>, index=<span class="st">'City'</span>,
+                        columns=<span class="st">'Category'</span>, aggfunc=<span class="st">'sum'</span>, fill_value=<span class="nm">0</span>, margins=<span class="kw">True</span>)
+<span class="fn">print</span>(pivot1)
+
+<span class="cm"># Pivot 2: Order count by Segment (rows) × Month (columns)</span>
+master[<span class="st">'Month'</span>] = master[<span class="st">'OrderDate'</span>].dt.<span class="fn">month_name</span>()
+pivot2 = <span class="op">pd</span>.<span class="fn">pivot_table</span>(master, values=<span class="st">'OrderID'</span>, index=<span class="st">'Segment'</span>,
+                        columns=<span class="st">'Month'</span>, aggfunc=<span class="st">'count'</span>, fill_value=<span class="nm">0</span>)
+<span class="fn">print</span>(pivot2)
+
+<span class="cm"># Pivot 3: Average Quantity by Category × Segment, with multiple stats</span>
+pivot3 = <span class="op">pd</span>.<span class="fn">pivot_table</span>(master, values=<span class="st">'Quantity'</span>, index=<span class="st">'Category'</span>,
+                        columns=<span class="st">'Segment'</span>, aggfunc=[<span class="st">'mean'</span>,<span class="st">'sum'</span>], fill_value=<span class="nm">0</span>)
+<span class="fn">print</span>(pivot3)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Reshape Pivot Back to Long Format</h5>
+            <p>Take pivot1 and melt it back into long format with columns: City, Category, Revenue. Verify it matches your original groupby result.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">5</div>
+        <h4>Phase 5 — Final Executive Report</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Print the Full Sales Report</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED OUTPUT FORMAT</span></div>
+<pre>═══════════════════════════════════════════════
+     RETAILPLUS SALES ANALYTICS REPORT
+═══════════════════════════════════════════════
+DATA OVERVIEW
+  Customers      : 30
+  Products       : 10
+  Orders         : 500
+  Data Issues    : ? orders with invalid CustID
+
+REVENUE SUMMARY
+  Total Revenue      : ₹??,??,???
+  Average Order Value: ₹?,???
+  Total Units Sold   : ????
+
+TOP PERFORMERS
+  Best City       : ??? (₹??,??,???)
+  Best Category   : ??? (₹??,??,???)
+  Top Customer    : ??? (₹??,???)
+  Best-Selling Product: ??? (??? orders)
+
+SEGMENT BREAKDOWN
+  Retail     : ₹??,??,??? (??? orders)
+  Wholesale  : ₹??,??,??? (??? orders)
+  Online     : ₹??,??,??? (??? orders)
+
+CITY × CATEGORY MATRIX
+                Electronics  Furniture  Accessories   Total
+  Bangalore        ???          ???         ???        ???
+  Delhi             ???          ???         ???        ???
+  Mumbai            ???          ???         ???        ???
+  Pune              ???          ???         ???        ???
+═══════════════════════════════════════════════</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Created 3 related tables: Customers (30), Products (10), Orders (500)</li>
+        <li>Merged orders + customers with LEFT join and indicator=True</li>
+        <li>Identified orders with invalid/missing CustID</li>
+        <li>Merged master table with products to add pricing and category</li>
+        <li>Computed Revenue = Quantity × UnitPrice</li>
+        <li>Answered all 8 groupby business questions</li>
+        <li>Used named aggregation with .agg() for the top customers query</li>
+        <li>Used transform() to add city-average comparison column</li>
+        <li>Used filter() to find low-order cities</li>
+        <li>Built 3 different pivot tables with different aggregations</li>
+        <li>Used margins=True for row/column totals</li>
+        <li>Melted a pivot table back to long format and verified correctness</li>
+        <li>Printed complete formatted executive report</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 30 min)</div>
+      Build a <strong>customer cohort table</strong>: group customers by the MONTH of their first order (cohort month) using groupby + transform('min'), then pivot to show total revenue by cohort month × order month. This is the foundation of cohort retention analysis used by real SaaS/e-commerce companies.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Pandas Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Series &amp; DataFrames</span>
+    <span class="day-pill done">Day 2 · Data Cleaning</span>
+    <span class="day-pill done active">Day 3 · GroupBy &amp; Merge</span>
+    <span class="day-pill">Day 4 · Time Series</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What are the three steps in the GroupBy pattern?",opts:["Filter, Sort, Return","Split, Apply, Combine","Select, Where, Group","Map, Reduce, Filter"],ans:1,explain:"GroupBy implements Split-Apply-Combine: split data into groups by key, apply a function to each group independently, then combine results back into a single structure."},
+  {code:"df.groupby('Dept')['Salary'].agg('mean')",q:"How many rows does this return if there are 3 unique departments?",opts:["Same as original DataFrame row count","3 rows — one per department","1 row — overall mean","0 rows"],ans:1,explain:"agg() SHRINKS the data — one summary row per group. With 3 unique 'Dept' values, you get exactly 3 rows in the result, each showing that department's mean salary."},
+  {code:"df['DeptAvg'] = df.groupby('Dept')['Salary'].transform('mean')",q:"How many rows does the resulting df have (same as before)?",opts:["3 rows regardless of original size","Same number of rows as the original DataFrame","1 row","Depends on the aggregation function"],ans:1,explain:"transform() BROADCASTS the result back to match the original DataFrame's shape. Every row gets its department's average value repeated, so row count stays unchanged — perfect for adding as a new column."},
+  {q:"What is the key difference between agg() and transform()?",opts:["No difference — same result","agg() shrinks to one row per group; transform() keeps original row count","transform() only works on numeric data","agg() is always faster"],ans:1,explain:"agg() aggregates into a summary (fewer rows). transform() applies a function per group but returns a result the SAME SIZE as the input — ideal for adding group statistics as new columns without losing any rows."},
+  {q:"In `pd.merge(df1, df2, on='ID', how='left')`, what happens to rows in df1 with no match in df2?",opts:["They are dropped from the result","They are kept, with NaN filled in for df2's columns","An error is raised","They are duplicated"],ans:1,explain:"A LEFT join keeps ALL rows from the left DataFrame (df1), regardless of whether they have a match in df2. Where there's no match, the columns coming from df2 are filled with NaN."},
+  {q:"Which join type returns ONLY rows where the key exists in BOTH DataFrames?",opts:["left","right","inner","outer"],ans:2,explain:"INNER join (the default in pd.merge) returns only the intersection — rows where the key value exists in both DataFrames. Non-matching rows from either side are excluded."},
+  {code:"pd.concat([df1, df2], axis=0)",q:"What does axis=0 do?",opts:["Combines columns side by side","Stacks rows vertically (one on top of the other)","Merges on a common key","Removes duplicate rows"],ans:1,explain:"axis=0 (the default) stacks DataFrames vertically — rows from df2 are appended below df1's rows. Use axis=1 to combine them side by side as new columns."},
+  {q:"What is the main difference between merge() and concat()?",opts:["merge() combines based on matching key values; concat() just stacks by position","concat() is always faster","merge() only works with 2 DataFrames; concat() works with any number","They produce identical results"],ans:0,explain:"merge() is like SQL JOIN — it matches rows based on key column values. concat() simply glues DataFrames together (vertically or horizontally) based on position, without any key matching logic."},
+  {code:"pd.merge(customers, orders, on='CustID', how='outer', indicator=True)",q:"What does the indicator=True parameter add?",opts:["A row count column","A '_merge' column showing 'left_only', 'right_only', or 'both' for each row","A boolean True/False column","Nothing — invalid parameter"],ans:1,explain:"indicator=True adds a special '_merge' column that shows which side(s) each row came from: 'left_only' (only in left df), 'right_only' (only in right df), or 'both' (matched in both). Extremely useful for diagnosing merge issues."},
+  {q:"What does `pd.pivot_table()` do differently from `df.pivot()`?",opts:["pivot_table() is deprecated in favor of pivot()","pivot_table() can AGGREGATE duplicate index/column combinations; pivot() requires unique combinations and errors on duplicates","They are identical","pivot() works on Series, pivot_table() works on DataFrames"],ans:1,explain:"pivot() requires that each (index, columns) combination appears exactly once — it raises an error on duplicates. pivot_table() handles duplicates by applying an aggregation function (default mean), making it more robust for real data."},
+  {code:"pd.pivot_table(df, values='Revenue', index='Region', columns='Product', aggfunc='sum', fill_value=0)",q:"What does fill_value=0 do?",opts:["Fills all cells with 0, ignoring data","Replaces NaN (missing Region+Product combinations) with 0 instead of NaN","Filters out zero revenue rows","Sets the starting sum to 0"],ans:1,explain:"When a Region+Product combination has no data, pivot_table would normally show NaN. fill_value=0 replaces those missing combinations with 0, which is often more useful for revenue-style data (no sales = 0, not unknown)."},
+  {q:"What does `pd.melt()` do to a wide DataFrame with columns Name, Q1, Q2, Q3, Q4?",opts:["Deletes the Q columns","Converts Q1-Q4 columns into rows, creating a long-format table with 'variable' and 'value' columns","Sums Q1-Q4 into one column","Sorts by quarter"],ans:1,explain:"melt() transforms wide format into long/tidy format. The Q1-Q4 columns become values in a new 'variable' column (or custom var_name), with their corresponding values in a 'value' column (or custom value_name). id_vars like 'Name' stay unchanged."},
+  {q:"Which method REVERSES what melt() does?",opts:["df.unmelt()","df.pivot()","df.concat()","df.merge()"],ans:1,explain:"pivot() converts long format back to wide format — it's the inverse operation of melt(). Given unique index+columns combinations, pivot(index=..., columns=..., values=...) recreates the wide layout."},
+  {code:"df.groupby('Dept').filter(lambda g: len(g) >= 3)",q:"What does this return?",opts:["Departments with exactly 3 people","All ORIGINAL ROWS belonging to departments that have 3 or more people","A count of departments","3 rows only"],ans:1,explain:"filter() on a groupby keeps entire GROUPS (all their original rows) based on a condition applied to the whole group. Here it keeps all rows from departments with 3+ members, dropping rows from smaller departments entirely."},
+  {q:"What is the purpose of `pd.crosstab(df['City'], df['Category'])`?",opts:["Sums Revenue by City and Category","Creates a frequency count table — number of rows for each City×Category combination","Merges City and Category into one column","Filters rows where City equals Category"],ans:1,explain:"crosstab() creates a frequency/count cross-tabulation by default — it counts how many rows exist for each combination of the two categorical variables. It's essentially a simplified pivot_table with aggfunc='count'."},
+  {code:"df.groupby(['Region','Product'])['Revenue'].sum().unstack()",q:"What does unstack() do here?",opts:["Sums all revenue into one number","Converts the inner index level (Product) into columns, creating a wide table","Removes the Region grouping","Sorts the result"],ans:1,explain:"After groupby with 2 keys, you get a Series with a MultiIndex (Region, Product). unstack() moves the inner index level (Product) to become COLUMNS, producing a wide DataFrame — equivalent to what pivot_table would give directly."},
+  {q:"In `pd.merge(df1, df2, on='ID', validate='one_to_many')`, what does the validate parameter do?",opts:["Fixes data type mismatches automatically","Checks the merge relationship type and raises an error if violated — catches unexpected row duplication bugs","Validates that ID column has no NaN","Sorts the result by ID"],ans:1,explain:"validate checks the expected relationship (e.g., 'one_to_one', 'one_to_many', 'many_to_one', 'many_to_many'). If the actual data doesn't match (e.g., you expected one_to_one but found duplicates), Pandas raises a MergeError — catching a very common source of silent bugs."},
+  {code:"pd.concat([df_a, df_b], join='inner')",q:"What does join='inner' do when df_a and df_b have different columns?",opts:["Merges on matching key values","Keeps only the COLUMNS that exist in BOTH DataFrames","Keeps all columns, filling NaN for missing ones","Raises an error"],ans:1,explain:"When concatenating DataFrames with different columns, join='inner' (default is 'outer') keeps only the columns common to both DataFrames, dropping columns that don't appear in all of them."},
+  {q:"When would you use `.stack()` on a DataFrame?",opts:["To sort the DataFrame","To convert columns into an inner index level, producing a longer Series/DataFrame","To remove duplicate rows","To reset the index"],ans:1,explain:"stack() 'compresses' a level from columns into the row index, transforming wide data into a longer format (typically a Series with a MultiIndex). It's the counterpart to unstack(), which does the reverse."},
+  {q:"Which named aggregation syntax correctly creates a column called 'avg_salary' as the mean of 'Salary' per group?",opts:["df.groupby('Dept').agg(avg_salary='Salary', func='mean')","df.groupby('Dept').agg(avg_salary=('Salary','mean'))","df.groupby('Dept')['Salary'].agg('avg_salary')","df.groupby('Dept').mean(avg_salary='Salary')"],ans:1,explain:"Named aggregation syntax is: new_col_name=('source_column', 'function'). df.groupby('Dept').agg(avg_salary=('Salary','mean')) creates a clean output column named 'avg_salary' — much more readable than default multi-level column names."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"GroupBy and merge take practice — review the split-apply-combine pattern! 📚"],[50,75,"Good progress! Focus on agg vs transform, and the 4 join types. 💪"],[75,90,"Strong Day 3! Your analytical toolkit is solid. 🎉"],[90,101,"Outstanding! GroupBy, merge, and reshape completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+
+buildQuiz();
+</script>
+</body>
+</html>

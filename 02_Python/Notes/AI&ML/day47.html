@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 47 — Inheritance</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:240px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 47 of 210 · Phase 2: Object-Oriented Programming</span>
+    <h1>Inheritance</h1>
+    <div class="subtitle">~2 hours · Reusing and extending an existing class instead of duplicating it</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Every model class in scikit-learn (which you'll use constantly in Phase 3) inherits from a common base class that provides shared functionality — inheritance is precisely how libraries avoid rewriting the same setup code for every single model type. Understanding it now means the phrase "X inherits from Y" in library documentation won't be a mystery.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Basic inheritance</h2>
+  <div class="code">class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        print(self.name + " makes a sound")
+
+class Dog(Animal):
+    pass
+
+my_dog = Dog("Bruno")
+my_dog.speak()   # Bruno makes a sound</div>
+  <p><code>class Dog(Animal):</code> means Dog <strong>inherits</strong> from Animal — Dog automatically gets everything Animal has (the <code>__init__</code>, the <code>speak</code> method) without rewriting any of it. Animal is called the <strong>parent</strong> (or base/super) class; Dog is the <strong>child</strong> (or subclass).</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Overriding a method</h2>
+  <div class="code">class Dog(Animal):
+    def speak(self):
+        print(self.name + " says Woof!")
+
+my_dog = Dog("Bruno")
+my_dog.speak()   # Bruno says Woof! — Dog's own version is used instead</div>
+  <p>A child class can define its own version of a method with the same name — this <strong>overrides</strong> the parent's version. When you call <code>speak()</code> on a Dog, Python uses Dog's own definition instead of Animal's, because it checks the child class first.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> super() — calling the parent's version</h2>
+  <div class="code">class Employee:
+    def __init__(self, name, salary):
+        self.name = name
+        self.salary = salary
+
+class Manager(Employee):
+    def __init__(self, name, salary, team_size):
+        super().__init__(name, salary)   # reuse Employee's setup
+        self.team_size = team_size       # add Manager-specific data
+
+m = Manager("Priya", 80000, 5)
+print(m.name)         # Priya (set by Employee's __init__ via super())
+print(m.team_size)    # 5 (set directly by Manager's own __init__)</div>
+  <p><code>super().__init__(...)</code> calls the PARENT class's constructor, letting you reuse its setup logic instead of duplicating those same lines in the child. This is the standard, correct way to extend a class's initialization rather than replacing it entirely.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (Employee hierarchy)</h2>
+  <div class="panel">
+    <p class="example-tag">The classic inheritance teaching example, for good reason</p>
+    <div class="code">class Employee:
+    def __init__(self, name, salary):
+        self.name = name
+        self.salary = salary
+
+    def describe(self):
+        print(self.name + " earns " + str(self.salary))
+
+class Manager(Employee):
+    def __init__(self, name, salary, team_size):
+        super().__init__(name, salary)
+        self.team_size = team_size
+
+    def describe(self):
+        print(self.name + " manages a team of " + str(self.team_size))
+
+emp = Employee("Rohan", 40000)
+mgr = Manager("Priya", 80000, 5)
+
+emp.describe()   # Rohan earns 40000
+mgr.describe()   # Priya manages a team of 5 — Manager's OWN describe() is used</div>
+    <p>Both classes share the same underlying <code>name</code>/<code>salary</code> setup (via inheritance and super()), but each has its own specialized <code>describe()</code> — a genuinely realistic structure for related-but-different real-world entities.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (SavingsAccount extends BankAccount)</h2>
+  <div class="panel">
+    <p class="example-tag">Reconnects directly to Day 46's BankAccount</p>
+    <div class="code">class BankAccount:
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance = self.balance + amount
+
+class SavingsAccount(BankAccount):
+    def __init__(self, owner, balance, interest_rate):
+        super().__init__(owner, balance)
+        self.interest_rate = interest_rate
+
+    def add_interest(self):
+        interest = self.balance * self.interest_rate / 100
+        self.deposit(interest)   # reuses the PARENT's deposit method directly
+
+savings = SavingsAccount("Meera", 10000, 5)
+savings.add_interest()
+print(savings.balance)   # 10500.0</div>
+    <p>SavingsAccount never redefines <code>deposit()</code> — it just uses BankAccount's version directly, while adding its own interest-specific behavior on top. This is inheritance working exactly as intended.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Forgetting to call super().__init__().</strong> If a child class defines its own <code>__init__</code> without calling <code>super().__init__()</code>, the parent's setup never runs, and any attributes it was supposed to set simply won't exist.</p>
+    <p><strong>Mistake 2 — Accidentally overriding when you meant to extend.</strong> Redefining a method with the same name completely REPLACES the parent's version unless you explicitly call the parent's version too (often via <code>super()</code>).</p>
+    <p><strong>Mistake 3 — Using inheritance for an "has-a" relationship instead of "is-a."</strong> A Manager IS-A Employee (inheritance fits). A Car HAS-A Engine (the car should probably just hold an Engine object as an attribute, not inherit from it) — misusing inheritance here creates confusing, incorrect class relationships.</p>
+    <p><strong>Mistake 4 — Assuming the child automatically has NEW attributes the parent never set.</strong> Inheritance only gives you what the parent actually defines — any additional attributes need their own setup in the child's <code>__init__</code>.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now supports inheritance & super())</h2>
+  <div class="solver">
+    <h3>Try the Employee/Manager or BankAccount/SavingsAccount examples</h3>
+    <textarea id="codeInput">class Employee:
+    def __init__(self, name, salary):
+        self.name = name
+        self.salary = salary
+
+    def describe(self):
+        print(self.name + " earns " + str(self.salary))
+
+class Manager(Employee):
+    def __init__(self, name, salary, team_size):
+        super().__init__(name, salary)
+        self.team_size = team_size
+
+    def describe(self):
+        print(self.name + " manages a team of " + str(self.team_size))
+
+emp = Employee("Rohan", 40000)
+mgr = Manager("Priya", 80000, 5)
+
+emp.describe()
+mgr.describe()</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 48 is your OOP practice day — building a small, complete class-based program from scratch, putting everything from Days 45–47 together before you move into Python mini-projects.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 47 of 210 · AI & ML Study Plan · Phase 2: Object-Oriented Programming</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Write a class Vehicle with __init__ setting self.brand. Then write a Car class that inherits from Vehicle.", steps: "class Vehicle:\n    def __init__(self, brand):\n        self.brand = brand\n\nclass Car(Vehicle):\n    pass" },
+  { q: "Using the classes above, create a Car object with brand='Toyota', then print its brand.", steps: 'c = Car("Toyota")\nprint(c.brand)   # Toyota (inherited from Vehicle)' },
+  { q: "Add a method 'honk' to Car that prints 'Beep beep!' (Vehicle doesn't have this method).", steps: "class Car(Vehicle):\n    def honk(self):\n        print('Beep beep!')" },
+  { q: "Write a Car __init__ that adds self.model, while still setting self.brand via the parent.", steps: "class Car(Vehicle):\n    def __init__(self, brand, model):\n        super().__init__(brand)\n        self.model = model" },
+  { q: "class A:\n    def greet(self): print('A')\nclass B(A):\n    def greet(self): print('B')\nb = B(); b.greet(). What prints?", steps: "'B' — B's own greet() overrides A's version" },
+  { q: "class A:\n    def greet(self): print('A')\nclass B(A):\n    pass\nb = B(); b.greet(). What prints?", steps: "'A' — B doesn't define its own greet(), so it inherits A's version unchanged" },
+  { q: "Why must super().__init__() be called explicitly in a child's own __init__ (it's not automatic)?", steps: "Once a child class defines its OWN __init__, that completely replaces the parent's __init__ for object creation — super().__init__() is how you explicitly choose to still run the parent's setup logic too." },
+  { q: "Is 'Car inherits from Engine' a good design, if a car simply CONTAINS an engine?", steps: "No — this is a 'has-a' relationship (a car HAS an engine), not 'is-a' (a car IS an engine). The Car class should hold an Engine object as an attribute instead of inheriting from it." },
+  { q: "SavingsAccount inherits from BankAccount and reuses its deposit() method without redefining it. Why does this work?", steps: "Since SavingsAccount doesn't define its own deposit(), Python automatically uses the inherited version from BankAccount — no need to duplicate that logic." },
+  { q: "In your own words: how does inheritance relate to scikit-learn's model classes sharing common base functionality?", steps: "Just like Manager inherits Employee's shared setup while adding manager-specific behavior, real ML model classes inherit shared functionality (like common parameter-handling methods) from a base class, while each model type adds its own specific training/prediction logic." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q.replace(/\n/g,'<br>')}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with inheritance & super() ---
+let classes = {};
+
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val && val.__isInstance) return `<${val.__class} object>`;
+  if(Array.isArray(val)) return '[' + val.map(v => typeof v==='string'?`'${v}'`:pyRepr(v)).join(', ') + ']';
+  return String(val);
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || (v && v.__isInstance)) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function paramDefault(p){
+  const [name, def] = p.split('=');
+  if(def === undefined) return {name: p.trim(), hasDefault:false};
+  return {name: name.trim(), hasDefault:true, defaultExpr: def.trim()};
+}
+function resolveDefault(defExpr, vars){
+  const t = defExpr.trim();
+  if(t === 'True') return true;
+  if(t === 'False') return false;
+  if((t.startsWith('"')&&t.endsWith('"'))||(t.startsWith("'")&&t.endsWith("'"))) return t.slice(1,-1);
+  if(!isNaN(parseFloat(t))) return t.includes('.')?parseFloat(t):parseInt(t);
+  return vars.hasOwnProperty(t) ? vars[t] : t;
+}
+function findMethod(className, methodName){
+  let cur = className;
+  while(cur){
+    const cls = classes[cur];
+    if(!cls) return null;
+    if(cls.methods[methodName]) return {method: cls.methods[methodName], owner: cur};
+    cur = cls.parent;
+  }
+  return null;
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+
+  let m = arg.match(/^super\(\)\.(\w+)\((.*)\)$/);
+  if(m && vars['self']){
+    return callSuper(vars['self'], m[1], m[2], vars);
+  }
+  m = arg.match(/^(\w+)\((.*)\)$/);
+  if(m && classes[m[1]]){
+    const cls = classes[m[1]];
+    const inst = {__isInstance:true, __class:m[1], attrs:{}};
+    const found = findMethod(m[1], '__init__');
+    if(found){
+      callMethod(inst, '__init__', m[2], vars);
+    } else if(m[2].trim() !== ''){
+      throw new Error(`TypeError: ${m[1]}() takes no arguments`);
+    }
+    return inst;
+  }
+  m = arg.match(/^(\w+)\.(\w+)\((.*)\)$/);
+  if(m && vars[m[1]] && vars[m[1]].__isInstance){
+    return callMethod(vars[m[1]], m[2], m[3], vars);
+  }
+  m = arg.match(/^(\w+)\.(\w+)$/);
+  if(m && vars[m[1]] && vars[m[1]].__isInstance){
+    const inst = vars[m[1]];
+    if(!inst.attrs.hasOwnProperty(m[2])) throw new Error(`AttributeError: '${inst.__class}' object has no attribute '${m[2]}'`);
+    return inst.attrs[m[2]];
+  }
+
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p => evalComplex(p, vars));
+  }
+  const strMatch = arg.match(/^str\((.+)\)$/);
+  if(strMatch) return pyRepr(evalComplex(strMatch[1], vars)).replace(/^'(.*)'$/, '$1');
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch) return vars[lenMatch[1]].length;
+
+  return evalGeneral(arg, vars);
+}
+
+function bindAndRun(method, instance, argsStr, callerVars){
+  const argExprs = splitTopLevel(argsStr, ',').filter(s=>s.trim()!=='');
+  const localVars = Object.assign({}, callerVars);
+  localVars['self'] = instance;
+  const params = method.params.slice(1).map(p => paramDefault(p));
+  for(let idx=0; idx<params.length; idx++){
+    const p = params[idx];
+    if(idx < argExprs.length){
+      localVars[p.name] = evalComplex(argExprs[idx], callerVars);
+    } else if(p.hasDefault){
+      localVars[p.name] = resolveDefault(p.defaultExpr, callerVars);
+    } else {
+      throw new Error(`TypeError: missing required argument: '${p.name}'`);
+    }
+  }
+  const output = [];
+  let returnValue = null;
+  try{
+    execBlock(method.lines, method.bStart, method.bodyIndent, localVars, output, {count:0});
+  } catch(sig){
+    if(sig && sig.__return) returnValue = sig.value;
+    else throw sig;
+  }
+  return {returnValue, output};
+}
+
+function callMethod(instance, methodName, argsStr, callerVars){
+  const found = findMethod(instance.__class, methodName);
+  if(!found) throw new Error(`AttributeError: '${instance.__class}' object has no attribute '${methodName}'`);
+  return bindAndRun(found.method, instance, argsStr, callerVars);
+}
+
+function callSuper(instance, methodName, argsStr, callerVars){
+  const ownClass = classes[instance.__class];
+  const parentName = ownClass.parent;
+  if(!parentName) throw new Error(`AttributeError: no parent class for '${instance.__class}'`);
+  const found = findMethod(parentName, methodName);
+  if(!found) throw new Error(`AttributeError: parent has no attribute '${methodName}'`);
+  return bindAndRun(found.method, instance, argsStr, callerVars);
+}
+
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+
+function execLine(line, vars, output){
+  if(line.match(/^return(\s|$)/)){
+    const exprPart = line.replace(/^return\s*/, '').trim();
+    const val = exprPart === '' ? null : evalComplex(exprPart, vars);
+    const sig = new Error('__return__');
+    sig.__return = true;
+    sig.value = val;
+    throw sig;
+  }
+  if(line === 'pass') return;
+
+  const superCall = line.match(/^super\(\)\.(\w+)\((.*)\)$/);
+  if(superCall && vars['self']){
+    const result = callSuper(vars['self'], superCall[1], superCall[2], vars);
+    result.output.forEach(o => output.push(o));
+    return;
+  }
+
+  const attrAssign = line.match(/^(\w+)\.(\w+)\s*=\s*(.+)$/);
+  if(attrAssign && vars[attrAssign[1]] && vars[attrAssign[1]].__isInstance){
+    vars[attrAssign[1]].attrs[attrAssign[2]] = evalComplex(attrAssign[3], vars);
+    return;
+  }
+
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  const bareMethodCall = line.match(/^(\w+)\.(\w+)\((.*)\)$/);
+
+  if(printMatch){
+    const parts = splitTopLevel(printMatch[1], ',');
+    output.push(parts.map(p => {
+      let v = evalComplex(p, vars);
+      if(v && typeof v === 'object' && v.hasOwnProperty('returnValue')) v = v.returnValue;
+      return typeof v === 'string' ? v : pyRepr(v);
+    }).join(' '));
+  } else if(bareMethodCall && vars[bareMethodCall[1]] && vars[bareMethodCall[1]].__isInstance){
+    const result = callMethod(vars[bareMethodCall[1]], bareMethodCall[2], bareMethodCall[3], vars);
+    result.output.forEach(o => output.push(o));
+  } else if(assignMatch){
+    let v = evalComplex(assignMatch[2], vars);
+    if(v && typeof v === 'object' && v.hasOwnProperty('returnValue')){
+      v.output.forEach(o => output.push(o));
+      v = v.returnValue;
+    }
+    vars[assignMatch[1]] = v;
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+
+    const classMatch = trimmed.match(/^class (\w+)(\((\w+)\))?:$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+    const ifMatch = trimmed.match(/^if (.+):$/);
+
+    if(classMatch){
+      const className = classMatch[1];
+      const parentName = classMatch[3] || null;
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      const methods = {};
+      let k = bStart;
+      while(k < bEnd){
+        const line2 = lines[k];
+        if(line2.trim()===''){ k++; continue; }
+        const defMatch = line2.trim().match(/^def (\w+)\((.*)\):$/);
+        if(defMatch && getIndent(line2) === baseIndent+4){
+          const mName = defMatch[1];
+          const params = defMatch[2].split(',').map(s=>s.trim()).filter(s=>s!=='');
+          const mStart = k+1, mEnd = findBlockExtent(lines, mStart, baseIndent+4);
+          methods[mName] = {params, bStart:mStart, bEnd:mEnd, bodyIndent: baseIndent+8, lines};
+          k = mEnd;
+        } else if(line2.trim()==='pass'){
+          k++;
+        } else k++;
+      }
+      classes[className] = {methods, lines, parent: parentName};
+      i = bEnd;
+      continue;
+    } else if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else {
+      try{ execLine(trimmed, vars, output); }
+      catch(err){
+        if(err && err.__return) throw err;
+        output.push(`<span class="error">${escapeHtml(err.message || 'Error')}</span>`);
+      }
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  classes = {};
+  const output = [];
+  try{
+    execBlock(lines, 0, 0, vars, output, {count:0});
+  } catch(err){
+    if(!(err && err.__return)) output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "class Dog(Animal): means:", opts: ["Dog and Animal are unrelated","Dog inherits from Animal, gaining its attributes/methods","Animal inherits from Dog","A syntax error"], correct: 1, explain: "The parentheses after the class name specify the parent class being inherited from." },
+  { q: "class A:\n    def greet(self): print('A')\nclass B(A): pass\nB().greet() — what prints?", opts: ["Nothing","'A'","'B'","Error"], correct: 1, explain: "B doesn't override greet(), so it inherits A's version." },
+  { q: "class A:\n    def greet(self): print('A')\nclass B(A):\n    def greet(self): print('B')\nB().greet() — what prints?", opts: ["'A'","'B'","Both A and B","Error"], correct: 1, explain: "B's own greet() overrides A's version entirely." },
+  { q: "What does super().__init__() do?", opts: ["Creates a brand new unrelated object","Calls the parent class's __init__ method","Deletes the parent class","Always causes an error"], correct: 1, explain: "It explicitly runs the parent's constructor logic." },
+  { q: "If a child class defines its own __init__ WITHOUT calling super().__init__(), what happens to the parent's setup?", opts: ["It still runs automatically","It does NOT run — only the child's own __init__ code executes","It runs twice","Causes a syntax error"], correct: 1, explain: "Overriding __init__ replaces the parent's version entirely unless you explicitly call super().__init__()." },
+  { q: "A 'has-a' relationship (like Car has an Engine) is usually best modeled with:", opts: ["Inheritance (Car inherits from Engine)","Composition (Car holds an Engine object as an attribute)","They're the same thing","Neither approach works"], correct: 1, explain: "Has-a relationships are typically composition, not inheritance — inheritance fits 'is-a' relationships." },
+  { q: "SavingsAccount(BankAccount) doesn't redefine deposit(). Calling savings.deposit(100) will:", opts: ["Cause an AttributeError","Use BankAccount's inherited deposit() method","Do nothing silently","Only work if explicitly imported"], correct: 1, explain: "Since SavingsAccount doesn't override deposit(), it automatically uses the parent's version." },
+  { q: "Why does scikit-learn's use of inheritance matter for you in Phase 3?", opts: [
+      "It doesn't, scikit-learn avoids OOP entirely",
+      "Different model classes share common base functionality via inheritance, which explains why they all share methods like .fit()",
+      "Only advanced users need to know this",
+      "Inheritance is unrelated to how scikit-learn works"
+    ], correct: 1, explain: "Recognizing this pattern demystifies why every scikit-learn model shares a similar, consistent interface." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q.replace(/\n/g,'<br>')}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

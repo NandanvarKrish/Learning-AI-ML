@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 37 — Dictionaries</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+.method-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; font-family:var(--font-mono); font-size:13px;}
+.method-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:10px 12px;}
+.method-box .m{color:var(--accent); font-weight:bold;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:210px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 37 of 210 · Phase 2: Python & Core AI Foundation</span>
+    <h1>Dictionaries</h1>
+    <div class="subtitle">~2 hours · Key-value pairs — arguably the most-used structure in real data work</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Remember Day 27's customer record, spread across four separate variables (name, age, order value, membership)? A dictionary lets you bundle all of that into ONE structure with named fields — exactly how a single row of real-world data, a JSON API response, or one record in a database naturally looks. This is genuinely one of the most-used data structures you'll touch, constantly.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Creating a dictionary</h2>
+  <div class="code">customer = {
+    "name": "Rohan Mehta",
+    "age": 28,
+    "avg_order_value": 1200.50,
+    "is_premium": True
+}</div>
+  <p>Each entry is a <strong>key: value</strong> pair, separated by commas, all inside curly braces — this is the same <code>{ }</code> syntax as sets, but the presence of colons makes it a dictionary instead.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Accessing values</h2>
+  <div class="code">print(customer["name"])         # Rohan Mehta
+print(customer["age"])          # 28
+
+print(customer["email"])        # KeyError! "email" doesn't exist
+print(customer.get("email"))    # None — .get() doesn't crash, just returns None
+print(customer.get("email", "not provided"))  # "not provided" — custom default</div>
+  <p><strong>Use <code>.get()</code> when a key might not exist</strong> — it's much safer than direct bracket access, which crashes your program with a KeyError if the key is missing. This distinction matters a lot once you're working with real, messy data where not every record has every field.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Adding and updating values</h2>
+  <div class="code">customer["city"] = "Surat"        # adds a new key
+customer["age"] = 29               # updates an existing key</div>
+  <p>Unlike tuples, dictionaries ARE mutable — you can freely add new keys or change existing values after creation.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Key dictionary methods</h2>
+  <div class="method-grid">
+    <div class="method-box"><span class="m">.keys()</span><br>Returns all the keys</div>
+    <div class="method-box"><span class="m">.values()</span><br>Returns all the values</div>
+    <div class="method-box"><span class="m">.items()</span><br>Returns key-value pairs together</div>
+    <div class="method-box"><span class="m">.get(key, default)</span><br>Safe access with a fallback</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Real-world example (word frequency counter)</h2>
+  <div class="panel">
+    <p class="example-tag">A genuinely useful, real pattern — foreshadows NLP in Phase 4</p>
+    <div class="code">words = ["apple", "banana", "apple", "cherry", "banana", "apple"]
+word_count = {}
+
+for i in range(len(words)):
+    word = words[i]
+    if word in word_count:
+        word_count[word] = word_count[word] + 1
+    else:
+        word_count[word] = 1
+
+print(word_count)   # {'apple': 3, 'banana': 2, 'cherry': 1}</div>
+    <p>This exact pattern — counting occurrences using a dictionary — is precisely the foundation of "bag of words," one of the earliest and still-relevant techniques for turning text into numbers for NLP models, which you'll meet formally in Phase 4.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Using <code>dict[key]</code> on a key that might not exist.</strong> This raises a KeyError and crashes your program — use <code>.get()</code> whenever you're unsure a key is present.</p>
+    <p><strong>Mistake 2 — Forgetting quotes around string keys.</strong> <code>{name: "Asha"}</code> (no quotes on name) is invalid — string keys need quotes just like any other string: <code>{"name": "Asha"}</code>.</p>
+    <p><strong>Mistake 3 — Confusing an empty dict with an empty set.</strong> As covered yesterday, <code>{}</code> is an empty DICTIONARY by default, not a set.</p>
+    <p><strong>Mistake 4 — Assuming dictionary key order matters for logic.</strong> While modern Python dictionaries do preserve insertion order for display purposes, you generally shouldn't rely on order for your program's correctness — access by key name, not by position.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now supports dictionaries)</h2>
+  <div class="solver">
+    <h3>Try the word-counting pattern, or build your own record</h3>
+    <textarea id="codeInput">customer = {"name": "Rohan", "age": 28, "is_premium": True}
+print(customer["name"])
+print(customer.get("email", "not provided"))
+customer["city"] = "Surat"
+print(customer)
+
+word_count = {}
+words = ["apple", "banana", "apple", "cherry", "banana", "apple"]
+for i in range(len(words)):
+    word = words[i]
+    if word in word_count:
+        word_count[word] = word_count[word] + 1
+    else:
+        word_count[word] = 1
+print(word_count)</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 38 begins Python functions — bundling reusable blocks of code with names, inputs, and return values. This closes out Week 7-8's core data structures before moving into how to organize code itself.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 37 of 210 · AI & ML Study Plan · Phase 2: Python & Core AI Foundation</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: 'person = {"name": "Meera", "age": 30}. What is person["name"]?', steps: "Meera" },
+  { q: 'Using the same dict, what does person.get("city", "unknown") return?', steps: '"unknown" — "city" is not a key, so the default is returned' },
+  { q: 'What happens if you run person["city"] directly (no .get())?', steps: "Raises a KeyError, since 'city' doesn't exist as a key" },
+  { q: 'person["age"] = 31. What changes?', steps: "The existing 'age' key is updated to 31 (not a new key added)" },
+  { q: 'person["email"] = "m@example.com". What changes?', steps: "A NEW key 'email' is added to the dictionary" },
+  { q: "Write a dictionary representing a product with keys 'name' and 'price'.", steps: 'product = {"name": "Notebook", "price": 60}' },
+  { q: 'scores = {"Math": 90, "Science": 85}. Is "Math" in scores True or False?', steps: "True — 'in' checks the dictionary's KEYS" },
+  { q: "counts={}; counts['a'] = counts.get('a', 0) + 1. If 'a' isn't in counts yet, what does counts become?", steps: "{'a': 1} — get() returns 0 as the default since 'a' isn't present, then 0+1=1 is stored" },
+  { q: "Why is .get() generally safer than direct bracket access for real-world (messy) data?", steps: "Real data often has missing fields — .get() lets you supply a sensible default instead of crashing the whole program with a KeyError." },
+  { q: "In your own words: how does a dictionary improve on Day 27's separate customer_name/customer_age/etc. variables?", steps: "It bundles all related fields into ONE named structure instead of several disconnected variables, matching how real records (a database row, a JSON object) are naturally organized." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with dict support ---
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val instanceof Map){
+    const parts = [...val.entries()].map(([k,v]) => `${typeof k==='string'?`'${k}'`:pyRepr(k)}: ${typeof v==='string'?`'${v}'`:pyRepr(v)}`);
+    return '{' + parts.join(', ') + '}';
+  }
+  if(val instanceof Set){
+    if(val.size === 0) return 'set()';
+    return '{' + [...val].map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v)).join(', ') + '}';
+  }
+  if(Array.isArray(val)){
+    const items = val.map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v));
+    if(val.__isTuple){
+      if(val.length === 1) return '(' + items[0] + ',)';
+      return '(' + items.join(', ') + ')';
+    }
+    return '[' + items.join(', ') + ']';
+  }
+  return String(val);
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))){
+    return value.slice(1,-1);
+  }
+  if(!isNaN(parseFloat(value)) && isFinite(value)){
+    return value.includes('.') ? parseFloat(value) : parseInt(value);
+  }
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+function splitTopLevel(str, sep){
+  // splits on sep at depth 0 (ignoring nested brackets/quotes) - simplified
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){
+      current += ch;
+      if(ch === inQuote) inQuote = null;
+      continue;
+    }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function parseDictLiteral(text, vars){
+  const inner = text.slice(1,-1).trim();
+  const map = new Map();
+  if(inner === '') return map;
+  const entries = splitTopLevel(inner, ',');
+  entries.forEach(entry => {
+    const idx = entry.indexOf(':');
+    const k = resolveSimple(entry.slice(0, idx), vars);
+    const v = resolveSimple(entry.slice(idx+1), vars);
+    map.set(k, v);
+  });
+  return map;
+}
+function parseCollectionLiteral(text, vars){
+  const inner = text.slice(1, -1).trim();
+  if(inner === '') return [];
+  const cleanInner = inner.endsWith(',') ? inner.slice(0,-1) : inner;
+  if(cleanInner === '') return [];
+  return splitTopLevel(cleanInner, ',').map(p => resolveSimple(p, vars));
+}
+function pyIndex(arr, idx){
+  let i = idx;
+  if(i < 0) i = arr.length + i;
+  if(i < 0 || i >= arr.length) throw new Error('IndexError');
+  return arr[i];
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || v instanceof Set || v instanceof Map) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/\bstr\(/g, 'String(').replace(/\bint\(/g, 'Math.trunc(').replace(/\bfloat\(/g, 'Number(');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+
+  let m = arg.match(/^(.+?)\s+not in\s+(\w+)$/);
+  if(m){
+    const container = vars[m[2]];
+    const val = resolveSimple(m[1], vars);
+    if(container instanceof Map) return !container.has(val);
+    if(container instanceof Set) return !container.has(val);
+    if(Array.isArray(container)) return !container.includes(val);
+  }
+  m = arg.match(/^(.+?)\s+in\s+(\w+)$/);
+  if(m){
+    const container = vars[m[2]];
+    const val = resolveSimple(m[1], vars);
+    if(container instanceof Map) return container.has(val);
+    if(container instanceof Set) return container.has(val);
+    if(Array.isArray(container)) return container.includes(val);
+  }
+
+  // dict methods
+  m = arg.match(/^(\w+)\.get\((.*)\)$/);
+  if(m){
+    const map = vars[m[1]];
+    const parts = splitTopLevel(m[2], ',');
+    const key = resolveSimple(parts[0], vars);
+    if(map.has(key)) return map.get(key);
+    return parts[1] !== undefined ? resolveSimple(parts[1], vars) : null;
+  }
+  m = arg.match(/^(\w+)\.keys\(\)$/);
+  if(m){ const r = [...vars[m[1]].keys()]; return r; }
+  m = arg.match(/^(\w+)\.values\(\)$/);
+  if(m){ const r = [...vars[m[1]].values()]; return r; }
+  m = arg.match(/^(\w+)\.items\(\)$/);
+  if(m){
+    const r = [...vars[m[1]].entries()].map(([k,v]) => { const t=[k,v]; t.__isTuple=true; return t; });
+    return r;
+  }
+
+  m = arg.match(/^set\((\w+)\)$/);
+  if(m) return new Set(vars[m[1]]);
+  m = arg.match(/^list\((\w+)\)$/);
+  if(m){ const src = vars[m[1]]; return src instanceof Set ? [...src] : [...src]; }
+  m = arg.match(/^tuple\((\w+)\)$/);
+  if(m){ const src = vars[m[1]]; const result = src instanceof Set ? [...src] : [...src]; result.__isTuple = true; return result; }
+  if(arg === 'set()') return new Set();
+
+  if(arg.startsWith('{') && arg.includes(':') && arg.endsWith('}')){
+    return parseDictLiteral(arg, vars);
+  }
+  if(arg.startsWith('(') && arg.endsWith(')') && arg.includes(',')){
+    const result = parseCollectionLiteral(arg, vars);
+    result.__isTuple = true;
+    return result;
+  }
+  if(arg.startsWith('{') && arg.endsWith('}') && arg.length > 2){
+    return new Set(parseCollectionLiteral(arg, vars));
+  }
+  if(arg.startsWith('[') && arg.endsWith(']')) return parseCollectionLiteral(arg, vars);
+
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch){
+    const v = vars[lenMatch[1]];
+    if(v instanceof Map) return v.size;
+    if(v instanceof Set) return v.size;
+    return v.length;
+  }
+
+  const idxMatch = arg.match(/^(\w+)\[(.*)\]$/);
+  if(idxMatch){
+    const container = vars[idxMatch[1]];
+    const keyExpr = idxMatch[2];
+    if(container instanceof Map){
+      const key = resolveSimple(keyExpr, vars);
+      if(!container.has(key)) throw new Error('KeyError: ' + JSON.stringify(key));
+      return container.get(key);
+    }
+    return pyIndex(container, evalGeneral(keyExpr, vars));
+  }
+
+  return evalGeneral(arg, vars);
+}
+function execLine(line, vars, output){
+  // dict/list item assignment: name[key] = value
+  const itemAssign = line.match(/^(\w+)\[(.+)\]\s*=\s*(.+)$/);
+  if(itemAssign){
+    const container = vars[itemAssign[1]];
+    const keyExpr = itemAssign[2];
+    const valExpr = itemAssign[3];
+    const val = evalComplex(valExpr, vars);
+    if(container instanceof Map){
+      container.set(resolveSimple(keyExpr, vars), val);
+    } else if(Array.isArray(container)){
+      let idx = evalGeneral(keyExpr, vars);
+      if(idx < 0) idx = container.length + idx;
+      container[idx] = val;
+    }
+    return;
+  }
+
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  if(printMatch){
+    output.push(pyRepr(evalComplex(printMatch[1], vars)));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+
+    if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop ran too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else {
+      try{
+        execLine(trimmed, vars, output);
+      } catch(err){
+        output.push(`<span class="error">${escapeHtml(err.message || 'Error')}</span>`);
+      }
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  const output = [];
+  try{
+    execBlock(lines, 0, 0, vars, output);
+  } catch(err){
+    output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: 'd = {"a": 1, "b": 2}. What is d["b"]?', opts: ["1","2","b","Error"], correct: 1, explain: "Accessing by key 'b' returns its value, 2." },
+  { q: 'd = {"a": 1}. What does d.get("z", 99) return?', opts: ["None","Error","99","0"], correct: 2, explain: "Since 'z' isn't a key, the provided default (99) is returned." },
+  { q: 'd = {"a": 1}. What does d["z"] (no .get()) do?', opts: ["Returns None","Returns 0","Raises a KeyError","Returns 'z'"], correct: 2, explain: "Direct bracket access on a missing key crashes with a KeyError." },
+  { q: "Which syntax creates a dictionary (not a set)?", opts: ['{1, 2, 3}', '{"a": 1, "b": 2}', "[1, 2, 3]", "(1, 2, 3)"], correct: 1, explain: "Colons between key and value make it a dictionary; commas alone (no colons) would be a set." },
+  { q: 'd={"x":5}. After d["y"]=10, what does d contain?', opts: ['{"x":5}', '{"y":10}', '{"x":5,"y":10}', "Error"], correct: 2, explain: "Assigning a new key adds it alongside existing keys." },
+  { q: "Why is .get() often safer than direct bracket access for real datasets?", opts: [
+      "It isn't safer, they're identical",
+      "Real records often have missing fields — .get() lets you handle that gracefully instead of crashing",
+      ".get() is slower so it's safer",
+      "Bracket access is always faster"
+    ], correct: 1, explain: "Missing keys are common in real-world messy data; .get() with a default avoids crashes." },
+  { q: "What does the word-counting pattern (word_count[word] = word_count.get(word,0)+1) accomplish?", opts: [
+      "Deletes duplicate words",
+      "Builds a dictionary mapping each word to how many times it appeared",
+      "Sorts the words alphabetically",
+      "Converts words to numbers randomly"
+    ], correct: 1, explain: "This is exactly how frequency counting with a dictionary works — the foundation of 'bag of words' in NLP." },
+  { q: "How does a dictionary improve on using several separate variables (name, age, city) for one record?", opts: [
+      "It doesn't — separate variables are always better",
+      "It bundles related fields into one named, organized structure — closer to how real data records are represented",
+      "Dictionaries can only hold one value total",
+      "Dictionaries are slower and rarely used in practice"
+    ], correct: 1, explain: "A dictionary naturally represents a structured, named record, matching real data formats like JSON." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

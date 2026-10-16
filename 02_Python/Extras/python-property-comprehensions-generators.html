@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Control Panel &amp; The Assembly Line — @property, Comprehensions &amp; Generators</title>
+<style>
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/fira-code/6.2.0/fira_code.css');
+
+  :root{
+    --paper: #F5F1E6;
+    --paper-raised: #FCFAF3;
+    --ink: #24271F;
+    --ink-soft: #565A4C;
+    --rule: #D9D2BC;
+    --brass: #8A6A2F;
+    --brass-deep: #6B5222;
+    --teal: #2A6660;
+    --teal-deep: #1D4A46;
+    --tab-1: #C9A66B;
+    --tab-2: #7FA69C;
+    --correct: #2F7A4F;
+    --wrong: #B14C3A;
+    --code-bg: #1F2A28;
+    --code-ink: #E9EFE9;
+    --shadow: 0 2px 0 rgba(36,39,31,0.06), 0 8px 20px rgba(36,39,31,0.08);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(180deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 28px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Iowan Old Style','Palatino Linotype', Georgia, 'Times New Roman', serif;
+    line-height:1.6;
+  }
+
+  .mono, code, pre, .kbd{ font-family:'Fira Code','JetBrains Mono', Consolas, monospace; }
+
+  header.hero{ padding:64px 24px 40px; max-width:980px; margin:0 auto; position:relative; }
+  .drawer-label{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--paper-raised); border:1px solid var(--rule);
+    padding:6px 14px; border-radius:3px;
+    font-family:'Fira Code',monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--brass-deep); box-shadow:var(--shadow);
+  }
+  .drawer-label::before{ content:""; width:8px;height:8px; background:var(--brass); border-radius:50%; }
+  h1.title{ font-size:clamp(32px, 5vw, 54px); margin:22px 0 6px; line-height:1.08; letter-spacing:-0.01em; font-weight:600; }
+  h1.title em{ font-style:italic; color:var(--teal-deep); }
+  .subtitle{ font-size:18px; color:var(--ink-soft); max-width:660px; margin:14px 0 0; }
+  .hero-card{
+    margin-top:36px; background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px;
+    box-shadow:var(--shadow); padding:22px 26px; display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:start;
+  }
+  .hero-card .catalog-icon{
+    width:52px;height:52px; flex-shrink:0; border-radius:4px;
+    background:linear-gradient(160deg, var(--tab-2), var(--teal));
+    display:flex;align-items:center;justify-content:center; color:#fff;font-family:'Fira Code',monospace;font-weight:700;font-size:16px;
+  }
+  .hero-card p{margin:0;color:var(--ink-soft);font-size:15px;}
+  .hero-card strong{color:var(--ink);}
+
+  nav.tabs{ position:sticky; top:0; z-index:50; background:var(--paper); border-bottom:1px solid var(--rule); padding:0 24px; backdrop-filter:blur(4px); }
+  .tabs-inner{ max-width:980px; margin:0 auto; display:flex; overflow-x:auto; scrollbar-width:none; gap:2px; padding-top:10px; }
+  .tabs-inner::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    flex:0 0 auto; font-family:'Fira Code',monospace; font-size:12.5px; letter-spacing:0.03em;
+    background:var(--paper-raised); border:1px solid var(--rule); border-bottom:none;
+    color:var(--ink-soft); padding:10px 16px 9px; border-radius:6px 6px 0 0; cursor:pointer; white-space:nowrap;
+    transition:background .15s, color .15s, transform .15s;
+  }
+  .tab-btn:hover{ color:var(--ink); transform:translateY(-2px); }
+  .tab-btn.active{ background:var(--paper); color:var(--teal-deep); font-weight:700; border-color:var(--rule); box-shadow:0 -2px 0 var(--teal) inset; }
+
+  main{ max-width:980px; margin:0 auto; padding:40px 24px 100px; }
+  section.card{ display:none; animation:fadeIn .35s ease; }
+  section.card.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .section-eyebrow{ font-family:'Fira Code',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.14em; color:var(--brass-deep); margin-bottom:6px; }
+  h2.section-title{ font-size:clamp(26px,3.6vw,34px); margin:0 0 18px; font-weight:600; }
+  h3.sub-title{ font-size:20px; margin:32px 0 10px; color:var(--teal-deep); font-weight:700; }
+  p{color:var(--ink);}
+  p.lead{font-size:16.5px;}
+
+  .analogy{
+    background:linear-gradient(180deg, #EFE9D6, #F2EEDF); border:1px solid var(--rule); border-left:4px solid var(--tab-1);
+    border-radius:4px; padding:16px 20px; margin:16px 0; font-size:15px;
+  }
+  .analogy .tag{ font-family:'Fira Code',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--brass-deep); font-weight:700; display:block; margin-bottom:6px; }
+
+  pre{ background:var(--code-bg); color:var(--code-ink); padding:18px 20px; border-radius:6px; overflow-x:auto; font-size:13.5px; line-height:1.65; margin:14px 0; box-shadow:var(--shadow); }
+  pre .c1{color:#8FBF9F;}
+  pre .kw{color:#E4B673;}
+  pre .st{color:#B7D4A4;}
+  pre .fn{color:#8FC5D6;}
+  code.inline{ background:#EAE3CC; border:1px solid var(--rule); padding:1px 6px; border-radius:3px; font-size:0.88em; color:var(--teal-deep); }
+
+  ul, ol{padding-left:22px;}
+  li{margin:6px 0;}
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0; }
+  @media(max-width:680px){ .grid-2{grid-template-columns:1fr;} }
+
+  .mini-card{ background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px; padding:16px 18px; box-shadow:var(--shadow); }
+  .mini-card h4{ margin:0 0 8px; font-size:15px; font-family:'Fira Code',monospace; color:var(--teal-deep); }
+  .mini-card p{ font-size:14px;color:var(--ink-soft);margin:0; }
+
+  .topic-map{ display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 8px; }
+  .topic-map span{ font-family:'Fira Code',monospace; font-size:11px; background:var(--paper-raised); border:1px solid var(--rule); padding:5px 10px; border-radius:12px; color:var(--ink-soft); }
+
+  .step{ display:grid; grid-template-columns:44px 1fr; gap:16px; margin:22px 0; }
+  .step-num{
+    width:44px;height:44px; border-radius:50%; background:var(--teal); color:#fff;
+    display:flex;align-items:center;justify-content:center; font-family:'Fira Code',monospace; font-weight:700; font-size:15px;
+    flex-shrink:0; box-shadow:var(--shadow);
+  }
+  .step-body h4{margin:6px 0 6px;font-size:17px;}
+  .step-body p{font-size:14.5px;color:var(--ink-soft);margin:4px 0 8px;}
+
+  .quiz-progress{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; font-family:'Fira Code',monospace; font-size:13px; color:var(--ink-soft); }
+  .quiz-bar{ height:6px; background:var(--rule); border-radius:4px; overflow:hidden; flex:1; margin:0 16px; }
+  .quiz-bar-fill{ height:100%; background:var(--teal); width:0%; transition:width .3s ease; }
+  .q-block{ background:var(--paper-raised); border:1px solid var(--rule); border-radius:6px; padding:20px 22px; margin:16px 0; box-shadow:var(--shadow); }
+  .q-block .q-num{ font-family:'Fira Code',monospace; font-size:11px; color:var(--brass-deep); text-transform:uppercase; letter-spacing:0.1em; }
+  .q-block h4{margin:6px 0 14px;font-size:16.5px;font-weight:700;}
+  .q-block .opts{display:flex;flex-direction:column;gap:8px;}
+  .opt{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--rule); border-radius:5px;
+    cursor:pointer; font-size:14.5px; background:var(--paper); transition:background .15s, border-color .15s;
+  }
+  .opt:hover{background:#EFE9D6;}
+  .opt input{margin-top:3px;accent-color:var(--teal);}
+  .opt.correct{border-color:var(--correct); background:#E4F1E6;}
+  .opt.wrong{border-color:var(--wrong); background:#F5E4DF;}
+  .explain{ display:none; margin-top:12px; font-size:13.5px; color:var(--ink-soft); border-top:1px dashed var(--rule); padding-top:10px; }
+  .explain.show{display:block;}
+
+  .quiz-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:24px; gap:12px; flex-wrap:wrap; }
+  button.primary-btn{
+    font-family:'Fira Code',monospace; background:var(--teal); color:#fff; border:none; padding:12px 22px; border-radius:5px;
+    font-size:13.5px; cursor:pointer; letter-spacing:0.03em; box-shadow:var(--shadow); transition:background .15s, transform .15s;
+  }
+  button.primary-btn:hover{background:var(--teal-deep); transform:translateY(-1px);}
+  button.ghost-btn{
+    font-family:'Fira Code',monospace; background:transparent; color:var(--ink-soft); border:1px solid var(--rule);
+    padding:11px 18px; border-radius:5px; font-size:13px; cursor:pointer;
+  }
+  button.ghost-btn:hover{color:var(--ink); border-color:var(--ink-soft);}
+
+  #quizResult{ display:none; text-align:center; padding:40px 20px; }
+  #quizResult .score-big{ font-family:'Fira Code',monospace; font-size:56px; font-weight:700; color:var(--teal-deep); }
+  #quizResult p{color:var(--ink-soft);}
+
+  footer{ text-align:center; padding:30px; font-family:'Fira Code',monospace; font-size:12px; color:var(--ink-soft); border-top:1px solid var(--rule); }
+
+  button:focus-visible, .opt input:focus-visible, .tab-btn:focus-visible{ outline:2px solid var(--teal-deep); outline-offset:2px; }
+
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="drawer-label">wing no. 6 &mdash; py / property · comp · gen</span>
+  <h1 class="title">The Control Panel &amp; The Assembly Line:<br><em>@property, Comprehensions &amp; Generators</em></h1>
+  <p class="subtitle">A good control panel lets you turn a dial and have the machine quietly check and adjust things behind the scenes — that's <code class="inline">@property</code>. An assembly line stamps out a whole batch of parts in one pass — that's a comprehension. And a lazy conveyor belt that hands you one part only when you ask for the next one — that's a generator.</p>
+
+  <div class="hero-card">
+    <div class="catalog-icon">@ [ ] →</div>
+    <p><strong>What you'll walk away with:</strong> why @property exists, Pythonic getters/setters, computed and validated attributes, list/set/dict comprehensions (including nested and conditional ones), what generators are, <code class="inline">yield</code>, generator expressions, lazy evaluation and memory efficiency, a full real-world build (a streaming data processor), and a 15-question quiz.</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner" id="tabsInner">
+    <button class="tab-btn active" data-target="t-why">01 · Why @property exists</button>
+    <button class="tab-btn" data-target="t-getset">02 · Getters &amp; Setters</button>
+    <button class="tab-btn" data-target="t-computed">03 · Computed &amp; Validated</button>
+    <button class="tab-btn" data-target="t-comprec">04 · Comprehensions Recap</button>
+    <button class="tab-btn" data-target="t-compadv">05 · Nested &amp; Conditional</button>
+    <button class="tab-btn" data-target="t-genwhat">06 · What are Generators</button>
+    <button class="tab-btn" data-target="t-yield">07 · yield in Depth</button>
+    <button class="tab-btn" data-target="t-genexpr">08 · Generator Expressions</button>
+    <button class="tab-btn" data-target="t-task">09 · Real-World Task</button>
+    <button class="tab-btn" data-target="t-quiz">10 · Quiz</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- 01 -->
+  <section class="card active" id="t-why">
+    <div class="section-eyebrow">Topic 01</div>
+    <h2 class="section-title">Why <code class="inline">@property</code> exists</h2>
+    <p class="lead">Sometimes you want an attribute to look and feel like plain data (<code class="inline">obj.value</code>), but actually run a small check or calculation behind the scenes every time it's read or changed.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      A thermostat dial looks like a simple control — you turn it to 72. But behind the panel, it's actually running a small program: checking the number is in a safe range, converting it to the furnace's internal units, maybe logging the change. You never see that machinery; you just turn the dial. <code class="inline">@property</code> lets a Python attribute work exactly like that dial — simple to use, but backed by real logic.
+    </div>
+
+    <h3 class="sub-title">The problem it solves</h3>
+    <pre><span class="c1"># plain attribute — anyone can set it to anything, including nonsense</span>
+<span class="kw">class</span> <span class="fn">Thermostat</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, temp):
+        self.temp = temp
+
+t = <span class="fn">Thermostat</span>(<span class="st">70</span>)
+t.temp = -<span class="st">500</span>   <span class="c1"># nothing stops this — an impossible temperature is silently accepted</span></pre>
+
+    <h3 class="sub-title">The fix, with a property</h3>
+    <pre><span class="kw">class</span> <span class="fn">Thermostat</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, temp):
+        self._temp = temp        <span class="c1"># stored privately, single underscore = "internal"</span>
+
+    <span class="fn">@property</span>
+    <span class="kw">def</span> <span class="fn">temp</span>(self):
+        <span class="kw">return</span> self._temp     <span class="c1"># the "dial reading" — looks like a normal attribute</span>
+
+    <span class="fn">@temp.setter</span>
+    <span class="kw">def</span> <span class="fn">temp</span>(self, value):
+        <span class="kw">if</span> value < -<span class="st">40</span> <span class="kw">or</span> value > <span class="st">120</span>:
+            <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="st">"Temperature out of safe range."</span>)
+        self._temp = value
+
+t = <span class="fn">Thermostat</span>(<span class="st">70</span>)
+t.temp = <span class="st">75</span>          <span class="c1"># looks like plain assignment, but runs the check</span>
+t.temp = -<span class="st">500</span>        <span class="c1"># raises ValueError — the dial refuses an unsafe setting</span></pre>
+
+    <div class="topic-map">
+      <span>@property = getter</span><span>@x.setter = setter</span><span>looks like data, acts like a method</span><span>validation on assignment</span>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section class="card" id="t-getset">
+    <div class="section-eyebrow">Topic 02</div>
+    <h2 class="section-title">Getters and setters, the Pythonic way</h2>
+    <p class="lead">Other languages often require explicit <code class="inline">getTemp()</code> / <code class="inline">setTemp()</code> methods everywhere. Python lets you start with a plain attribute and upgrade to a property later — without changing how anyone else uses your class.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      If the control panel starts as a bare wire and later gets a proper dial installed, the person operating it shouldn't have to learn a new gesture — turning the dial should feel the same before and after. Properties let you swap plain storage for real logic without breaking any code that already does <code class="inline">obj.value = 10</code>.
+    </div>
+
+    <pre><span class="kw">class</span> <span class="fn">Circle</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, radius):
+        self.radius = radius
+
+    <span class="fn">@property</span>
+    <span class="kw">def</span> <span class="fn">area</span>(self):
+        <span class="kw">return</span> <span class="st">3.14159</span> * self.radius ** <span class="st">2</span>
+
+c = <span class="fn">Circle</span>(<span class="st">4</span>)
+<span class="fn">print</span>(c.area)     <span class="c1"># 50.26544 — called with NO parentheses, like a plain attribute</span>
+c.radius = <span class="st">10</span>       <span class="c1"># change the radius...</span>
+<span class="fn">print</span>(c.area)     <span class="c1"># ...and area recalculates automatically on next read: 314.159</span></pre>
+
+    <p>Notice <code class="inline">c.area</code> is read with no parentheses, even though it's really running a calculation — that's the whole point. It behaves like a value, not a method call.</p>
+
+    <h3 class="sub-title">Read-only properties</h3>
+    <pre><span class="kw">class</span> <span class="fn">Circle</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, radius):
+        self.radius = radius
+
+    <span class="fn">@property</span>
+    <span class="kw">def</span> <span class="fn">area</span>(self):
+        <span class="kw">return</span> <span class="st">3.14159</span> * self.radius ** <span class="st">2</span>
+
+c = <span class="fn">Circle</span>(<span class="st">4</span>)
+c.area = <span class="st">100</span>   <span class="c1"># AttributeError — no setter defined, so "area" can't be assigned directly</span></pre>
+    <p>Without a matching <code class="inline">@area.setter</code>, the dial simply has no input side — you can read it, but you can't turn it. That's a deliberate design choice for values that should only ever be calculated, never set directly.</p>
+  </section>
+
+  <!-- 03 -->
+  <section class="card" id="t-computed">
+    <div class="section-eyebrow">Topic 03</div>
+    <h2 class="section-title">Computed properties &amp; validation</h2>
+    <p class="lead">Properties shine in two situations: deriving a value from other attributes, and enforcing rules the moment something is assigned.</p>
+
+    <h3 class="sub-title">A computed property</h3>
+    <pre><span class="kw">class</span> <span class="fn">Employee</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, first, last):
+        self.first = first
+        self.last = last
+
+    <span class="fn">@property</span>
+    <span class="kw">def</span> <span class="fn">full_name</span>(self):
+        <span class="kw">return</span> <span class="fn">f</span><span class="st">"{self.first} {self.last}"</span>
+
+e = <span class="fn">Employee</span>(<span class="st">"Maya"</span>, <span class="st">"Rao"</span>)
+<span class="fn">print</span>(e.full_name)    <span class="c1"># Maya Rao — never stored directly, always derived fresh</span></pre>
+    <p>There's no <code class="inline">self.full_name = ...</code> anywhere — it's computed live every time it's read, so it can never drift out of sync with <code class="inline">first</code> and <code class="inline">last</code>.</p>
+
+    <h3 class="sub-title">A validating setter</h3>
+    <pre><span class="kw">class</span> <span class="fn">Product</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, price):
+        self.name = name
+        self.price = price     <span class="c1"># goes through the setter below immediately</span>
+
+    <span class="fn">@property</span>
+    <span class="kw">def</span> <span class="fn">price</span>(self):
+        <span class="kw">return</span> self._price
+
+    <span class="fn">@price.setter</span>
+    <span class="kw">def</span> <span class="fn">price</span>(self, value):
+        <span class="kw">if</span> value < <span class="st">0</span>:
+            <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="st">"Price cannot be negative."</span>)
+        self._price = value
+
+item = <span class="fn">Product</span>(<span class="st">"Mug"</span>, <span class="st">9.99</span>)
+item.price = -<span class="st">5</span>   <span class="c1"># raises ValueError immediately — bad data is rejected at the door</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      A validating setter is a security guard at the panel's input slot — every value that tries to get in is checked before it's accepted, so nothing invalid ever makes it into storage in the first place.
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section class="card" id="t-comprec">
+    <div class="section-eyebrow">Topic 04</div>
+    <h2 class="section-title">Comprehensions, quick recap</h2>
+    <p class="lead">A comprehension is a compact assembly line: feed it raw material and a rule, and it stamps out a finished collection in one line — no manual loop needed.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      Instead of a worker picking up each part, checking it, and placing it on a shelf one at a time (a manual for-loop), a comprehension is the automated stamping machine: raw parts go in one end, finished parts come out the other, following one fixed rule.
+    </div>
+
+    <pre><span class="c1"># list comprehension</span>
+squares = [n**2 <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(1, 6)]
+<span class="c1"># [1, 4, 9, 16, 25]</span>
+
+<span class="c1"># set comprehension — duplicates automatically dropped</span>
+unique_lengths = {<span class="fn">len</span>(w) <span class="kw">for</span> w <span class="kw">in</span> [<span class="st">"fig"</span>, <span class="st">"kiwi"</span>, <span class="st">"pear"</span>]}
+<span class="c1"># {3, 4}</span>
+
+<span class="c1"># dict comprehension</span>
+squared_map = {n: n**2 <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(1, 4)}
+<span class="c1"># {1: 1, 2: 4, 3: 9}</span></pre>
+
+    <h3 class="sub-title">The general shape</h3>
+    <pre>[ expression <span class="kw">for</span> item <span class="kw">in</span> iterable <span class="kw">if</span> condition ]</pre>
+    <p>Read it left to right as: "give me <code class="inline">expression</code>, for every <code class="inline">item</code> in <code class="inline">iterable</code>, but only keep it if <code class="inline">condition</code> is true." Swap the brackets for <code class="inline">{}</code> or <code class="inline">{: }</code> to get a set or dict instead of a list.</p>
+  </section>
+
+  <!-- 05 -->
+  <section class="card" id="t-compadv">
+    <div class="section-eyebrow">Topic 05</div>
+    <h2 class="section-title">Nested &amp; conditional comprehensions</h2>
+    <p class="lead">Comprehensions can filter with <code class="inline">if</code>, branch with <code class="inline">if/else</code>, and even loop inside a loop — still in one line, though readability starts to matter more here.</p>
+
+    <h3 class="sub-title">Filtering with <code class="inline">if</code></h3>
+    <pre>evens = [n <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(10) <span class="kw">if</span> n % <span class="st">2</span> == <span class="st">0</span>]
+<span class="c1"># [0, 2, 4, 6, 8] — the "if" here is a filter: skip anything that fails it</span></pre>
+
+    <h3 class="sub-title">Branching with <code class="inline">if/else</code></h3>
+    <pre>labels = [<span class="st">"even"</span> <span class="kw">if</span> n % <span class="st">2</span> == <span class="st">0</span> <span class="kw">else</span> <span class="st">"odd"</span> <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(5)]
+<span class="c1"># ['even', 'odd', 'even', 'odd', 'even']</span>
+<span class="c1"># note: this if/else sits BEFORE the "for" — it picks a value, it doesn't filter</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      An <code class="inline">if</code> after the loop is a quality-control gate — reject anything that doesn't pass, nothing comes out for it. An <code class="inline">if/else</code> before the loop is a stamping choice — every part gets stamped with one of two labels, nothing is rejected.
+    </div>
+
+    <h3 class="sub-title">Nested loops inside a comprehension</h3>
+    <pre><span class="c1"># flatten a grid of rows into one flat list</span>
+grid = [[<span class="st">1</span>, <span class="st">2</span>], [<span class="st">3</span>, <span class="st">4</span>], [<span class="st">5</span>, <span class="st">6</span>]]
+flat = [num <span class="kw">for</span> row <span class="kw">in</span> grid <span class="kw">for</span> num <span class="kw">in</span> row]
+<span class="c1"># [1, 2, 3, 4, 5, 6] — reads like: for each row, for each num in that row</span></pre>
+
+    <p>Once a comprehension needs more than one <code class="inline">for</code> and one <code class="inline">if</code>, it's often clearer to write it as a regular loop instead — a comprehension should save effort, not cost readability.</p>
+  </section>
+
+  <!-- 06 -->
+  <section class="card" id="t-genwhat">
+    <div class="section-eyebrow">Topic 06</div>
+    <h2 class="section-title">What generators actually are</h2>
+    <p class="lead">A list builds every item up front and holds them all in memory at once. A <strong>generator</strong> produces items one at a time, only when asked — and forgets each one once it's handed over.</p>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      A comprehension is a factory that stamps out an entire batch of parts before handing you the whole crate — all of it sitting in a warehouse at once. A generator is a conveyor belt: it hands you one part only when you reach for the next one, and never stockpiles the whole batch. If you only ever need the first three parts, the conveyor belt never bothers making the other 999,997.
+    </div>
+
+    <pre><span class="c1"># a list — builds and stores ALL 10 million numbers immediately</span>
+big_list = [n <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(10_000_000)]
+
+<span class="c1"># a generator — produces numbers one at a time, on demand, using far less memory</span>
+big_gen = (n <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(10_000_000))</pre>
+
+    <h3 class="sub-title">Why this matters in practice</h3>
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>Memory</h4>
+        <p>A generator over a huge dataset can use a tiny, constant amount of memory instead of loading everything at once.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Laziness</h4>
+        <p>Values are computed only when actually requested — useful for infinite or very large sequences.</p>
+      </div>
+      <div class="mini-card">
+        <h4>One pass only</h4>
+        <p>Once you've walked the conveyor belt to the end, it's empty — you can't rewind and read it again.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Pipelines</h4>
+        <p>Generators chain well — one lazy step feeding the next, processing huge data streams efficiently.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section class="card" id="t-yield">
+    <div class="section-eyebrow">Topic 07</div>
+    <h2 class="section-title"><code class="inline">yield</code>, in depth</h2>
+    <p class="lead"><code class="inline">yield</code> is what turns an ordinary function into a generator function — instead of returning once and ending, it hands back a value and pauses, ready to continue exactly where it left off.</p>
+
+    <pre><span class="kw">def</span> <span class="fn">countdown</span>(n):
+    <span class="kw">while</span> n > <span class="st">0</span>:
+        <span class="kw">yield</span> n     <span class="c1"># hand back this value, then PAUSE here</span>
+        n -= <span class="st">1</span>
+
+<span class="kw">for</span> num <span class="kw">in</span> <span class="fn">countdown</span>(<span class="st">3</span>):
+    <span class="fn">print</span>(num)
+<span class="c1"># 3</span>
+<span class="c1"># 2</span>
+<span class="c1"># 1</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      <code class="inline">return</code> is a worker finishing the whole job and walking away for good. <code class="inline">yield</code> is a worker handing you one finished part, then freezing exactly where they stood — the moment you ask for the next one, they pick up mid-motion and keep going, remembering everything they were doing.
+    </div>
+
+    <h3 class="sub-title">Calling a generator function doesn't run it yet</h3>
+    <pre>gen = <span class="fn">countdown</span>(<span class="st">3</span>)     <span class="c1"># nothing has run yet — this just creates the generator object</span>
+<span class="fn">next</span>(gen)             <span class="c1"># 3 — runs up to the first yield</span>
+<span class="fn">next</span>(gen)             <span class="c1"># 2 — resumes right after the last yield</span>
+<span class="fn">next</span>(gen)             <span class="c1"># 1</span>
+<span class="fn">next</span>(gen)             <span class="c1"># raises StopIteration — the conveyor belt is empty</span></pre>
+    <p>A <code class="inline">for</code> loop over a generator automatically calls <code class="inline">next()</code> for you and quietly stops when it sees <code class="inline">StopIteration</code> — you rarely need to call <code class="inline">next()</code> by hand outside of learning how it works.</p>
+
+    <h3 class="sub-title">A generator that models something real</h3>
+    <pre><span class="kw">def</span> <span class="fn">read_large_file</span>(path):
+    <span class="kw">with</span> <span class="fn">open</span>(path, <span class="st">"r"</span>) <span class="kw">as</span> f:
+        <span class="kw">for</span> line <span class="kw">in</span> f:
+            <span class="kw">yield</span> line.<span class="fn">strip</span>()    <span class="c1"># one line at a time, never the whole file in memory</span>
+
+<span class="kw">for</span> line <span class="kw">in</span> <span class="fn">read_large_file</span>(<span class="st">"huge_log.txt"</span>):
+    <span class="kw">if</span> <span class="st">"ERROR"</span> <span class="kw">in</span> line:
+        <span class="fn">print</span>(line)</pre>
+  </section>
+
+  <!-- 08 -->
+  <section class="card" id="t-genexpr">
+    <div class="section-eyebrow">Topic 08</div>
+    <h2 class="section-title">Generator expressions &amp; laziness</h2>
+    <p class="lead">Just like list comprehensions have a compact syntax, generators have their own one-liner form — swap the square brackets for parentheses.</p>
+
+    <pre><span class="c1"># list comprehension — builds the whole list immediately</span>
+squares_list = [n**2 <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(1_000_000)]
+
+<span class="c1"># generator expression — builds nothing yet, just describes how to make each value</span>
+squares_gen = (n**2 <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(1_000_000))
+
+<span class="fn">next</span>(squares_gen)   <span class="c1"># 0 — computed only now, the instant it's asked for</span>
+<span class="fn">next</span>(squares_gen)   <span class="c1"># 1</span></pre>
+
+    <div class="analogy">
+      <span class="tag">Real-world analogy</span>
+      The square-bracket version is ordering the entire year's production run delivered to your warehouse today. The parenthesis version is a standing order: "make one whenever I ask" — nothing is produced, stored, or paid for until it's actually requested.
+    </div>
+
+    <h3 class="sub-title">Feeding a generator directly into a function</h3>
+    <pre>total = <span class="fn">sum</span>(n**2 <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(1_000_000))
+<span class="c1"># no square brackets needed here — this generator expression streams</span>
+<span class="c1"># values straight into sum() one at a time, without ever building a full list</span></pre>
+
+    <h3 class="sub-title">When to choose which</h3>
+    <ul>
+      <li><strong>Use a list/comprehension</strong> when you need to loop over the data more than once, check its length, or index into it.</li>
+      <li><strong>Use a generator</strong> when you're processing something huge or possibly infinite, and only need to walk through it once, front to back.</li>
+    </ul>
+  </section>
+
+  <!-- 09 REAL WORLD TASK -->
+  <section class="card" id="t-task">
+    <div class="section-eyebrow">Topic 09 · Build something real</div>
+    <h2 class="section-title">Project: a streaming sales report</h2>
+    <p class="lead">We'll build a small system that processes a large sales log without ever loading the whole thing into memory, using a validated <code class="inline">@property</code>, comprehensions for quick summaries, and a generator pipeline for the heavy lifting — the same shape real log-processing and analytics tools use.</p>
+
+    <div class="analogy">
+      <span class="tag">The brief</span>
+      Model a Sale with a validated price property. Stream sales from a huge file lazily with a generator. Filter and transform that stream with more generators. Use a comprehension only for the small, final summary — never for the full raw stream.
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Model a Sale with a guarded property</h4>
+        <p>The amount should never be negative — enforce that the moment it's set, not after the fact.</p>
+        <pre><span class="kw">class</span> <span class="fn">Sale</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, item, amount):
+        self.item = item
+        self.amount = amount     <span class="c1"># goes straight through the setter below</span>
+
+    <span class="fn">@property</span>
+    <span class="kw">def</span> <span class="fn">amount</span>(self):
+        <span class="kw">return</span> self._amount
+
+    <span class="fn">@amount.setter</span>
+    <span class="kw">def</span> <span class="fn">amount</span>(self, value):
+        <span class="kw">if</span> value < <span class="st">0</span>:
+            <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="fn">f</span><span class="st">"Sale amount cannot be negative: {value}"</span>)
+        self._amount = value</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Stream sales from a file, one line at a time</h4>
+        <p>A generator function — never loads the whole log into memory, however large it is.</p>
+        <pre><span class="kw">def</span> <span class="fn">read_sales</span>(path):
+    <span class="kw">with</span> <span class="fn">open</span>(path, <span class="st">"r"</span>) <span class="kw">as</span> f:
+        <span class="kw">for</span> line <span class="kw">in</span> f:
+            item, amount_str = line.<span class="fn">strip</span>().<span class="fn">split</span>(<span class="st">","</span>)
+            <span class="kw">yield</span> <span class="fn">Sale</span>(item, <span class="fn">float</span>(amount_str))</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Filter the stream lazily with another generator</h4>
+        <p>Chain a second generator on top — still nothing has actually run yet at this point.</p>
+        <pre><span class="kw">def</span> <span class="fn">big_sales</span>(sales, threshold=<span class="st">50</span>):
+    <span class="kw">for</span> sale <span class="kw">in</span> sales:
+        <span class="kw">if</span> sale.amount >= threshold:
+            <span class="kw">yield</span> sale
+
+sales_stream = <span class="fn">read_sales</span>(<span class="st">"sales_log.csv"</span>)
+notable = <span class="fn">big_sales</span>(sales_stream, threshold=<span class="st">100</span>)</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Only pull what's needed — the first few, or a running total</h4>
+        <p>Nothing is computed until you actually ask, one at a time or via a built-in like <code class="inline">sum()</code>.</p>
+        <pre><span class="kw">import</span> itertools
+
+<span class="c1"># peek at just the first 3 notable sales without processing the whole file</span>
+<span class="kw">for</span> sale <span class="kw">in</span> itertools.<span class="fn">islice</span>(notable, <span class="st">3</span>):
+    <span class="fn">print</span>(<span class="fn">f</span><span class="st">"{sale.item}: {sale.amount}"</span>)
+
+<span class="c1"># or stream the whole thing into a total, still one sale at a time</span>
+total = <span class="fn">sum</span>(sale.amount <span class="kw">for</span> sale <span class="kw">in</span> <span class="fn">big_sales</span>(<span class="fn">read_sales</span>(<span class="st">"sales_log.csv"</span>)))</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Use a comprehension only for a small final summary</h4>
+        <p>Once you've reduced the stream down to something small, a comprehension is the right tool again.</p>
+        <pre>top_items = [<span class="st">"Laptop"</span>, <span class="st">"Monitor"</span>, <span class="st">"Keyboard"</span>]
+price_lookup = {item: <span class="fn">len</span>(item) * <span class="st">10</span> <span class="kw">for</span> item <span class="kw">in</span> top_items}
+<span class="c1"># {'Laptop': 60, 'Monitor': 70, 'Keyboard': 80} — a small, finished result, built all at once</span></pre>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">What you just practiced</span>
+      A validating <code class="inline">@property</code> guarding bad data at the door, a generator pipeline (<code class="inline">read_sales</code> → <code class="inline">big_sales</code>) that never loads the full file into memory, lazy consumption with <code class="inline">islice</code> and <code class="inline">sum()</code>, and a comprehension used correctly — for a small, already-reduced final result, not the raw stream.
+    </div>
+  </section>
+
+  <!-- 10 QUIZ -->
+  <section class="card" id="t-quiz">
+    <div class="section-eyebrow">Topic 10</div>
+    <h2 class="section-title">Check what stuck</h2>
+    <p class="lead">15 questions. Pick an answer to see if you're right — your score tallies as you go.</p>
+
+    <div class="quiz-progress">
+      <span id="qProgressText">0 / 15 answered</span>
+      <div class="quiz-bar"><div class="quiz-bar-fill" id="quizBarFill"></div></div>
+      <span id="qScoreText">Score: 0</span>
+    </div>
+
+    <div id="quizContainer"></div>
+
+    <div class="quiz-actions">
+      <button class="ghost-btn" id="resetBtn">Reset quiz</button>
+      <button class="primary-btn" id="finishBtn">See final score</button>
+    </div>
+
+    <div id="quizResult">
+      <div class="score-big" id="finalScore">0 / 15</div>
+      <p id="finalMsg">Fill in the quiz above to see how you did.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>panel &amp; belt no. 000-PROP-GEN — filed under python / property-comprehension-generators — end of wing</footer>
+
+<script>
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const cards = document.querySelectorAll('section.card');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      cards.forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  });
+
+  const QUESTIONS = [
+    {
+      q: "What does @property mainly let you do?",
+      opts: [
+        "Make a method run twice as fast",
+        "Make a method behave like a plain attribute, while still running real logic",
+        "Automatically delete an attribute",
+        "Convert a class into a function"
+      ],
+      correct: 1,
+      explain: "@property lets you access a method with obj.name (no parentheses) as if it were plain data, while it secretly runs a calculation or check."
+    },
+    {
+      q: "How do you call a method decorated with @property?",
+      opts: ["obj.method()", "obj.method", "property(obj.method)", "obj->method()"],
+      correct: 1,
+      explain: "A property is accessed without parentheses, exactly like a normal attribute — that's the whole point of the pattern."
+    },
+    {
+      q: "What decorator is used to define the setter for a property named 'price'?",
+      opts: ["@price.setter", "@setter.price", "@property.set", "@set_price"],
+      correct: 0,
+      explain: "The setter is defined with @price.setter above a method also named price, pairing it with the existing @property getter."
+    },
+    {
+      q: "What happens if you try to assign to a property that has no defined setter?",
+      opts: [
+        "Python silently ignores the assignment",
+        "It raises an AttributeError",
+        "It automatically creates a setter",
+        "It converts the property into a regular attribute"
+      ],
+      correct: 1,
+      explain: "Without a setter, a property is read-only — attempting to assign to it raises an AttributeError."
+    },
+    {
+      q: "Why might you use a validating setter, like one that rejects negative prices?",
+      opts: [
+        "To make the class run faster",
+        "To reject invalid data the moment it's assigned, instead of discovering the problem later",
+        "To turn the class into a generator",
+        "It's required syntax for all Python classes"
+      ],
+      correct: 1,
+      explain: "A validating setter acts like a guard at the door — bad values are caught immediately at assignment time rather than causing bugs elsewhere later."
+    },
+    {
+      q: "What does this comprehension produce? [n for n in range(6) if n % 2 == 0]",
+      opts: ["[0, 1, 2, 3, 4, 5]", "[0, 2, 4]", "[1, 3, 5]", "[]"],
+      correct: 1,
+      explain: "The if-condition after the loop filters out odd numbers, keeping only the even ones from 0 through 5: [0, 2, 4]."
+    },
+    {
+      q: "Which comprehension syntax creates a dictionary instead of a list?",
+      opts: ["[k: v for k, v in pairs]", "{k: v for k, v in pairs}", "(k: v for k, v in pairs)", "<k: v for k, v in pairs>"],
+      correct: 1,
+      explain: "Dict comprehensions use curly braces with a colon between the key and value expressions: {key_expr: value_expr for ...}."
+    },
+    {
+      q: "In a comprehension, where does an if/else (not just if) typically go?",
+      opts: [
+        "Before the for clause, choosing a value for every item",
+        "After the for clause, filtering out items",
+        "It cannot be used in a comprehension at all",
+        "Only at the very end of the line"
+      ],
+      correct: 0,
+      explain: "An if/else placed before 'for' picks between two expressions for every item (nothing is dropped); an if alone after 'for' filters items out."
+    },
+    {
+      q: "What is the main practical difference between a list and a generator?",
+      opts: [
+        "Generators can only hold numbers",
+        "A list builds and stores all its items immediately; a generator produces items one at a time, on demand",
+        "Lists are always faster than generators in every case",
+        "There is no real difference"
+      ],
+      correct: 1,
+      explain: "Lists compute and store every item up front, while generators lazily produce one item at a time as requested — a major memory advantage for large or infinite sequences."
+    },
+    {
+      q: "What keyword turns an ordinary function into a generator function?",
+      opts: ["return", "yield", "async", "lazy"],
+      correct: 1,
+      explain: "Using yield anywhere inside a function makes calling it produce a generator object instead of running the function body immediately."
+    },
+    {
+      q: "What happens when a generator function reaches a yield statement?",
+      opts: [
+        "The function ends completely, like return",
+        "It hands back a value and pauses, resuming from that exact point on the next request",
+        "It raises an error",
+        "It restarts the function from the beginning"
+      ],
+      correct: 1,
+      explain: "yield pauses execution and hands back a value, but the function's state is preserved so it can resume exactly where it left off."
+    },
+    {
+      q: "What exception signals that a generator has no more values to produce?",
+      opts: ["ValueError", "StopIteration", "GeneratorExit", "IndexError"],
+      correct: 1,
+      explain: "When a generator is exhausted, calling next() on it raises StopIteration — which a for loop catches automatically and quietly stops on."
+    },
+    {
+      q: "Which syntax creates a generator expression rather than a list comprehension?",
+      opts: ["[n**2 for n in range(10)]", "{n**2 for n in range(10)}", "(n**2 for n in range(10))", "<n**2 for n in range(10)>"],
+      correct: 2,
+      explain: "Parentheses create a generator expression, which produces values lazily instead of building the full list immediately like square brackets do."
+    },
+    {
+      q: "Why can a generator typically only be iterated over once?",
+      opts: [
+        "It's a Python bug that hasn't been fixed",
+        "Because it produces and immediately forgets each value as it goes, rather than storing them all",
+        "Generators are actually unlimited and never run out",
+        "It's a restriction only in older Python versions"
+      ],
+      correct: 1,
+      explain: "A generator doesn't keep a stored copy of past values — once consumed, that value is gone, so a second full pass isn't possible without creating a new generator."
+    },
+    {
+      q: "In a large file-processing pipeline, why prefer generators over building full lists at every step?",
+      opts: [
+        "Generators are required by Python syntax rules",
+        "Generators avoid loading the entire dataset into memory at once, processing it piece by piece instead",
+        "Generators automatically fix bad data",
+        "Lists cannot be used with files at all"
+      ],
+      correct: 1,
+      explain: "Chaining generators lets huge datasets be processed in a memory-efficient stream, one item at a time, rather than holding everything in memory simultaneously."
+    }
+  ];
+
+  const container = document.getElementById('quizContainer');
+  const answered = new Array(QUESTIONS.length).fill(null);
+
+  function renderQuiz(){
+    container.innerHTML = '';
+    QUESTIONS.forEach((item, qi) => {
+      const block = document.createElement('div');
+      block.className = 'q-block';
+      block.innerHTML = `
+        <div class="q-num">Question ${qi + 1} of ${QUESTIONS.length}</div>
+        <h4>${item.q}</h4>
+        <div class="opts">
+          ${item.opts.map((opt, oi) => `
+            <label class="opt" data-qi="${qi}" data-oi="${oi}">
+              <input type="radio" name="q${qi}" value="${oi}">
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+        </div>
+        <div class="explain" id="explain-${qi}">${item.explain}</div>
+      `;
+      container.appendChild(block);
+    });
+
+    container.querySelectorAll('.opt').forEach(label => {
+      label.addEventListener('click', (e) => {
+        const qi = parseInt(label.dataset.qi);
+        const oi = parseInt(label.dataset.oi);
+        if (answered[qi] !== null) { e.preventDefault(); return; }
+        answered[qi] = oi;
+
+        const siblingOpts = document.querySelectorAll(`.opt[data-qi="${qi}"]`);
+        siblingOpts.forEach(sib => {
+          const sOi = parseInt(sib.dataset.oi);
+          if (sOi === QUESTIONS[qi].correct) sib.classList.add('correct');
+          else if (sOi === oi) sib.classList.add('wrong');
+        });
+        document.getElementById(`explain-${qi}`).classList.add('show');
+        updateProgress();
+      });
+    });
+  }
+
+  function updateProgress(){
+    const answeredCount = answered.filter(a => a !== null).length;
+    const score = answered.reduce((acc, a, i) => acc + (a === QUESTIONS[i].correct ? 1 : 0), 0);
+    document.getElementById('qProgressText').textContent = `${answeredCount} / ${QUESTIONS.length} answered`;
+    document.getElementById('qScoreText').textContent = `Score: ${score}`;
+    document.getElementById('quizBarFill').style.width = `${(answeredCount / QUESTIONS.length) * 100}%`;
+  }
+
+  document.getElementById('finishBtn').addEventListener('click', () => {
+    const score = answered.reduce((acc, a, i) => acc + (a === QUESTIONS[i].correct ? 1 : 0), 0);
+    const answeredCount = answered.filter(a => a !== null).length;
+    const resultBox = document.getElementById('quizResult');
+    resultBox.style.display = 'block';
+    document.getElementById('finalScore').textContent = `${score} / ${QUESTIONS.length}`;
+
+    let msg;
+    if (answeredCount < QUESTIONS.length) {
+      msg = `You answered ${answeredCount} of ${QUESTIONS.length} — finish the rest for your full score.`;
+    } else if (score === QUESTIONS.length) {
+      msg = "Perfect score — the control panel wired correctly and the conveyor belt running smoothly.";
+    } else if (score >= QUESTIONS.length * 0.7) {
+      msg = "Solid grasp of properties, comprehensions, and generators — a quick re-read of the missed topics will lock it in.";
+    } else {
+      msg = "Worth another pass through the tabs above, especially the ones you missed.";
+    }
+    document.getElementById('finalMsg').textContent = msg;
+    resultBox.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    for (let i = 0; i < answered.length; i++) answered[i] = null;
+    document.getElementById('quizResult').style.display = 'none';
+    renderQuiz();
+    updateProgress();
+  });
+
+  renderQuiz();
+  updateProgress();
+</script>
+
+</body>
+</html>

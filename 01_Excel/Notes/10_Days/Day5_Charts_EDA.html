@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 5 — Charts, Visualization & EDA</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(21,88,192,0.05),transparent 65%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+/* HERO */
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:540px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:var(--accent);box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+/* SECTION */
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+/* OV */
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov{font-size:14px;font-weight:700;}
+
+/* TOPICS */
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+/* CONCEPT */
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-warn{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+
+/* CHART TYPE GRID */
+.chart-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
+@media(max-width:580px){.chart-grid{grid-template-columns:1fr 1fr;}}
+.chart-card{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--sh);}
+.chart-icon{font-size:24px;margin-bottom:6px;}
+.chart-name{font-size:13px;font-weight:700;margin-bottom:4px;}
+.chart-use{font-size:11px;color:var(--text3);line-height:1.5;}
+.chart-tag{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;margin-top:5px;font-weight:600;}
+.tag-use{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.tag-avoid{background:var(--rl);color:var(--red);border:1px solid rgba(176,17,43,0.2);}
+
+/* EDA WORKFLOW */
+.eda-steps{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+.eda-step{display:flex;gap:12px;align-items:flex-start;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;box-shadow:var(--sh);}
+.eda-n{font-family:var(--mono);font-size:11px;font-weight:700;background:var(--accent);color:#fff;width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.eda-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.eda-desc{font-size:12px;color:var(--text2);}
+
+/* CHEATSHEET */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* OUTCOMES */
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+/* HOUR BAR */
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+/* TASK CARDS */
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+/* SUB-STEPS */
+.substep{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:12px;color:var(--text2);line-height:1.6;}
+.substep strong{color:var(--text);}
+
+/* TIP */
+.tip{background:linear-gradient(135deg,var(--al),var(--bl));border:1.5px solid var(--ag);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+/* NAV */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:#0b6650;}
+
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 5 of 10</div>
+    <div class="db">DAY 5</div>
+  </div>
+  <h1>Charts, Visualization<br>&amp; <span class="hl">EDA</span></h1>
+  <div class="tagline">See patterns your formulas can't tell you. Every great ML model starts with a great EDA — charts that generate hypotheses before a single line of model code is written.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: Visualization</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●○</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">📈 Build 8+ Charts</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pd"></div><div class="pd"></div><div class="pd"></div><div class="pd"></div><div class="pd"></div>
+    <div class="pl">Day 5 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">📈</div><div class="ol2">Focus</div><div class="ov">EDA & Charts</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Topics</div><div class="ov">8 Viz Concepts</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Outcomes</div><div class="ov">4 Skills Mastered</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Deliverable</div><div class="ov">EDA Dashboard</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Topics Covered Today</div>
+<div class="tg">
+  <div class="ti"><div class="tn">01</div><div><div class="tt">Chart Types for ML</div><div class="ts">Scatter, histogram, box plot, heatmap — the EDA toolkit</div></div></div>
+  <div class="ti"><div class="tn">02</div><div><div class="tt">Scatter Plots + Trendlines</div><div class="ts">Feature vs target — R² tells you predictive power</div></div></div>
+  <div class="ti"><div class="tn">03</div><div><div class="tt">Conditional Formatting as Heatmap</div><div class="ts">Color-code your correlation matrix visually</div></div></div>
+  <div class="ti"><div class="tn">04</div><div><div class="tt">Sparklines</div><div class="ts">Inline micro-charts for compact trend views</div></div></div>
+  <div class="ti"><div class="tn">05</div><div><div class="tt">Dynamic Charts with Tables</div><div class="ts">Charts that update automatically when data changes</div></div></div>
+  <div class="ti"><div class="tn">06</div><div><div class="tt">EDA Workflow</div><div class="ts">The 5-question framework every ML EDA must answer</div></div></div>
+  <div class="ti"><div class="tn">07</div><div><div class="tt">Dashboard Layout Principles</div><div class="ts">Tell a data story — layout, hierarchy, colour, labels</div></div></div>
+  <div class="ti"><div class="tn">08</div><div><div class="tt">Slicers for Interactivity</div><div class="ts">One-click filtering — make dashboards self-service</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sl">🧠 Key Concepts Deep Dive</div>
+
+<!-- Chart Types -->
+<div class="cc">
+  <div class="ct">📊 Chart Types — Right Chart, Right Question <span class="cb cb-warn">CHOOSE CORRECTLY</span></div>
+  <div class="cd">Using the wrong chart type is worse than no chart — it misleads. A pie chart with 8 slices is unreadable. A line chart for categorical data implies trends that don't exist. Know which chart answers which question.</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-icon">🔵</div>
+      <div class="chart-name">Scatter Plot</div>
+      <div class="chart-use">Relationship between two numeric features. Add trendline for R².</div>
+      <div class="chart-tag tag-use">Feature vs Target</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-icon">📊</div>
+      <div class="chart-name">Histogram</div>
+      <div class="chart-use">Distribution shape of a single numeric variable. Bins = data buckets.</div>
+      <div class="chart-tag tag-use">Distribution</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-icon">📦</div>
+      <div class="chart-name">Box Plot</div>
+      <div class="chart-use">Q1–Q3 range, median, whiskers, outlier dots. Compare groups.</div>
+      <div class="chart-tag tag-use">Outliers + Groups</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-icon">🌡️</div>
+      <div class="chart-name">Heatmap</div>
+      <div class="chart-use">Color-coded matrix — correlation tables, confusion matrices.</div>
+      <div class="chart-tag tag-use">Correlation Matrix</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-icon">📉</div>
+      <div class="chart-name">Line Chart</div>
+      <div class="chart-use">Trends over time. Only use when X-axis is truly time or ordered.</div>
+      <div class="chart-tag tag-use">Time Series</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-icon">🥧</div>
+      <div class="chart-name">Pie Chart</div>
+      <div class="chart-use">Parts of a whole — max 4 slices. Hard to compare precisely.</div>
+      <div class="chart-tag tag-avoid">Use Bar Instead</div>
+    </div>
+  </div>
+</div>
+
+<!-- EDA Framework -->
+<div class="cc">
+  <div class="ct">🔍 The 5-Question EDA Framework <span class="cb cb-core">ALWAYS ASK THESE</span></div>
+  <div class="cd">Every EDA should answer exactly these 5 questions before any model is trained. If you can't answer all 5, you don't understand your data well enough to build a reliable model.</div>
+  <div class="eda-steps">
+    <div class="eda-step"><div class="eda-n">1</div><div><div class="eda-title">What does the target variable look like?</div><div class="eda-desc">Distribution shape, range, skew. For classification: class balance (are labels 50/50 or 95/5?). → Build histogram + count by class.</div></div></div>
+    <div class="eda-step"><div class="eda-n">2</div><div><div class="eda-title">Which features correlate with the target?</div><div class="eda-desc">Scatter each feature vs target. Calculate r. Rank by |r|. Features with |r| &lt; 0.1 are weak candidates. → Scatter matrix or correlation bar chart.</div></div></div>
+    <div class="eda-step"><div class="eda-n">3</div><div><div class="eda-title">Are there outliers and how extreme are they?</div><div class="eda-desc">Box plots per feature. IQR method. Do outliers appear in features that strongly predict the target? → Box plot grid + outlier count table.</div></div></div>
+    <div class="eda-step"><div class="eda-n">4</div><div><div class="eda-title">Do features correlate with each other?</div><div class="eda-desc">Correlation heatmap. Flag pairs with |r| &gt; 0.7 — multicollinearity risk. → Colour-coded correlation matrix from Day 3.</div></div></div>
+    <div class="eda-step"><div class="eda-n">5</div><div><div class="eda-title">Are there patterns across categories?</div><div class="eda-desc">Average target per category group. Do Engineering students score higher? Does churn vary by region? → Grouped bar chart or pivot.</div></div></div>
+  </div>
+</div>
+
+<!-- Scatter + R² -->
+<div class="cc">
+  <div class="ct">🔵 Scatter Plots &amp; R² — Predictive Power Score <span class="cb cb-pow">FEATURE SELECTION</span></div>
+  <div class="cd">R² (R-squared) on a scatter trendline tells you what % of the target variable's variation is explained by that single feature. R²=0.70 means the feature explains 70% of the target's movement — that's a powerful predictor. R²=0.01 means almost no linear relationship.</div>
+  <div class="code">
+<span class="cm">// Build scatter: Insert → Chart → X Y (Scatter)</span>
+<span class="cm">// X-axis = feature column, Y-axis = target column</span>
+
+<span class="cm">// Add trendline: right-click a data point → Add Trendline</span>
+<span class="cm">// → Linear → check ✓ Display Equation → check ✓ Display R-squared</span>
+
+<span class="cm">// R² interpretation guide:</span>
+<span class="cm">// R² > 0.7  → Strong predictor  → Include in model ✓</span>
+<span class="cm">// R² 0.3–0.7→ Moderate predictor → Likely include  ✓</span>
+<span class="cm">// R² 0.1–0.3→ Weak predictor    → Investigate further</span>
+<span class="cm">// R² < 0.1  → Very weak         → Probably exclude ✗</span>
+
+<span class="cm">// Calculate R² without chart (for all features at once):</span>
+=<span class="fn">RSQ</span>(target_range, feature_range)     <span class="cm">→ R² value 0–1</span>
+=<span class="fn">CORREL</span>(target, feature)^<span class="num">2</span>            <span class="cm">→ Same as RSQ (r²)</span>
+
+<span class="cm">// Rank features by R² in a table:</span>
+<span class="cm">// Feature | r | r² | Rank — sort by r² descending</span>
+  </div>
+</div>
+
+<!-- Dashboard Design -->
+<div class="cc">
+  <div class="ct">🎨 Dashboard Design Principles <span class="cb cb-tip">STORYTELLING</span></div>
+  <div class="cd">A dashboard isn't a collection of charts — it's a narrative. Each chart answers one specific question. The layout guides the reader from summary to detail. Colour should encode meaning, not decoration. Labels should eliminate ambiguity.</div>
+  <div class="code">
+<span class="cm">// Layout hierarchy (Z-pattern reading order):</span>
+<span class="cm">// TOP-LEFT:    Title + key insight headline</span>
+<span class="cm">// TOP-RIGHT:   Most important chart (target distribution)</span>
+<span class="cm">// MIDDLE:      Supporting charts (feature relationships)</span>
+<span class="cm">// BOTTOM:      Detail tables or drill-down data</span>
+
+<span class="cm">// Colour rules for ML dashboards:</span>
+<span class="cm">// ✓ Use ONE accent colour for "good/high" values</span>
+<span class="cm">// ✓ Use red ONLY for problems, outliers, errors</span>
+<span class="cm">// ✓ Use grey for context/background data</span>
+<span class="cm">// ✗ Never use 5+ colours in one chart</span>
+<span class="cm">// ✗ Never use 3D charts — they distort proportions</span>
+<span class="cm">// ✗ Never use gridlines heavier than the data itself</span>
+
+<span class="cm">// Every chart needs:</span>
+<span class="cm">// • Descriptive title (not "Chart 1" — "Score vs Study Hours")</span>
+<span class="cm">// • Axis labels with units</span>
+<span class="cm">// • Data source note</span>
+<span class="cm">// • One-sentence insight caption below</span>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build an EDA chart set — histogram, scatter, box plot, heatmap</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Interpret R² to rank features by predictive power</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Apply the 5-question EDA framework to any dataset</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build an interactive EDA dashboard with slicers</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Task Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#1558c0;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:13"></div>
+  <div class="hs" style="background:#1558c0;flex:14"></div>
+  <div class="hs" style="background:#0d7a5f;flex:10"></div>
+  <div class="hs" style="background:#5e35b1;flex:8"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#0d7a5f"></div>Project/Dashboard</div>
+  <div class="li"><div class="ld" style="background:#5e35b1"></div>Write-up</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>Practice</div>
+</div>
+
+<!-- ══ TASKS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bp">0 – 15 min</div>
+    <div class="tw"><div class="tm">📊 EDA Chart Set — The Core 4</div><div class="ts2">Build histogram, scatter, box plot, and grouped bar chart for any dataset</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Every ML EDA starts with the same four charts. Together they answer: what does the data look like (histogram), how do features relate to the target (scatter), where are the outliers (box plot), and how do groups compare (bar chart). Build all four in 15 minutes.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Open your <strong>Day4_Complete.xlsx</strong> or create <strong>Day5_EDA.xlsx</strong> with a fresh 80-row dataset. Columns: <strong>StudentID, Score (target), StudyHours, Attendance, Income, Department</strong>. Convert to a Table named <strong>EDAData</strong>.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Chart 1 — Histogram of Score (target variable):</strong><br>
+        Select Score column → Insert → Charts → Insert Statistic Chart → Histogram.<br>
+        Right-click X-axis → Format Axis → set Bin Width to 5 (or "Number of bins" = 12).<br>
+        Title: "Score Distribution". Remove gap between bars (Format Data Series → Gap Width: 0%).<br>
+        Add a text box: "Shape: [normal/skewed/bimodal]?" — fill in your observation.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Chart 2 — Scatter: StudyHours vs Score:</strong><br>
+        Select StudyHours and Score columns (Ctrl+click) → Insert → X Y Scatter → Scatter.<br>
+        Right-click any data point → Add Trendline → Linear → check ✓ Display R-squared.<br>
+        Title: "Study Hours vs Score". X-label: "Study Hours/Day". Y-label: "Exam Score".<br>
+        Read the R² value. Write it in a cell next to the chart with interpretation.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Chart 3 — Box Plot:</strong><br>
+        Select Score column → Insert → Insert Statistic Chart → Box and Whisker.<br>
+        This shows Q1 (bottom of box), Median (middle line), Q3 (top of box), and outlier dots.<br>
+        Right-click → Format Data Series → check ✓ Show Mean Markers (X symbol).<br>
+        Compare the Mean marker vs Median line — if they're far apart, the data is skewed.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Chart 4 — Grouped Bar: Average Score by Department:</strong><br>
+        First build a summary table: AVERAGEIF for each department (Eng, Mkt, Sci, Fin).<br>
+        Select the 2-column summary table → Insert → Column Chart → 2D Clustered Column.<br>
+        Title: "Average Score by Department". Sort bars from highest to lowest for readability.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Summary table for grouped bar chart</span>
+=<span class="fn">AVERAGEIF</span>(EDAData[Department], <span class="str">"Eng"</span>, EDAData[Score])
+=<span class="fn">AVERAGEIF</span>(EDAData[Department], <span class="str">"Mkt"</span>, EDAData[Score])
+=<span class="fn">AVERAGEIF</span>(EDAData[Department], <span class="str">"Sci"</span>, EDAData[Score])
+=<span class="fn">AVERAGEIF</span>(EDAData[Department], <span class="str">"Fin"</span>, EDAData[Score])
+
+<span class="cm">// Calculate R² for any feature vs target</span>
+=<span class="fn">RSQ</span>(EDAData[Score], EDAData[StudyHours])   <span class="cm">→ R² value</span>
+=<span class="fn">CORREL</span>(EDAData[Score], EDAData[StudyHours])  <span class="cm">→ r value (R² = r²)</span>
+
+<span class="cm">// Rank all features by R² with target</span>
+<span class="cm">// Build a table: Feature | r | R² | Rank</span>
+<span class="cm">// Sort R² column descending = feature importance ranking</span>
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>Chart formatting quick wins:</strong> Delete chart gridlines (click → Delete). Remove chart border (Format Chart Area → No border). Use soft grey (#999) for axes. Make your title bigger and bolder than axis labels. Less ink = more signal.</div></div>
+    <div class="cks">
+      <div class="ck">Histogram of Score built</div><div class="ck">Scatter + trendline + R²</div>
+      <div class="ck">Box plot with mean marker</div><div class="ck">Grouped bar by Department</div>
+      <div class="ck">All charts titled + labelled</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bp">15 – 28 min</div>
+    <div class="tw"><div class="tm">🌡️ Correlation Heatmap + Feature R² Ranking</div><div class="ts2">Visualize which features matter most — your first feature importance chart</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">A correlation heatmap instantly shows you which features are related to each other and to the target. Combined with an R² ranking bar chart, this is the visual equivalent of feature importance scores in scikit-learn — built entirely in Excel.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Build a <strong>4×4 correlation matrix</strong> (from Day 3, or rebuild here) for Score, StudyHours, Attendance, Income using CORREL(). Round to 2 decimal places with =ROUND(CORREL(...),2). Label both row and column headers clearly.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Apply heatmap formatting:</strong> Select the 4×4 value cells → Home → Conditional Formatting → Color Scales → More Rules → 3-Color Scale:<br>
+        Minimum: −1 → Red (#FF4444)<br>
+        Midpoint: 0 → White (#FFFFFF)<br>
+        Maximum: +1 → Green (#00AA66)<br>
+        Now the matrix is a visual heatmap — dark green = strong positive, dark red = strong negative, white = no relationship.</div></div>
+      <div class="si2"><div class="sn">3</div><div>Add <strong>data labels</strong> inside the heatmap cells: select the 4×4 area → Home → Conditional Formatting → New Rule → Format only cells containing → Cell Value → between −0.1 and 0.1 → set font to grey. This dims weak correlations visually, making strong ones pop.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Feature R² ranking bar chart:</strong> Build a 2-column table: Feature name | R² with Score. Sort by R² descending. Insert → Bar Chart (horizontal bars are easier to read with text labels). Title: "Feature Predictive Power (R²)". This IS your feature importance chart.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Add <strong>data bars</strong> inside the R² column: Select R² values → Conditional Formatting → Data Bars → Solid Fill → green. Now each cell shows a mini bar representing its R² value — a micro-chart inside the table itself.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Annotation:</strong> Add a text box on the heatmap chart: "⚠ High correlation between [Feature A] and [Feature B] (r=0.84) — multicollinearity risk. Consider dropping one before regression." This is the analyst's voice — essential in any EDA report.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Correlation matrix cell formula</span>
+=<span class="fn">ROUND</span>(<span class="fn">CORREL</span>(EDAData[Score], EDAData[StudyHours]), <span class="num">2</span>)
+
+<span class="cm">// R² for feature importance table</span>
+=<span class="fn">RSQ</span>(EDAData[Score], EDAData[StudyHours])     <span class="cm">→ 0.65 = "65% of Score explained"</span>
+=<span class="fn">RSQ</span>(EDAData[Score], EDAData[Attendance])    <span class="cm">→ compare all features</span>
+=<span class="fn">RSQ</span>(EDAData[Score], EDAData[Income])        <span class="cm">→ likely low for income</span>
+
+<span class="cm">// Highest-impact feature (no MAXIFS needed — manual sort)</span>
+<span class="cm">// Sort R² table descending → top row = best predictor</span>
+
+<span class="cm">// Conditional formatting for data bars on R² column</span>
+<span class="cm">// Home → Conditional Formatting → Data Bars → Solid Fill → green</span>
+<span class="cm">// Set Max = 1.0 (so bars are proportional to perfect R²=1)</span>
+    </div>
+    <div class="nb"><div class="ni">🧠</div><div><strong>This IS feature selection:</strong> In production ML with scikit-learn, you'd run <code>feature_importances_</code> on a Random Forest or calculate correlation with the target. What you just built in Excel is the same concept — ranking features by how much of the target's variance they explain.</div></div>
+    <div class="cks">
+      <div class="ck">4×4 heatmap with colour scale</div><div class="ck">Weak correlations dimmed</div>
+      <div class="ck">R² ranking bar chart built</div><div class="ck">Data bars in R² column</div>
+      <div class="ck">Multicollinearity annotation added</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bp">28 – 42 min</div>
+    <div class="tw"><div class="tm">📦 Box Plot Grid + Distribution Analysis</div><div class="ts2">Compare all features side-by-side and answer EDA questions 1, 2, and 3</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">A grid of box plots reveals outliers, spread, and group differences simultaneously. This is the most information-dense chart type for EDA — one box plot tells you min, Q1, median, Q3, max, and individual outliers all at once.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div><strong>Box plot per feature:</strong> Create 3 box plots (Score, StudyHours, Attendance) side-by-side on one chart.<br>
+        Select Score, StudyHours, Attendance columns → Insert → Statistic Chart → Box and Whisker.<br>
+        Excel plots all three series on one chart — each box represents one feature's distribution.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Format for readability:</strong><br>
+        Right-click → Format Data Series → check ✓ Show Inner Points (shows all data dots), ✓ Show Mean Markers.<br>
+        Make each series a different colour — right-click each box → Fill → pick green, blue, orange.<br>
+        Title: "Feature Distribution Comparison". This single chart replaces 3 separate box plots.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Box plot by category (Score by Department):</strong><br>
+        This requires a separate layout. Create 4 columns: Score_Eng, Score_Mkt, Score_Sci, Score_Fin — each containing ONLY scores for that department (use filters or FILTER function if 365).<br>
+        Select all 4 columns → Box and Whisker chart.<br>
+        Now you can compare: do students in one department consistently score higher?</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Score by Department — helper formula (365):</strong> <code>=FILTER(EDAData[Score], EDAData[Department]="Eng")</code> — creates a spill range of just Engineering scores. Repeat for each department. Use these ranges as chart source data.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>EDA Question 3 answer — outlier summary table:</strong> For each feature build a row: Feature | Outlier Count | Outlier % | Min Outlier | Max Outlier. Use your IQR formulas from Day 3. Which feature has the most outliers? Are they the same rows across features?</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Same-row outlier check:</strong> Add a column "Multi_Outlier": <code>=IF(AND(Score_Outlier="OUTLIER", Income_Outlier="OUTLIER"), "BOTH", "Single")</code>. A student who is an outlier on BOTH score AND income might represent a very different population — worth flagging for model review.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Filter scores by department (Excel 365 dynamic array)</span>
+=<span class="fn">FILTER</span>(EDAData[Score], EDAData[Department]=<span class="str">"Eng"</span>)
+
+<span class="cm">// Without 365 — use AVERAGEIF for each (less powerful)</span>
+=<span class="fn">AVERAGEIF</span>(EDAData[Department], <span class="str">"Eng"</span>, EDAData[Score])
+
+<span class="cm">// Outlier count per feature (from Day 3 IQR flags)</span>
+=<span class="fn">COUNTIF</span>(EDAData[Score_Outlier], <span class="str">"OUTLIER"</span>)
+
+<span class="cm">// Cross-feature outlier check</span>
+=<span class="fn">SUMPRODUCT</span>((EDAData[Score_Outlier]=<span class="str">"OUTLIER"</span>)*(EDAData[Income_Outlier]=<span class="str">"OUTLIER"</span>))
+
+<span class="cm">// Outlier impact: how much does mean change if we remove outliers?</span>
+=<span class="fn">AVERAGEIF</span>(EDAData[Score_Outlier], <span class="str">"Normal"</span>, EDAData[Score])  <span class="cm">→ mean without outliers</span>
+=<span class="fn">AVERAGE</span>(EDAData[Score])                                       <span class="cm">→ mean with outliers</span>
+    </div>
+    <div class="wb"><div class="ni">⚠️</div><div><strong>Box plots in Excel limitation:</strong> Excel's Box and Whisker chart does not easily support custom IQR bounds or showing individual outlier rows. For precise outlier investigation, use your manual IQR columns from Day 3. The box plot is for visual communication — the formulas are for precision.</div></div>
+    <div class="cks">
+      <div class="ck">3-feature box plot built</div><div class="ck">Mean markers visible</div>
+      <div class="ck">Score by Department box plot</div><div class="ck">Outlier summary table done</div>
+      <div class="ck">Cross-feature outlier count</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bg">42 – 52 min</div>
+    <div class="tw"><div class="tm">📋 Interactive EDA Dashboard with Slicers</div><div class="ts2">Combine all charts into one self-service dashboard stakeholders can explore</div></div>
+    <div class="typ bg">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">An EDA dashboard lets stakeholders explore the data without knowing Excel. Slicers turn category filters into one-click buttons. When a stakeholder clicks "Engineering", all charts update to show Engineering-only data. This is professional, production-grade data communication.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create a new sheet "EDA_Dashboard". Set tab colour to green (right-click tab → Tab Color). Set zoom to 85% so more fits on screen. Set all cells to no fill (white background, no gridlines visible — View → uncheck Gridlines).</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Dashboard title section (Row 1–3):</strong> Merge cells A1:L1. Type: "Student Performance — EDA Dashboard". Font: 20pt, bold. Subheading in row 2: "Exploratory Data Analysis | 80 Students | Data as of [date]". Add a thin bottom border under row 3.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Add KPI summary row (Row 4–7):</strong> 4 boxes side-by-side showing: Avg Score, Pass Rate %, Top Score, Outlier Count. Use formulas referencing your EDAData table. Format each as a card — coloured background, large number, small label below.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Place charts:</strong> Copy your 4 charts from Task 1 onto the dashboard. Arrange in a 2×2 grid. Resize all charts to the same width and height (hold Alt while dragging to snap to cell grid). Top row: Histogram + Scatter. Bottom row: Box Plot + Grouped Bar.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Add a Slicer:</strong> Click inside your EDAData Table → Insert tab → Slicer → select "Department" → OK. A slicer panel appears. Place it on the left of the dashboard. Slicer Design tab → set Slicer Style to match your colour scheme. Test clicking each department — do the KPIs update? (They will if formulas reference the Table.)</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Connect slicer to a PivotTable (for charts to filter):</strong> If charts don't filter with the slicer, you need a PivotChart. Insert → PivotTable → from EDAData → place in dashboard sheet. Build grouped bar from PivotTable. Right-click slicer → Report Connections → check your PivotTable. Now the slicer filters the chart.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// KPI box formulas — reference Table so slicer-connected PivotTable updates them</span>
+Avg Score  = <span class="fn">AVERAGE</span>(EDAData[Score])
+Pass Rate  = <span class="fn">COUNTIF</span>(EDAData[Score],<span class="str">">=70"</span>)/<span class="fn">ROWS</span>(EDAData[Score])
+Top Score  = <span class="fn">MAX</span>(EDAData[Score])
+Outliers   = <span class="fn">COUNTIF</span>(EDAData[Score_Outlier],<span class="str">"OUTLIER"</span>)
+
+<span class="cm">// Slicer steps:</span>
+<span class="cm">// 1. Click in Table → Insert → Slicer → Department → OK</span>
+<span class="cm">// 2. Slicer appears as floating panel — drag to position</span>
+<span class="cm">// 3. Slicer Design → choose a style matching your theme</span>
+<span class="cm">// 4. Multi-select: hold Ctrl while clicking slicer buttons</span>
+<span class="cm">// 5. Clear filter: click X button top-right of slicer</span>
+    </div>
+    <div class="gb"><div class="ni">🎯</div><div><strong>Pro dashboard tip:</strong> Lock your dashboard so users can't accidentally edit it. Review tab → Protect Sheet → allow only "Select unlocked cells". Users can click slicers and scroll but can't break formulas. Unprotect with your password when you need to edit.</div></div>
+    <div class="cks">
+      <div class="ck">Dashboard sheet created</div><div class="ck">Title + subheading styled</div>
+      <div class="ck">4 KPI cards showing</div><div class="ck">4 charts placed in 2×2 grid</div>
+      <div class="ck">Department slicer added</div><div class="ck">Charts filter when slicer clicked</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bb">52 – 60 min</div>
+    <div class="tw"><div class="tm">📝 EDA Write-up + Sparklines + Final Findings</div><div class="ts2">Document your 5 EDA findings and add sparklines for compact trends</div></div>
+    <div class="typ bb">Write-up</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">An EDA without a written findings section is incomplete. Charts answer questions visually — but stakeholders need to know WHAT you found, WHAT it means, and WHAT to do next. This is the analyst's voice: the 8-minute write-up that makes your 52-minute analysis actionable.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div><strong>Add Sparklines to your summary table:</strong> Select an empty column next to your feature stats table. Insert → Sparklines → Line (or Column). Select the data range for each feature's values. Sparklines appear as tiny inline charts — no separate chart needed. They show trend at a glance.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>EDA Findings text box on dashboard:</strong> Insert → Text Box → draw a panel on the dashboard. Type your 5 findings — one per EDA question:<br>
+        <strong>Q1 (Target):</strong> Score distribution is roughly normal, mean=74.2, slight right skew (SKEW=0.3). No class imbalance issue.<br>
+        <strong>Q2 (Features):</strong> StudyHours is the strongest predictor (R²=0.68). Attendance is moderate (R²=0.41). Income has no relationship (R²=0.02).<br>
+        <strong>Q3 (Outliers):</strong> 4 outliers detected in Score (IQR method). All 4 are high scorers — genuine extreme performers, not data errors.<br>
+        <strong>Q4 (Multicollinearity):</strong> StudyHours and Attendance correlate at r=0.61 — moderate. Worth monitoring in regression but not critical.<br>
+        <strong>Q5 (Categories):</strong> Engineering students average 79.3 vs Marketing at 68.1. Department is a significant predictor — include in model.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Recommendations section:</strong> Below findings, add: "Model Recommendations: (1) Include StudyHours + Attendance + Department_encoded. (2) Drop Income — no predictive power. (3) Consider log transform if using regression (slight skew). (4) No imputation needed — 0 missing values." This is a model card prototype.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Add a scatter matrix summary:</strong> Build a small 3×3 table of RSQ values for all feature pairs vs Score. Apply data bars. This is your feature importance scoreboard — the go-to reference when building the model on Day 6.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Save as Day5_Complete.xlsx.</strong> Your EDA Dashboard sheet should be fully self-contained: data story, charts, KPIs, slicer, findings text, and recommendations. This is the professional standard for presenting EDA to a data science team or business stakeholder.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Add sparklines: Insert → Sparklines → Line</span>
+<span class="cm">// Data Range: your values row  |  Location Range: single cell for each</span>
+<span class="cm">// Sparkline Design → Show: ✓ High Point (green dot), ✓ Low Point (red dot)</span>
+
+<span class="cm">// Feature importance summary table</span>
+<span class="cm">// StudyHours vs Score:</span>
+=<span class="fn">RSQ</span>(EDAData[Score], EDAData[StudyHours])   <span class="cm">→ e.g. 0.68</span>
+<span class="cm">// Attendance vs Score:</span>
+=<span class="fn">RSQ</span>(EDAData[Score], EDAData[Attendance])   <span class="cm">→ e.g. 0.41</span>
+<span class="cm">// Income vs Score:</span>
+=<span class="fn">RSQ</span>(EDAData[Score], EDAData[Income])       <span class="cm">→ e.g. 0.02</span>
+
+<span class="cm">// Sort RSQ table: Data → Sort → RSQ column → Largest to Smallest</span>
+<span class="cm">// = your feature ranking / selection list for Day 6 regression</span>
+    </div>
+    <div class="gb"><div class="ni">🎖️</div><div><strong>The EDA write-up is not optional:</strong> In professional data science teams, the EDA document is reviewed before any model code is written. It proves you understand your data, prevents wasted modeling effort on useless features, and provides an audit trail for model decisions. Your Day 5 dashboard IS that document.</div></div>
+    <div class="cks">
+      <div class="ck">Sparklines added to summary</div><div class="ck">5 EDA findings written</div>
+      <div class="ck">3 model recommendations listed</div><div class="ck">RSQ summary table built</div>
+      <div class="ck">Day5_Complete.xlsx saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <div class="tpi">📊</div>
+  <div>
+    <div class="tpt">Day 5 Pro Tip — EDA Generates Hypotheses, Not Answers</div>
+    <div class="tpd">The goal of EDA is not to summarize the data — it's to generate hypotheses about what your model will find. Every chart should end with a question: "StudyHours has R²=0.68 with Score — will it remain the top predictor after controlling for Attendance?" EDA is how you have an intelligent conversation with your data before you train anything. The analyst who skips EDA is the analyst whose model fails in production.</div>
+  </div>
+</div>
+
+<!-- QUICK REF -->
+<div class="sl">📋 Day 5 Formula &amp; Chart Quick Reference</div>
+<div class="fg" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">RSQ(target, feature)</div><div class="fd">R² — % of target variance explained by feature</div></div>
+  <div class="fr"><div class="ff">CORREL(arr1,arr2)^2</div><div class="fd">Same as RSQ — square of Pearson r</div></div>
+  <div class="fr"><div class="ff">AVERAGEIF(dept,cat,score)</div><div class="fd">Group mean — source data for grouped bar chart</div></div>
+  <div class="fr"><div class="ff">FILTER(range,condition)</div><div class="fd">Filter range by category (365) — for group box plots</div></div>
+  <div class="fr"><div class="ff">Insert → Statistic → Histogram</div><div class="fd">Built-in histogram — set bin width in axis options</div></div>
+  <div class="fr"><div class="ff">Insert → Statistic → Box&Whisker</div><div class="fd">Box plot — show Mean Markers in Format Series</div></div>
+  <div class="fr"><div class="ff">Add Trendline → ✓ Display R²</div><div class="fd">Add R² to scatter — right-click data point</div></div>
+  <div class="fr"><div class="ff">Insert → Slicer</div><div class="fd">Interactive filter — click inside Table first</div></div>
+  <div class="fr"><div class="ff">Insert → Sparklines → Line</div><div class="fd">Inline micro-chart — one cell, entire trend</div></div>
+  <div class="fr"><div class="ff">Conditional Format → Color Scale</div><div class="fd">Heatmap — Red(-1) / White(0) / Green(+1)</div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a class="nb2" href="Day4_Data_Cleaning.html">← Day 4: Data Cleaning</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">Day 5 Complete ✓<br><span style="color:var(--accent);">Day 6: Regression Analysis →</span></div>
+  <a class="nb2 pr" href="#">Day 6: Regression →</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>

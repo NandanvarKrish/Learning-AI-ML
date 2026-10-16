@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matplotlib (Condensed) – Day 1 | Fundamentals: Figure, Axes & Core Charts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F0F9FF;--surface:#FFFFFF;--border:#BAE6FD;--accent:#0284C7;--accent2:#0C4A6E;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--purple:#7C3AED;
+    --text:#082F49;--muted:#0369A1;--code-bg:#04121C;--code-text:#BAE6FD;--tag-bg:#E0F2FE;--tag-text:#0C4A6E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0284C7 0%,#0C4A6E 100%);color:#fff;padding:56px 40px 48px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(26px,5vw,44px);font-weight:800;line-height:1.15;margin-bottom:16px;}
+  .hero h1 span{color:#BAE6FD;} .hero p{max-width:620px;margin:0 auto 24px;opacity:.9;font-size:14.5px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:24px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:18px 26px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;} .section-header p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:24px;}
+  .func-block{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .func-head{background:var(--bg);padding:12px 18px;border-bottom:1px solid var(--border);}
+  .func-sig{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:600;color:var(--accent2);}
+  .func-desc{font-size:13.5px;color:var(--muted);margin-top:4px;}
+  .func-body{padding:14px 18px;}
+  .func-params{font-size:13px;margin-bottom:10px;}
+  .func-params code{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:10px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:10.5px;color:#0284C7;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:10.5px;padding:3px 9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:var(--code-text);}
+  .kw{color:#7DD3FC;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#0C4A6E;font-style:italic;} .op{color:#BAE6FD;}
+  .real-tag{display:inline-flex;align-items:center;gap:5px;background:#ECFDF5;color:#065F46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:12px 0;} table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:var(--accent);color:#fff;padding:8px 12px;text-align:left;font-weight:600;} td{padding:8px 12px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--code-bg);color:var(--code-text);padding:7px 11px;border-radius:6px;margin:7px 0;display:block;white-space:pre;}
+  .q-options{padding:12px 18px;display:grid;gap:7px;}
+  .opt{display:flex;align-items:center;gap:9px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13.5px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:22px;height:22px;border-radius:6px;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 18px 12px;padding:9px 13px;border-radius:8px;font-size:12.5px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .btn{padding:10px 22px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0284C7,#0C4A6E);color:#fff;border-radius:14px;padding:26px;text-align:center;display:none;margin-top:18px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:48px;font-weight:800;} .score-box .score-msg{font-size:15px;opacity:.9;margin-top:5px;} .score-box .score-detail{font-size:12.5px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#0284C7,#059669);padding:24px;border-radius:10px;color:#fff;margin-bottom:18px;} .task-hero h3{color:#fff;margin:0 0 6px;font-size:17px;} .task-hero p{margin:0;opacity:.92;font-size:13.5px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:5px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:14px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:24px 40px;text-align:center;margin-top:32px;}
+  .day-footer .series{font-size:12.5px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:40px 20px 36px;}.section-body{padding:16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">📊 Matplotlib</div><span class="sep">|</span><span class="day-label">Condensed · Day 1 of 3</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">33%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:33%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Matplotlib Condensed Course · Day 1</div>
+  <h1>Fundamentals — <span>Figure, Axes &amp; Core Charts</span></h1>
+  <p>Every function you actually need to start plotting, explained one at a time with its full parameter meaning and a real business example.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🏗️ subplots()</span>
+    <span class="hero-pill">📈 plot()</span>
+    <span class="hero-pill">📊 bar()</span>
+    <span class="hero-pill">⚫ scatter()</span>
+    <span class="hero-pill">📉 hist()</span>
+    <span class="hero-pill">🏷️ Labels &amp; Legends</span>
+    <span class="hero-pill">📊 15 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🏗️</div>
+    <div><h2>Figure &amp; Axes — Setting Up Every Chart</h2><p>The two objects behind every Matplotlib plot</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">fig, ax = plt.subplots(figsize=(w, h), dpi=100)</div>
+        <div class="func-desc">Creates the canvas (Figure) and the plotting area (Axes) in one call.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>figsize</code> = (width, height) in inches &nbsp;|&nbsp; <code>dpi</code> = resolution (dots per inch, higher = sharper/larger file)</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A retailer building a monthly sales report always starts here — <code>fig, ax = plt.subplots(figsize=(10,6))</code> creates a landscape chart sized right for a slide deck or PDF page.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">10</span>, <span class="nm">6</span>), dpi=<span class="nm">100</span>)
+<span class="cm"># fig = the whole canvas/page; ax = the actual plotting area you'll draw on</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">plt.show() / fig.savefig(path, dpi=300, bbox_inches='tight')</div>
+        <div class="func-desc">Displays the chart on screen, or saves it to a file.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>bbox_inches='tight'</code> trims excess whitespace around the chart edges</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">Saving a chart for a client email: <code>fig.savefig('q3_report.png', dpi=300, bbox_inches='tight')</code> gives a clean, high-res image ready to paste into a document.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Always Use fig, ax = plt.subplots()</div>
+      This "object-oriented" style (vs. the older <code>plt.plot()</code> shortcut) gives you explicit control — required the moment you build multiple charts or customize anything beyond a quick sketch.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">📈</div>
+    <div><h2>ax.plot() — Line Charts</h2><p>Trends over time, continuous relationships</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.plot(x, y, color=, linewidth=, linestyle=, marker=, label=)</div>
+        <div class="func-desc">Draws a line connecting (x,y) points.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params">
+          <code>color</code> = line color (name or hex) &nbsp;|&nbsp; <code>linewidth</code> = thickness &nbsp;|&nbsp; <code>linestyle</code> = '-' solid, '--' dashed, ':' dotted<br>
+          <code>marker</code> = point shape ('o' circle, 's' square) &nbsp;|&nbsp; <code>label</code> = name for the legend
+        </div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A SaaS company tracking Monthly Active Users over the year, comparing this year vs last year on one chart.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>months = [<span class="st">'Jan'</span>,<span class="st">'Feb'</span>,<span class="st">'Mar'</span>,<span class="st">'Apr'</span>,<span class="st">'May'</span>,<span class="st">'Jun'</span>]
+mau_2024 = [<span class="nm">12000</span>,<span class="nm">12500</span>,<span class="nm">13100</span>,<span class="nm">14200</span>,<span class="nm">15000</span>,<span class="nm">15800</span>]
+mau_2023 = [<span class="nm">9000</span>, <span class="nm">9400</span>, <span class="nm">9900</span>, <span class="nm">10500</span>,<span class="nm">11000</span>,<span class="nm">11600</span>]
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">9</span>,<span class="nm">5</span>))
+ax.<span class="fn">plot</span>(months, mau_2024, color=<span class="st">'#0284C7'</span>, linewidth=<span class="nm">2.5</span>, marker=<span class="st">'o'</span>, label=<span class="st">'2024'</span>)
+ax.<span class="fn">plot</span>(months, mau_2023, color=<span class="st">'#94A3B8'</span>, linewidth=<span class="nm">2</span>, linestyle=<span class="st">'--'</span>, marker=<span class="st">'o'</span>, label=<span class="st">'2023'</span>)
+ax.<span class="fn">legend</span>()   <span class="cm"># shows the label= values as a key</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📊</div>
+    <div><h2>ax.bar() / ax.barh() — Bar Charts</h2><p>Comparing values across categories</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.bar(categories, values, color=, width=)</div>
+        <div class="func-desc">Vertical bars — best for comparing few categories with short names.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>width</code> = bar thickness (default 0.8, fraction of category spacing)</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">Comparing quarterly revenue across 4 regions for a board meeting.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>regions = [<span class="st">'North'</span>,<span class="st">'South'</span>,<span class="st">'East'</span>,<span class="st">'West'</span>]
+revenue = [<span class="nm">420</span>,<span class="nm">380</span>,<span class="nm">510</span>,<span class="nm">290</span>]   <span class="cm"># in ₹ Lakhs</span>
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+bars = ax.<span class="fn">bar</span>(regions, revenue, color=<span class="st">'#0284C7'</span>, width=<span class="nm">0.6</span>)
+
+<span class="cm"># Add the exact value on top of each bar — a common, expected business-chart touch</span>
+<span class="kw">for</span> bar <span class="kw">in</span> bars:
+    height = bar.<span class="fn">get_height</span>()
+    ax.<span class="fn">text</span>(bar.<span class="fn">get_x</span>()+bar.<span class="fn">get_width</span>()/<span class="nm">2</span>, height+<span class="nm">5</span>, <span class="fn">str</span>(height), ha=<span class="st">'center'</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.barh(categories, values)</div>
+        <div class="func-desc">Horizontal bars — better when category names are long.</div>
+      </div>
+      <div class="func-body">
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">Ranking "Top 10 Best-Selling Products" where product names are long descriptive strings — vertical bars would squish the labels.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">⚫</div>
+    <div><h2>ax.scatter() — Relationships Between Two Variables</h2><p>Does X relate to Y?</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.scatter(x, y, s=, c=, alpha=, cmap=)</div>
+        <div class="func-desc">Plots individual points — one per (x,y) pair.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params">
+          <code>s</code> = marker size (can be a single number or an array — one size per point) &nbsp;|&nbsp; <code>c</code> = color (single or array for a 3rd variable)<br>
+          <code>alpha</code> = transparency 0-1 (helps see overlapping points) &nbsp;|&nbsp; <code>cmap</code> = colormap used when <code>c</code> is an array
+        </div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A restaurant checking if bill amount relates to tip amount, with dot size showing party size.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>bill = [<span class="nm">18</span>,<span class="nm">34</span>,<span class="nm">22</span>,<span class="nm">45</span>,<span class="nm">29</span>]
+tip = [<span class="nm">2.5</span>,<span class="nm">5.2</span>,<span class="nm">3.1</span>,<span class="nm">7.8</span>,<span class="nm">4.0</span>]
+party_size = [<span class="nm">2</span>,<span class="nm">4</span>,<span class="nm">2</span>,<span class="nm">5</span>,<span class="nm">3</span>]
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">7</span>,<span class="nm">6</span>))
+ax.<span class="fn">scatter</span>(bill, tip, s=[p*<span class="nm">40</span> <span class="kw">for</span> p <span class="kw">in</span> party_size], c=<span class="st">'#0284C7'</span>, alpha=<span class="nm">0.7</span>, edgecolors=<span class="st">'black'</span>)
+ax.<span class="fn">set_xlabel</span>(<span class="st">'Bill Amount (₹)'</span>); ax.<span class="fn">set_ylabel</span>(<span class="st">'Tip (₹)'</span>)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DC2626">📉</div>
+    <div><h2>ax.hist() — Distribution of One Variable</h2><p>How is your data spread out?</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.hist(data, bins=, color=, edgecolor=)</div>
+        <div class="func-desc">Groups values into "bins" and shows how many fall in each.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>bins</code> = number of groups (more bins = finer detail, but noisier) &nbsp;|&nbsp; <code>edgecolor</code> = bar border color (helps distinguish adjacent bars)</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">An HR team checking the salary distribution across 200 employees to spot pay clusters or outliers.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+salaries = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">65000</span>, <span class="nm">12000</span>, <span class="nm">200</span>)   <span class="cm"># simulated data</span>
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+ax.<span class="fn">hist</span>(salaries, bins=<span class="nm">20</span>, color=<span class="st">'#0284C7'</span>, edgecolor=<span class="st">'white'</span>)
+ax.<span class="fn">axvline</span>(salaries.<span class="fn">mean</span>(), color=<span class="st">'red'</span>, linestyle=<span class="st">'--'</span>, label=<span class="st">f'Mean: ₹{salaries.mean():,.0f}'</span>)
+ax.<span class="fn">legend</span>()</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🏷️</div>
+    <div><h2>Labels, Titles &amp; Legends — Making a Chart Understandable</h2><p>The finishing touches every chart needs</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">ax.set_title() / ax.set_xlabel() / ax.set_ylabel() / ax.legend() / ax.grid()</div>
+        <div class="func-desc">Five functions that turn a bare chart into a report-ready one.</div>
+      </div>
+      <div class="func-body">
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>ax.<span class="fn">set_title</span>(<span class="st">'Q3 Revenue by Region'</span>, fontsize=<span class="nm">14</span>, fontweight=<span class="st">'bold'</span>)
+ax.<span class="fn">set_xlabel</span>(<span class="st">'Region'</span>)
+ax.<span class="fn">set_ylabel</span>(<span class="st">'Revenue (₹ Lakhs)'</span>)
+ax.<span class="fn">legend</span>(loc=<span class="st">'upper right'</span>)     <span class="cm"># only shows if you set label= on your plot/bar/scatter calls</span>
+ax.<span class="fn">grid</span>(<span class="kw">True</span>, alpha=<span class="nm">0.3</span>)              <span class="cm"># light background gridlines aid reading exact values</span></pre>
+        </div>
+        <div class="callout yellow">
+          <div class="callout-title">⚠️ ax.legend() Shows Nothing Without label=</div>
+          If you never passed <code>label='...'</code> to your plot/bar/scatter calls, <code>ax.legend()</code> has nothing to display. Always set labels FIRST on each series, THEN call legend() once at the end.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 15 Questions</h2><p>Figure/Axes, plot, bar, scatter, hist, labels. Need 12/15 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">15</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">12</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0284C7">🏆</div>
+    <div><h2>Real-World Task — Retail Sales Snapshot</h2><p>Estimated time: 40–50 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You're a Business Analyst at a mid-size retailer. Build 4 quick charts management can screenshot straight into a meeting: monthly trend, category comparison, bill-vs-tip check, and a distribution.</p>
+    </div>
+    <ul class="checklist">
+      <li>Line chart: monthly sales trend for 2 years, with legend and markers</li>
+      <li>Bar chart: revenue by product category, with values labeled on top of each bar</li>
+      <li>Scatter chart: order value vs delivery time, sized by number of items</li>
+      <li>Histogram: distribution of customer order values, with a mean line</li>
+      <li>Every chart has a title, axis labels, and (where relevant) a legend</li>
+    </ul>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Matplotlib Condensed Course — 3-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done active">Day 1 · Fundamentals</span>
+    <span class="day-pill">Day 2 · Styling &amp; Statistical Charts</span>
+    <span class="day-pill">Day 3 · Advanced &amp; Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"fig, ax = plt.subplots(figsize=(10,6))",q:"What do fig and ax each represent?",opts:["They are identical, interchangeable objects","fig is the whole canvas/page (Figure); ax is the actual drawing area (Axes) where charts are plotted — a Figure can contain multiple Axes", "ax is the canvas; fig is the drawing area", "figsize sets the font size, not dimensions"],ans:1,explain:"fig (Figure) is the overall container/canvas. ax (Axes) is the specific plotting area within it where data actually gets drawn. This distinction matters once you build multi-panel dashboards with several Axes in one Figure."},
+  {code:"ax.plot(months, mau_2024, linestyle='--', marker='o')",q:"What does linestyle='--' combined with marker='o' produce?",opts:["A solid line with no markers","A DASHED line connecting the points, with a CIRCLE marker drawn at each individual data point", "Only circles, no connecting line at all","This causes an error since you can't combine linestyle and marker"],ans:1,explain:"linestyle controls how the connecting line looks ('--' = dashed), while marker controls what symbol appears AT each data point ('o' = circle). Both can be combined — the result is a dashed line with circular dots marking each actual data value."},
+  {q:"When would ax.barh() (horizontal bars) be preferred over ax.bar() (vertical bars)?",opts:["Never — vertical bars are always better","When category names/labels are LONG, since horizontal bars put labels on the y-axis where there's more room to read the full text without rotating or truncating them", "barh() is required for numeric data","barh() only works with negative numbers"],ans:1,explain:"With vertical bars, long category names on the x-axis often get cut off, overlap, or require rotation to fit. Horizontal bars put category names on the y-axis, which naturally has more horizontal space, making long labels much easier to read fully."},
+  {code:"ax.scatter(bill, tip, s=[p*40 for p in party_size], c='#0284C7')",q:"What does passing a LIST to the s= parameter accomplish?",opts:["It sets a single fixed size for all points","It sets a DIFFERENT marker size for EACH individual point, based on the corresponding value in the list — here, larger party sizes produce larger dots", "This causes a TypeError since s= only accepts a single number","It changes the color of each point instead of size"],ans:1,explain:"The s= (size) parameter accepts either a single number (same size for all points) OR a list/array with one value per point (different size for each). Here, each point's size scales with that customer's party_size, adding a THIRD dimension of information to the 2D scatter plot."},
+  {code:"ax.hist(salaries, bins=20)",q:"What does bins=20 control?",opts:["The exact number of data points shown","The number of GROUPS (bars) the data range is divided into — more bins show finer detail but can look noisier; fewer bins show a smoother, more general shape", "The color of the histogram","The width of the chart in pixels"],ans:1,explain:"bins determines how many equal-width intervals the data's full range gets divided into, with each bin becoming one bar showing how many values fall in that range. More bins (like 50) reveal finer distributional detail but can look noisy; fewer bins (like 5) show a smoother overall shape but hide detail."},
+  {code:"ax.axvline(salaries.mean(), color='red', linestyle='--')",q:"What does axvline() draw?",opts:["A horizontal line across the whole chart","A full-height VERTICAL line at the specified x-position — commonly used to mark a reference value like a mean, target, or threshold on top of a histogram or other chart", "A diagonal line","It draws an arrow, not a line"],ans:1,explain:"axvline (axis vertical line) draws a vertical line spanning the full height of the plot at a given x-coordinate. It's frequently used to mark a meaningful reference point — like the mean, median, or a target threshold — directly on a chart for visual comparison against the data."},
+  {q:"Why does ax.legend() sometimes show nothing at all, even after calling it?",opts:["legend() is broken and never works", "legend() only displays entries for series that were given a label= parameter when plotted (e.g., ax.plot(x, y, label='2024')); if no label was set on any plotted series, there's nothing for legend() to show", "legend() requires at least 3 different colors to function","legend() only works with bar charts, not line or scatter charts"],ans:1,explain:"ax.legend() builds its display FROM the label= values you provided when creating each plot/bar/scatter element. If you never set label= on anything, legend() has no information to show and will produce an empty or missing legend box."},
+  {q:"What is the purpose of setting bbox_inches='tight' when calling fig.savefig()?",opts:["It makes the file size smaller regardless of content","It TRIMS excess whitespace/margin around the actual chart content when saving, producing a cleanly-cropped image instead of one with large blank borders", "It converts the image to black and white","It reduces the image resolution"],ans:1,explain:"By default, saved figures can include extra whitespace padding around the actual chart. bbox_inches='tight' tells Matplotlib to crop the saved image tightly around the actual content (title, axes, labels), removing unnecessary blank space — producing a cleaner image, especially useful for pasting into documents or slides."},
+  {code:"for bar in bars:\n    height = bar.get_height()\n    ax.text(bar.get_x()+bar.get_width()/2, height+5, str(height), ha='center')",q:"What is this loop accomplishing on a bar chart?",opts:["It's removing bars below a certain height","It's adding a text LABEL showing the exact numeric value directly ABOVE each bar — a common business-chart requirement so viewers don't have to estimate values from the y-axis alone", "It's deleting all the bars from the chart","It's changing the color of each bar randomly"],ans:1,explain:"This pattern iterates through each bar object, gets its height (the actual data value), and uses ax.text() to place that exact number just above the bar (height+5 for a small vertical offset), centered horizontally (bar.get_x()+bar.get_width()/2). This is extremely common in business reporting where stakeholders want to see exact values, not just estimate them visually from the axis."},
+  {code:"ax.scatter(bill, tip, alpha=0.7)",q:"What does alpha=0.7 do?",opts:["It resizes all points to 70% of normal size","It sets the TRANSPARENCY of the markers to 70% opaque (30% see-through) — useful for revealing overlapping points, since areas with MORE overlapping semi-transparent dots appear DARKER/denser", "It rotates the markers by 70 degrees","It limits the scatter plot to 70 points maximum"],ans:1,explain:"alpha controls transparency, ranging from 0 (fully invisible) to 1 (fully opaque). Using a value like 0.7 makes points semi-transparent, which is especially useful when many points overlap — areas where multiple points stack on top of each other will appear visually DARKER/denser than areas with just one isolated point, revealing concentration patterns that fully opaque points would hide."},
+  {q:"Why is the 'object-oriented' style (fig, ax = plt.subplots(); ax.plot(...)) generally recommended over the older shortcut style (plt.plot(...) directly)?",opts:["The shortcut style doesn't actually work in modern Matplotlib","The object-oriented style gives EXPLICIT control over the Figure and Axes objects, which becomes ESSENTIAL the moment you need multiple subplots, want to customize specific chart elements precisely, or build reusable plotting functions — the shortcut style only really works for the simplest single-quick-look charts", "plt.plot() is deprecated and will be removed from Matplotlib","There is no actual difference between the two styles"],ans:1,explain:"The shortcut plt.plot() style implicitly operates on a 'current' figure/axes, which works fine for one quick simple chart but becomes limiting and error-prone once you need multiple subplots, want precise control over specific chart elements, or are building reusable functions that take an ax parameter. The explicit fig, ax = plt.subplots() style scales cleanly to all of these more complex, realistic scenarios."},
+  {q:"In a business report scatter plot showing 'order value vs delivery time', why might you additionally use the s= parameter to encode 'number of items in the order' as marker size?",opts:["This adds no useful information and is purely decorative", "It lets the SAME 2D scatter plot communicate a THIRD variable (number of items) simultaneously with the two already shown on the x/y axes — viewers can see at a glance whether, for example, larger orders (bigger dots) tend to cluster at higher delivery times, without needing a separate chart", "s= is required syntax and has no semantic meaning","This would cause the scatter plot to fail rendering"],ans:1,explain:"Encoding an additional variable via marker SIZE (in addition to the x and y positions) lets one scatter plot convey THREE dimensions of information at once — here, order value (x), delivery time (y), and order size/item count (dot size) — letting viewers spot patterns like 'large orders take longer to deliver' directly from the visual, without needing to build and cross-reference a separate chart."},
+  {q:"Why might a retailer choose ax.hist() specifically (rather than ax.bar()) to show the distribution of 200 customer order values?",opts:["hist() and bar() are functionally identical with no difference","hist() automatically GROUPS continuous numeric data into bins/ranges and counts how many values fall in each range — appropriate when you have many individual raw numeric values and want to see their overall SHAPE/spread; bar() instead requires you to already have pre-defined discrete categories with a single value each, which doesn't fit 200 individual raw order amounts", "bar() only works with negative numbers","hist() can only display exactly 10 bars regardless of settings"],ans:1,explain:"hist() is specifically designed for CONTINUOUS numeric data — you give it the raw list of 200 individual order values, and it automatically groups them into ranges (bins) and counts how many fall in each range, revealing the overall distribution shape. bar() instead requires you to already have discrete, pre-aggregated categories (like 'North':420, 'South':380) — it wouldn't make sense to feed 200 raw individual numbers into bar() without first manually binning them yourself, which is exactly what hist() does automatically."},
+  {code:"ax.legend(loc='upper right')",q:"What does the loc= parameter control?",opts:["The line thickness of the legend border","The POSITION of the legend box within the chart area — 'upper right' places it in the top-right corner; other common values include 'upper left', 'lower right', 'best' (auto-picks least obstructive spot)", "The number of items shown in the legend","loc= has no effect on legend()"],ans:1,explain:"loc= specifies WHERE within the Axes the legend box should be placed. Common values describe a position like 'upper right', 'lower left', etc. The special value 'best' (often the default) lets Matplotlib automatically choose a position that minimizes overlap with the actual plotted data."},
+  {q:"Reflecting on today's 5 core functions (subplots, plot, bar, scatter, hist), what is the general decision process for choosing which chart TYPE to use for a given business question?",opts:["Always default to a line chart regardless of the question", "Match the chart type to the QUESTION being asked: trend OVER TIME → line (plot); comparing DISCRETE categories → bar/barh; relationship between TWO numeric variables → scatter; the SHAPE/SPREAD of one numeric variable → histogram — choosing based on what question you're actually trying to answer, rather than habit", "Bar charts should always be used since they're the simplest type","The chart type choice never actually matters as long as data is shown"],ans:1,explain:"Each chart type answers a DIFFERENT kind of question: line charts show how something changes over time/sequence; bar charts compare distinct categories against each other; scatter plots reveal whether/how two numeric variables relate to each other; histograms show the overall distribution/spread of a single numeric variable. Thoughtfully matching the chart type to the SPECIFIC business question at hand — rather than defaulting to one familiar chart type regardless of context — is the key skill for effective, communicative data visualization."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review the core functions, then try again! 📚"],[50,75,"Good progress! Focus on parameters and use cases. 💪"],[75,90,"Strong Day 1! Fundamentals are solid. 🎉"],[90,101,"Excellent! Day 1 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 12/15 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

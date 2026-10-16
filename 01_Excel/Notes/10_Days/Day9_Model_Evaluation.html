@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 9 — Model Evaluation & Optimization</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(21,88,192,0.05),transparent 65%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:540px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:var(--accent);box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov{font-size:14px;font-weight:700;}
+
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-warn{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+
+/* METRIC COMPARISON */
+.metric-compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0;}
+@media(max-width:580px){.metric-compare{grid-template-columns:1fr;}}
+.mc{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--sh);}
+.mc-name{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;}
+.mc-formula{font-family:var(--mono);font-size:11px;color:var(--blue);margin-bottom:6px;}
+.mc-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+.mc-use{font-size:11px;color:var(--text3);margin-top:5px;font-style:italic;}
+
+/* BIAS VARIANCE */
+.bv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;}
+@media(max-width:560px){.bv-grid{grid-template-columns:1fr;}}
+.bv-card{border-radius:10px;padding:16px;}
+.bv-high{background:var(--rl);border:1.5px solid rgba(176,17,43,0.2);}
+.bv-low{background:var(--al);border:1.5px solid var(--ag);}
+.bv-title{font-size:14px;font-weight:800;margin-bottom:6px;}
+.bv-desc{font-size:12px;line-height:1.6;}
+
+/* ERROR TABLE */
+.et{width:100%;border-collapse:collapse;margin-top:10px;border-radius:8px;overflow:hidden;}
+.et th{font-family:var(--mono);font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:1px;padding:9px 13px;text-align:left;background:var(--accent);}
+.et td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;}
+.et tr:last-child td{border-bottom:none;}
+.et tr:nth-child(even) td{background:var(--card2);}
+.et .ok{color:var(--green);font-weight:700;}.et .bad{color:var(--red);}
+.et code{font-family:var(--mono);font-size:11px;background:var(--al);padding:2px 6px;border-radius:4px;color:var(--accent);}
+
+/* FORMULA GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.rb{display:flex;gap:10px;background:var(--rl);border:1px solid rgba(176,17,43,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+.tip{background:linear-gradient(135deg,var(--al),var(--bl));border:1.5px solid var(--ag);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:#0b6650;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 9 of 10</div>
+    <div class="db">DAY 9</div>
+  </div>
+  <h1>Model Evaluation<br>&amp; <span class="hl">Optimization</span></h1>
+  <div class="tagline">Build models that actually work on new data. Train/test splits, error metrics, bias-variance tradeoff, feature selection, hyperparameter tuning with Data Tables, and Goal Seek optimization.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: Model Eval</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●●</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">🔧 Data Tables + Goal Seek</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div><div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pd"></div>
+    <div class="pl">Day 9 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">⚙️</div><div class="ol2">Focus</div><div class="ov">Model Evaluation</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Topics</div><div class="ov">8 Eval Concepts</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Outcomes</div><div class="ov">4 Skills Mastered</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Key Tool</div><div class="ov">Data Tables + Goal Seek</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Topics Covered Today</div>
+<div class="tg">
+  <div class="ti"><div class="tn">01</div><div><div class="tt">Train / Test Split</div><div class="ts">RAND(), RANDBETWEEN() — evaluate on data the model never saw</div></div></div>
+  <div class="ti"><div class="tn">02</div><div><div class="tt">Cross-Validation Concept</div><div class="ts">K-Fold simulation — more reliable than a single split</div></div></div>
+  <div class="ti"><div class="tn">03</div><div><div class="tt">MAE, RMSE, MAPE</div><div class="ts">Three error metrics — each tells a different story about model quality</div></div></div>
+  <div class="ti"><div class="tn">04</div><div><div class="tt">Bias-Variance Tradeoff</div><div class="ts">Underfitting vs overfitting — finding the sweet spot</div></div></div>
+  <div class="ti"><div class="tn">05</div><div><div class="tt">Feature Selection</div><div class="ts">Correlation filter + p-value filter — keep only what matters</div></div></div>
+  <div class="ti"><div class="tn">06</div><div><div class="tt">Data Tables for Tuning</div><div class="ts">1-variable sensitivity — sweep hyperparameters automatically</div></div></div>
+  <div class="ti"><div class="tn">07</div><div><div class="tt">Goal Seek Optimization</div><div class="ts">Work backwards — what input produces a target output?</div></div></div>
+  <div class="ti"><div class="tn">08</div><div><div class="tt">Scenario Manager</div><div class="ts">Compare best/base/worst case model performance side by side</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sl">🧠 Key Concepts Deep Dive</div>
+
+<!-- Train Test Split -->
+<div class="cc">
+  <div class="ct">✂️ Train / Test Split — Why It's Non-Negotiable <span class="cb cb-core">CORE PRINCIPLE</span></div>
+  <div class="cd">Evaluating a model on the same data it trained on is like giving students the exam questions in advance. They'll score 100% — but that proves nothing about what they actually learned. Train/test split holds back 20% of data so the model is always evaluated on data it has never seen.</div>
+  <div class="code">
+<span class="cm">// Step 1: Add a random number column</span>
+=<span class="fn">RAND</span>()               <span class="cm">→ random number 0–1, recalculates on every change</span>
+
+<span class="cm">// Step 2: Freeze the random values (critical!)</span>
+<span class="cm">// Select random column → Copy → Paste Special → Values Only</span>
+<span class="cm">// Without freezing, RAND() regenerates every time you edit anything</span>
+
+<span class="cm">// Step 3: Assign Train/Test label</span>
+=<span class="fn">IF</span>([@Random] &lt;= <span class="num">0.8</span>, <span class="str">"Train"</span>, <span class="str">"Test"</span>)
+<span class="cm">// 80% Train, 20% Test — industry standard for small datasets</span>
+
+<span class="cm">// Step 4: Count each split</span>
+Train_count = <span class="fn">COUNTIF</span>(Split_col, <span class="str">"Train"</span>)
+Test_count  = <span class="fn">COUNTIF</span>(Split_col, <span class="str">"Test"</span>)
+
+<span class="cm">// Step 5: NEVER touch test data until final evaluation</span>
+<span class="cm">// Build model on Train rows only → evaluate on Test rows only</span>
+<span class="cm">// If RMSE_Train = 4.2 but RMSE_Test = 9.8 → model is OVERFITTING</span>
+  </div>
+</div>
+
+<!-- Error Metrics -->
+<div class="cc">
+  <div class="ct">📏 Error Metrics — MAE, RMSE &amp; MAPE <span class="cb cb-warn">KNOW ALL THREE</span></div>
+  <div class="cd">Three metrics, three different questions. Use MAE for easy interpretation ("off by X units on average"). Use RMSE when big errors matter more than small ones. Use MAPE for percentage-based communication with non-technical stakeholders.</div>
+  <div class="metric-compare">
+    <div class="mc">
+      <div class="mc-name">MAE</div>
+      <div class="mc-formula">AVERAGE(ABS(actual-pred))</div>
+      <div class="mc-desc">Mean Absolute Error. Average of all errors, ignoring sign. Easy to explain.</div>
+      <div class="mc-use">Best for: explaining error to stakeholders</div>
+    </div>
+    <div class="mc">
+      <div class="mc-name">RMSE</div>
+      <div class="mc-formula">SQRT(AVERAGE((actual-pred)²))</div>
+      <div class="mc-desc">Root Mean Squared Error. Punishes big errors more than small ones.</div>
+      <div class="mc-use">Best for: when large errors are very costly</div>
+    </div>
+    <div class="mc">
+      <div class="mc-name">MAPE</div>
+      <div class="mc-formula">AVERAGE(ABS((actual-pred)/actual))×100</div>
+      <div class="mc-desc">Mean Absolute Percentage Error. Scale-free, expressed as %.</div>
+      <div class="mc-use">Best for: comparing models across different scales</div>
+    </div>
+  </div>
+  <div class="code" style="margin-top:12px;">
+<span class="cm">// Calculate all three on TEST set only</span>
+MAE  = <span class="fn">AVERAGEIF</span>(Split,<span class="str">"Test"</span>,ABS_Error_col)
+     = <span class="fn">AVERAGE</span>(<span class="fn">ABS</span>(actual_test - pred_test))
+
+RMSE = <span class="fn">SQRT</span>(<span class="fn">AVERAGEIF</span>(Split,<span class="str">"Test"</span>, Squared_Error_col))
+     = <span class="fn">SQRT</span>(<span class="fn">AVERAGE</span>((actual_test - pred_test)^<span class="num">2</span>))
+
+MAPE = <span class="fn">AVERAGE</span>(<span class="fn">ABS</span>((actual_test-pred_test)/actual_test)) * <span class="num">100</span>
+<span class="cm">// MAPE of 8.3% means: on average predictions are off by 8.3% of the true value</span>
+
+<span class="cm">// RMSE always ≥ MAE (because squaring amplifies larger errors)</span>
+<span class="cm">// If RMSE >> MAE → you have occasional large errors (outlier predictions)</span>
+<span class="cm">// If RMSE ≈ MAE → errors are consistently small (good model behaviour)</span>
+  </div>
+</div>
+
+<!-- Bias-Variance -->
+<div class="cc">
+  <div class="ct">⚖️ Bias-Variance Tradeoff — The Fundamental ML Tension <span class="cb cb-pow">CORE THEORY</span></div>
+  <div class="cd">Every ML model sits on a spectrum between two failure modes. Understanding this tradeoff explains why adding more features sometimes hurts, and why a "perfect" training score is actually a warning sign.</div>
+  <div class="bv-grid">
+    <div class="bv-card bv-high">
+      <div class="bv-title" style="color:var(--red);">🎯 High Bias (Underfitting)</div>
+      <div class="bv-desc" style="color:var(--text2);">Model is too simple. Misses real patterns.<br><br>
+        Signs: Train RMSE is HIGH. Test RMSE is also HIGH. Both bad.<br><br>
+        Fix: Add more features. Use a more complex model. Reduce regularization.<br><br>
+        Example: Fitting a flat line to clearly curved data.</div>
+    </div>
+    <div class="bv-card bv-low">
+      <div class="bv-title" style="color:var(--accent);">🎭 High Variance (Overfitting)</div>
+      <div class="bv-desc" style="color:var(--text2);">Model memorised training data. Fails on new data.<br><br>
+        Signs: Train RMSE is VERY LOW. Test RMSE is HIGH. Big gap.<br><br>
+        Fix: Remove weak features. Get more training data. Simplify model.<br><br>
+        Example: A model that perfectly fits 80 training points but fails on any new student.</div>
+    </div>
+  </div>
+  <div class="code" style="margin-top:12px;">
+<span class="cm">// Detecting overfitting with the Train vs Test gap</span>
+RMSE_Train = <span class="fn">SQRT</span>(<span class="fn">AVERAGEIF</span>(Split, <span class="str">"Train"</span>, Squared_Error_col))
+RMSE_Test  = <span class="fn">SQRT</span>(<span class="fn">AVERAGEIF</span>(Split, <span class="str">"Test"</span>,  Squared_Error_col))
+
+Gap = RMSE_Test - RMSE_Train
+
+<span class="cm">// Interpreting the gap:</span>
+<span class="cm">// Gap < 10% of RMSE_Train → well generalised model ✓</span>
+<span class="cm">// Gap 10–30%              → slight overfitting — worth investigating</span>
+<span class="cm">// Gap > 30%               → significant overfitting → remove features or get more data</span>
+<span class="cm">// RMSE_Train ≈ RMSE_Test and both HIGH → underfitting → add features</span>
+  </div>
+</div>
+
+<!-- Feature Selection -->
+<div class="cc">
+  <div class="ct">🎯 Feature Selection — Keep Only What Helps <span class="cb cb-tip">OPTIMIZATION</span></div>
+  <div class="cd">Adding irrelevant features hurts models — they add noise, increase overfitting risk, and reduce interpretability. Feature selection systematically identifies which features to keep and which to drop, using two complementary filters.</div>
+  <table class="et">
+    <tr><th>Filter Method</th><th>What It Checks</th><th>Keep If</th><th>Drop If</th><th>Excel Tool</th></tr>
+    <tr><td><strong>Correlation Filter</strong></td><td>Linear relationship with target</td><td class="ok">|r| ≥ 0.1</td><td class="bad">|r| &lt; 0.1</td><td><code>=CORREL()</code></td></tr>
+    <tr><td><strong>p-value Filter</strong></td><td>Statistical significance in model</td><td class="ok">p &lt; 0.05</td><td class="bad">p ≥ 0.05</td><td>ToolPak Regression</td></tr>
+    <tr><td><strong>Adj R² Test</strong></td><td>Does removing improve model?</td><td class="ok">Adj R² increases</td><td class="bad">Adj R² drops</td><td>ToolPak Regression</td></tr>
+    <tr><td><strong>RMSE Test</strong></td><td>Does removing lower test error?</td><td class="ok">Test RMSE drops</td><td class="bad">Test RMSE rises</td><td>Manual formula</td></tr>
+  </table>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Create a proper train/test split and never evaluate on training data</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Calculate MAE, RMSE and MAPE on the test set only</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Detect overfitting using the train/test RMSE gap</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Use Data Tables and Goal Seek for hyperparameter optimization</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Task Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#1558c0;flex:12"></div>
+  <div class="hs" style="background:#1558c0;flex:16"></div>
+  <div class="hs" style="background:#5e35b1;flex:14"></div>
+  <div class="hs" style="background:#1558c0;flex:10"></div>
+  <div class="hs" style="background:#0d7a5f;flex:8"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#0d7a5f"></div>Project</div>
+  <div class="li"><div class="ld" style="background:#5e35b1"></div>Tuning</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>Practice</div>
+</div>
+
+<!-- ══ TASKS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bp">0 – 12 min</div>
+    <div class="tw"><div class="tm">✂️ Train / Test Split — The Right Way</div><div class="ts2">Create a reproducible 80/20 split using RAND() and frozen values</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">The single most important habit in ML is evaluating your model on data it has never seen. Without a proper train/test split, every metric you calculate is optimistically biased — your model looks better than it really is. This task builds that habit into your workflow permanently.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Open your <strong>Day6_Complete.xlsx</strong> (regression model) or create <strong>Day9_Evaluation.xlsx</strong> with a fresh 80-row dataset: StudentID, Score (target), StudyHours, Attendance, Is_Eng, Is_Mkt. Convert to Table named <strong>EvalData</strong>.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Add a "Random" column: <code>=RAND()</code>. Notice it changes whenever you press Enter anywhere — that's the problem. We must freeze it immediately.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Freeze the random values:</strong> Select the Random column → Ctrl+C → right-click same column → Paste Special → Values → OK. Verify: clicking elsewhere no longer changes the numbers. Now they're frozen seeds for your split.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Add "Split" column: <code>=IF([@Random]&lt;=0.8,"Train","Test")</code>. Count each:<br>
+        <code>=COUNTIF(EvalData[Split],"Train")</code> → should be ~64<br>
+        <code>=COUNTIF(EvalData[Split],"Test")</code> → should be ~16<br>
+        Verify both sum to 80.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Build regression on Train only:</strong> Run ToolPak Regression (Data → Data Analysis → Regression). For Y and X ranges, use the full columns — but in the Output, add a note that says "Trained on Train rows only." Record the coefficients: β₀ (intercept), β₁ (StudyHours), β₂ (Attendance).</div></div>
+      <div class="si2"><div class="sn">6</div><div>Add "Predicted_Score" column using your trained coefficients:<br>
+        <code>=Intercept + β₁*[@StudyHours] + β₂*[@Attendance]</code><br>
+        This applies to ALL rows (train and test). In the next task you'll calculate error metrics separately for each split.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Step 1: Random column</span>
+=<span class="fn">RAND</span>()
+
+<span class="cm">// Step 2: FREEZE immediately (paste as values)</span>
+<span class="cm">// Select column → Ctrl+C → Paste Special → Values → OK</span>
+
+<span class="cm">// Step 3: Train/Test label</span>
+=<span class="fn">IF</span>([@Random]&lt;=<span class="num">0.8</span>, <span class="str">"Train"</span>, <span class="str">"Test"</span>)
+
+<span class="cm">// Step 4: Verify counts</span>
+=<span class="fn">COUNTIF</span>(EvalData[Split], <span class="str">"Train"</span>)   <span class="cm">→ ~64</span>
+=<span class="fn">COUNTIF</span>(EvalData[Split], <span class="str">"Test"</span>)    <span class="cm">→ ~16</span>
+
+<span class="cm">// Step 5: Apply trained model to ALL rows</span>
+=Intercept + β₁*[@StudyHours] + β₂*[@Attendance]
+
+<span class="cm">// Step 6: Absolute error per row</span>
+=<span class="fn">ABS</span>([@Score] - [@Predicted_Score])
+
+<span class="cm">// Step 7: Squared error per row</span>
+=([@Score] - [@Predicted_Score])^<span class="num">2</span>
+    </div>
+    <div class="rb"><div class="ni">🚨</div><div><strong>Critical rule — never break this:</strong> Once you've done your train/test split, the test set is locked. You cannot use test data to make any modeling decisions — not feature selection, not threshold tuning, not anything. The moment you look at test performance and adjust your model, the test set is "contaminated" and no longer measures true generalisation.</div></div>
+    <div class="cks">
+      <div class="ck">Random column frozen (values)</div><div class="ck">Split column: Train/Test</div>
+      <div class="ck">Counts sum to 80</div><div class="ck">Coefficients recorded</div>
+      <div class="ck">Predicted_Score column built</div><div class="ck">Error columns added</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bp">12 – 28 min</div>
+    <div class="tw"><div class="tm">📏 Error Metrics Dashboard — MAE, RMSE, MAPE</div><div class="ts2">Calculate all three metrics separately for Train and Test — then diagnose your model</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Three metrics answer three different questions: MAE asks "how far off are we on average?", RMSE asks "do we make any catastrophically bad predictions?", and MAPE asks "what % of the actual value are we typically off by?" Together they give a complete picture of model health that no single metric can provide.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "MetricsDashboard". Build a 2×4 grid: rows = Train / Test, columns = MAE / RMSE / MAPE / R². This is your Model Performance Scorecard.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>MAE — Train and Test:</strong><br>
+        Train MAE: <code>=AVERAGEIF(EvalData[Split],"Train",EvalData[Abs_Error])</code><br>
+        Test MAE: <code>=AVERAGEIF(EvalData[Split],"Test",EvalData[Abs_Error])</code><br>
+        Format as "X.X score points". Read as: "On average, predictions are off by X points."</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>RMSE — Train and Test:</strong><br>
+        Train RMSE: <code>=SQRT(AVERAGEIF(EvalData[Split],"Train",EvalData[Sq_Error]))</code><br>
+        Test RMSE: <code>=SQRT(AVERAGEIF(EvalData[Split],"Test",EvalData[Sq_Error]))</code><br>
+        RMSE ≥ MAE always. Large gap means occasional big errors.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>MAPE — Train and Test:</strong><br>
+        Add a "MAPE_Error" column to EvalData: <code>=ABS(([@Score]-[@Predicted_Score])/[@Score])</code><br>
+        Train MAPE: <code>=AVERAGEIF(EvalData[Split],"Train",EvalData[MAPE_Error])*100</code><br>
+        Test MAPE: <code>=AVERAGEIF(EvalData[Split],"Test",EvalData[MAPE_Error])*100</code><br>
+        Format as percentage. Read as: "Predictions are typically off by X% of the true score."</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Overfitting diagnosis:</strong><br>
+        Gap = Test RMSE − Train RMSE<br>
+        Gap % = Gap / Train RMSE × 100<br>
+        Add a "Diagnosis" cell: <code>=IF((Test_RMSE-Train_RMSE)/Train_RMSE&lt;0.1,"✓ Well Generalised",IF((Test_RMSE-Train_RMSE)/Train_RMSE&lt;0.3,"⚠ Slight Overfitting","✗ Overfitting"))</code></div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Baseline comparison:</strong> Calculate a "Dumb Model" baseline — always predict the mean score. <code>=ABS([@Score]-AVERAGEIF(EvalData[Split],"Train",EvalData[Score]))</code>. Calculate MAE for this baseline. Your real model MUST beat the baseline — otherwise it has no value over simply predicting the average for everyone.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// MAE (Mean Absolute Error)</span>
+Train_MAE = <span class="fn">AVERAGEIF</span>(Split_col, <span class="str">"Train"</span>, Abs_Error_col)
+Test_MAE  = <span class="fn">AVERAGEIF</span>(Split_col, <span class="str">"Test"</span>,  Abs_Error_col)
+
+<span class="cm">// RMSE (Root Mean Squared Error)</span>
+Train_RMSE = <span class="fn">SQRT</span>(<span class="fn">AVERAGEIF</span>(Split_col, <span class="str">"Train"</span>, Sq_Error_col))
+Test_RMSE  = <span class="fn">SQRT</span>(<span class="fn">AVERAGEIF</span>(Split_col, <span class="str">"Test"</span>,  Sq_Error_col))
+
+<span class="cm">// MAPE per row (add as column)</span>
+=<span class="fn">ABS</span>(([@Score]-[@Predicted_Score])/[@Score])
+
+<span class="cm">// MAPE metric</span>
+Train_MAPE = <span class="fn">AVERAGEIF</span>(Split_col, <span class="str">"Train"</span>, MAPE_col) * <span class="num">100</span>
+
+<span class="cm">// Gap and overfitting diagnosis</span>
+Gap_pct = (Test_RMSE - Train_RMSE) / Train_RMSE * <span class="num">100</span>
+
+<span class="cm">// Baseline: always predict mean — your model must beat this</span>
+Baseline_MAE = <span class="fn">AVERAGEIF</span>(Split_col, <span class="str">"Train"</span>, Baseline_Abs_Error_col)
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>Reading the scorecard:</strong> Good model = Test MAE close to Train MAE, RMSE only slightly above MAE, MAPE under 10%, and both metrics clearly better than the baseline. If any of these fail, you have a specific, diagnosable problem — not a vague "bad model."</div></div>
+    <div class="cks">
+      <div class="ck">MAE (Train + Test) calculated</div><div class="ck">RMSE (Train + Test) calculated</div>
+      <div class="ck">MAPE column + metric done</div><div class="ck">Gap% calculated</div>
+      <div class="ck">Diagnosis formula added</div><div class="ck">Baseline comparison done</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bb">28 – 42 min</div>
+    <div class="tw"><div class="tm">🎛 Data Table Hyperparameter Sweep</div><div class="ts2">Automate sensitivity testing — find the feature count that minimises test RMSE</div></div>
+    <div class="typ bb">Tuning</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Data Tables let you run "what if X changes?" automatically across a range of values. Applied to model tuning, you can sweep the number of features from 1 to 6 and record test RMSE for each — finding the sweet spot between underfitting (too few features) and overfitting (too many). This is hyperparameter tuning in Excel.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "FeatureSweep". Build 6 regression models sequentially — each adding one more feature:<br>
+        Model 1: StudyHours only<br>
+        Model 2: + Attendance<br>
+        Model 3: + Is_Eng<br>
+        Model 4: + Is_Mkt<br>
+        Model 5: + Income<br>
+        Model 6: + Tenure_Days<br>
+        For each model, run ToolPak Regression on Train rows only. Record Test RMSE.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Build the comparison table: Number of Features (1–6) | Train RMSE | Test RMSE | Adj R² | Gap %. Fill in all values from your 6 model runs.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Alternative — 1-Variable Data Table:</strong> Set up a single prediction formula referencing a "Number of Features" cell (K1). In column A, list values 1–6. In the cell to the right of row 1's blank, put your Test RMSE formula. Select A1:B7 → Data → What-If Analysis → Data Table → Column input cell = K1. Excel calculates Test RMSE for each feature count automatically.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Chart the results:</strong> Insert a line chart with Number of Features (X) vs both Train RMSE and Test RMSE (two lines). The Train RMSE should decrease or stay flat as features increase. Test RMSE should first decrease (underfitting → better) then increase (overfitting → worse). The minimum of Test RMSE = optimal feature count.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Find the optimal feature count: <code>=INDEX(Features_col, MATCH(MIN(TestRMSE_col), TestRMSE_col, 0))</code>. Add a callout box on the chart pointing to the minimum Test RMSE: "✓ Optimal Model — [N] features".</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Bias-Variance visual:</strong> Add a third calculated column: Gap = Test_RMSE − Train_RMSE. Plot as a bar chart alongside the line chart. Low gap = well-generalised. High gap = overfitting. This visual makes the bias-variance tradeoff visible and explainable to any stakeholder.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// 1-Variable Data Table setup:</span>
+<span class="cm">// Column A: 1,2,3,4,5,6 (number of features)</span>
+<span class="cm">// Cell B1: your Test RMSE formula referencing K1 (feature count variable)</span>
+<span class="cm">// Select A1:B7 → Data → What-If Analysis → Data Table</span>
+<span class="cm">// Column input cell: K1 → OK</span>
+<span class="cm">// Excel fills B2:B7 automatically — one RMSE per feature count</span>
+
+<span class="cm">// Find optimal feature count (minimum Test RMSE)</span>
+=<span class="fn">INDEX</span>(A2:A7, <span class="fn">MATCH</span>(<span class="fn">MIN</span>(B2:B7), B2:B7, <span class="num">0</span>))
+
+<span class="cm">// Gap between test and train RMSE per model</span>
+=Test_RMSE - Train_RMSE
+
+<span class="cm">// % gap (overfitting indicator)</span>
+=(Test_RMSE - Train_RMSE) / Train_RMSE * <span class="num">100</span>
+<span class="cm">// < 10% → well generalised ✓</span>
+<span class="cm">// > 30% → overfitting → reduce features</span>
+    </div>
+    <div class="gb"><div class="ni">🎯</div><div><strong>This IS hyperparameter tuning.</strong> In sklearn you'd use GridSearchCV to sweep parameters and plot a validation curve — that's exactly what you just built manually in Excel. The Data Table is your GridSearchCV. The Test RMSE vs features chart is your validation curve. The minimum Test RMSE point is your optimal hyperparameter.</div></div>
+    <div class="cks">
+      <div class="ck">6 models built (1 to 6 features)</div><div class="ck">Comparison table with all metrics</div>
+      <div class="ck">Train vs Test RMSE line chart</div><div class="ck">Optimal feature count identified</div>
+      <div class="ck">Gap chart (bias-variance visual)</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bp">42 – 52 min</div>
+    <div class="tw"><div class="tm">🔍 Goal Seek + Scenario Manager</div><div class="ts2">Work backwards from a target — and compare best/base/worst case models</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Goal Seek answers the question "what input produces this exact output?" — it's reverse prediction. Scenario Manager lets you store multiple model configurations and compare them side-by-side. Together they answer the two most common stakeholder questions: "What does a student need to do to pass?" and "How does our model perform under different assumptions?"</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div><strong>Goal Seek — what study hours guarantee a 70 score?</strong><br>
+        In a clean area of your sheet, set up your regression formula:<br>
+        Input cell (yellow): B2 = StudyHours (start with 4)<br>
+        Attendance fixed at B3 = 80<br>
+        Prediction: B4 = <code>=Intercept + β₁*B2 + β₂*B3</code><br>
+        Currently B4 shows the predicted score for 4 hours.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Run Goal Seek: Data → What-If Analysis → Goal Seek:<br>
+        Set cell: B4 (the prediction)<br>
+        To value: 70 (the target score)<br>
+        By changing cell: B2 (study hours)<br>
+        Click OK. Excel solves backwards: "What study hours makes the prediction = 70?"</div></div>
+      <div class="si2"><div class="sn">3</div><div>Record the answer. Then run Goal Seek again for target = 80 and target = 90. Build a table: Target Score | Required Study Hours. This is your "study plan calculator" — a direct, actionable output from your regression model.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Scenario Manager:</strong> Data → What-If Analysis → Scenario Manager → Add.<br>
+        Scenario 1 "Best Case": set β₁=5.5, β₂=0.4 (stronger feature effects)<br>
+        Scenario 2 "Base Case": your actual trained coefficients<br>
+        Scenario 3 "Worst Case": β₁=2.8, β₂=0.15 (weaker effects)<br>
+        Name each scenario and save the changing cells.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Click "Summary" in Scenario Manager → select your Test RMSE cell as the result cell → OK. Excel generates a Scenario Summary table showing Test RMSE under each scenario. This is your model sensitivity analysis — how much does performance vary with different assumptions?</div></div>
+      <div class="si2"><div class="sn">6</div><div>Add a "Sensitivity" interpretation: if Best Case RMSE and Worst Case RMSE are close → model is robust. If they're far apart → model is highly sensitive to the coefficient values and needs more training data for stability.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Goal Seek — reverse prediction setup</span>
+<span class="cm">// B2 = Study Hours (variable cell)</span>
+<span class="cm">// B3 = Attendance (fixed at 80)</span>
+<span class="cm">// B4 = prediction formula</span>
+Prediction = Intercept + β₁*<span class="fn">B2</span> + β₂*<span class="fn">B3</span>
+
+<span class="cm">// Goal Seek: Data → What-If Analysis → Goal Seek</span>
+<span class="cm">// Set cell: B4 | To value: 70 | By changing: B2</span>
+<span class="cm">// Result: B2 = hours needed to achieve 70 points</span>
+
+<span class="cm">// Build the "study plan" table:</span>
+<span class="cm">// Target 60 → Run Goal Seek → Record hours</span>
+<span class="cm">// Target 70 → Run Goal Seek → Record hours</span>
+<span class="cm">// Target 80 → Run Goal Seek → Record hours</span>
+<span class="cm">// Target 90 → Run Goal Seek → Record hours</span>
+
+<span class="cm">// Scenario Manager summary shows:</span>
+<span class="cm">// Scenario | β₁ | β₂ | Test_RMSE</span>
+<span class="cm">// Best     | 5.5| 0.4|  3.8</span>
+<span class="cm">// Base     | 4.2| 0.3|  5.1</span>
+<span class="cm">// Worst    | 2.8|0.15|  7.4</span>
+    </div>
+    <div class="nb"><div class="ni">🧠</div><div><strong>Goal Seek is deployed ML.</strong> When a bank's loan model predicts rejection, they use Goal Seek logic to calculate: "What income level would this applicant need to qualify?" When a student performance model flags risk, Goal Seek calculates: "How many more hours of study would change the prediction to Pass?" This is model outputs made actionable.</div></div>
+    <div class="cks">
+      <div class="ck">Goal Seek for target = 70 done</div><div class="ck">Study plan table (60/70/80/90)</div>
+      <div class="ck">3 scenarios created</div><div class="ck">Scenario Summary generated</div>
+      <div class="ck">Sensitivity interpretation written</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bg">52 – 60 min</div>
+    <div class="tw"><div class="tm">🏆 Model Evaluation Report — Complete Performance Dashboard</div><div class="ts2">Assemble everything into a single executive-ready evaluation report</div></div>
+    <div class="typ bg">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">The final deliverable of any ML project isn't the model — it's the evaluation report that proves the model works. Stakeholders need to trust it. Regulators need to audit it. Future data scientists need to maintain it. Your evaluation report provides all three audiences what they need.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "EvalReport". Title: "📊 Model Evaluation Report — Student Score Predictor". Subtitle: "Linear Regression | 80-row dataset | Train/Test split 80/20 | Evaluated: [today's date]".</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Section 1 — Data Summary:</strong><br>
+        Total rows: 80 | Train rows: ~64 | Test rows: ~16<br>
+        Features used: StudyHours, Attendance, Is_Eng, Is_Mkt<br>
+        Target: Score (range 30–100, mean [value], std dev [value])<br>
+        Missing values: 0 (cleaned in Day 4)<br>
+        Split method: RAND() frozen seed — reproducible</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Section 2 — Model Coefficients:</strong><br>
+        Reference your trained β values. Format as:<br>
+        Score = [β₀] + [β₁] × StudyHours + [β₂] × Attendance + [β₃] × Is_Eng + [β₄] × Is_Mkt<br>
+        Write one plain-English sentence interpreting each coefficient.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Section 3 — Performance Metrics (the most important section):</strong><br>
+        Build a clean 2-row table (Train / Test) × 5 columns (MAE, RMSE, MAPE, R², Gap%).<br>
+        Apply conditional formatting: green if Test metric is within 20% of Train, amber if 20–40%, red if &gt;40%.<br>
+        Add one-sentence diagnosis below each column.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Section 4 — Model Health Checklist:</strong> A checklist of 8 items, each with a ✓ or ✗:<br>
+        ☐ Train RMSE &lt; Baseline RMSE (model beats naive average)<br>
+        ☐ Test RMSE within 30% of Train RMSE (no overfitting)<br>
+        ☐ All features have p-value &lt; 0.05 (significance)<br>
+        ☐ Residuals show no systematic pattern (no missed structure)<br>
+        ☐ MAPE &lt; 15% (predictions within 15% of true score)<br>
+        ☐ Confidence intervals don't cross zero for key features<br>
+        ☐ No features with |r| &lt; 0.1 with target included<br>
+        ☐ Model documented with train date and data version</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Section 5 — Limitations and Next Steps:</strong> Write 3 limitations (e.g., small dataset of 80 rows, no temporal validation, missing features like prior grades) and 3 next steps (e.g., collect more data, test non-linear models, validate on next semester's cohort). Save as <strong>Day9_Complete.xlsx</strong>.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Performance metrics table (reference from MetricsDashboard sheet)</span>
+Train_MAE  = MetricsDashboard!Train_MAE_cell
+Test_MAE   = MetricsDashboard!Test_MAE_cell
+Train_RMSE = MetricsDashboard!Train_RMSE_cell
+Test_RMSE  = MetricsDashboard!Test_RMSE_cell
+Gap_pct    = (Test_RMSE-Train_RMSE)/Train_RMSE*<span class="num">100</span>
+
+<span class="cm">// Overfitting status</span>
+=<span class="fn">IF</span>(Gap_pct&lt;<span class="num">10</span>,<span class="str">"✓ Well Generalised"</span>,
+  <span class="fn">IF</span>(Gap_pct&lt;<span class="num">30</span>,<span class="str">"⚠ Monitor for Overfitting"</span>,
+  <span class="str">"✗ Overfitting — Reduce Features"</span>))
+
+<span class="cm">// Beats baseline check</span>
+=<span class="fn">IF</span>(Test_MAE &lt; Baseline_MAE, <span class="str">"✓ PASS"</span>, <span class="str">"✗ FAIL — model adds no value"</span>)
+
+<span class="cm">// MAPE health check</span>
+=<span class="fn">IF</span>(Test_MAPE &lt; <span class="num">10</span>, <span class="str">"✓ Excellent"</span>,
+  <span class="fn">IF</span>(Test_MAPE &lt; <span class="num">15</span>, <span class="str">"✓ Acceptable"</span>,
+  <span class="fn">IF</span>(Test_MAPE &lt; <span class="num">25</span>, <span class="str">"⚠ Review"</span>, <span class="str">"✗ Poor"</span>)))
+    </div>
+    <div class="gb"><div class="ni">🎖️</div><div><strong>This evaluation report is your professional signature.</strong> Any ML model deployed without it is flying blind. A model that beats the baseline, generalises within 20% of training performance, has all significant features, and passes the 8-item health check is production-ready. One that fails even one of those checks needs more work — and this report shows exactly which work.</div></div>
+    <div class="cks">
+      <div class="ck">5-section report built</div><div class="ck">Data summary complete</div>
+      <div class="ck">Coefficients + interpretation</div><div class="ck">Metrics table with colour coding</div>
+      <div class="ck">8-item health checklist</div><div class="ck">Limitations + next steps written</div>
+      <div class="ck">Day9_Complete.xlsx saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <div class="tpi">⚙️</div>
+  <div>
+    <div class="tpt">Day 9 Pro Tip — Test RMSE is the Only Number That Matters</div>
+    <div class="tpd">Your training RMSE is what your model achieves in its comfort zone. Your test RMSE is what it achieves in the real world. Every optimisation decision — feature selection, model complexity, threshold tuning — must be validated against test RMSE, never training RMSE. A model that improves training RMSE but worsens test RMSE is moving in the wrong direction. Always keep your eyes on the test set. It is the only honest judge of whether your model will work when deployed.</div>
+  </div>
+</div>
+
+<!-- QUICK REF -->
+<div class="sl">📋 Day 9 Formula Quick Reference</div>
+<div class="fg" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">RAND() → freeze values</div><div class="fd">Generate random split — paste as values immediately</div></div>
+  <div class="fr"><div class="ff">IF(rand&lt;=0.8,"Train","Test")</div><div class="fd">80/20 train/test label assignment</div></div>
+  <div class="fr"><div class="ff">AVERAGEIF(split,"Test",err)</div><div class="fd">Calculate any metric on test set only</div></div>
+  <div class="fr"><div class="ff">AVERAGE(ABS(actual-pred))</div><div class="fd">MAE — mean absolute error in original units</div></div>
+  <div class="fr"><div class="ff">SQRT(AVERAGE((a-p)²))</div><div class="fd">RMSE — penalises large errors more</div></div>
+  <div class="fr"><div class="ff">AVERAGE(ABS((a-p)/a))×100</div><div class="fd">MAPE — % error, scale-independent</div></div>
+  <div class="fr"><div class="ff">(Test-Train)/Train×100</div><div class="fd">Overfitting gap % — &lt;10% is healthy</div></div>
+  <div class="fr"><div class="ff">Data Table (1-variable)</div><div class="fd">Sweep feature count → record RMSE per count</div></div>
+  <div class="fr"><div class="ff">Goal Seek → set cell</div><div class="fd">Reverse prediction — what input hits target output?</div></div>
+  <div class="fr"><div class="ff">Scenario Manager → Summary</div><div class="fd">Best/Base/Worst case comparison table</div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a class="nb2" href="Day8_Clustering.html">← Day 8: Clustering</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">Day 9 Complete ✓<br><span style="color:var(--accent);">Day 10: Capstone Project →</span></div>
+  <a class="nb2 pr" href="#">Day 10: Capstone →</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>

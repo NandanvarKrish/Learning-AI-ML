@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 06 — AI Task: Dictionaries & Key-Value Data</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2fdf5;--paper:#fff;--p2:#e0f5e9;
+  --ink:#061a0f;--ink2:#12361f;--ink3:#4a8060;
+  --rule:#b6e8c8;
+  --green:#15803d;--gs:#f0fdf4;--gb:#86efac;
+  --blue:#0369a1;--bs:#e0f2fb;--bb:#7dd3fc;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#6d28d9;--ps:#f5f3ff;--pb:#c4b5fd;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --teal:#0d9488;--ts:#f0fdfa;--tb:#99f6e4;
+  --sh:0 1px 4px rgba(6,26,15,.07),0 4px 18px rgba(6,26,15,.07);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bbf7d055,transparent 42%),radial-gradient(circle at 5% 92%,#6ee7b740,transparent 40%);min-height:100vh}
+
+/* ── NAV ── */
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(6,26,15,.06)}
+.bar-in{max-width:860px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--gs);border-color:var(--gb);color:var(--green)}
+
+/* ── PAGE ── */
+.page{max-width:860px;margin:0 auto;padding:40px 20px 90px}
+
+/* ── HERO ── */
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--green)}
+.hsub{font-size:.92rem;color:var(--ink2);max-width:590px;line-height:1.75;margin-bottom:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+
+/* ── PROGRESS ── */
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:99px;transition:width .7s ease}
+
+/* ── RECAP ── */
+.recap{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--green);border-radius:var(--r);padding:13px 18px;margin-bottom:22px;font-size:.87rem;color:var(--ink2);line-height:1.8}
+.recap code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-ttl{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700}
+.sh-sub{font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-bdg{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+
+/* ── CARDS ── */
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:24px 28px;margin-bottom:16px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.tb{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.tt{background:var(--ts);color:var(--teal);border:1px solid var(--tb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.15rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+
+/* ── CALLOUTS ── */
+.cb{border-radius:10px;padding:12px 16px;font-size:.86rem;line-height:1.7;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:1px;font-style:normal}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbt{background:var(--ts);border:1px solid var(--tb);color:var(--teal)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* ── CODE ── */
+.cw{background:#052010;border-radius:10px;margin:14px 0;overflow:hidden}
+.cbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0a2818;border-bottom:1px solid #164030}
+.cdots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}
+.cdr{background:#ef4444}.cdy{background:#f59e0b}.cdg{background:#22c55e}
+.clang{font-family:'DM Mono',monospace;font-size:.63rem;color:#4a9060;letter-spacing:.1em;text-transform:uppercase}
+.cbody{padding:18px;font-family:'DM Mono',monospace;font-size:.83rem;line-height:2;overflow-x:auto;color:#c8f0d8}
+.cm{color:#2a6040;font-style:italic}.kw{color:#4ade80}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#c8f0d8}.op{color:#4a9060}
+
+/* ── KEY-VALUE VISUALISER ── */
+.kv-live{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.kv-pairs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin:14px 0}
+.kv-pair{background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;transition:all .3s}
+.kv-pair.updated{border-color:var(--gb);background:var(--gs)}
+.kv-pair.deleted{opacity:0;pointer-events:none;transform:scale(.8)}
+.kv-key{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;color:var(--green);background:var(--gs);border:1px solid var(--gb);border-radius:6px;padding:3px 10px;flex-shrink:0}
+.kv-arrow{color:var(--ink3);font-size:.9rem;flex-shrink:0}
+.kv-val{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--ink2);flex:1;word-break:break-word}
+.kv-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.kv-inp{border:1.5px solid var(--rule);border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:.82rem;background:var(--paper);color:var(--ink);outline:none;transition:border-color .2s}
+.kv-inp:focus{border-color:var(--green)}
+.kv-inp.w120{width:120px}.kv-inp.w160{width:160px}
+.kv-status{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--ink3);margin-top:10px;min-height:20px}
+.kv-status.ok{color:var(--green)}.kv-status.err{color:var(--red)}
+
+/* ── DICT EXPLORER ── */
+.dict-exp{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.dict-exp-head{background:#f2fdf5;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.dict-method-btns{display:flex;gap:7px;flex-wrap:wrap}
+.dm-btn{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink2);font-family:'DM Mono',monospace;transition:all .2s}
+.dm-btn:hover,.dm-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.dict-exp-body{padding:14px 18px}
+.dict-output{font-family:'DM Mono',monospace;font-size:.84rem;line-height:2;color:var(--ink2);background:var(--p2);border:1.5px solid var(--rule);border-radius:8px;padding:12px 16px;min-height:60px;white-space:pre-wrap}
+
+/* ── DATASET TABLE ── */
+.dataset-wrap{margin:14px 0;overflow-x:auto}
+.ds-table{width:100%;border-collapse:collapse;font-size:.84rem}
+.ds-table th{background:var(--p2);font-weight:600;padding:9px 14px;text-align:left;border:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.ds-table td{padding:9px 14px;border:1px solid var(--rule);color:var(--ink2);font-family:'DM Mono',monospace;font-size:.82rem}
+.ds-table tr:nth-child(even) td{background:#f6fdf8}
+.ds-table td.pass{color:var(--green);font-weight:600}
+.ds-table td.fail{color:var(--red);font-weight:600}
+.ds-table td.hl{color:var(--green);font-weight:700;background:var(--gs)}
+
+/* ── PHONEBOOK ── */
+.phonebook{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.pb-entries{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px}
+.pb-entry{background:var(--paper);border:1.5px solid var(--rule);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:10px}
+.pb-name{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:700;color:var(--green);min-width:70px}
+.pb-num{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--ink2)}
+.pb-search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.pb-inp{border:1.5px solid var(--rule);border-radius:8px;padding:8px 14px;font-family:'DM Mono',monospace;font-size:.84rem;background:var(--paper);color:var(--ink);outline:none;flex:1;min-width:180px;transition:border-color .2s}
+.pb-inp:focus{border-color:var(--green)}
+.pb-result{margin-top:10px;font-family:'DM Mono',monospace;font-size:.84rem;min-height:24px}
+.pb-result.ok{color:var(--green);font-weight:600}
+.pb-result.no{color:var(--red);font-weight:600}
+
+/* ── PLAYGROUND ── */
+.pg{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.pgh{background:#f2fdf5;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pgt{font-family:'DM Mono',monospace;font-size:.71rem;color:var(--ink2);font-weight:500;letter-spacing:.07em}
+.pgb{display:flex;gap:7px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#116630}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#025a87}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+.pge{padding:14px 18px;background:#f8fefb}
+.pge textarea{width:100%;border:1.5px solid var(--rule);border-radius:8px;padding:11px 14px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:120px;transition:border-color .2s;line-height:1.8}
+.pge textarea:focus{border-color:var(--green)}
+.out-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:4px;font-family:'DM Mono',monospace}
+.pgo{border-top:1px solid var(--rule);padding:12px 18px;background:#f2fdf5;font-family:'DM Mono',monospace;font-size:.82rem;min-height:44px;white-space:pre-wrap;line-height:1.8;color:var(--ink2)}
+.pgo.ok{color:var(--green)}.pgo.err{color:var(--red)}
+
+/* ── TASK LIST ── */
+.tlist{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.ti{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;background:var(--bg);border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;transition:all .2s;user-select:none}
+.ti:hover{border-color:var(--gb);background:var(--gs)}
+.ti.done{background:var(--gs);border-color:var(--gb)}
+.tcb{width:20px;height:20px;border:2px solid #6ab88a;border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700}
+.ti.done .tcb{background:var(--green);border-color:var(--green)}
+.tlbl{font-size:.88rem;color:var(--ink2);line-height:1.55}
+.ti.done .tlbl{color:var(--green);text-decoration:line-through}
+.thint{font-size:.75rem;color:var(--ink3);margin-top:2px;display:block}
+
+/* ── SCENARIOS ── */
+.scenario{background:var(--p2);border:1.5px solid var(--rule);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.sc-q{font-size:.91rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5;white-space:pre-wrap}
+.sc-opts{display:flex;flex-direction:column;gap:7px}
+.sc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.sc-opt:hover:not(.done){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.sc-opt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.sc-opt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.sc-opt.done{cursor:default}
+.sc-l{width:22px;height:22px;border-radius:6px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.sc-opt.cor .sc-l{background:var(--green);border-color:var(--green);color:#fff}
+.sc-opt.wrg .sc-l{background:var(--red);border-color:var(--red);color:#fff}
+.sc-exp{margin-top:9px;padding:9px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.sc-exp.show{display:block}
+.sc-exp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.sc-exp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* ── AI CHAT ── */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#15803d,#059669);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:340px;overflow-y:auto;background:#f8fefb}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--green);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--gs);border:1px solid var(--gb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--green)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+.aic-send:hover{background:#116630}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* ── FILL ── */
+.fq{margin-bottom:14px}
+.fq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fq label code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:360px;transition:border-color .2s}
+.fi:focus{border-color:var(--green)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+
+/* ── SHORT ANSWER ── */
+.sq{margin-bottom:16px}
+.sq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:7px;color:var(--ink2);line-height:1.6}
+.sq textarea{width:100%;border:1.5px solid var(--rule);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.7}
+.sq textarea:focus{border-color:var(--green)}
+.cc{font-size:.7rem;color:var(--ink3);text-align:right;margin-top:3px;font-family:'DM Mono',monospace}
+
+/* ── MCQ ── */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* ── SCOREBOARD ── */
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+
+/* ── FINAL ── */
+.final{background:linear-gradient(135deg,#052010,#1a4028);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.fin-emoji{font-size:2.5rem;margin-bottom:10px}
+.fin-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.fin-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.fin-cta{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 22px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.fin-cta:hover{background:rgba(255,255,255,.25)}
+
+/* ── METHOD TABLE ── */
+.mt{width:100%;border-collapse:collapse;margin:14px 0;font-size:.85rem}
+.mt th{background:var(--p2);font-weight:600;padding:9px 14px;text-align:left;border:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.mt td{padding:9px 14px;border:1px solid var(--rule);color:var(--ink2);vertical-align:top}
+.mt tr:nth-child(even) td{background:#f6fdf8}
+.mt td:first-child{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--green);font-weight:600;white-space:nowrap}
+
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+
+@media(max-width:600px){
+  .card{padding:18px 16px}
+  .kv-controls{flex-direction:column;align-items:flex-start}
+  .kv-inp{width:100%}
+  .aic-msgs{max-height:260px}
+  .dict-method-btns{gap:5px}
+  .kv-pairs-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">📅 Day 06</div>
+      <div class="btl">AI Task — Dictionaries · Key-Value · .get() · .items() · Dataset</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 1 · Week 2 · Day 06 Task</div>
+  <h1>Your AI Task:<br><em>Dictionaries</em></h1>
+  <p class="hsub">Today you learned the <strong>most important data structure in all of ML</strong>. Every dataset row is a dictionary. Every model config is a dictionary. Every API response is a dictionary. Every JSON file is a dictionary. Master dicts and you understand the foundation of data engineering.</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">🐍 Python</span>
+    <span class="pill">📦 dict {}</span>
+    <span class="pill">🔑 .get()</span>
+    <span class="pill">🔄 .items()</span>
+    <span class="pill">📊 List of Dicts</span>
+    <span class="pill">🐼 Pandas Preview</span>
+    <span class="pill">🧠 20 MCQs</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- RECAP -->
+<div class="recap">
+  ✅ <strong>What you learned today:</strong>
+  <code>dict {}</code> — stores data as <strong>key: value</strong> pairs. Access by name, not index.
+  <code>d["key"]</code> — access value (raises KeyError if missing).
+  <code>d.get("key", default)</code> — <strong>safe access</strong> — returns default if key not found.
+  <code>d["key"] = val</code> — add new key OR update existing.
+  <code>del d["key"]</code> — delete a key-value pair.
+  <code>d.keys()</code> · <code>d.values()</code> · <code>d.items()</code> — iterate the dictionary.
+  <code>"key" in d</code> — check if key exists.
+  <strong>List of dicts = dataset</strong>. Each dict = one row. This IS how Pandas works internally.
+</div>
+
+<!-- ===== PART 1: KV VISUALISER ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">🔑</div>
+  <div><div class="sh-ttl">Part 1 — Live Dictionary Visualiser</div><div class="sh-sub">Add, update, delete key-value pairs and watch the dict change</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tg">🔑 Interactive Dict</div>
+  <h2>Student Dictionary — Live Operations</h2>
+  <p>This is a live Python dictionary representing a student record. Add keys, update values, delete pairs — and watch the dictionary respond exactly as Python would. Then explore the three iteration methods.</p>
+  <div class="kv-live">
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">student = { }</div>
+    <div class="kv-pairs-grid" id="kv-grid"></div>
+    <div style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink3);margin:8px 0">len(student) = <span id="kv-len">0</span></div>
+    <div class="kv-controls">
+      <input class="kv-inp w120" id="kv-key" placeholder="key name..." />
+      <input class="kv-inp w160" id="kv-val" placeholder="value..." />
+      <button class="btn btn-g" onclick="kvSet()" style="padding:7px 14px;font-size:.78rem">+ Set key</button>
+      <button class="btn btn-o" onclick="kvDelete()" style="padding:7px 14px;font-size:.78rem">✕ Delete key</button>
+      <button class="btn btn-o" onclick="kvGet()" style="padding:7px 14px;font-size:.78rem">? .get(key)</button>
+      <button class="btn btn-o" onclick="kvReset()" style="padding:7px 14px;font-size:.78rem">↺ Reset</button>
+    </div>
+    <div class="kv-status" id="kv-status">Add a key-value pair above to start</div>
+  </div>
+
+  <!-- Dict Method Explorer -->
+  <div class="dict-exp">
+    <div class="dict-exp-head">
+      <span style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink2);font-weight:500">🔍 Explore Dictionary Methods</span>
+      <div class="dict-method-btns">
+        <button class="dm-btn" onclick="showMethod('keys')">d.keys()</button>
+        <button class="dm-btn" onclick="showMethod('values')">d.values()</button>
+        <button class="dm-btn" onclick="showMethod('items')">d.items()</button>
+        <button class="dm-btn" onclick="showMethod('in')">in operator</button>
+        <button class="dm-btn" onclick="showMethod('len')">len(d)</button>
+      </div>
+    </div>
+    <div class="dict-exp-body">
+      <div class="dict-output" id="dict-output">Click a method button above to see what it returns on your current dictionary...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PART 2: DATASET VISUALISER ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ts)">📊</div>
+  <div><div class="sh-ttl">Part 2 — Dataset Visualiser</div><div class="sh-sub">A list of dicts IS a dataset — see it rendered as a table</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tt">📊 Dataset = List of Dicts</div>
+  <h2>Your Python Dataset — Rendered as a Table</h2>
+  <p>Below is a list of 4 student dictionaries — this is a real Python dataset. Each row is one dict. The table on the right is what Pandas will render when you do <code style="font-family:'DM Mono',monospace;color:var(--green)">pd.DataFrame(dataset)</code> next month. You already understand the raw data!</p>
+  <div class="dataset-wrap">
+    <table class="ds-table" id="ds-table"></table>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+    <button class="btn btn-g" onclick="dsFilter('all')" id="ds-btn-all" style="padding:7px 14px;font-size:.78rem">Show All</button>
+    <button class="btn btn-o" onclick="dsFilter('pass')" id="ds-btn-pass" style="padding:7px 14px;font-size:.78rem">✅ Passed Only</button>
+    <button class="btn btn-o" onclick="dsFilter('fail')" id="ds-btn-fail" style="padding:7px 14px;font-size:.78rem">❌ Failed Only</button>
+    <button class="btn btn-o" onclick="dsFilter('hours')" id="ds-btn-hours" style="padding:7px 14px;font-size:.78rem">⬇ Sort by Hours</button>
+  </div>
+  <div id="ds-stats" style="margin-top:12px;font-family:'DM Mono',monospace;font-size:.8rem;color:var(--ink3);line-height:1.8"></div>
+  <div class="cb cbt">
+    <i>💡</i>
+    <span><strong>This is real ML data engineering.</strong> Filtering passed students = <code style="font-size:.82rem">[r for r in dataset if r["passed"]==1]</code>. Computing average = <code style="font-size:.82rem">sum(r["marks"] for r in dataset)/len(dataset)</code>. You are already doing Pandas operations — just in pure Python!</span>
+  </div>
+</div>
+
+<!-- ===== PART 3: PHONEBOOK SIMULATOR ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">📱</div>
+  <div><div class="sh-ttl">Part 3 — Phonebook Simulator</div><div class="sh-sub">A dict-based lookup system — same pattern as ML model configs</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">📱 Phonebook = Dictionary</div>
+  <h2>Contact Lookup — .get() in Action</h2>
+  <p>A phonebook is a perfect dictionary: name (key) → number (value). Type a contact name to look it up. This is the exact same pattern as looking up a label in an ML model's class dictionary or finding a word in an NLP vocabulary.</p>
+  <div class="phonebook">
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">contacts = { }</div>
+    <div class="pb-entries" id="pb-entries"></div>
+    <div class="pb-search-row">
+      <input class="pb-inp" id="pb-search" placeholder="Type a contact name to look up..." oninput="pbSearch()"/>
+      <button class="btn btn-g" style="padding:8px 16px;font-size:.8rem" onclick="pbSearch()">🔍 Lookup</button>
+    </div>
+    <div class="pb-result" id="pb-result"></div>
+    <div style="margin-top:12px;font-family:'DM Mono',monospace;font-size:.8rem;color:var(--ink3)">Python code: <code style="color:var(--green)">contacts.get(name, "Not found")</code></div>
+  </div>
+  <div class="cb cbg">
+    <i>🎯</i>
+    <span><strong>ML connection:</strong> AI class label lookup works identically. <code style="font-size:.82rem">label_map = {0:"cat", 1:"dog", 2:"bird"}</code> then <code style="font-size:.82rem">label_map.get(prediction, "unknown")</code> — this is how every image classifier converts a number back to a class name!</span>
+  </div>
+</div>
+
+<!-- ===== PART 4: CHECKLIST ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">📋</div>
+  <div><div class="sh-ttl">Part 4 — IDLE Checklist</div><div class="sh-sub">Complete each task in Python IDLE — tick when done</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✅ Checklist</div>
+  <h2>8 Hands-On Tasks</h2>
+  <ul class="tlist">
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Create a student dictionary with 5 keys: name, roll, marks, attendance, city. Print each value using f-strings and d["key"] access.</span>
+      <span class="thint">💡 student = {"name":"Ali","roll":101,"marks":88.5,"attendance":90,"city":"Karachi"}</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Add a "grade" key, update "marks" to 92, delete "city". Print the final dict and len(student).</span>
+      <span class="thint">💡 student["grade"] = "A" — student["marks"] = 92 — del student["city"]</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Loop through .items() and print every key-value pair in "KEY → VALUE" format using an f-string.</span>
+      <span class="thint">💡 for key, val in student.items(): print(f"{key} → {val}")</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use .get() safely: try to access "email" key (which doesn't exist) — print "Not found" as the default. Compare with trying dict["email"] directly and observing the KeyError.</span>
+      <span class="thint">💡 student.get("email","Not found") vs student["email"] — observe the difference!</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Build a list of 4 student dicts (dataset). Compute: total count, average marks, number who passed (marks ≥ 50), print each student's report using a for loop.</span>
+      <span class="thint">💡 avg = sum(r["marks"] for r in dataset)/len(dataset) — passed = [r for r in dataset if r["marks"]>=50]</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Build a phonebook with 5 contacts (name→number). Ask user to input a name with input(). Look up the number using .get() and print the result or "Contact not found".</span>
+      <span class="thint">💡 phonebook = {"Ali":"0300-1234","Sara":"0301-5678",...} — name = input("Name: ") — print(phonebook.get(name,"Not found"))</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Build an ML class label mapper: label_map = {0:"cat", 1:"dog", 2:"bird"}. Loop through a list of predictions [0,2,1,0,2] and print the label name for each using .get().</span>
+      <span class="thint">💡 for pred in predictions: print(f"Prediction: {pred} → {label_map.get(pred,'unknown')}")</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Build a column-oriented dataset dict (like Pandas): {"name":[...], "marks":[...], "passed":[...]}. Loop with range(len()) to print each student row. This is the exact format pd.DataFrame() expects!</span>
+      <span class="thint">💡 data = {"name":["Ali","Sara"],"marks":[88,45]} — for i in range(len(data["name"])): print(data["name"][i], data["marks"][i])</span></div>
+    </li>
+  </ul>
+</div>
+
+<!-- ===== PART 5: PLAYGROUNDS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">⚙️</div>
+  <div><div class="sh-ttl">Part 5 — Code Playgrounds</div><div class="sh-sub">Write dictionary logic — simulators validate your output</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<!-- PLAYGROUND 1 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 1</div>
+  <h2>Dataset Pipeline — List of Dicts + Comprehension</h2>
+  <p>Write a complete dataset processor using a list of student dictionaries. The simulator checks your logic against expected output.</p>
+  <div class="cb cbb"><i>💡</i><span><strong>Expected output:</strong><br>
+Ali     | 5 hrs | 88 marks | ✅ Pass<br>
+Sara    | 2 hrs | 45 marks | ❌ Fail<br>
+Usman   | 8 hrs | 91 marks | ✅ Pass<br>
+Zara    | 1 hrs | 32 marks | ❌ Fail<br>
+Passed: 2/4 | Average marks: 64.0</span></div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Dataset Pipeline</span><div class="pgb"><button class="btn btn-g" onclick="runDataset()">▶ Run</button><button class="btn btn-o" onclick="clearPG('d1-code','d1-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="d1-code" spellcheck="false" placeholder="dataset = [&#10;    {&quot;name&quot;:&quot;Ali&quot;,   &quot;hours&quot;:5, &quot;marks&quot;:88, &quot;passed&quot;:1},&#10;    {&quot;name&quot;:&quot;Sara&quot;,  &quot;hours&quot;:2, &quot;marks&quot;:45, &quot;passed&quot;:0},&#10;    {&quot;name&quot;:&quot;Usman&quot;, &quot;hours&quot;:8, &quot;marks&quot;:91, &quot;passed&quot;:1},&#10;    {&quot;name&quot;:&quot;Zara&quot;,  &quot;hours&quot;:1, &quot;marks&quot;:32, &quot;passed&quot;:0},&#10;]&#10;&#10;for row in dataset:&#10;    status = &quot;✅ Pass&quot; if row[&quot;passed&quot;] else &quot;❌ Fail&quot;&#10;    print(f&quot;{row['name']:<8} | {row['hours']} hrs | {row['marks']} marks | {status}&quot;)&#10;&#10;passed = [r for r in dataset if r[&quot;passed&quot;] == 1]&#10;avg = sum(r[&quot;marks&quot;] for r in dataset) / len(dataset)&#10;print(f&quot;Passed: {len(passed)}/{len(dataset)} | Average marks: {avg:.1f}&quot;)"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="d1-out">Click ▶ Run...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkDataset()">✓ Check My Code</button></div>
+  <div id="d1-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 2 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 2</div>
+  <h2>AI Model Config + Class Label Mapper</h2>
+  <p>Build two common ML dictionary patterns: a model configuration dict, and a prediction label mapper. Both are used in every real AI project.</p>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Model Config + Label Mapper</span><div class="pgb"><button class="btn btn-g" onclick="runModelConfig()">▶ Run</button><button class="btn btn-o" onclick="clearPG('mc-code','mc-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="mc-code" spellcheck="false" placeholder="# 1. Model Configuration Dictionary&#10;model_config = {&#10;    &quot;learning_rate&quot;: 0.001,&#10;    &quot;epochs&quot;: 100,&#10;    &quot;batch_size&quot;: 32,&#10;    &quot;optimizer&quot;: &quot;adam&quot;,&#10;    &quot;dropout&quot;: 0.3&#10;}&#10;&#10;print(&quot;=== Model Config ===&quot;)&#10;for key, val in model_config.items():&#10;    print(f&quot;  {key}: {val}&quot;)&#10;&#10;# 2. Class Label Mapper&#10;label_map = {0:&quot;cat&quot;, 1:&quot;dog&quot;, 2:&quot;bird&quot;}&#10;predictions = [0, 2, 1, 0, 2]&#10;&#10;print(&quot;\n=== Predictions ===&quot;)&#10;for pred in predictions:&#10;    print(f&quot;  Class {pred} → {label_map.get(pred, 'unknown')}&quot;)"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="mc-out">Click ▶ Run...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkModelConfig()">✓ Check</button></div>
+  <div id="mc-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 3: BUG HUNT -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 3 — Bug Hunt</div>
+  <h2>Find and Fix the 4 Dictionary Bugs</h2>
+  <p>The code below has <strong>4 bugs</strong> — a KeyError, wrong method name, items() loop syntax error, and a set instead of dict. Find and fix them all.</p>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Buggy Dictionary Code — Fix All 4</div></div>
+    <div class="cbody">
+<span class="cm"># Bug 1: KeyError — unsafe access</span>
+<span class="vr">student</span> = {<span class="st">"name"</span>:<span class="st">"Ali"</span>, <span class="st">"marks"</span>:<span class="nm">88</span>}
+<span class="fn">print</span>(<span class="vr">student</span>[<span class="st">"email"</span>])  <span class="cm" style="color:#ef4444"># Bug 1: key doesn't exist → KeyError!</span>
+
+<span class="cm"># Bug 2: wrong method name</span>
+<span class="kw">for</span> <span class="vr">k</span>, <span class="vr">v</span> <span class="kw">in</span> <span class="vr">student</span>.<span class="fn" style="color:#ef4444">entries</span>():   <span class="cm" style="color:#ef4444"># Bug 2: .entries() doesn't exist!</span>
+    <span class="fn">print</span>(<span class="st">f"{k}: {v}"</span>)
+
+<span class="cm"># Bug 3: .items() loop — wrong unpacking</span>
+<span class="kw">for</span> <span class="vr">item</span> <span class="kw">in</span> <span class="vr">student</span>.<span class="fn">items</span>():
+    <span class="fn">print</span>(<span class="st" style="color:#ef4444">f"{item.key}: {item.value}"</span>)  <span class="cm" style="color:#ef4444"># Bug 3: wrong syntax!</span>
+
+<span class="cm"># Bug 4: using a set instead of a dict</span>
+<span class="vr">config</span> = {<span class="st" style="color:#ef4444">"lr", 0.001, "epochs", 100</span>}  <span class="cm" style="color:#ef4444"># Bug 4: this is a SET, not a dict!</span>
+    </div>
+  </div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Write the Fixed Version</span><div class="pgb"><button class="btn btn-g" onclick="runBugFix()">▶ Simulate</button><button class="btn btn-o" onclick="clearPG('bf-code','bf-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="bf-code" spellcheck="false" placeholder="# Fix Bug 1: use .get() with a default&#10;print(student.get('email', 'Not found'))&#10;&#10;# Fix Bug 2: use .items() not .entries()&#10;for k, v in student.items():&#10;    print(f'{k}: {v}')&#10;&#10;# Fix Bug 3: unpack tuple from .items()&#10;for k, v in student.items():&#10;    print(f'{k}: {v}')&#10;&#10;# Fix Bug 4: use colon : for key-value pairs&#10;config = {'lr': 0.001, 'epochs': 100}&#10;print(config)"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Validation</div><div class="pgo" id="bf-out">Click ▶ Simulate...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkBugFix()">✓ Check All 4 Fixes</button></div>
+  <div id="bf-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- ===== PART 6: SCENARIOS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">🌍</div>
+  <div><div class="sh-ttl">Part 6 — Real AI Scenarios</div><div class="sh-sub">Choose the correct dict approach for each ML situation</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div id="sc-wrap"></div>
+<div id="sc-score" style="display:none;margin-top:12px;font-size:.9rem;font-weight:600"></div>
+
+<!-- ===== PART 7: AI TUTOR ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">💬</div>
+  <div><div class="sh-ttl">Part 7 — AI Tutor Chat</div><div class="sh-sub">Ask anything about dictionaries, .get(), .items(), or datasets</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Chat With Your Dictionary Tutor</h2>
+  <p>Ask anything about <strong>dictionaries</strong>, <strong>.get()</strong>, <strong>.items()</strong>, <strong>list of dicts</strong>, or the <strong>Pandas connection</strong>. Try: <em>"When do I use .get() instead of dict[key]?"</em> or <em>"Show me how a list of dicts becomes a Pandas DataFrame"</em></p>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">Python AI Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">Day 06 Specialist · Dictionaries · .get() · .items() · Datasets · Pandas Foundation</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Hello! I am your Day 06 Dictionary tutor. Ask me anything about <strong>dicts</strong>, <strong>.get()</strong>, <strong>.items()</strong>, or how dictionaries connect to Pandas. What would you like to understand?</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Day 06 key insight:</strong> Always use <code>.get(key, default)</code> instead of <code>dict[key]</code> when you are not 100% sure the key exists. In ML, missing keys cause crashes in the middle of training — using .get() with a sensible default prevents this!</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask about dicts, .get(), .items(), datasets, Pandas..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PART 8: FILL IN BLANKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">✏️</div>
+  <div><div class="sh-ttl">Part 8 — Fill in the Blanks</div><div class="sh-sub">Complete each dictionary statement from memory</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Complete the Code</div>
+  <h2>Fill in the Missing Parts</h2>
+  <div id="fill-wrap"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-b" onclick="checkFill()">Check All Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- ===== PART 9: DEEP THINKING ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">🧠</div>
+  <div><div class="sh-ttl">Part 9 — Deep Thinking Questions</div><div class="sh-sub">Build your AI data engineering mindset</div></div>
+  <div class="sh-bdg">⏱ 30 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">🧠 Think Deeply</div>
+  <h2>5 Questions — Write Thorough Answers</h2>
+  <div class="sq"><label>Q1. Explain the difference between <code>d["key"]</code> and <code>d.get("key", default)</code>. Give a specific ML example where using <code>d["key"]</code> would crash a program and <code>.get()</code> would handle it gracefully.</label><textarea id="dq1" placeholder="Think about what happens when a key doesn't exist in each case..." oninput="cc(this,'dc1')"></textarea><div class="cc" id="dc1">0 chars</div></div>
+  <div class="sq"><label>Q2. Explain what <code>.keys()</code>, <code>.values()</code>, and <code>.items()</code> each return. For which specific task would you use each one? Give one real ML example for each.</label><textarea id="dq2" placeholder="When would you use each method? What does each return?" oninput="cc(this,'dc2')"></textarea><div class="cc" id="dc2">0 chars</div></div>
+  <div class="sq"><label>Q3. A list of dictionaries is the raw Python format for a dataset. Explain: (1) why each dict represents a row, (2) how you would compute the average of a "marks" column using only pure Python (no Pandas), (3) how this connects to what Pandas does internally.</label><textarea id="dq3" placeholder="Explain the dataset structure and write the average computation..." oninput="cc(this,'dc3')"></textarea><div class="cc" id="dc3">0 chars</div></div>
+  <div class="sq"><label>Q4. An ML model has class labels: {0:"cat", 1:"dog", 2:"bird"}. A prediction comes in as the number 3 (which is not in the dict). Explain TWO ways to handle this safely in Python — and which one is better for production AI systems.</label><textarea id="dq4" placeholder="Think about KeyError, .get(), try/except, and why graceful handling matters in production..." oninput="cc(this,'dc4')"></textarea><div class="cc" id="dc4">0 chars</div></div>
+  <div class="sq"><label>Q5. Design a complete Python dictionary-based student management system (using only Days 1–6 concepts). It should: store 5 students, allow lookup by name, calculate class statistics, and produce a formatted report. Describe or write the complete logic.</label><textarea id="dq5" placeholder="Design the full system — what dicts, what loops, what output..." oninput="cc(this,'dc5')"></textarea><div class="cc" id="dc5">0 chars</div></div>
+  <button class="btn btn-g" onclick="saveDQ()">✓ Save All Answers</button>
+  <div id="dq-msg" style="display:none;margin-top:10px;font-size:.84rem"></div>
+</div>
+
+<!-- ===== PART 10: MCQ ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-ttl">Part 10 — MCQ Quiz (20 Questions)</div><div class="sh-sub">Answer from memory — every answer shows a full explanation</div></div>
+  <div class="sh-bdg">📝 20 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 20</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 16/20 (80%). Read each explanation carefully!</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="fin-emoji" id="fin-emoji">🎉</div>
+  <div class="fin-title" id="fin-title">—</div>
+  <div class="fin-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">Day 07 tomorrow: <strong>Functions — def, Parameters & Return</strong> — build reusable blocks of code for your AI pipelines!</p>
+  <button class="fin-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+</div><!-- end .page -->
+<footer>Day 06 of 300+ · AI/ML 15-Month Curriculum · Month 1, Week 2<br>Dictionaries · key-value · .get() · .items() · List of Dicts · Dataset Format · Pandas Foundation</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let tasksDone=0,mcqScore=0,fillScore=0,mcqDoneSet=new Set();
+function updateProgress(){const t=Math.min(Math.round((tasksDone/8)*30+(mcqScore/20)*50+(fillScore/10)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function tick(el){const done=el.classList.toggle('done');el.querySelector('.tcb').textContent=done?'✓':'';tasksDone=document.querySelectorAll('.ti.done').length;updateProgress();}
+
+// ── KV VISUALISER ──
+let kvData={name:'Ali',marks:88.5,passed:true,city:'Karachi',grade:'B'};
+function renderKV(){
+  const grid=document.getElementById('kv-grid');
+  grid.innerHTML=Object.entries(kvData).map(([k,v])=>`
+    <div class="kv-pair" id="kvp-${k}">
+      <span class="kv-key">"${k}"</span>
+      <span class="kv-arrow">→</span>
+      <span class="kv-val">${typeof v==='string'?'"'+v+'"':String(v)}</span>
+    </div>`).join('');
+  document.getElementById('kv-len').textContent=Object.keys(kvData).length;
+}
+function kvSet(){
+  const k=document.getElementById('kv-key').value.trim();
+  const v=document.getElementById('kv-val').value.trim();
+  if(!k){setKVStatus('Enter a key name first!','err');return;}
+  const isNew=!(k in kvData);
+  let parsed=v;
+  if(v==='true')parsed=true;else if(v==='false')parsed=false;else if(!isNaN(v)&&v!=='')parsed=parseFloat(v);
+  kvData[k]=parsed;
+  renderKV();
+  setTimeout(()=>{const el=document.getElementById('kvp-'+k);if(el)el.classList.add('updated');setTimeout(()=>{if(el)el.classList.remove('updated');},800);},50);
+  setKVStatus(`student["${k}"] = ${JSON.stringify(parsed)} ✅ ${isNew?'— new key added':'— value updated'}`,'ok');
+  document.getElementById('kv-key').value='';document.getElementById('kv-val').value='';
+}
+function kvDelete(){
+  const k=document.getElementById('kv-key').value.trim();
+  if(!k){setKVStatus('Enter a key name to delete!','err');return;}
+  if(!(k in kvData)){setKVStatus(`KeyError: "${k}" not in dictionary!`,'err');return;}
+  delete kvData[k];renderKV();
+  setKVStatus(`del student["${k}"] ✅ — key deleted`,'ok');
+  document.getElementById('kv-key').value='';
+}
+function kvGet(){
+  const k=document.getElementById('kv-key').value.trim();
+  if(!k){setKVStatus('Enter a key name to .get()!','err');return;}
+  const val=kvData[k];
+  if(val!==undefined)setKVStatus(`student.get("${k}") → ${JSON.stringify(val)} ✅`,'ok');
+  else setKVStatus(`student.get("${k}", "Not found") → "Not found" ✅ (key missing — no KeyError!)`,'ok');
+}
+function kvReset(){kvData={name:'Ali',marks:88.5,passed:true,city:'Karachi',grade:'B'};renderKV();setKVStatus('Dictionary reset to original values','');}
+function setKVStatus(msg,cls){const s=document.getElementById('kv-status');s.textContent=msg;s.className='kv-status'+(cls?' '+cls:'');}
+function showMethod(method){
+  const keys=Object.keys(kvData);const vals=Object.values(kvData);const items=Object.entries(kvData);
+  const out=document.getElementById('dict-output');
+  let text='';
+  if(method==='keys'){text=`d.keys() → dict_keys([${keys.map(k=>'"'+k+'"').join(', ')}])\n\nUsage:\nfor key in d.keys():\n    print(key)\n\nOutputs:\n${keys.map(k=>'  '+k).join('\n')}`;}
+  else if(method==='values'){text=`d.values() → dict_values([${vals.map(v=>JSON.stringify(v)).join(', ')}])\n\nUsage:\nfor val in d.values():\n    print(val)\n\nOutputs:\n${vals.map(v=>'  '+JSON.stringify(v)).join('\n')}`;}
+  else if(method==='items'){text=`d.items() → dict_items([(key, value), ...])\n\nUsage (most common):\nfor key, val in d.items():\n    print(f"{key}: {val}")\n\nOutputs:\n${items.map(([k,v])=>`  ${k}: ${JSON.stringify(v)}`).join('\n')}`;}
+  else if(method==='in'){text=`"key" in d → True/False\n\nExamples with your dict:\n${keys.slice(0,3).map(k=>`"${k}" in student → True`).join('\n')}\n"email" in student → False\n\nUse before accessing:\nif "email" in student:\n    print(student["email"])\nelse:\n    print("No email found")`;}
+  else if(method==='len'){text=`len(d) → number of key-value pairs\n\nlen(student) = ${keys.length}\n\nYour current keys: ${keys.join(', ')}\n\nUseful for: checking if dict is empty\nif len(student) == 0:\n    print("Empty dictionary")`;}
+  out.textContent=text;
+}
+renderKV();
+
+// ── DATASET VISUALISER ──
+const DATASET=[
+  {name:'Ali',hours:5,marks:88,passed:1},
+  {name:'Sara',hours:2,marks:45,passed:0},
+  {name:'Usman',hours:8,marks:91,passed:1},
+  {name:'Zara',hours:1,marks:32,passed:0},
+  {name:'Ahmed',hours:6,marks:74,passed:1},
+  {name:'Nadia',hours:3,marks:58,passed:1},
+];
+function renderDataset(rows){
+  const t=document.getElementById('ds-table');
+  if(!rows.length){t.innerHTML='<tr><td style="padding:14px;color:var(--red);font-family:\'DM Mono\',monospace">No rows match the filter.</td></tr>';return;}
+  const keys=['name','hours','marks','passed'];
+  let html='<thead><tr>'+keys.map(k=>`<th>${k}</th>`).join('')+'<th>status</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const cls=r.passed?'pass':'fail';
+    html+=`<tr><td>${r.name}</td><td>${r.hours}</td><td>${r.marks}</td><td class="${cls}">${r.passed?'1 ✅':'0 ❌'}</td><td class="${cls}">${r.passed?'✅ Pass':'❌ Fail'}</td></tr>`;
+  });
+  html+='</tbody>';t.innerHTML=html;
+  const avg=(rows.reduce((a,r)=>a+r.marks,0)/rows.length).toFixed(1);
+  const passed=rows.filter(r=>r.passed).length;
+  document.getElementById('ds-stats').textContent=`Showing ${rows.length} row(s). Average marks: ${avg}. Passed: ${passed}/${rows.length}.`;
+}
+function dsFilter(f){
+  document.querySelectorAll('[id^="ds-btn-"]').forEach(b=>b.className='btn btn-o');
+  let rows=DATASET;
+  if(f==='pass'){rows=DATASET.filter(r=>r.passed);document.getElementById('ds-btn-pass').className='btn btn-g';}
+  else if(f==='fail'){rows=DATASET.filter(r=>!r.passed);document.getElementById('ds-btn-fail').className='btn btn-g';}
+  else if(f==='hours'){rows=[...DATASET].sort((a,b)=>b.hours-a.hours);document.getElementById('ds-btn-hours').className='btn btn-g';}
+  else{document.getElementById('ds-btn-all').className='btn btn-g';}
+  renderDataset(rows);
+}
+dsFilter('all');
+
+// ── PHONEBOOK ──
+const PHONEBOOK={'Ali':'0300-1234567','Sara':'0301-9876543','Ahmed':'0333-4567890','Nadia':'0321-7654321','Usman':'0312-3456789'};
+function renderPB(){
+  document.getElementById('pb-entries').innerHTML=Object.entries(PHONEBOOK).map(([n,num])=>`<div class="pb-entry"><span class="pb-name">${n}</span><span class="pb-num">${num}</span></div>`).join('');
+}
+function pbSearch(){
+  const q=document.getElementById('pb-search').value.trim();
+  const r=document.getElementById('pb-result');
+  if(!q){r.textContent='';r.className='pb-result';return;}
+  const result=PHONEBOOK[q];
+  if(result){r.textContent=`✅ ${q}: ${result}`;r.className='pb-result ok';}
+  else{r.textContent=`❌ "${q}" — Not found`;r.className='pb-result no';}
+}
+renderPB();
+
+// ── PLAYGROUND 1 ──
+function runDataset(){
+  const code=document.getElementById('d1-code').value;
+  const out=document.getElementById('d1-out');
+  if(!code.trim()){out.textContent='Write some code!';out.className='pgo';return;}
+  const hasFor=code.includes('for row in dataset')||code.includes('for r in dataset');
+  const hasItems=code.includes('items()')||code.includes("row['marks']")||code.includes('row["marks"]');
+  const hasComp=code.includes('for r in dataset if')||code.includes('for row in dataset if');
+  if(hasFor&&hasItems){
+    out.textContent='Ali      | 5 hrs | 88 marks | ✅ Pass\nSara     | 2 hrs | 45 marks | ❌ Fail\nUsman    | 8 hrs | 91 marks | ✅ Pass\nZara     | 1 hrs | 32 marks | ❌ Fail\nPassed: 2/4 | Average marks: 64.0';
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasFor)h.push('Need: for row in dataset:');
+    if(!hasItems)h.push('Need to access row["marks"] etc.');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkDataset(){
+  const code=document.getElementById('d1-code').value;
+  const fb=document.getElementById('d1-fb');fb.style.display='block';
+  const msgs=[
+    code.includes('dataset')&&code.includes('[{')&&code.includes('}]')?'✅ List of dicts dataset defined':'❌ Define dataset as list of dicts',
+    code.includes('for row in dataset')||code.includes('for r in dataset')?'✅ Loop through dataset with for':'❌ Use: for row in dataset:',
+    code.includes("row['passed']")||code.includes('row["passed"]')?'✅ Accesses row["passed"] for status':'⚠️ Use row["passed"] to check pass/fail',
+    code.includes('for r in dataset if')||code.includes('[r for')||code.includes('[row for')?'✅ List comprehension to filter passed rows':'⚠️ Filter: passed=[r for r in dataset if r["passed"]==1]',
+    code.includes('sum(')&&code.includes('marks')?'✅ Average marks calculated':'❌ avg = sum(r["marks"] for r in dataset)/len(dataset)',
+  ];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===5?'var(--green)':sc>=3?'var(--amber)':'var(--red)'}">${sc===5?'🎉 Perfect dataset pipeline! This is real ML data engineering!':sc>=3?`${sc}/5 — fix remaining issues`:'Review the dataset structure above'}</div></div>`;
+}
+
+// ── PLAYGROUND 2 ──
+function runModelConfig(){
+  const code=document.getElementById('mc-code').value;
+  const out=document.getElementById('mc-out');
+  if(!code.trim()){out.textContent='Write some code!';out.className='pgo';return;}
+  const hasConfig=code.includes('model_config')||code.includes('config');
+  const hasItems=code.includes('.items()');
+  const hasLabel=code.includes('label_map')||code.includes('label');
+  const hasGet=code.includes('.get(');
+  if(hasConfig&&hasItems&&hasLabel&&hasGet){
+    out.textContent='=== Model Config ===\n  learning_rate: 0.001\n  epochs: 100\n  batch_size: 32\n  optimizer: adam\n  dropout: 0.3\n\n=== Predictions ===\n  Class 0 → cat\n  Class 2 → bird\n  Class 1 → dog\n  Class 0 → cat\n  Class 2 → bird';
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasConfig)h.push('Need a model_config dictionary');
+    if(!hasItems)h.push('Need .items() to loop through config');
+    if(!hasLabel)h.push('Need label_map = {0:"cat", 1:"dog", 2:"bird"}');
+    if(!hasGet)h.push('Need .get(pred, "unknown") for safe lookup');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkModelConfig(){
+  const code=document.getElementById('mc-code').value;
+  const fb=document.getElementById('mc-fb');fb.style.display='block';
+  const b1=(code.includes('model_config')||code.includes('config ='))&&code.includes(':');
+  const b2=code.includes('.items()');
+  const b3=code.includes('label_map')||code.includes('label =');
+  const b4=code.includes('.get(');
+  const msgs=[b1?'✅ Config dict defined with key:value pairs':'❌ Define: model_config = {"learning_rate":0.001,...}',b2?'✅ .items() used to loop through config':'❌ Use: for key, val in model_config.items():',b3?'✅ Label mapper dict defined':'❌ Define: label_map = {0:"cat", 1:"dog", 2:"bird"}',b4?'✅ .get() used for safe label lookup':'❌ Use: label_map.get(pred, "unknown")'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 Perfect! Both ML dict patterns correct!':sc>=2?`${sc}/4 — fix remaining`:'Review dict and .get() syntax'}</div></div>`;
+}
+
+// ── BUG FIX ──
+function runBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const out=document.getElementById('bf-out');
+  if(!code.trim()){out.textContent='Write the fixed code!';out.className='pgo';return;}
+  const b1=code.includes('.get(');
+  const b2=code.includes('.items()')&&!code.includes('.entries()');
+  const b3=code.includes('for k, v in')&&!code.includes('item.key');
+  const b4=code.includes(':')||code.match(/config\s*=\s*\{.*:.*\}/s);
+  if(b1&&b2&&b3&&(b4||code.includes("'lr'")||code.includes('"lr"'))){
+    out.textContent="Not found\nname: Ali\nmarks: 88\nname: Ali\nmarks: 88\n{'lr': 0.001, 'epochs': 100}";
+    out.className='pgo ok';
+  } else {
+    let e=[];
+    if(!b1)e.push('Bug 1: use student.get("email","Not found")');
+    if(!b2)e.push('Bug 2: use .items() not .entries()');
+    if(!b3)e.push('Bug 3: for k, v in student.items(): print(f"{k}: {v}")');
+    if(!b4)e.push('Bug 4: use colon : for key-value → {"lr":0.001,"epochs":100}');
+    out.textContent=e.join('\n');out.className='pgo err';
+  }
+}
+function clearPG(c,o){document.getElementById(c).value='';document.getElementById(o).textContent='Click ▶ to see output...';document.getElementById(o).className='pgo';}
+function checkBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const fb=document.getElementById('bf-fb');fb.style.display='block';
+  const b1=code.includes('.get(')&&(code.includes('"Not found"')||code.includes("'Not found'"));
+  const b2=code.includes('.items()')&&!code.includes('.entries()');
+  const b3=code.includes('for k, v in')&&!code.includes('item.key')&&!code.includes('item.value');
+  const b4=(code.includes("'lr'")||code.includes('"lr"'))&&code.includes(':')&&!code.match(/\{["']lr["'],/);
+  const msgs=[b1?'✅ Bug 1: .get("email","Not found") — safe access':'❌ Bug 1: replace student["email"] with student.get("email","Not found")',b2?'✅ Bug 2: .items() used — correct!':'❌ Bug 2: change .entries() to .items()',b3?'✅ Bug 3: for k, v in .items() — correct unpacking':'❌ Bug 3: use for k, v in d.items(): then f"{k}: {v}" — not item.key',b4?'✅ Bug 4: dict uses colon : for key:value pairs':'❌ Bug 4: use colons: {"lr": 0.001, "epochs": 100} — commas between items, colons for key:value'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 All 4 bugs fixed!':sc>=2?`${sc}/4 fixed`:'Review each bug type above'}</div></div>`;
+}
+
+// ── SCENARIOS ──
+const scData=[
+  {q:'1. An ML model receives predictions as numbers: [0,2,1,0,2]. You need to convert each to a class name ("cat","dog","bird"). Which is the cleanest Python code?',opts:['if pred==0: name="cat"\nelif pred==1: name="dog"\nelif pred==2: name="bird"','labels = {0:"cat",1:"dog",2:"bird"}\n[labels.get(p,"unknown") for p in preds]','labels = ["cat","dog","bird"]\n[labels[p] for p in preds]','for pred in preds:\n    print(pred)'],ans:1,exp:'A dict + list comprehension is the cleanest ML pattern. The if/elif chain would need to be repeated every time and cannot handle new classes. The list approach (option C) works but crashes with an IndexError if a prediction number is out of range. The dict .get() approach handles unknown predictions gracefully.'},
+  {q:"2. Your code runs: student = {'name':'Ali', 'marks':88} — then print(student['email']). What happens?",opts:['Prints None','Prints an empty string','Raises KeyError: email','Prints "email"'],ans:2,exp:'dict[key] raises KeyError when the key does not exist. This crashes your program. The safe alternative: student.get("email", "N/A") returns "N/A" instead of crashing. In production ML pipelines, missing keys are common — always use .get() when unsure.'},
+  {q:'3. What does dict.items() return and how is it used?',opts:['Returns only the keys as a list','Returns only the values as a list','Returns (key, value) pairs — used as: for k, v in d.items()','Returns the number of key-value pairs'],ans:2,exp:'.items() returns all (key, value) pairs as tuples. The standard usage: for k, v in d.items(): — Python automatically unpacks each tuple into k and v. This is the most used dict method in ML — printing model configs, iterating label maps, processing dataset rows.'},
+  {q:'4. A list of dicts like [{"x":1,"y":0},{"x":5,"y":1}] represents what in ML?',opts:['A Python syntax error','A set of unique values','A dataset — each dict is one sample/row with named features','A nested loop structure'],ans:2,exp:'A list of dicts IS a dataset. Each dictionary = one data sample (one row). The keys = feature names ("x", "y"). The values = feature values. This is exactly how Pandas DataFrames work internally — each row is a dict-like object. You will pass this exact format to pd.DataFrame() in Month 2.'},
+  {q:'5. How do you add a NEW key "grade" with value "A" to an existing dict called student?',opts:['student.add("grade", "A")','student.append({"grade":"A"})','student["grade"] = "A"','student.insert("grade", "A")'],ans:2,exp:'student["grade"] = "A" — this is both the syntax to ADD a new key AND to UPDATE an existing one. If "grade" does not exist, it is created. If it exists, its value is updated. .add() is a set method. .append() is a list method. .insert() does not exist for dicts.'},
+];
+let scDone=new Set(),scScore=0;
+function buildScenarios(){
+  document.getElementById('sc-wrap').innerHTML=scData.map((s,i)=>`
+    <div class="scenario"><div class="sc-q">${s.q}</div><div class="sc-opts">${s.opts.map((o,j)=>`<div class="sc-opt" id="ss${i}_${j}" onclick="pickSc(${i},${j})"><div class="sc-l">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="sc-exp" id="sexp${i}"></div></div>`).join('');
+}
+function pickSc(qi,oi){
+  if(scDone.has(qi))return;scDone.add(qi);
+  const s=scData[qi];
+  for(let j=0;j<s.opts.length;j++){const el=document.getElementById('ss'+qi+'_'+j);el.classList.add('done');if(j===s.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('sexp'+qi);exp.textContent=s.exp;exp.classList.add('show',oi===s.ans?'ok':'no');
+  if(oi===s.ans)scScore++;
+  if(scDone.size===scData.length){const sc=document.getElementById('sc-score');sc.style.display='block';sc.innerHTML=scScore===5?'<span style="color:var(--green)">🎉 Perfect — 5/5!</span>':`<span style="color:var(--amber)">${scScore}/5 — review explanations above.</span>`;}
+}
+buildScenarios();
+
+// ── AI TUTOR ──
+const replies={
+  get:`d.get(key, default) is the SAFE way to access a dictionary.\n\nd["key"]       → raises KeyError if key missing (CRASHES!)\nd.get("key")   → returns None if key missing (safe)\nd.get("key", "N/A") → returns "N/A" if missing (safe + meaningful)\n\nExamples:\nstudent = {"name": "Ali", "marks": 88}\n\n# Unsafe:\nprint(student["email"])  → KeyError: 'email' CRASH!\n\n# Safe:\nprint(student.get("email"))          → None\nprint(student.get("email", "N/A"))   → N/A\nprint(student.get("marks", 0))       → 88\n\nML rule: ALWAYS use .get() when processing data that might have missing fields. Real-world datasets almost always have missing values!`,
+  items:`d.items() returns ALL key-value pairs as (key, value) tuples.\n\nIt is used in the standard "iterate a dict" pattern:\nfor key, val in d.items():\n    print(f"{key}: {val}")\n\nCompare the three iteration methods:\n\nd.keys()   → only the keys\nfor k in d.keys(): print(k)\n→ name, marks, grade...\n\nd.values() → only the values\nfor v in d.values(): print(v)\n→ Ali, 88, A...\n\nd.items()  → (key, value) pairs — most useful!\nfor k, v in d.items():\n    print(f"{k} = {v}")\n→ name = Ali\n→ marks = 88\n→ grade = A\n\nML use: print model configs, iterate label maps, process dataset features.`,
+  create:`Creating a dictionary:\n\n# Basic\nstudent = {"name": "Ali", "marks": 88, "passed": True}\n\n# Empty dict then add\nconfig = {}\nconfig["lr"] = 0.001\nconfig["epochs"] = 100\n\n# From keys and values\nkeys = ["name", "marks"]\nvals = ["Sara", 75]\nstudent = dict(zip(keys, vals))\n\nAccess:\nstudent["name"]           → "Ali" (or KeyError)\nstudent.get("email","N/A") → "N/A" (safe)\n\nModify:\nstudent["marks"] = 90     → update existing\nstudent["grade"] = "A"    → add new key\n\nDelete:\ndel student["city"]        → remove key\nstudent.pop("city","N/A") → remove and return value`,
+  dataset:`A list of dicts IS a Python dataset:\n\ndataset = [\n    {"name":"Ali",  "marks":88, "passed":1},\n    {"name":"Sara", "marks":45, "passed":0},\n]\n\nEach dict = one row of data.\nEach key = one column/feature name.\nEach value = one feature value.\n\nCommon operations:\n# Loop all rows\nfor row in dataset:\n    print(row["name"], row["marks"])\n\n# Filter passing students\npassed = [r for r in dataset if r["passed"]==1]\n\n# Average marks\navg = sum(r["marks"] for r in dataset) / len(dataset)\n\n# Find highest marks\nbest = max(dataset, key=lambda r: r["marks"])\n\nNext month: pd.DataFrame(dataset) — converts this directly to a Pandas table!`,
+  pandas:`The connection between Python dicts and Pandas:\n\n# Dict of lists (column-oriented) — Pandas native format:\ndata = {\n    "name":   ["Ali", "Sara", "Usman"],\n    "marks":  [88, 45, 91],\n    "passed": [True, False, True]\n}\n\n# RIGHT NOW (pure Python):\nfor i in range(len(data["name"])):\n    print(data["name"][i], "→", data["marks"][i])\n\n# MONTH 2 (Pandas):\nimport pandas as pd\ndf = pd.DataFrame(data)\nprint(df)  # Beautiful formatted table!\n\nPandas df["marks"] = data["marks"] underneath.\ndf.loc[0] = {"name":"Ali","marks":88,...}\n\nMastering dicts NOW means Month 2 Pandas feels natural — you already know the data structure!`,
+  default:`Great question about Day 06 Dictionaries! Key concepts:\n\n📦 dict {}: key:value pairs — access by name not index\n\n🔑 Access:\n  d["key"]        → crashes if missing (KeyError)\n  d.get("key")    → returns None if missing (safe!)\n  d.get("k","NA") → returns "NA" if missing (safest!)\n\n🔄 Iteration:\n  d.keys()   → only keys\n  d.values() → only values\n  d.items()  → (key, value) pairs — most useful!\n\n➕ Modify:\n  d["key"] = val  → add OR update\n  del d["key"]    → delete\n  "k" in d        → check if key exists\n\n📊 List of dicts = dataset! Each dict = one row.\n\n🐼 Pandas connection: pd.DataFrame(list_of_dicts) converts directly!\n\nWhat specific part would you like explained?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('.get')||lm.includes('keyerror')||lm.includes('safe'))r=replies.get;
+    else if(lm.includes('.items')||lm.includes('keys')||lm.includes('values')||lm.includes('iterate')||lm.includes('loop'))r=replies.items;
+    else if(lm.includes('creat')||lm.includes('syntax')||lm.includes('how to make'))r=replies.create;
+    else if(lm.includes('dataset')||lm.includes('list of dict')||lm.includes('row'))r=replies.dataset;
+    else if(lm.includes('pandas')||lm.includes('dataframe')||lm.includes('month 2'))r=replies.pandas;
+    addMsg(r,'ai');},700+Math.random()*500);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ── FILL BLANKS ──
+const fillData=[
+  {q:'1. Dictionaries use ___ brackets: d = ___ "key": "value" ___',ans:['curly','{}','{'],hint:'{ }'},
+  {q:'2. To safely get a value without a KeyError: d.___(key, default)',ans:['get'],hint:'get'},
+  {q:'3. d.items() returns (key, ___) pairs used in: for k, v in d.items()',ans:['value','val'],hint:'value'},
+  {q:'4. To add a new key "grade" with value "A": d___ = "A"',ans:['["grade"]',"['grade']"],hint:'["grade"]'},
+  {q:'5. To delete a key from a dict: ___ d["key"]',ans:['del'],hint:'del'},
+  {q:'6. To check if "name" is in d: ___ "name" ___ d',ans:['if in','in'],hint:'"name" in d'},
+  {q:'7. len({"a":1,"b":2,"c":3}) returns ___',ans:['3'],hint:'3'},
+  {q:'8. A list of dicts like [{...},{...}] represents a ___ in ML.',ans:['dataset','data'],hint:'dataset'},
+  {q:'9. d.keys() returns only the ___ of the dictionary.',ans:['keys','key'],hint:'keys'},
+  {q:'10. The method that does NOT exist on a dict: d.___() — used incorrectly instead of .items()',ans:['entries','entry'],hint:'entries'},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Your answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+}
+function checkFill(){
+  fillScore=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase();
+    const ok=q.ans.some(a=>v.includes(a.toLowerCase())||v===a.toLowerCase());
+    if(ok){fillScore++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.hint;}
+  });
+  updateProgress();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillScore===10?'<span style="color:var(--green)">🎉 Perfect — 10/10!</span>':fillScore>=7?`<span style="color:var(--amber)">${fillScore}/10 — good! Check the ones above.</span>`:`<span style="color:var(--red)">${fillScore}/10 — re-read the Day 06 lesson.</span>`;
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ── DEEP Q ──
+function cc(el,id){document.getElementById(id).textContent=(el.value||'').length+' chars';}
+function saveDQ(){
+  const empty=['dq1','dq2','dq3','dq4','dq5'].some(id=>!(document.getElementById(id).value||'').trim());
+  const m=document.getElementById('dq-msg');m.style.display='block';
+  if(empty){m.style.color='var(--red)';m.textContent='⚠️ Please answer all 5 questions.';}
+  else{m.style.color='var(--green)';m.textContent='✅ All 5 answers saved! Now tackle the MCQ Quiz!';}
+}
+
+// ── MCQ ──
+const mcqs=[
+  {q:'What is the correct way to access value "Ali" from: student = {"name":"Ali","marks":88}?',opts:['student[0]','student("name")','student["name"]','student.name'],ans:2,exp:'Dictionaries use keys, not indices. student["name"] → "Ali". You cannot use student[0] (that is list syntax). student("name") is a function call. student.name is attribute syntax. Keys must be in square brackets with quotes for string keys.'},
+  {q:'What happens when you run: d = {"a":1} — print(d["b"])?',opts:['Prints None','Prints 0','Prints False','KeyError: b — program crashes'],ans:3,exp:'Accessing a key that does not exist with d["key"] raises KeyError and crashes the program immediately. The safe alternative: d.get("b") returns None, or d.get("b", 0) returns 0. Always use .get() when a key might be missing!'},
+  {q:'What does d.get("email", "N/A") return if "email" is not in d?',opts:['KeyError','None','""','N/A'],ans:3,exp:'.get(key, default) returns the default value when the key does not exist. So d.get("email","N/A") → "N/A". If "email" DID exist, it would return its actual value. Without a default: d.get("email") → None (no crash).'},
+  {q:'What does d.items() return in a for loop?',opts:['Only the keys','Only the values','(key, value) pairs — for k, v in d.items()','The length of the dict'],ans:2,exp:'.items() returns all (key, value) pairs as tuples. Standard usage: for k, v in d.items(): print(f"{k}: {v}"). .keys() returns only keys, .values() returns only values. .items() is the most useful for printing or processing all data.'},
+  {q:'Which code CORRECTLY adds a new key "grade" with value "A" to an existing dict called student?',opts:['student.add("grade", "A")','student.append({"grade":"A"})','student["grade"] = "A"','student.update.grade = "A"'],ans:2,exp:'student["grade"] = "A" both adds new keys and updates existing ones. .add() is a set method. .append() is a list method. There is no .update.grade syntax. Note: student.update({"grade":"A"}) also works but is less common for single keys.'},
+  {q:'What does len({"a":1, "b":2, "c":3}) return?',opts:['1','6','3','Error'],ans:2,exp:'len() on a dict returns the number of KEY-VALUE PAIRS — not the number of keys or values separately. This dict has 3 pairs: a:1, b:2, c:3 → len = 3. Useful for: if len(d)==0: print("Empty dict")'},
+  {q:'How do you check if the key "name" exists in a dict d?',opts:['"name" in d.keys()','d.contains("name")','d.has_key("name")','All of these work'],ans:0,exp:'"name" in d (or "name" in d.keys()) is the correct way. .contains() does not exist. .has_key() was removed in Python 3. Simply: if "name" in d: is the clean, Pythonic way to check key existence before accessing it.'},
+  {q:'A list of dicts [{"x":1,"y":0},{"x":5,"y":1}] represents what in ML?',opts:['A syntax error','A set of unique values','A dataset — each dict is one row/sample','A nested function call'],ans:2,exp:'A list of dicts IS a dataset. Each dict = one row of data. Keys = feature names. Values = feature values. You will pass this exact format to pd.DataFrame() in Month 2. Understanding this structure NOW makes Pandas immediately familiar.'},
+  {q:'How do you delete the key "city" from a dict called student?',opts:['student.delete("city")','student.remove("city")','del student["city"]','student["city"] = None'],ans:2,exp:'del student["city"] permanently removes the key-value pair. .delete() and .remove() do not exist for dicts. Setting to None keeps the key (with value None) — it does not remove it. After del, "city" in student → False.'},
+  {q:'What is the difference between a dict of lists and a list of dicts?',opts:['They are identical','Dict of lists: column-oriented ({"col":[v1,v2]}). List of dicts: row-oriented ([{"col":v1},{"col":v2}])','List of dicts is faster than dict of lists','Dicts of lists cannot be converted to Pandas'],ans:1,exp:'Dict of lists: {"name":["Ali","Sara"],"marks":[88,45]} — columns as keys. Used to create Pandas DataFrames. List of dicts: [{"name":"Ali","marks":88},{"name":"Sara","marks":45}] — rows as dicts. Both are valid dataset formats. pd.DataFrame() accepts both.'},
+  {q:"What does d.get('marks', 0) return if d = {'name':'Ali', 'marks':88}?",opts:['0 — get always returns the default','88 — the key exists so returns its value','None','Error'],ans:1,exp:'"marks" IS in the dict, so .get() returns its actual value: 88. The default (0) is only used when the key is MISSING. This is why .get(key, default) is so powerful — it handles both cases cleanly.'},
+  {q:'Which method is used to loop through ALL key-value pairs of a dict?',opts:['d.pairs()','d.entries()','d.items()','d.all()'],ans:2,exp:'.items() is the correct method — returns (key,value) pairs for use in for k, v in d.items(). .pairs() and .entries() do not exist in Python (entries() is a JavaScript method — a very common confusion!). .all() does not exist either.'},
+  {q:'An AI model config has: config = {"lr":0.001,"epochs":100}. How do you print all settings?',opts:['print(config)','for k in config: print(config[k])','for k, v in config.items(): print(f"{k}: {v}")','config.print()'],ans:2,exp:'for k, v in config.items(): print(f"{k}: {v}") is the cleanest approach. print(config) shows the raw dict format. The second option works but is less clean. config.print() does not exist. .items() is the standard pattern for printing all dict contents.'},
+  {q:"d = {'a':1, 'b':2} — what does d.keys() return?",opts:["['a', 'b']","dict_keys(['a', 'b'])","('a', 'b')","{'a', 'b'}"],ans:1,exp:"d.keys() returns a dict_keys view object: dict_keys(['a','b']). It is NOT a list but behaves like one in for loops. To get a real list: list(d.keys()). You can also iterate directly: for k in d.keys(): or simply for k in d: (which also iterates keys)."},
+  {q:'You have dataset = [{"marks":88},{"marks":45},{"marks":91}]. How do you compute the average marks?',opts:['dataset.average("marks")','sum(dataset["marks"])/3','sum(r["marks"] for r in dataset)/len(dataset)','dataset["marks"].mean()'],ans:2,exp:'sum(r["marks"] for r in dataset)/len(dataset) uses a generator expression to sum all marks values. This is the pure Python approach. dataset["marks"] would fail (dataset is a list, not a dict). .average() and .mean() do not exist in pure Python (they are Pandas methods).'},
+  {q:'What is the correct syntax to create an empty dictionary?',opts:["d = []","d = ()",'d = {}','d = set()'],ans:2,exp:'d = {} creates an empty dictionary. [] is an empty list. () is an empty tuple. set() creates an empty set (you CANNOT use {} for an empty set — that creates an empty dict!). Then add keys: d["name"] = "Ali".'},
+  {q:'Which code SAFELY looks up a prediction class name, returning "unknown" if not found?',opts:['labels[pred]','labels.find(pred)','labels.get(pred, "unknown")','labels[pred] or "unknown"'],ans:2,exp:'labels.get(pred, "unknown") — if pred is in labels, returns its value; otherwise returns "unknown" without crashing. labels[pred] raises KeyError for unknown predictions. .find() does not exist for dicts. labels[pred] or "unknown" would only work if labels[pred] returns a falsy value, and would still crash with KeyError first.'},
+  {q:'Which Python data structure would you use to store: {"learning_rate":0.001,"epochs":100,"batch_size":32}?',opts:['List — [0.001, 100, 32]','Tuple — (0.001, 100, 32)','Dictionary — {"lr":0.001,"epochs":100}','Set — {0.001, 100, 32}'],ans:2,exp:'A dictionary is correct because: (1) the settings have meaningful NAMES not just positions, (2) you access by name: config["learning_rate"] not config[0], (3) easy to update individual settings, (4) easy to add new settings later. Lists/tuples lose the meaning of each value. Sets cannot have named access.'},
+  {q:'What is the output of: for k, v in {"x":10,"y":20}.items(): print(k, v)?',opts:['x\ny','10\n20','x 10\ny 20','{"x":10,"y":20}'],ans:2,exp:'.items() yields (key, value) tuples. The loop unpacks each into k and v. print(k, v) prints both separated by a space. Output: "x 10" on first iteration, "y 20" on second. This is the fundamental dictionary iteration pattern.'},
+  {q:'A Pandas DataFrame is built from which Python structure?',opts:['A list of lists','A tuple of tuples','A dictionary of lists {"col":[values]} or list of dicts','A set of tuples'],ans:2,exp:'pd.DataFrame() accepts: (1) dict of lists: {"col1":[v1,v2],"col2":[v3,v4]} — column oriented, or (2) list of dicts: [{"col1":v1,"col2":v3},...] — row oriented. Understanding Python dicts NOW means pd.DataFrame() in Month 2 makes instant sense — you already know the underlying data structure!'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 20</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.83rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqDoneSet.has(qi))return;mcqDoneSet.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqScore++;document.getElementById('live-sc').textContent=mcqScore;}
+  if(mcqDoneSet.size===20){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProgress();
+}
+function showFinal(){
+  const pct=Math.round(mcqScore/20*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--green) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent Work!':pct>=60?'Good Effort!':'Keep Practising!';
+  document.getElementById('fin-msg').textContent=`Score: ${mcqScore}/20 (${pct}%) — ${pct>=80?'Dictionaries mastered! You are ready for Day 07: Functions!':pct>=60?'Good foundation. Review incorrect answers before Day 07.':'Re-read Day 06 carefully and retry.'}`;
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

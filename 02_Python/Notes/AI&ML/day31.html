@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 31 — While Loops</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.warn-box{background:#fbe7e1; border:1px solid #e0a898; border-radius:6px; padding:14px 18px; margin:14px 0; font-size:14px; color:#8a3a2a;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:180px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.note-box{background:#fdf6ea; border:1px solid var(--accent-soft); border-radius:6px; padding:14px 18px; margin:14px 0; font-size:14px;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 31 of 210 · Phase 2: Python & Core AI Foundation</span>
+    <h1>While Loops</h1>
+    <div class="subtitle">~2 hours · Repeating until a condition changes, not a fixed count</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Yesterday's for loop is perfect when you know exactly how many times to repeat something (10 epochs, 7 days of sales). But often in ML you don't know the count in advance — you want to keep training "until the error is small enough" or keep retrying "until an API call succeeds." That's precisely what a <code>while</code> loop is for: repeating based on a <strong>condition</strong>, not a fixed number.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> The while loop</h2>
+  <p>A while loop keeps running its block as long as a condition stays True:</p>
+  <div class="code">count = 0
+while count < 5:
+    print(count)
+    count = count + 1</div>
+  <p>Output: 0, 1, 2, 3, 4 — same result as yesterday's <code>range(5)</code> for loop, but built from a condition instead of a fixed sequence. Before each pass, Python checks the condition; the moment it becomes False, the loop stops.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> The infinite loop danger</h2>
+  <div class="warn-box">
+    <strong>This is the single most important warning in today's lesson:</strong> if you forget to update the variable that the condition depends on, the loop runs forever (or until your program crashes/hangs). This is called an "infinite loop," and it's a genuinely common beginner mistake.
+  </div>
+  <div class="panel">
+    <p><strong>Broken example (never write this):</strong></p>
+    <div class="code">count = 0
+while count < 5:
+    print(count)
+    # forgot to update count! This never stops.</div>
+    <p>Every while loop needs something inside its body that eventually makes the condition False — usually updating a counter, or changing a variable the condition checks.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Real-world example (convergence loop)</h2>
+  <div class="panel">
+    <p class="example-tag">Direct connection to Day 24's gradient descent</p>
+    <div class="code">error = 100
+step = 0
+while error > 1:
+    error = error * 0.6
+    step = step + 1
+    print("Step " + str(step) + ": error = " + str(error))</div>
+    <p>This is structurally almost identical to how real gradient descent training loops work: <strong>keep improving until the error is small enough — you don't know in advance exactly how many steps that will take</strong>, so a while loop (condition-based) fits far more naturally than a for loop (fixed-count) for this kind of task.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Second example (bank withdrawal simulation)</h2>
+  <div class="panel">
+    <p class="example-tag">Business example</p>
+    <div class="code">balance = 5000
+withdrawal = 750
+while balance >= withdrawal:
+    balance = balance - withdrawal
+    print("Withdrew " + str(withdrawal) + ", remaining: " + str(balance))
+print("Insufficient funds for another withdrawal")</div>
+    <p>The number of withdrawals possible isn't known ahead of time — it depends entirely on the balance and withdrawal amount, which is exactly the kind of scenario where <code>while</code> is the natural, correct choice over <code>for</code>.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> When to use while vs for</h2>
+  <div class="panel">
+    <p><strong>Use <code>for</code></strong> when you know the exact number of iterations in advance (loop through 10 epochs, loop through every row of a 500-row dataset).</p>
+    <p><strong>Use <code>while</code></strong> when repetition depends on a condition that changes unpredictably during execution (keep going until converged, keep retrying until successful, keep processing until a balance runs out).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Forgetting to update the condition variable.</strong> Covered above — this is the #1 while loop bug, causing infinite loops.</p>
+    <p><strong>Mistake 2 — Off-by-one condition boundaries.</strong> <code>while count < 5</code> vs <code>while count &lt;= 5</code> produce different numbers of iterations — always double check which one you actually need.</p>
+    <p><strong>Mistake 3 — Updating the variable in the wrong place.</strong> If the update line is accidentally placed outside the loop's indented block, it only runs once, and the loop condition never changes — same infinite-loop result.</p>
+    <p><strong>Mistake 4 — Using while when for is clearly more appropriate.</strong> If you already know you need exactly 10 repetitions, a for loop with range(10) is clearer and less error-prone than manually managing a counter with while.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now runs while loops)</h2>
+  <div class="solver">
+    <h3>Remember to update your condition variable inside the loop!</h3>
+    <textarea id="codeInput">balance = 5000
+withdrawal = 750
+while balance >= withdrawal:
+    balance = balance - withdrawal
+    print("Remaining: " + str(balance))
+print("Done")</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+  <div class="note-box">A safety limit (2000 iterations) is built into this simulator so an accidental infinite loop won't freeze your browser — real Python has no such automatic safety net, so be careful once you're coding for real.</div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 32 covers break and continue — ways to exit a loop early or skip an iteration, giving you finer control over both for and while loops.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 31 of 210 · AI & ML Study Plan · Phase 2: Python & Core AI Foundation</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "count=0. while count<3: print(count); count=count+1. List the exact output.", steps: "0\\n1\\n2" },
+  { q: "What's wrong with this loop? x=10\\nwhile x>0:\\n    print(x)", steps: "x is never updated inside the loop, so the condition x>0 stays True forever — this is an infinite loop." },
+  { q: "n=1. while n<=100: n=n*2. How many times does the loop run before n exceeds 100? (list n's values)", steps: "n: 1→2→4→8→16→32→64→128. That's 7 updates (loop runs 7 times) before n=128 which fails the <=100 check." },
+  { q: "balance=1000, cost=300. Write a while loop that keeps subtracting cost from balance while balance>=cost.", steps: "while balance >= cost:\\n    balance = balance - cost" },
+  { q: "Why would a while loop be more appropriate than a for loop for 'keep retrying an API call until it succeeds'?", steps: "The number of retries needed isn't known in advance — it depends on when (or if) the call succeeds, which is exactly the unpredictable-condition scenario while loops are designed for." },
+  { q: "error=50. while error>5: error=error-7. What is the final value of error, and how many iterations ran?", steps: "50→43→36→29→22→15→8→1. That's 7 iterations; loop stops once error=1 (since 1 is not > 5)." },
+  { q: "What determines when a while loop stops?", steps: "The condition becoming False — there's no fixed count like range() provides; the loop simply re-checks the condition before every pass." },
+  { q: "Why is 'while True:' (a condition that's always True) dangerous without something else inside the loop?", steps: "Since the condition never becomes False on its own, the loop would run forever unless something inside explicitly stops it (like a break statement, tomorrow's topic)." },
+  { q: "x=0. while x<5: x=x+1; print(x). What's the FIRST value printed? (note update happens before print here)", steps: "1 — x is incremented to 1 before the print statement runs on the first pass." },
+  { q: "In your own words: how is Day 24's gradient descent 'run until error is small enough' naturally a while loop rather than a for loop?", steps: "You don't know in advance exactly how many gradient descent steps are needed to reach a small enough error — the stopping point depends on the data and learning rate, making it a condition-based (while) situation rather than a fixed-count (for) one." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+function getIndent(line){
+  const m = line.match(/^(\s*)/);
+  return m ? m[1].replace(/\t/g,'    ').length : 0;
+}
+function pyRepr(val){
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  return String(val);
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/\bstr\(/g, 'String(').replace(/\bint\(/g, 'Math.trunc(').replace(/\bfloat\(/g, 'Number(');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalExpr(expr, vars){
+  const jsExpr = pythonToJsExpr(expr, vars);
+  return Function('"use strict"; return (' + jsExpr + ')')();
+}
+function execLine(line, vars, output){
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  try{
+    if(printMatch){
+      output.push(pyRepr(evalExpr(printMatch[1].trim(), vars)));
+    } else if(assignMatch){
+      vars[assignMatch[1]] = evalExpr(assignMatch[2].trim(), vars);
+    } else {
+      output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+    }
+  } catch(err){
+    output.push(`<span class="error">Error evaluating: ${escapeHtml(line)}</span>`);
+  }
+}
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+    const whileMatch = trimmed.match(/^while (.+):$/);
+
+    if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalExpr(c.cond, vars)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalExpr(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 2000){ output.push('<span class="error">Stopped: loop ran too long (safety limit)</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else if(whileMatch){
+      const cond = whileMatch[1];
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      while(evalExpr(cond, vars)){
+        guard.count++;
+        if(guard.count > 2000){ output.push('<span class="error">Stopped: loop ran too long — check that your condition variable is being updated (possible infinite loop)</span>'); return lines.length; }
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+      }
+      i = bEnd;
+      continue;
+    } else {
+      execLine(trimmed, vars, output);
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value.replace(/\t/g,'    ');
+  const lines = raw.split('\n');
+  const vars = {};
+  const output = [];
+  try{
+    execBlock(lines, 0, 0, vars, output);
+  } catch(err){
+    output.push(`<span class="error">Error running code.</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "A while loop repeats:", opts: ["A fixed number of times, always","As long as its condition stays True","Exactly once","Only if a for loop already ran"], correct: 1, explain: "While loops are condition-based, not count-based." },
+  { q: 'x=0. while x<3: print(x); x=x+1. What prints?', opts: ["0,1,2","0,1,2,3","1,2,3","Infinite loop"], correct: 0, explain: "Loop runs while x<3: prints 0,1,2, then stops when x becomes 3." },
+  { q: "What causes an infinite loop in a while statement?", opts: ["Using print() inside the loop","The condition variable never being updated so the condition stays True forever","Using a for loop instead","Having too many variables"], correct: 1, explain: "If nothing inside the loop changes the condition's truth value, it never becomes False." },
+  { q: "When is a while loop generally preferred over a for loop?", opts: [
+      "When you know the exact number of iterations in advance",
+      "When the number of repetitions depends on a condition that isn't known ahead of time",
+      "Never, for loops are always better",
+      "Only for printing text"
+    ], correct: 1, explain: "While loops fit naturally when repetition depends on an unpredictable condition (like convergence or retries)." },
+  { q: "balance=100, cost=30. while balance>=cost: balance=balance-cost. What is balance after the loop ends?", opts: ["10","0","40","70"], correct: 0, explain: "100→70→40→10. At 10, 10>=30 is False, so the loop stops with balance=10." },
+  { q: "Why is a while loop a more natural fit for gradient descent's stopping condition than a for loop?", opts: [
+      "For loops can't do math",
+      "The number of steps needed to reach a small-enough error isn't known in advance",
+      "While loops are always faster",
+      "Gradient descent never actually uses loops"
+    ], correct: 1, explain: "Since the exact number of steps depends on the data and error threshold, a condition-based while loop fits naturally." },
+  { q: "What is the safety concern with 'while True:' used carelessly?", opts: [
+      "It's always a syntax error",
+      "Since the condition is always True, the loop needs another explicit way to stop or it runs forever",
+      "It only runs once",
+      "It automatically stops after 10 iterations"
+    ], correct: 1, explain: "A condition that's always True never becomes False on its own — something else (like break, tomorrow's topic) must be used to exit." },
+  { q: "What's the key difference in HOW a for loop and a while loop determine when to stop?", opts: [
+      "There's no difference, they're identical",
+      "For loops stop based on a predetermined sequence (like range()); while loops re-check a condition before every pass",
+      "While loops always run exactly 10 times",
+      "For loops never stop"
+    ], correct: 1, explain: "For loops iterate a known sequence; while loops repeatedly test a condition that can change unpredictably during execution." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

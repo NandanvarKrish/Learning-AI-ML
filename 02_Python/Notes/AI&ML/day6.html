@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 6 — Mean, Median & Mode</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+table{width:100%; border-collapse:collapse; margin:12px 0; font-family:var(--font-mono); font-size:14px;}
+th,td{border:1px solid var(--line); padding:8px 10px; text-align:center;}
+th{background:var(--accent-soft); color:var(--accent);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver input[type=text]{width:100%; padding:10px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono); font-size:15px; margin:10px 0;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:15px; line-height:1.9;}
+.stat-badge{display:inline-block; background:#2a3442; padding:6px 12px; border-radius:4px; margin-right:8px; margin-bottom:8px;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 6 of 210 · Phase 1: Statistics & Probability Week</span>
+    <h1>Mean, Median & Mode</h1>
+    <div class="subtitle">~2 hours · First day of Statistics</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Before you train any model, you always look at your data first — and mean, median, and mode are the very first tools for understanding what a dataset "typically" looks like. Data scientists spend real time just summarizing data before modeling. You'll also use these constantly to detect problems: outliers, skewed data, missing value handling — all decisions rooted in today's three numbers.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Mean (the average)</h2>
+  <p>The mean is what most people call "the average" — add up all values, divide by how many there are:</p>
+  <div class="eq">Mean = (sum of all values) / (number of values)</div>
+  <div class="panel">
+    <p><strong>Example:</strong> A small shop's daily sales this week (in ₹'000): 12, 15, 14, 60, 13</p>
+    <p>Mean = (12+15+14+60+13) / 5 = 114 / 5 = <strong>22.8</strong></p>
+    <p>Notice something odd — most days were around ₹12–15k, but the mean says ₹22.8k. That's because <strong>one unusual day (₹60k, maybe a bulk order) pulled the average upward.</strong> This is your first hint of why mean alone can mislead.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Median (the middle value)</h2>
+  <p>The median is the value exactly in the middle when data is sorted. It ignores extreme values entirely.</p>
+  <div class="panel">
+    <p><strong>Steps:</strong> 1) Sort the data. 2) If odd count, the median is the middle number. 3) If even count, average the two middle numbers.</p>
+    <p><strong>Same shop data, sorted:</strong> 12, 13, 14, 15, 60 → middle value (3rd of 5) = <strong>14</strong></p>
+    <p>Compare: Mean = 22.8, Median = 14. The median (₹14k) is a much more honest picture of a "typical day" — the mean got dragged up by one outlier.</p>
+  </div>
+  <details>
+    <summary>What if there's an even number of values?</summary>
+    <div class="details-body">
+      <p>Data: 10, 12, 14, 18 (sorted, 4 values). The two middle values are 12 and 14. Median = (12+14)/2 = <strong>13</strong>.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Mode (the most frequent value)</h2>
+  <p>The mode is simply the value that appears most often in a dataset. Unlike mean/median, a dataset can have <strong>no mode</strong> (all values unique), <strong>one mode</strong>, or <strong>multiple modes</strong> (tied frequencies).</p>
+  <div class="panel">
+    <p><strong>Example:</strong> Shoe sizes sold today: 7, 8, 8, 9, 8, 10, 7</p>
+    <p>8 appears 3 times (most frequent) → <strong>Mode = 8</strong></p>
+    <p>This is especially useful for categorical data — like "most common product size" or "most common customer complaint type" — where mean and median don't even make sense to calculate.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (salary data — the classic case)</h2>
+  <div class="panel">
+    <p class="example-tag">The example every stats course uses, for good reason</p>
+    <p>A small company's monthly salaries (in ₹'000): 25, 28, 27, 26, 30, 250 (the owner/CEO)</p>
+    <p><strong>Mean</strong> = (25+28+27+26+30+250)/6 = 386/6 ≈ <strong>₹64.3k</strong></p>
+    <p><strong>Median</strong> (sorted: 25,26,27,28,30,250 — average of 3rd & 4th) = (27+28)/2 = <strong>₹27.5k</strong></p>
+    <p>If a job ad said "average salary ₹64.3k," it would be technically true but wildly misleading — nearly every employee earns close to ₹27k. <strong>This is exactly why median is often reported for income data</strong> (you may have seen "median household income" in the news) — it resists distortion from a few extreme outliers.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> When to use which</h2>
+  <div class="panel">
+    <p><strong>Use Mean</strong> when data is fairly evenly spread with no extreme outliers (e.g., average test score in a normal class).</p>
+    <p><strong>Use Median</strong> when data has outliers or is skewed (income, house prices, company sizes).</p>
+    <p><strong>Use Mode</strong> for categorical data, or to find the "most common" case (best-selling product size, most common customer age group).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Finding the median without sorting first.</strong> The median only works on sorted data. Skipping this step gives a meaningless number.</p>
+    <p><strong>Mistake 2 — Forgetting to average the two middle values for even-count data.</strong> Many people just pick one of the two middles — always average both.</p>
+    <p><strong>Mistake 3 — Assuming every dataset has exactly one mode.</strong> Some datasets have no repeats (no mode), others have several values tied for most frequent (multiple modes).</p>
+    <p><strong>Mistake 4 — Always trusting the mean.</strong> As you saw with salaries, mean can badly mislead when outliers exist. Always check median too, especially for financial or population data.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Dataset Calculator</h2>
+  <div class="solver">
+    <h3>Enter any dataset (comma-separated numbers)</h3>
+    <input type="text" id="dataInput" value="12, 15, 14, 60, 13, 15">
+    <button onclick="calcStats()">Calculate Mean, Median & Mode</button>
+    <div class="solver-result" id="result"></div>
+    <canvas id="plot" width="600" height="180"></canvas>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Try entering your own real data — your monthly expenses, cricket scores, marks across subjects — and see how mean vs. median differ.</p>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> When you clean real datasets in Phase 2 (Pandas), one of the very first things you'll do is call <code>.mean()</code>, <code>.median()</code>, and check for outliers — literally today's concepts, just computed by code instead of by hand.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 6 of 210 · AI & ML Study Plan · Phase 1: Statistics & Probability Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Find the mean of: 4, 8, 6, 10, 12", steps: "(4+8+6+10+12)/5 = 40/5 = 8" },
+  { q: "Find the median of: 3, 9, 5, 1, 7", steps: "Sorted: 1,3,5,7,9 → middle value = 5" },
+  { q: "Find the mode of: 2, 4, 4, 6, 4, 8, 6", steps: "4 appears 3 times, most frequent → mode = 4" },
+  { q: "Find the median of: 10, 20, 30, 40 (even count)", steps: "Sorted already. Middle two: 20,30 → median = (20+30)/2 = 25" },
+  { q: "Monthly expenses (₹'000): 8, 9, 7, 8, 40. Find mean and median.", steps: "Mean = (8+9+7+8+40)/5 = 72/5 = 14.4. Sorted: 7,8,8,9,40 → median = 8" },
+  { q: "Which measure (mean/median) better represents 'typical' spending in the problem above, and why?", steps: "Median (8) — the mean (14.4) is distorted by the one unusual ₹40k month." },
+  { q: "Test scores: 60, 60, 70, 80, 90. Find mode.", steps: "60 appears twice, most frequent → mode = 60" },
+  { q: "Find the mean of: -5, 0, 5, 10, 15", steps: "(-5+0+5+10+15)/5 = 25/5 = 5" },
+  { q: "A dataset has values: 3, 5, 7, 9 (all unique). What is the mode?", steps: "No value repeats — this dataset has no mode." },
+  { q: "House prices (₹ lakh): 40, 42, 45, 43, 400 (one luxury villa). Which measure would a news report likely use, and why?", steps: "Median — because the ₹400 lakh villa is an extreme outlier that would badly distort the mean." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+function calcStats(){
+  const raw = document.getElementById('dataInput').value;
+  const nums = raw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+  const res = document.getElementById('result');
+  if(nums.length === 0){
+    res.textContent = "Enter valid comma-separated numbers.";
+    return;
+  }
+  const mean = nums.reduce((a,b)=>a+b,0) / nums.length;
+  const sorted = [...nums].sort((a,b)=>a-b);
+  let median;
+  const mid = Math.floor(sorted.length/2);
+  if(sorted.length % 2 === 0){
+    median = (sorted[mid-1] + sorted[mid]) / 2;
+  } else {
+    median = sorted[mid];
+  }
+  const freq = {};
+  nums.forEach(n => freq[n] = (freq[n]||0)+1);
+  const maxFreq = Math.max(...Object.values(freq));
+  let modes = Object.keys(freq).filter(k => freq[k] === maxFreq).map(Number);
+  let modeText;
+  if(maxFreq === 1){ modeText = "No mode (all values unique)"; }
+  else { modeText = modes.join(', '); }
+
+  res.innerHTML = `
+    <div class="stat-badge">Mean: ${mean.toFixed(2)}</div>
+    <div class="stat-badge">Median: ${median.toFixed(2)}</div>
+    <div class="stat-badge">Mode: ${modeText}</div>
+    <div class="stat-badge">Count: ${nums.length}</div>
+  `;
+  drawDotPlot(nums, mean, median);
+}
+
+function drawDotPlot(nums, mean, median){
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const padding = 40;
+  const min = Math.min(...nums), max = Math.max(...nums);
+  const range = (max - min) || 1;
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, h-40); ctx.lineTo(w-padding, h-40); ctx.stroke();
+
+  const scaleX = v => padding + ((v-min)/range) * (w - padding*2);
+
+  // dots for data points (stacked if repeated)
+  const seen = {};
+  ctx.fillStyle = '#2f6d4f';
+  nums.forEach(n => {
+    seen[n] = (seen[n]||0) + 1;
+    const x = scaleX(n);
+    const y = h - 40 - (seen[n]-1)*14 - 8;
+    ctx.beginPath(); ctx.arc(x, y, 6, 0, 2*Math.PI); ctx.fill();
+  });
+
+  // mean marker
+  ctx.strokeStyle = '#c05621'; ctx.lineWidth = 2;
+  const meanX = scaleX(mean);
+  ctx.beginPath(); ctx.moveTo(meanX, h-50); ctx.lineTo(meanX, h-30); ctx.stroke();
+  ctx.fillStyle = '#c05621'; ctx.font = '11px monospace';
+  ctx.fillText('mean', meanX-14, h-18);
+
+  // median marker
+  ctx.strokeStyle = '#1b2430';
+  const medX = scaleX(median);
+  ctx.beginPath(); ctx.moveTo(medX, h-50); ctx.lineTo(medX, h-30); ctx.stroke();
+  ctx.fillStyle = '#1b2430';
+  ctx.fillText('median', medX-16, h-4);
+}
+calcStats();
+
+const quizData = [
+  { q: "What is the mean of 2, 4, 6, 8, 10?", opts: ["4","5","6","8"], correct: 2, explain: "(2+4+6+8+10)/5 = 30/5 = 6." },
+  { q: "What must you do before finding the median?", opts: ["Find the mean first","Sort the data","Remove duplicates","Square every value"], correct: 1, explain: "Median only works correctly on sorted data." },
+  { q: "For an even-numbered dataset, how do you find the median?", opts: ["Pick the larger of the two middle values","Pick the smaller of the two middle values","Average the two middle values","Add all values and divide by 2"], correct: 2, explain: "Average the two middle values after sorting." },
+  { q: "Which measure is most affected by outliers?", opts: ["Mode","Median","Mean","None of them"], correct: 2, explain: "Mean uses every value in its calculation, so one extreme value shifts it significantly." },
+  { q: "A dataset has values 5,5,5,5,5. What is the mode?", opts: ["5","0","No mode","Undefined"], correct: 0, explain: "5 appears every time — it's the (only) most frequent value, so mode = 5." },
+  { q: "Median household income is usually reported instead of mean because:", opts: ["Median is easier to calculate","Mean is illegal to report","Median isn't skewed by a small number of very high earners","They're always the same number"], correct: 2, explain: "A few extremely high incomes can drag the mean far above what's 'typical' — median avoids this." },
+  { q: "Data: 3, 3, 7, 7, 10. How many modes does this have?", opts: ["0","1","2","3"], correct: 2, explain: "Both 3 and 7 appear twice (tied for most frequent) — two modes." },
+  { q: "Why do data scientists calculate mean/median before training a model?", opts: [
+      "It's required by every ML library",
+      "To understand the data's 'typical' values and spot outliers before modeling",
+      "It has no real purpose, just tradition",
+      "Only for generating reports, never for modeling decisions"
+    ], correct: 1, explain: "Understanding central tendency and spotting outliers early affects nearly every modeling decision that follows." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

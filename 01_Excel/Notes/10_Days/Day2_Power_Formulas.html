@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 2 — Power Formulas for Data Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;
+  --surface:#ffffff;
+  --card:#ffffff;
+  --card2:#f7f9fd;
+  --border:#dde4f0;
+  --border2:#c5cfdf;
+  --accent:#0d7a5f;
+  --accent-light:#e6faf4;
+  --accent-mid:rgba(13,122,95,0.12);
+  --accent-glow:rgba(13,122,95,0.22);
+  --blue:#1558c0;
+  --blue-light:#eaf1ff;
+  --orange:#b84f00;
+  --orange-light:#fff3e8;
+  --purple:#5e35b1;
+  --purple-light:#f0ebff;
+  --red:#b0112b;
+  --red-light:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;
+  --text2:#3d4f6e;
+  --text3:#7f90aa;
+  --shadow:0 1px 8px rgba(18,34,64,0.07);
+  --shadow-md:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(21,88,192,0.05),transparent 65%);
+  pointer-events:none;}
+.container{max-width:980px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+/* HERO */
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.breadcrumb{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.breadcrumb em{color:var(--accent);font-style:normal;}
+.day-badge{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:520px;line-height:1.65;margin-bottom:22px;}
+.hero-chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--shadow);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.prog-track{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.prog-day{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.prog-day.done{background:var(--accent);}
+.prog-day.current{background:var(--accent);box-shadow:0 0 7px var(--accent-glow);}
+.prog-label{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+/* SECTION LABEL */
+.sec-label{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sec-label::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+/* OVERVIEW */
+.ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:580px){.ov-grid{grid-template-columns:1fr 1fr;}}
+.ov-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;}
+.ov-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.ov-icon{font-size:20px;margin-bottom:7px;}
+.ov-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov-val{font-size:14px;font-weight:700;}
+
+/* TOPICS */
+.topics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.topics-grid{grid-template-columns:1fr;}}
+.topic-item{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--shadow);transition:border-color .2s;}
+.topic-item:hover{border-color:var(--accent-glow);}
+.t-num{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.t-text{font-size:13px;font-weight:700;color:var(--text);}
+.t-sub{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+/* CONCEPT CARDS */
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--shadow);}
+.cc-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cbadge{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-glow);}
+.cb-warn{background:var(--orange-light);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--blue-light);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--purple-light);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cc-desc{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+
+/* code block */
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}
+.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}
+.code .cm{color:var(--text3);}
+.code .num{color:var(--purple);}
+.code .ok{color:var(--green);font-weight:700;}
+.code .bad{color:var(--red);}
+
+/* compare boxes */
+.cmp-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+@media(max-width:560px){.cmp-row{grid-template-columns:1fr;}}
+.cmp{border-radius:8px;padding:13px;font-family:var(--mono);font-size:11.5px;line-height:1.7;}
+.cmp.old{background:var(--red-light);border:1.5px solid rgba(176,17,43,0.18);}
+.cmp.new{background:var(--accent-light);border:1.5px solid var(--accent-glow);}
+.cmp-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:7px;}
+.cmp.old .cmp-lbl{color:var(--red);}
+.cmp.new .cmp-lbl{color:var(--accent);}
+
+/* cheatsheet */
+.cheat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.cheat{grid-template-columns:1fr;}}
+.cs-row{display:flex;align-items:center;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--shadow);}
+.cs-fn{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:3px 8px;border-radius:4px;border:1px solid var(--accent-glow);white-space:nowrap;flex-shrink:0;}
+.cs-desc{font-size:12px;color:var(--text2);}
+
+/* OUTCOMES */
+.outs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outs{grid-template-columns:1fr;}}
+.out-item{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--shadow);}
+.out-check{width:22px;height:22px;border-radius:5px;background:var(--accent-light);border:1.5px solid var(--accent-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.out-text{font-size:13px;line-height:1.5;}
+
+/* HOUR BAR */
+.hour-bar{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--shadow);}
+.h-seg{flex:1;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.leg-dot{width:10px;height:10px;border-radius:2px;}
+
+/* TASK CARDS */
+.task-card{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s;}
+.task-card:hover{box-shadow:var(--shadow-md);}
+.task-header{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.task-card.open .task-header{border-bottom:1.5px solid var(--border);}
+.t-num{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.t-tbadge{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.ttb-practice{background:var(--blue-light);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.ttb-drill{background:var(--purple-light);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.ttb-project{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-glow);}
+.t-wrap{flex:1;}
+.t-main{font-size:14px;font-weight:700;}
+.t-sub2{font-size:11px;color:var(--text3);margin-top:2px;}
+.t-typebadge{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.typ-practice{background:var(--blue-light);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.typ-drill{background:var(--purple-light);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.typ-project{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-glow);}
+.t-chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.task-card.open .t-chev{transform:rotate(180deg);}
+.task-body{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.task-card.open .task-body{display:block;animation:slideIn .22s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+/* task internals */
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.step-i{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.formula{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.formula .fn{color:var(--accent);font-weight:700;}
+.formula .kw{color:var(--blue);font-weight:700;}
+.formula .str{color:var(--orange);}
+.formula .cm{color:var(--text3);}
+.formula .num{color:var(--purple);}
+.note-box{display:flex;gap:10px;background:var(--blue-light);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.warn-box{display:flex;gap:10px;background:var(--orange-light);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.note-icon{font-size:14px;flex-shrink:0;}
+.checks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+/* TIP BOX */
+.tip-box{background:linear-gradient(135deg,var(--accent-light),var(--blue-light));border:1.5px solid var(--accent-glow);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--shadow);}
+.tip-icon{font-size:26px;flex-shrink:0;}
+.tip-title{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tip-desc{font-size:13px;color:var(--text2);line-height:1.65;}
+
+/* BOTTOM NAV */
+.bot-nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nav-btn{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--shadow);transition:all .2s;}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.nav-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--accent-glow);}
+.nav-btn.primary:hover{background:#0b6650;}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.t-tbadge{display:none;}.task-header{gap:8px;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="breadcrumb">Excel for AI &amp; ML <em>›</em> Day 2 of 10</div>
+    <div class="day-badge">DAY 2</div>
+  </div>
+  <h1>Power <span class="hl">Formulas</span><br>for Data Analysis</h1>
+  <div class="tagline">The formula toolkit every ML practitioner needs — lookup, logic, aggregation, and text cleaning. The four pillars of data preparation.</div>
+  <div class="hero-chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: Formulas</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●○</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">📝 2 Files to Create</div>
+  </div>
+  <div class="prog-track">
+    <div class="prog-day done"></div>
+    <div class="prog-day current"></div>
+    <div class="prog-day"></div><div class="prog-day"></div><div class="prog-day"></div>
+    <div class="prog-day"></div><div class="prog-day"></div><div class="prog-day"></div>
+    <div class="prog-day"></div><div class="prog-day"></div>
+    <div class="prog-label">Day 2 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="ov-grid">
+  <div class="ov-card"><div class="ov-icon">🔍</div><div class="ov-lbl">Focus</div><div class="ov-val">Lookup &amp; Logic</div></div>
+  <div class="ov-card"><div class="ov-icon">🧩</div><div class="ov-lbl">Topics</div><div class="ov-val">8 Formula Groups</div></div>
+  <div class="ov-card"><div class="ov-icon">✅</div><div class="ov-lbl">Outcomes</div><div class="ov-val">4 Skills</div></div>
+  <div class="ov-card"><div class="ov-icon">⭐</div><div class="ov-lbl">Star Formula</div><div class="ov-val">SUMPRODUCT</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sec-label">📖 Topics Covered Today</div>
+<div class="topics-grid">
+  <div class="topic-item"><div class="t-num">01</div><div><div class="t-text">VLOOKUP vs INDEX/MATCH</div><div class="t-sub">Why VLOOKUP breaks and INDEX/MATCH wins every time</div></div></div>
+  <div class="topic-item"><div class="t-num">02</div><div><div class="t-text">XLOOKUP — The Modern Way</div><div class="t-sub">Match modes, search modes, and array returns</div></div></div>
+  <div class="topic-item"><div class="t-num">03</div><div><div class="t-text">IF / IFS / SWITCH</div><div class="t-sub">Conditional logic trees for classification labels</div></div></div>
+  <div class="topic-item"><div class="t-num">04</div><div><div class="t-text">IFERROR &amp; IFNA</div><div class="t-sub">Clean error handling before any ML pipeline</div></div></div>
+  <div class="topic-item"><div class="t-num">05</div><div><div class="t-text">COUNTIF / SUMIF / AVERAGEIF</div><div class="t-sub">Conditional aggregation — group statistics foundation</div></div></div>
+  <div class="topic-item"><div class="t-num">06</div><div><div class="t-text">SUMPRODUCT</div><div class="t-sub">Array math, weighted averages, multi-condition counts</div></div></div>
+  <div class="topic-item"><div class="t-num">07</div><div><div class="t-text">Text Functions</div><div class="t-sub">TRIM, PROPER, LEFT, RIGHT, MID, FIND, SUBSTITUTE</div></div></div>
+  <div class="topic-item"><div class="t-num">08</div><div><div class="t-text">TEXTJOIN &amp; CONCAT</div><div class="t-sub">Composite keys and label engineering</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sec-label">🧠 Key Concepts Deep Dive</div>
+
+<div class="cc">
+  <div class="cc-title">🔍 VLOOKUP vs INDEX/MATCH vs XLOOKUP <span class="cbadge cb-warn">KNOW ALL THREE</span></div>
+  <div class="cc-desc">VLOOKUP is what beginners use. INDEX/MATCH is what professionals use. XLOOKUP is the future. Understanding why INDEX/MATCH beats VLOOKUP is fundamental — the same fragility appears in poorly written ML scoring pipelines.</div>
+  <div class="cmp-row">
+    <div class="cmp old"><div class="cmp-lbl">❌ VLOOKUP — Fragile</div>
+      =VLOOKUP(A2, D:F, 3, FALSE)<br>
+      <span style="color:#b0112b;font-size:11px">• Breaks if columns inserted<br>• Can only look RIGHT<br>• Column number is brittle<br>• Slower on large data</span>
+    </div>
+    <div class="cmp new"><div class="cmp-lbl">✅ INDEX/MATCH — Robust</div>
+      =INDEX(F:F, MATCH(A2,D:D,0))<br>
+      <span style="color:#0a6640;font-size:11px">• Survives column changes<br>• Looks left OR right<br>• References by column name<br>• Faster on large ranges</span>
+    </div>
+  </div>
+  <div class="code">
+<span class="cm">// VLOOKUP — breaks when columns shift</span>
+=<span class="fn">IFERROR</span>(<span class="fn">VLOOKUP</span>([@StudentID], Extras, <span class="num">3</span>, <span class="kw">FALSE</span>), <span class="str">"Missing"</span>)
+
+<span class="cm">// INDEX/MATCH — column-insertion proof</span>
+=<span class="fn">IFERROR</span>(<span class="fn">INDEX</span>(Extras[Revenue], <span class="fn">MATCH</span>([@StudentID], Extras[ID], <span class="num">0</span>)), <span class="str">"Missing"</span>)
+
+<span class="cm">// XLOOKUP — Excel 365 (cleanest syntax)</span>
+=<span class="fn">XLOOKUP</span>([@StudentID], Extras[ID], Extras[Revenue], <span class="str">"Not Found"</span>, <span class="num">0</span>)
+<span class="cm">// Match modes: 0=exact  -1=next smaller  1=next larger  2=wildcard</span>
+  </div>
+</div>
+
+<div class="cc">
+  <div class="cc-title">🔀 IF / IFS / SWITCH <span class="cbadge cb-core">CORE LOGIC</span></div>
+  <div class="cc-desc">Conditional logic creates target labels, flags anomalies, and encodes categories. Use IFS or SWITCH beyond 3 levels — nested IF becomes unreadable fast and is a bug magnet.</div>
+  <div class="code">
+<span class="cm">// Binary classification label</span>
+=<span class="fn">IF</span>([@Score] >= <span class="num">70</span>, <span class="str">"Pass"</span>, <span class="str">"Fail"</span>)
+
+<span class="cm">// IFS — multi-branch, readable (Excel 2019+)</span>
+=<span class="fn">IFS</span>([@Score]>=<span class="num">90</span>,<span class="str">"A"</span>, [@Score]>=<span class="num">80</span>,<span class="str">"B"</span>, [@Score]>=<span class="num">70</span>,<span class="str">"C"</span>, [@Score]>=<span class="num">60</span>,<span class="str">"D"</span>, <span class="kw">TRUE</span>,<span class="str">"F"</span>)
+<span class="cm">// ↑ TRUE at the end = default/else case</span>
+
+<span class="cm">// SWITCH — exact value dictionary mapping</span>
+=<span class="fn">SWITCH</span>([@Dept], <span class="str">"Eng"</span>,<span class="str">"Engineering"</span>, <span class="str">"Mkt"</span>,<span class="str">"Marketing"</span>, <span class="str">"Fin"</span>,<span class="str">"Finance"</span>, <span class="str">"Other"</span>)
+
+<span class="cm">// IFERROR — catch all errors  |  IFNA — catch only #N/A</span>
+=<span class="fn">IFERROR</span>(risky_formula, fallback_value)
+=<span class="fn">IFNA</span>(<span class="fn">MATCH</span>(A2, D:D, <span class="num">0</span>), <span class="num">-1</span>)
+  </div>
+</div>
+
+<div class="cc">
+  <div class="cc-title">⚡ SUMPRODUCT — Excel's Secret Weapon <span class="cbadge cb-pow">POWER USER</span></div>
+  <div class="cc-desc">SUMPRODUCT does array math without Ctrl+Shift+Enter, handles multiple conditions, and calculates weighted averages in one line. It's also the mathematical core of linear regression — a dot product of values × weights.</div>
+  <div class="code">
+<span class="cm">// Weighted average — identical math to linear regression prediction</span>
+=<span class="fn">SUMPRODUCT</span>(B2:F2, $I$2:$I$6) / <span class="fn">SUM</span>($I$2:$I$6)
+
+<span class="cm">// Multi-condition COUNT — no helper column needed</span>
+=<span class="fn">SUMPRODUCT</span>((Dept=<span class="str">"Eng"</span>) * (Score>=<span class="num">80</span>))
+<span class="cm">// TRUE*TRUE=1  TRUE*FALSE=0  — multiplication = AND logic</span>
+
+<span class="cm">// Multi-condition SUM of Revenue</span>
+=<span class="fn">SUMPRODUCT</span>((Region=<span class="str">"North"</span>) * (Quarter=<span class="str">"Q1"</span>) * Revenue)
+
+<span class="cm">// OR logic (use + instead of *)</span>
+=<span class="fn">SUMPRODUCT</span>((Dept=<span class="str">"Eng"</span>) + (Dept=<span class="str">"IT"</span>) > <span class="num">0</span>)
+  </div>
+</div>
+
+<div class="cc">
+  <div class="cc-title">🔤 Text Cleaning Toolkit <span class="cbadge cb-tip">DATA PREP</span></div>
+  <div class="cc-desc">Real ML datasets are messy text: extra spaces, mixed case, combined fields. These functions are your weekly tools — you will use them on every project without exception.</div>
+  <div class="cheat">
+    <div class="cs-row"><div class="cs-fn">TRIM(text)</div><div class="cs-desc">Remove extra / leading / trailing spaces</div></div>
+    <div class="cs-row"><div class="cs-fn">PROPER(text)</div><div class="cs-desc">Capitalize first letter of each word</div></div>
+    <div class="cs-row"><div class="cs-fn">UPPER / LOWER</div><div class="cs-desc">Force all caps or all lowercase</div></div>
+    <div class="cs-row"><div class="cs-fn">LEN(text)</div><div class="cs-desc">Count characters — detect empties/overflow</div></div>
+    <div class="cs-row"><div class="cs-fn">LEFT(t, n)</div><div class="cs-desc">Extract first n characters</div></div>
+    <div class="cs-row"><div class="cs-fn">RIGHT(t, n)</div><div class="cs-desc">Extract last n characters</div></div>
+    <div class="cs-row"><div class="cs-fn">MID(t, start, n)</div><div class="cs-desc">Extract from position, n chars long</div></div>
+    <div class="cs-row"><div class="cs-fn">FIND(find, in)</div><div class="cs-desc">Position of substring (case-sensitive)</div></div>
+    <div class="cs-row"><div class="cs-fn">SUBSTITUTE(t,old,new)</div><div class="cs-desc">Replace text — formula version of Find&amp;Replace</div></div>
+    <div class="cs-row"><div class="cs-fn">TEXTJOIN(delim,T,…)</div><div class="cs-desc">Join fields into composite key with separator</div></div>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sec-label" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outs">
+  <div class="out-item"><div class="out-check">✓</div><div class="out-text">Merge datasets with XLOOKUP and INDEX/MATCH confidently</div></div>
+  <div class="out-item"><div class="out-check">✓</div><div class="out-text">Write multi-condition logic trees with IFS and SWITCH</div></div>
+  <div class="out-item"><div class="out-check">✓</div><div class="out-text">Aggregate by category using SUMIF and SUMPRODUCT</div></div>
+  <div class="out-item"><div class="out-check">✓</div><div class="out-text">Clean and engineer text features from raw messy data</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sec-label">⏰ 1-Hour Task Breakdown</div>
+<div class="hour-bar">
+  <div class="h-seg" style="background:#1558c0;flex:12"></div>
+  <div class="h-seg" style="background:#5e35b1;flex:13"></div>
+  <div class="h-seg" style="background:#1558c0;flex:13"></div>
+  <div class="h-seg" style="background:#1558c0;flex:12"></div>
+  <div class="h-seg" style="background:#0d7a5f;flex:10"></div>
+</div>
+<div class="legend">
+  <div class="leg-i"><div class="leg-dot" style="background:#0d7a5f"></div>Project</div>
+  <div class="leg-i"><div class="leg-dot" style="background:#5e35b1"></div>Drill</div>
+  <div class="leg-i"><div class="leg-dot" style="background:#1558c0"></div>Practice</div>
+</div>
+
+<!-- ══ TASK CARDS ══ -->
+
+<!-- TASK 1 -->
+<div class="task-card open" id="t1">
+  <div class="task-header" onclick="tog('t1')">
+    <div class="t-num">01</div>
+    <div class="t-tbadge ttb-practice">0 – 12 min</div>
+    <div class="t-wrap">
+      <div class="t-main">🔍 Lookup Warmup — VLOOKUP → INDEX/MATCH → XLOOKUP</div>
+      <div class="t-sub2">Build two tables, merge them three ways — then break VLOOKUP on purpose</div>
+    </div>
+    <div class="t-typebadge typ-practice">Practice</div>
+    <div class="t-chev">▼</div>
+  </div>
+  <div class="task-body">
+    <div class="goal">Experience VLOOKUP's real-world failure mode first-hand, then replace it. This is the exact challenge of joining feature tables in ML data pipelines — customer data, transaction data, and demographic data across files.</div>
+    <div class="steps">
+      <div class="step-i"><div class="sn">1</div><div>Create <strong>Day2_Formulas.xlsx</strong>. On Sheet1 (rename "LookupLab"), build Table 1 with columns: <strong>StudentID, Name, Score, Department</strong> — 20 rows. Convert to Table named <strong>Students</strong> (Ctrl+T).</div></div>
+      <div class="step-i"><div class="sn">2</div><div>In columns G–I create Table 2: <strong>StudentID, Email, Scholarship (YES/NO)</strong> — same 20 IDs but in <em>shuffled order</em>. Name it <strong>Extras</strong>. The shuffle proves lookup works regardless of order.</div></div>
+      <div class="step-i"><div class="sn">3</div><div>In column E, write VLOOKUP to pull Email: <code>=IFERROR(VLOOKUP([@StudentID], Extras, 2, FALSE), "Missing")</code>. Verify it works for all 20 rows.</div></div>
+      <div class="step-i"><div class="sn">4</div><div><strong>Now break it:</strong> Insert a blank column between StudentID and Email in the Extras table. Watch VLOOKUP silently return wrong data — it now returns the blank column, not Email. This is the real-world failure.</div></div>
+      <div class="step-i"><div class="sn">5</div><div>Fix with INDEX/MATCH in column F: <code>=IFERROR(INDEX(Extras[Email], MATCH([@StudentID], Extras[StudentID], 0)), "Missing")</code>. Inserting columns cannot break this — it references by name.</div></div>
+      <div class="step-i"><div class="sn">6</div><div>If you have Excel 365, add XLOOKUP in column G: <code>=XLOOKUP([@StudentID], Extras[StudentID], Extras[Email], "Not Found", 0)</code>. All three should match — except VLOOKUP (broken in step 4).</div></div>
+    </div>
+    <div class="formula">
+<span class="cm">// VLOOKUP — fragile, avoid in production</span>
+=<span class="fn">IFERROR</span>(<span class="fn">VLOOKUP</span>([@StudentID], Extras, <span class="num">2</span>, <span class="kw">FALSE</span>), <span class="str">"Missing"</span>)
+
+<span class="cm">// INDEX/MATCH — robust, column-insertion proof ✓</span>
+=<span class="fn">IFERROR</span>(<span class="fn">INDEX</span>(Extras[Email], <span class="fn">MATCH</span>([@StudentID], Extras[StudentID], <span class="num">0</span>)), <span class="str">"Missing"</span>)
+
+<span class="cm">// XLOOKUP — modern and cleanest (365 only)</span>
+=<span class="fn">XLOOKUP</span>([@StudentID], Extras[StudentID], Extras[Email], <span class="str">"Not Found"</span>, <span class="num">0</span>)
+    </div>
+    <div class="note-box"><div class="note-icon">💡</div><div><strong>ML context:</strong> Joining feature tables is the most common data prep task. When merging customer data, transaction logs, and demographics across files — INDEX/MATCH or XLOOKUP is your tool. VLOOKUP has no place in production ML work.</div></div>
+    <div class="checks">
+      <div class="ck">Students &amp; Extras tables created</div>
+      <div class="ck">VLOOKUP failure shown</div>
+      <div class="ck">INDEX/MATCH working</div>
+      <div class="ck">XLOOKUP added (if 365)</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="task-card" id="t2">
+  <div class="task-header" onclick="tog('t2')">
+    <div class="t-num">02</div>
+    <div class="t-tbadge ttb-drill">12 – 25 min</div>
+    <div class="t-wrap">
+      <div class="t-main">🔀 Conditional Logic System — IF / IFS / SWITCH</div>
+      <div class="t-sub2">Build a multi-level classification label engine for your ML target variable</div>
+    </div>
+    <div class="t-typebadge typ-drill">Drill</div>
+    <div class="t-chev">▼</div>
+  </div>
+  <div class="task-body">
+    <div class="goal">Classification models need clear target labels. You'll build a label engineering system assigning letter grades, performance tiers, and risk flags — the exact preprocessing step before any ML classification training.</div>
+    <div class="steps">
+      <div class="step-i"><div class="sn">1</div><div>Create sheet "LogicLab". Build a table: <strong>StudentID, Score (0–100), Attendance (%), Department, PreviousFail (TRUE/FALSE)</strong> — 25 rows of varied data.</div></div>
+      <div class="step-i"><div class="sn">2</div><div>Column F — <strong>Grade with nested IF</strong>: <code>=IF([@Score]>=90,"A",IF([@Score]>=80,"B",IF([@Score]>=70,"C",IF([@Score]>=60,"D","F"))))</code></div></div>
+      <div class="step-i"><div class="sn">3</div><div>Column G — <strong>Same grade with IFS</strong> (compare readability): <code>=IFS([@Score]>=90,"A",[@Score]>=80,"B",[@Score]>=70,"C",[@Score]>=60,"D",TRUE,"F")</code>. Both columns must match.</div></div>
+      <div class="step-i"><div class="sn">4</div><div>Column H — <strong>Department full name via SWITCH</strong>: <code>=SWITCH([@Department],"Eng","Engineering","Mkt","Marketing","Sci","Science","Fin","Finance","Other")</code></div></div>
+      <div class="step-i"><div class="sn">5</div><div>Column I — <strong>Risk Flag</strong> combining AND/OR: <code>=IF(AND([@Score]&lt;70,[@Attendance]&lt;0.75,[@PreviousFail]=TRUE),"HIGH",IF(OR([@Score]&lt;70,[@Attendance]&lt;0.75),"MEDIUM","LOW"))</code></div></div>
+      <div class="step-i"><div class="sn">6</div><div>Column J — <strong>Numeric risk encoding</strong>: <code>=IF([@Risk]="HIGH",3,IF([@Risk]="MEDIUM",2,1))</code>. This number is what feeds into your ML model — algorithms need numbers, not text.</div></div>
+      <div class="step-i"><div class="sn">7</div><div>Apply color-coded conditional formatting to column I: High = red fill, Medium = amber fill, Low = green fill. Home → Conditional Formatting → New Rule → "Format only cells that contain → specific text".</div></div>
+    </div>
+    <div class="formula">
+<span class="cm">// IFS — readable multi-branch (most restrictive condition FIRST)</span>
+=<span class="fn">IFS</span>([@Score]>=<span class="num">90</span>,<span class="str">"A"</span>, [@Score]>=<span class="num">80</span>,<span class="str">"B"</span>, [@Score]>=<span class="num">70</span>,<span class="str">"C"</span>, [@Score]>=<span class="num">60</span>,<span class="str">"D"</span>, <span class="kw">TRUE</span>,<span class="str">"F"</span>)
+
+<span class="cm">// Risk flag — AND + OR combined</span>
+=<span class="fn">IF</span>(<span class="fn">AND</span>([@Score]&lt;<span class="num">70</span>,[@Attendance]&lt;<span class="num">0.75</span>,[@PreviousFail]=<span class="kw">TRUE</span>),
+  <span class="str">"HIGH"</span>,
+  <span class="fn">IF</span>(<span class="fn">OR</span>([@Score]&lt;<span class="num">70</span>,[@Attendance]&lt;<span class="num">0.75</span>),<span class="str">"MEDIUM"</span>,<span class="str">"LOW"</span>))
+
+<span class="cm">// Numeric encoding — required for ML algorithms</span>
+=<span class="fn">IF</span>([@Risk]=<span class="str">"HIGH"</span>,<span class="num">3</span>,<span class="fn">IF</span>([@Risk]=<span class="str">"MEDIUM"</span>,<span class="num">2</span>,<span class="num">1</span>))
+    </div>
+    <div class="warn-box"><div class="note-icon">⚠️</div><div><strong>Critical mistake to avoid:</strong> IFS evaluates top-to-bottom and stops at the first TRUE. Always put the MOST restrictive condition first. If you write <code>Score>=70</code> before <code>Score>=90</code>, every student scoring 90+ gets "C". Wrong — and no error message!</div></div>
+    <div class="checks">
+      <div class="ck">5-level nested IF works</div>
+      <div class="ck">IFS matches nested IF result</div>
+      <div class="ck">SWITCH mapping departments</div>
+      <div class="ck">Risk flags HIGH/MEDIUM/LOW</div>
+      <div class="ck">Numeric encoding 1/2/3</div>
+      <div class="ck">Color coding applied</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="task-card" id="t3">
+  <div class="task-header" onclick="tog('t3')">
+    <div class="t-num">03</div>
+    <div class="t-tbadge ttb-practice">25 – 38 min</div>
+    <div class="t-wrap">
+      <div class="t-main">📊 Conditional Aggregation — COUNTIF / SUMIF / SUMPRODUCT</div>
+      <div class="t-sub2">Group statistics without PivotTables — the foundation of feature engineering</div>
+    </div>
+    <div class="t-typebadge typ-practice">Practice</div>
+    <div class="t-chev">▼</div>
+  </div>
+  <div class="task-body">
+    <div class="goal">Before any ML model runs, you need group-level statistics. COUNTIF/SUMIF/AVERAGEIF and SUMPRODUCT let you build them instantly. These derived features — "how does this person compare to their group?" — often predict outcomes better than raw values.</div>
+    <div class="steps">
+      <div class="step-i"><div class="sn">1</div><div>Create sheet "AggLab". Build a 50-row sales dataset: <strong>SalesRep, Region (4 values), Quarter (Q1–Q4), Product (3 types), Revenue, Units, Target</strong>. Ensure real variation.</div></div>
+      <div class="step-i"><div class="sn">2</div><div>Build a <strong>Region Summary Table</strong> (4 rows: North, South, East, West). Reference region names from cells — don't hard-code strings in formulas:<br>
+        Count: <code>=COUNTIF(SalesTable[Region], H2)</code><br>
+        Sum: <code>=SUMIF(SalesTable[Region], H2, SalesTable[Revenue])</code><br>
+        Avg: <code>=AVERAGEIF(SalesTable[Region], H2, SalesTable[Revenue])</code></div></div>
+      <div class="step-i"><div class="sn">3</div><div>Add multi-condition COUNTIFS: <code>=COUNTIFS(SalesTable[Region],H2, SalesTable[Quarter],"Q1", SalesTable[Revenue],">"&10000)</code>. Counts rows matching ALL three conditions (AND logic).</div></div>
+      <div class="step-i"><div class="sn">4</div><div>Replicate with SUMPRODUCT: <code>=SUMPRODUCT((SalesTable[Region]=H2)*(SalesTable[Quarter]="Q1")*(SalesTable[Revenue]>10000))</code>. Result must match COUNTIFS. Both are valid — SUMPRODUCT is more flexible.</div></div>
+      <div class="step-i"><div class="sn">5</div><div><strong>Feature engineering column:</strong> Add "vs Regional Avg" to the sales table: <code>=IF([@Revenue]>AVERAGEIF(SalesTable[Region],[@Region],SalesTable[Revenue]),"Above","Below")</code>. Compares each rep to their own region's average.</div></div>
+      <div class="step-i"><div class="sn">6</div><div>Target attainment %: <code>=[@Revenue]/[@Target]-1</code>. Flag over-attainment: <code>=IF([@Revenue]>=[@Target],"Hit","Miss")</code>. Count hits per region using COUNTIFS. These derived features are gold for predicting future performance.</div></div>
+    </div>
+    <div class="formula">
+<span class="cm">// Single condition — reference from cell for flexibility</span>
+=<span class="fn">COUNTIF</span>(SalesTable[Region], H2)
+=<span class="fn">SUMIF</span>(SalesTable[Region], H2, SalesTable[Revenue])
+=<span class="fn">AVERAGEIF</span>(SalesTable[Region], H2, SalesTable[Revenue])
+
+<span class="cm">// Multi-condition AND (COUNTIFS)</span>
+=<span class="fn">COUNTIFS</span>(SalesTable[Region],H2, SalesTable[Quarter],<span class="str">"Q1"</span>)
+=<span class="fn">SUMIFS</span>(SalesTable[Revenue], SalesTable[Region],H2, SalesTable[Quarter],<span class="str">"Q1"</span>)
+
+<span class="cm">// SUMPRODUCT equivalent (more flexible)</span>
+=<span class="fn">SUMPRODUCT</span>((SalesTable[Region]=H2)*(SalesTable[Quarter]=<span class="str">"Q1"</span>)*SalesTable[Revenue])
+
+<span class="cm">// Feature: vs regional average (great ML derived feature)</span>
+=<span class="fn">IF</span>([@Revenue]><span class="fn">AVERAGEIF</span>(SalesTable[Region],[@Region],SalesTable[Revenue]),<span class="str">"Above"</span>,<span class="str">"Below"</span>)
+    </div>
+    <div class="note-box"><div class="note-icon">🧠</div><div><strong>ML feature insight:</strong> "Is this rep's revenue above their regional average?" is a derived feature that often predicts churn, performance reviews, and promotion likelihood better than raw revenue alone. Relative features carry more signal than absolute ones.</div></div>
+    <div class="checks">
+      <div class="ck">Region summary table complete</div>
+      <div class="ck">Cell-referenced (not hard-coded)</div>
+      <div class="ck">COUNTIFS multi-condition working</div>
+      <div class="ck">SUMPRODUCT matches COUNTIFS</div>
+      <div class="ck">Above/Below column added</div>
+      <div class="ck">Target attainment flagged</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="task-card" id="t4">
+  <div class="task-header" onclick="tog('t4')">
+    <div class="t-num">04</div>
+    <div class="t-tbadge ttb-practice">38 – 50 min</div>
+    <div class="t-wrap">
+      <div class="t-main">🔤 Text Cleaning Pipeline</div>
+      <div class="t-sub2">Clean a deliberately messy dataset — mirrors every real ML project</div>
+    </div>
+    <div class="t-typebadge typ-practice">Practice</div>
+    <div class="t-chev">▼</div>
+  </div>
+  <div class="task-body">
+    <div class="goal">Real ML datasets are dirty. Names have extra spaces, emails have inconsistent casing, product codes are glued to descriptions. This task mirrors the exact text cleaning steps you will do on every real dataset before encoding or training — no exceptions.</div>
+    <div class="steps">
+      <div class="step-i"><div class="sn">1</div><div>Create sheet "TextLab". Build a "Dirty Data" table with 20 rows — make it genuinely messy:<br>
+        Col A Names: <em>" john  smith "</em>, <em>"SARAH JONES"</em>, <em>"mike o'brien"</em><br>
+        Col B Emails: <em>"John.Smith@GMAIL.COM"</em>, <em>" sarah@yahoo.com"</em><br>
+        Col C Products: <em>"PRD-001 Blue Widget"</em>, <em>"PRD-002 Red Gadget"</em></div></div>
+      <div class="step-i"><div class="sn">2</div><div><strong>Clean names:</strong> Col E = <code>=PROPER(TRIM(A2))</code>. TRIM removes extra spaces, PROPER capitalizes properly. Result: "John Smith", "Sarah Jones", "Mike O'Brien".</div></div>
+      <div class="step-i"><div class="sn">3</div><div><strong>Standardize emails:</strong> Col F = <code>=LOWER(TRIM(B2))</code>. Forces lowercase, strips spaces. Essential for deduplication — "JOHN@gmail.com" and "john@gmail.com" are the same person.</div></div>
+      <div class="step-i"><div class="sn">4</div><div><strong>Dynamic split using FIND</strong> (works for any length):<br>
+        Product Code: <code>=LEFT(C2, FIND(" ",C2)-1)</code> → "PRD-001"<br>
+        Product Name: <code>=TRIM(MID(C2, FIND(" ",C2)+1, 100))</code> → "Blue Widget"</div></div>
+      <div class="step-i"><div class="sn">5</div><div><strong>Extract email domain:</strong> <code>=MID(F2, FIND("@",F2)+1, LEN(F2))</code> → "gmail.com". Domain is a useful ML feature — company email vs personal email can predict customer type or churn risk.</div></div>
+      <div class="step-i"><div class="sn">6</div><div><strong>Composite key for joins:</strong> <code>=TEXTJOIN("-", TRUE, [@StudentID], [@Department])</code> → "S001-Engineering". Composite keys are essential when joining multi-table ML datasets uniquely.</div></div>
+      <div class="step-i"><div class="sn">7</div><div><strong>Verify cleaning worked:</strong> Add column =LEN(TRIM(A2))=LEN(A2) — returns TRUE if no extra spaces. Add =ISBLANK(E2) — returns TRUE if cleaning produced an empty result. These are your quality checks.</div></div>
+    </div>
+    <div class="formula">
+<span class="cm">// Clean names — most common combo</span>
+=<span class="fn">PROPER</span>(<span class="fn">TRIM</span>(A2))           <span class="cm">→ " john  smith " → "John Smith"</span>
+
+<span class="cm">// Standardize email</span>
+=<span class="fn">LOWER</span>(<span class="fn">TRIM</span>(B2))            <span class="cm">→ "JOHN@GMAIL.COM " → "john@gmail.com"</span>
+
+<span class="cm">// Dynamic split — works regardless of code length</span>
+=<span class="fn">LEFT</span>(C2, <span class="fn">FIND</span>(<span class="str">" "</span>,C2)-<span class="num">1</span>)     <span class="cm">→ "PRD-001"</span>
+=<span class="fn">TRIM</span>(<span class="fn">MID</span>(C2,<span class="fn">FIND</span>(<span class="str">" "</span>,C2)+<span class="num">1</span>,<span class="num">100</span>)) <span class="cm">→ "Blue Widget"</span>
+
+<span class="cm">// Extract email domain (useful ML feature)</span>
+=<span class="fn">MID</span>(F2, <span class="fn">FIND</span>(<span class="str">"@"</span>,F2)+<span class="num">1</span>, <span class="fn">LEN</span>(F2)) <span class="cm">→ "gmail.com"</span>
+
+<span class="cm">// Composite key</span>
+=<span class="fn">TEXTJOIN</span>(<span class="str">"-"</span>, <span class="kw">TRUE</span>, [@ID], [@Dept]) <span class="cm">→ "S001-Engineering"</span>
+
+<span class="cm">// Quality verification</span>
+=<span class="fn">LEN</span>(<span class="fn">TRIM</span>(A2))=<span class="fn">LEN</span>(A2)        <span class="cm">→ TRUE if clean, FALSE if had extra spaces</span>
+    </div>
+    <div class="note-box"><div class="note-icon">🎯</div><div><strong>Pro tip:</strong> After cleaning, always verify with LEN() and ISBLANK(). A cell that looks empty might contain a single space (LEN=1) — TRIM fixes this. Running COUNTBLANK() after cleaning tells you how many true nulls remain for imputation on Day 4.</div></div>
+    <div class="checks">
+      <div class="ck">Names cleaned (PROPER+TRIM)</div>
+      <div class="ck">Emails lowercased</div>
+      <div class="ck">Product code split (dynamic)</div>
+      <div class="ck">Email domain extracted</div>
+      <div class="ck">Composite key created</div>
+      <div class="ck">Quality checks added</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="task-card" id="t5">
+  <div class="task-header" onclick="tog('t5')">
+    <div class="t-num">05</div>
+    <div class="t-tbadge ttb-project">50 – 60 min</div>
+    <div class="t-wrap">
+      <div class="t-main">🏆 SUMPRODUCT Mastery + Day 2 Integration Challenge</div>
+      <div class="t-sub2">Weighted averages, dot products, and a full lookup dashboard</div>
+    </div>
+    <div class="t-typebadge typ-project">Project</div>
+    <div class="t-chev">▼</div>
+  </div>
+  <div class="task-body">
+    <div class="goal">Bring lookups, conditionals, and aggregation into one cohesive mini-system. SUMPRODUCT's weighted average IS the prediction formula of linear regression — building it in Excel makes the ML math visceral and intuitive.</div>
+    <div class="steps">
+      <div class="step-i"><div class="sn">1</div><div>Create sheet "SumproductLab". Build a Grade Calculator: <strong>StudentID, Quiz1, Quiz2, Midterm, Final, Attendance</strong> — 15 students. Create a separate Weights table: 15%, 15%, 30%, 35%, 5%.</div></div>
+      <div class="step-i"><div class="sn">2</div><div><strong>Weighted Final Score</strong>: <code>=SUMPRODUCT(B2:F2, $I$2:$I$6)</code> where I2:I6 = {0.15, 0.15, 0.30, 0.35, 0.05}. This is a mathematical dot product — the same operation linear regression uses to make predictions.</div></div>
+      <div class="step-i"><div class="sn">3</div><div>Verify weights sum to 1: <code>=SUM($I$2:$I$6)</code> must equal exactly 1.00. If not, your weighted average is scaled incorrectly. In ML, this corresponds to normalizing feature weights in ensemble models.</div></div>
+      <div class="step-i"><div class="sn">4</div><div>Multi-condition analysis: How many students scored above 80 on BOTH Midterm AND Final?<br><code>=SUMPRODUCT((C2:C16>80)*(D2:D16>80))</code><br>What % of class? <code>=SUMPRODUCT((C2:C16>80)*(D2:D16>80))/COUNT(C2:C16)</code></div></div>
+      <div class="step-i"><div class="sn">5</div><div>Grade distribution: Count students in each band using SUMPRODUCT:<br>
+        A (90+): <code>=SUMPRODUCT((G2:G16>=90))</code><br>
+        B (80–89): <code>=SUMPRODUCT((G2:G16>=80)*(G2:G16&lt;90))</code><br>
+        Verify: all bands sum to 15.</div></div>
+      <div class="step-i"><div class="sn">6</div><div><strong>Integration Dashboard</strong>: Create sheet "Day2_Summary". Add a yellow input cell J1 for StudentID. Use XLOOKUP to pull Name, weighted score, letter grade, risk flag, and cleaned name — all from formulas. Change J1 — everything updates.</div></div>
+    </div>
+    <div class="formula">
+<span class="cm">// Weighted score — this IS linear regression prediction math</span>
+=<span class="fn">SUMPRODUCT</span>(B2:F2, $I$2:$I$6)
+<span class="cm">// = 0.15×Quiz1 + 0.15×Quiz2 + 0.30×Midterm + 0.35×Final + 0.05×Attendance</span>
+
+<span class="cm">// Safe version — divides by weight sum (handles if weights don't sum to 1)</span>
+=<span class="fn">SUMPRODUCT</span>(B2:F2, $I$2:$I$6) / <span class="fn">SUM</span>($I$2:$I$6)
+
+<span class="cm">// Multi-condition: scored above 80 on BOTH Midterm AND Final</span>
+=<span class="fn">SUMPRODUCT</span>((C2:C16><span class="num">80</span>)*(D2:D16><span class="num">80</span>))
+
+<span class="cm">// Grade band B (80 to 89.99)</span>
+=<span class="fn">SUMPRODUCT</span>((G2:G16>=<span class="num">80</span>)*(G2:G16&lt;<span class="num">90</span>))
+
+<span class="cm">// Dynamic lookup dashboard — change J1 to see any student</span>
+=<span class="fn">XLOOKUP</span>($J$1, Students[StudentID], Students[Name], <span class="str">"Not Found"</span>)
+=<span class="fn">XLOOKUP</span>($J$1, Students[StudentID], Students[WeightedScore], <span class="num">0</span>)
+    </div>
+    <div class="note-box"><div class="note-icon">🚀</div><div><strong>Deep insight — this is real ML math:</strong> SUMPRODUCT(scores, weights) computes <em>ŷ = w₁x₁ + w₂x₂ + … + wₙxₙ</em> — the linear regression prediction formula. When you later use sklearn's <code>model.predict()</code>, it runs this exact operation with learned weights across millions of rows. Excel just made the math visible and tangible.</div></div>
+    <div class="checks">
+      <div class="ck">Weighted scores correct</div>
+      <div class="ck">Weights sum to 100%</div>
+      <div class="ck">Multi-condition count done</div>
+      <div class="ck">Grade distribution verified</div>
+      <div class="ck">Day2_Summary dashboard works</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIP BOX -->
+<div class="tip-box">
+  <div class="tip-icon">💡</div>
+  <div>
+    <div class="tip-title">Day 2 Pro Tip — SUMPRODUCT is the Gateway to ML Math</div>
+    <div class="tip-desc">The weighted average you just built is mathematically identical to a linear model's prediction: <strong>ŷ = w₁x₁ + w₂x₂ + … + wₙxₙ</strong>. Excel set the weights manually. ML algorithms <em>learn</em> the optimal weights from data — but the math is exactly the same. Keep this connection in mind every time you see a regression model: it's just a SUMPRODUCT with learned weights.</div>
+  </div>
+</div>
+
+<!-- FORMULA QUICK REF -->
+<div class="sec-label">📋 Day 2 Formula Quick Reference</div>
+<div class="cheat" style="margin-bottom:38px;">
+  <div class="cs-row"><div class="cs-fn">XLOOKUP(v,arr,ret,err,m)</div><div class="cs-desc">Modern lookup — handles errors natively</div></div>
+  <div class="cs-row"><div class="cs-fn">INDEX(range,MATCH(v,a,0))</div><div class="cs-desc">Robust join — survives column changes</div></div>
+  <div class="cs-row"><div class="cs-fn">IFS(c1,v1,…,TRUE,default)</div><div class="cs-desc">Multi-branch logic — cleaner than nested IF</div></div>
+  <div class="cs-row"><div class="cs-fn">SWITCH(expr,c1,v1,…,def)</div><div class="cs-desc">Exact-match dictionary mapping</div></div>
+  <div class="cs-row"><div class="cs-fn">IFERROR(formula, fallback)</div><div class="cs-desc">Catch all errors gracefully</div></div>
+  <div class="cs-row"><div class="cs-fn">SUMPRODUCT(arr1,arr2)</div><div class="cs-desc">Weighted sum + multi-condition array</div></div>
+  <div class="cs-row"><div class="cs-fn">COUNTIFS / SUMIFS / AVERAGEIFS</div><div class="cs-desc">Multi-condition aggregation (AND logic)</div></div>
+  <div class="cs-row"><div class="cs-fn">PROPER(TRIM(text))</div><div class="cs-desc">Clean + capitalize in one step</div></div>
+  <div class="cs-row"><div class="cs-fn">MID(t,FIND("@",t)+1,LEN(t))</div><div class="cs-desc">Extract text after any delimiter</div></div>
+  <div class="cs-row"><div class="cs-fn">TEXTJOIN("-",TRUE,a,b,c)</div><div class="cs-desc">Combine fields into composite key</div></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bot-nav">
+  <a class="nav-btn" href="Day1_Excel_Foundations.html">← Day 1: Foundations</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">
+    Day 2 Complete ✓<br>
+    <span style="color:var(--accent);">Day 3: Statistical Analysis →</span>
+  </div>
+  <a class="nav-btn primary" href="#">Day 3: Statistics →</a>
+</div>
+
+</div>
+<script>
+function tog(id){document.getElementById(id).classList.toggle('open');}
+</script>
+</body>
+</html>

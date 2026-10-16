@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SciPy – Day 5 | Capstone: Scientific Analysis Pipeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F8FAFC;--surface:#FFFFFF;--border:#CBD5E1;--accent:#0F172A;--accent2:#1E293B;
+    --green:#059669;--red:#EF233C;--gold:#B45309;--blue:#1E40AF;--purple:#7C3AED;--teal:#0891B2;
+    --text:#0F172A;--muted:#334155;--code-bg:#070B14;--code-text:#CBD5E1;--tag-bg:#F1F5F9;--tag-text:#1E293B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(15,23,42,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#B45309 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🔬';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#B45309,#F59E0B);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#94A3B8;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FDBA74;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#475569;font-style:italic;} .op{color:#CBD5E1;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.gold{border-color:var(--gold);background:#FFFBEB;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.green .callout-title{color:var(--green);} .callout.gold .callout-title{color:var(--gold);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#1E293B,#0F172A);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .pipeline-visual{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:16px 0;}
+  .pipe-step{background:var(--tag-tag,var(--tag-bg));color:var(--tag-text);padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:600;border:1px solid var(--border);}
+  .pipe-arrow{color:var(--muted);font-size:16px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0F172A,#1E293B,#B45309);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#0F172A,#B45309);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;} .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .certificate{border:3px solid var(--gold);border-radius:16px;padding:40px;text-align:center;background:linear-gradient(135deg,#FFFBEB,#F8FAFC);margin-top:32px;position:relative;overflow:hidden;}
+  .certificate::before{content:'🔬';font-size:200px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;}
+  .certificate .cert-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+  .certificate h2{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);margin-bottom:8px;}
+  .certificate .cert-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin:16px 0;}
+  .certificate p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto 20px;}
+  .cert-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;}
+  .cert-skill{background:var(--accent);color:#fff;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;}
+  .grand-certificate{border:4px double var(--gold);border-radius:20px;padding:48px 40px;text-align:center;background:linear-gradient(135deg,#0F172A,#1E293B);color:#fff;margin-top:36px;position:relative;overflow:hidden;}
+  .grand-certificate::before{content:'🐍';font-size:240px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.05;}
+  .grand-certificate .gc-title{font-family:'Sora',sans-serif;font-size:12px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#FDE68A;margin-bottom:14px;}
+  .grand-certificate h2{font-family:'Sora',sans-serif;font-size:32px;font-weight:800;margin-bottom:10px;}
+  .grand-certificate p{opacity:.85;max-width:560px;margin:0 auto 20px;font-size:14.5px;}
+  .gc-libraries{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:20px 0;}
+  .gc-lib{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:8px 18px;border-radius:10px;font-size:13px;font-weight:600;}
+  .gc-lib .lib-days{display:block;font-size:11px;opacity:.7;font-weight:400;margin-top:2px;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔬 SciPy</div><span class="sep">|</span><span class="day-label">Day 5 of 5 · Final</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">100%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">SciPy Full Course · Day 5 · Capstone</div>
+  <h1>Scientific Analysis<br><span>Pipeline Capstone</span></h1>
+  <p>The final day of the entire Python Data Science curriculum. Combine statistics, optimization, and signal processing into one integrated materials-testing analysis pipeline.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔗 Integrating All SciPy Modules</span>
+    <span class="hero-pill">📋 Building an Analysis Report</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Full Capstone Pipeline</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎓 <strong>Final Day of SciPy!</strong> You've covered Distributions → Hypothesis Testing → Optimization → Linear Algebra/Signal Processing. Today integrates everything into one scientific pipeline — and completes your entire 5-library curriculum!</p>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔗</div>
+    <div><h2>Designing an End-to-End Scientific Pipeline</h2><p>How SciPy's modules combine in real analytical workflows</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Real scientific/engineering analysis rarely uses just ONE SciPy module in isolation. A typical pipeline moves data through several stages, each drawing on a different submodule.</p>
+
+    <div class="pipeline-visual">
+      <span class="pipe-step">📥 Raw Data</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">📊 stats.describe()</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">🧪 Hypothesis Test</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">🎯 curve_fit()</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">📐 interpolate</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">📡 signal analysis</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">📋 Report</span>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># A typical integrated pipeline touches MULTIPLE scipy submodules in sequence</span>
+<span class="kw">from</span> scipy <span class="kw">import</span> stats, optimize, interpolate, signal, linalg
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># 1. DESCRIBE the raw data (scipy.stats)</span>
+summary = stats.<span class="fn">describe</span>(raw_measurements)
+
+<span class="cm"># 2. TEST a hypothesis about groups (scipy.stats)</span>
+t_stat, p_val = stats.<span class="fn">ttest_ind</span>(group_a, group_b, equal_var=<span class="kw">False</span>)
+
+<span class="cm"># 3. FIT a physical model to the data (scipy.optimize)</span>
+popt, pcov = optimize.<span class="fn">curve_fit</span>(model_function, x_data, y_data)
+
+<span class="cm"># 4. FILL GAPS in sparse measurements (scipy.interpolate)</span>
+spline = interpolate.<span class="fn">CubicSpline</span>(known_x, known_y)
+
+<span class="cm"># 5. CLEAN UP a noisy sensor signal (scipy.signal)</span>
+clean_signal = signal.<span class="fn">savgol_filter</span>(noisy_data, window_length=<span class="nm">21</span>, polyorder=<span class="nm">3</span>)
+
+<span class="cm"># Each stage's OUTPUT often feeds into the NEXT stage's INPUT —
+# e.g., fitted model parameters (popt) might inform which distribution to test in stats,
+# or a filtered signal (signal module) might then be searched for statistical outliers (stats module)</span></pre>
+    </div>
+
+    <div class="callout teal">
+      <div class="callout-title">💡 Modules Aren't Silos — They Compose</div>
+      In real projects, you'll often move data between scipy.stats, scipy.optimize, scipy.interpolate, and scipy.signal within the SAME analysis — fitting a model with optimize, then testing whether its residuals look normally-distributed with stats, then filtering measurement noise with signal before re-fitting. Fluency comes from knowing how to CHAIN these tools together.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📋</div>
+    <div><h2>Building a Reproducible Analysis Report</h2><p>Structuring findings for stakeholders who won't read your code</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># A reusable pattern: wrap your analysis in a function returning a structured summary</span>
+<span class="kw">def</span> <span class="fn">analyze_material_sample</span>(stress_data, strain_data, reference_yield_strength):
+    <span class="st">"""Runs a complete analysis pipeline and returns a summary dict."""</span>
+    report = {}
+
+    <span class="cm"># Descriptive stats</span>
+    desc = stats.<span class="fn">describe</span>(stress_data)
+    report[<span class="st">'mean_stress'</span>] = desc.mean
+    report[<span class="st">'skewness'</span>] = desc.skewness
+
+    <span class="cm"># Hypothesis test vs a reference/spec value</span>
+    t_stat, p_val = stats.<span class="fn">ttest_1samp</span>(stress_data, popmean=reference_yield_strength)
+    report[<span class="st">'differs_from_spec'</span>] = p_val < <span class="nm">0.05</span>
+    report[<span class="st">'p_value'</span>] = p_val
+
+    <span class="cm"># Model fit (e.g., stress-strain curve)</span>
+    <span class="kw">def</span> <span class="fn">hookes_law</span>(strain, E):
+        <span class="kw">return</span> E * strain
+    popt, _ = optimize.<span class="fn">curve_fit</span>(hookes_law, strain_data, stress_data)
+    report[<span class="st">'elastic_modulus'</span>] = popt[<span class="nm">0</span>]
+
+    <span class="kw">return</span> report
+
+<span class="cm"># Print a clean, human-readable summary</span>
+<span class="kw">def</span> <span class="fn">print_report</span>(report):
+    <span class="fn">print</span>(<span class="st">"="</span>*<span class="nm">50</span>)
+    <span class="fn">print</span>(<span class="st">"MATERIAL SAMPLE ANALYSIS REPORT"</span>)
+    <span class="fn">print</span>(<span class="st">"="</span>*<span class="nm">50</span>)
+    <span class="kw">for</span> key, value <span class="kw">in</span> report.items():
+        <span class="fn">print</span>(<span class="st">f"{key:25s}: {value}"</span>)</pre>
+    </div>
+
+    <div class="callout gold">
+      <div class="callout-title">✅ Wrap Analysis Steps in Reusable Functions</div>
+      Structuring your pipeline as functions (rather than one long linear script) makes it reusable across different samples/datasets, easier to test, and easier to hand off — a critical skill difference between "a script that worked once" and "an analysis TOOL."
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Final Practice MCQs — 20 Questions</h2><p>Pipeline integration and the full SciPy course. Pass: 16/20.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPSTONE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#0F172A,#B45309)">🏆</div>
+    <div><h2>Capstone Project — Materials Testing Laboratory Pipeline</h2><p>Estimated time: 3–4 hours &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐ &nbsp;|&nbsp; Uses ALL 5 days of SciPy</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>📋 Project Brief — Meridian Materials Testing Lab</h3>
+      <p>You are the <strong>Lead Test Engineer</strong> at Meridian Materials Testing Lab. A new alloy batch needs FULL qualification: statistical quality control, strength comparison against the old alloy, stress-strain curve fitting, sensor data cleanup, and a final pass/fail report — using EVERY SciPy technique from Days 1-4.</p>
+      <span class="cap-badge">Day 1: Distributions &amp; Descriptive Stats</span>
+      <span class="cap-badge">Day 2: Hypothesis Testing</span>
+      <span class="cap-badge">Day 3: Optimization &amp; Interpolation</span>
+      <span class="cap-badge">Day 4: Linear Algebra &amp; Signal Processing</span>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0F172A">1</div><h4>Phase 1 — Data Generation &amp; Quality Control</h4><span class="phase-time">~35 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Generate Test Sample Data</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> scipy <span class="kw">import</span> stats, optimize, interpolate, signal
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">11</span>)
+
+<span class="cm"># 30 tensile strength test samples (MPa) — new alloy batch</span>
+new_alloy_strength = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">450</span>, <span class="nm">18</span>, <span class="nm">30</span>)
+
+<span class="cm"># Historical strength data — old/current alloy (for comparison)</span>
+old_alloy_strength = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">430</span>, <span class="nm">20</span>, <span class="nm">30</span>)
+
+<span class="cm"># Spec requirement: minimum yield strength of 420 MPa</span>
+SPEC_MIN = <span class="nm">420</span>
+
+<span class="cm"># QC Step 1: Descriptive stats + normality check</span>
+desc = stats.<span class="fn">describe</span>(new_alloy_strength)
+shapiro_stat, shapiro_p = stats.<span class="fn">shapiro</span>(new_alloy_strength)
+<span class="fn">print</span>(<span class="st">f"Mean: {desc.mean:.1f} MPa, Skewness: {desc.skewness:.2f}"</span>)
+<span class="fn">print</span>(<span class="st">f"Shapiro-Wilk p-value: {shapiro_p:.4f}"</span>)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Test Against Specification</h5>
+          <p>Run a one-sample t-test (ttest_1samp) comparing new_alloy_strength against SPEC_MIN=420. Additionally, compute what percentage of the batch falls BELOW spec using the fitted normal distribution's CDF (stats.norm.fit() then .cdf(420)).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Comparative Hypothesis Testing</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Is the New Alloy Actually Stronger?</h5>
+          <p>Check normality of BOTH alloy groups with Shapiro-Wilk. Run the appropriate test (Welch's t-test or Mann-Whitney U) to determine if new_alloy_strength is significantly different from old_alloy_strength. Report the mean difference and p-value.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Build a Comparison Visualization</h5>
+          <p>Build a box+swarm combo chart (or histogram overlay) comparing the two alloy strength distributions, with the SPEC_MIN line marked.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Stress-Strain Curve Fitting</h4><span class="phase-time">~35 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Fit the Elastic Modulus</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Simulated stress-strain test (elastic region only — Hooke's Law: stress = E * strain)</span>
+strain = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">0.002</span>, <span class="nm">25</span>)
+true_E = <span class="nm">200000</span>   <span class="cm"># MPa, typical for steel-like alloy</span>
+stress = true_E * strain + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">5</span>, <span class="fn">len</span>(strain))
+
+<span class="kw">def</span> <span class="fn">hookes_law</span>(strain, E):
+    <span class="kw">return</span> E * strain
+
+popt, pcov = optimize.<span class="fn">curve_fit</span>(hookes_law, strain, stress)
+E_fitted = popt[<span class="nm">0</span>]
+E_uncertainty = <span class="op">np</span>.<span class="fn">sqrt</span>(pcov[<span class="nm">0</span>,<span class="nm">0</span>])
+<span class="fn">print</span>(<span class="st">f"Fitted Elastic Modulus: {E_fitted:.0f} ± {E_uncertainty:.0f} MPa"</span>)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Interpolate Missing Strain Gauge Readings</h5>
+          <p>A secondary strain gauge only recorded every 5th point. Use CubicSpline to interpolate its missing readings and compare against the actual dense data — compute the interpolation error (RMS difference).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div><h4>Phase 4 — Acoustic Emission Signal Analysis</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Detect Micro-Fracture Events</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Acoustic emission sensor during load testing — detects micro-fracture "pings"</span>
+fs = <span class="nm">1000</span>
+t = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">5</span>, fs*<span class="nm">5</span>)
+baseline_noise = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">0.1</span>, <span class="fn">len</span>(t))
+
+<span class="cm"># Simulate 4 micro-fracture "ping" events at specific times</span>
+ae_signal = baseline_noise.<span class="fn">copy</span>()
+<span class="kw">for</span> event_time <span class="kw">in</span> [<span class="nm">1.2</span>, <span class="nm">2.5</span>, <span class="nm">3.1</span>, <span class="nm">4.4</span>]:
+    idx = <span class="fn">int</span>(event_time * fs)
+    ae_signal[idx:idx+<span class="nm">5</span>] += <span class="nm">2.0</span>   <span class="cm"># sharp amplitude spike</span>
+
+<span class="cm"># Detect the fracture events using find_peaks</span>
+peaks, props = signal.<span class="fn">find_peaks</span>(ae_signal, height=<span class="nm">1.0</span>, distance=<span class="nm">100</span>)
+detected_times = t[peaks]
+<span class="fn">print</span>(<span class="st">f"Detected {len(peaks)} micro-fracture events at: {detected_times}"</span>)</pre></div>
+          <p>Verify the detected event times closely match the true simulated event times (1.2, 2.5, 3.1, 4.4s).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">5</div><h4>Phase 5 — Final QC Report &amp; Pass/Fail Decision</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build the Reusable Report Function</h5>
+          <p>Write a function generate_qc_report() that takes all the computed values from previous phases and prints a structured pass/fail report, including: mean strength vs spec, statistical comparison to old alloy, fitted elastic modulus with uncertainty, and micro-fracture event count. Issue an overall PASS/FAIL/REVIEW recommendation based on: (1) mean strength ≥ spec, (2) fewer than 5 micro-fracture events detected during testing.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED OUTPUT FORMAT</span></div>
+<pre>═══════════════════════════════════════════════
+  MERIDIAN MATERIALS LAB — BATCH QC REPORT
+═══════════════════════════════════════════════
+STRENGTH ANALYSIS
+  Mean Tensile Strength   : ???.? MPa (spec min: 420 MPa)
+  % Below Spec (fitted)   : ??.?%
+  vs Old Alloy            : +??.? MPa (p=?.????, significant: Yes/No)
+
+MECHANICAL PROPERTIES
+  Elastic Modulus (E)     : ??????? ± ???? MPa
+
+ACOUSTIC EMISSION
+  Micro-fracture Events   : ? detected
+
+═══════════════════════════════════════════════
+  OVERALL RESULT: ✅ PASS / ❌ FAIL / ⚠️ REVIEW
+═══════════════════════════════════════════════</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Capstone Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated new and old alloy strength test data</li>
+        <li>Computed descriptive stats and normality check on new alloy</li>
+        <li>Ran one-sample t-test against spec minimum</li>
+        <li>Computed % of batch below spec using fitted normal CDF</li>
+        <li>Checked normality of both alloy groups before comparison</li>
+        <li>Ran appropriate comparison test (t-test or Mann-Whitney)</li>
+        <li>Built comparison visualization with spec line marked</li>
+        <li>Fit Hooke's Law model with curve_fit, extracted E with uncertainty</li>
+        <li>Interpolated sparse strain gauge data with CubicSpline</li>
+        <li>Computed interpolation error against true dense data</li>
+        <li>Detected micro-fracture events with find_peaks</li>
+        <li>Verified detected event times matched true simulated times</li>
+        <li>Built a reusable generate_qc_report() function</li>
+        <li>Issued a final PASS/FAIL/REVIEW recommendation with clear criteria</li>
+      </ul>
+    </div>
+
+    <div class="callout gold" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges — Prove Mastery</div>
+      <ol style="margin-top:8px;">
+        <li><strong>Multi-batch ANOVA</strong>: Simulate a 3rd alloy batch and use f_oneway() to compare all three simultaneously.</li>
+        <li><strong>Automated batch processing</strong>: Wrap the entire capstone into a function process_batch(strength_data, strain_data, ae_signal) that could run automatically on each new incoming test batch.</li>
+        <li><strong>Frequency-domain AE analysis</strong>: Build a spectrogram of the acoustic emission signal to see if fracture events have a distinct frequency signature compared to baseline noise.</li>
+      </ol>
+    </div>
+
+    <div class="certificate">
+      <div class="cert-title">Certificate of Completion</div>
+      <h2>SciPy Full Course</h2>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">This certifies that you have completed all 5 days of</div>
+      <div class="cert-name">🔬 SciPy Mastery Track</div>
+      <p>You have built expertise in statistical distributions, hypothesis testing, optimization, curve fitting, interpolation, linear algebra, and signal processing.</p>
+      <div class="cert-skills">
+        <span class="cert-skill">✓ Distributions &amp; describe()</span>
+        <span class="cert-skill">✓ T-tests &amp; ANOVA</span>
+        <span class="cert-skill">✓ Chi-Squared &amp; Non-Parametric</span>
+        <span class="cert-skill">✓ minimize() &amp; curve_fit()</span>
+        <span class="cert-skill">✓ linprog() &amp; Root Finding</span>
+        <span class="cert-skill">✓ Interpolation</span>
+        <span class="cert-skill">✓ Linear Algebra Decompositions</span>
+        <span class="cert-skill">✓ Signal Filtering &amp; FFT</span>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--muted);">⭐ 100 MCQs passed &nbsp;|&nbsp; 5 Real-World Projects &nbsp;|&nbsp; 1 Materials Testing Capstone</div>
+    </div>
+
+    <!-- GRAND FINALE CERTIFICATE -->
+    <div class="grand-certificate">
+      <div class="gc-title">🎉 Grand Certificate of Completion 🎉</div>
+      <h2>Python Data Science Curriculum</h2>
+      <p>This certifies the complete mastery of the full 25-day Python Data Science learning path, spanning array computing, data manipulation, visualization, and scientific computing.</p>
+      <div class="gc-libraries">
+        <div class="gc-lib">🔢 NumPy<span class="lib-days">5 days · 100 MCQs</span></div>
+        <div class="gc-lib">🐼 Pandas<span class="lib-days">5 days · 100 MCQs</span></div>
+        <div class="gc-lib">📊 Matplotlib<span class="lib-days">5 days · 100 MCQs</span></div>
+        <div class="gc-lib">🌊 Seaborn<span class="lib-days">5 days · 100 MCQs</span></div>
+        <div class="gc-lib">🔬 SciPy<span class="lib-days">5 days · 100 MCQs</span></div>
+      </div>
+      <p style="font-size:13px;opacity:.7;">25 interactive HTML lessons &nbsp;|&nbsp; 500 practice questions &nbsp;|&nbsp; 25 real-world projects &nbsp;|&nbsp; 5 full capstone builds</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">SciPy Full Course — Complete! 🎉</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Intro &amp; Distributions</span>
+    <span class="day-pill done">Day 2 · Hypothesis Testing</span>
+    <span class="day-pill done">Day 3 · Optimization &amp; Interpolation</span>
+    <span class="day-pill done">Day 4 · Linear Algebra &amp; Signal Processing</span>
+    <span class="day-pill done active">Day 5 · Capstone ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">🎉 <strong>Congratulations!</strong> You have completed the ENTIRE Python Data Science curriculum: NumPy → Pandas → Matplotlib → Seaborn → SciPy.</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"Why do real-world scientific analysis pipelines typically use MULTIPLE scipy submodules together rather than just one in isolation?",opts:["Using multiple submodules is purely for show and has no functional benefit","Real analytical workflows naturally involve DIFFERENT TYPES of tasks in sequence — describing data (stats), testing hypotheses (stats), fitting physical models (optimize), filling data gaps (interpolate), and cleaning sensor noise (signal) — each stage draws on the submodule specifically designed for that type of task, and outputs from one stage often feed into the next", "Each scipy submodule can only be imported once per script, requiring workarounds", "Real pipelines should avoid scipy.stats specifically"],ans:1,explain:"A genuine end-to-end analysis (like the materials testing capstone) naturally moves through different TYPES of tasks — descriptive summarization, statistical comparison, model fitting, gap-filling, and noise reduction — each best handled by its specialized SciPy submodule. Fluency in real scientific computing means knowing how to chain these tools together, not just knowing each one in isolation."},
+  {code:"def analyze_material_sample(stress_data, strain_data, reference_yield_strength):\n    report = {}\n    ...\n    return report",q:"What is the benefit of wrapping an analysis pipeline in a function like this, rather than writing one long linear script?",opts:["Functions always run faster than scripts","Wrapping analysis logic in a reusable function makes it easy to apply the SAME analysis pipeline to different datasets/samples without rewriting code, makes the logic easier to test in isolation, and makes it easier to hand off to colleagues or integrate into automated systems — a key distinction between a one-off script and a genuine analysis TOOL", "This wrapping is purely stylistic with no practical benefit", "Functions cannot return dictionaries in Python"],ans:1,explain:"Structuring analysis as a reusable function (rather than a single long script tied to one specific dataset) means the SAME logic can be applied to new incoming samples/batches without rewriting code each time, can be unit-tested independently, and can be more easily integrated into larger automated systems — this is the practical difference between exploratory one-off analysis and building a genuine, reusable analytical tool."},
+  {q:"In the materials testing capstone, why is it important to run stats.shapiro() on BOTH alloy groups BEFORE deciding whether to use a t-test or Mann-Whitney U to compare them?",opts:["Shapiro-Wilk is purely a formality with no bearing on subsequent analysis","This follows the proper statistical WORKFLOW: checking the normality ASSUMPTION first ensures you select the STATISTICALLY APPROPRIATE comparison test (parametric t-test if both groups look normal, non-parametric Mann-Whitney if either significantly deviates from normality) — using the wrong test family could produce misleading or invalid conclusions about whether the alloys truly differ", "Shapiro-Wilk automatically converts non-normal data into normal data", "This check only matters if sample sizes exceed 1000"],ans:1,explain:"This exemplifies the proper hypothesis-testing WORKFLOW taught throughout Day 2: check the underlying assumption (normality) BEFORE selecting which test family to apply, rather than blindly defaulting to one test regardless of whether its assumptions hold. Using an assumption-violating test could produce an unreliable or misleading conclusion about whether the alloys genuinely differ in strength."},
+  {code:"popt, pcov = optimize.curve_fit(hookes_law, strain, stress)\nE_uncertainty = np.sqrt(pcov[0,0])",q:"Why report E_uncertainty alongside the fitted E value (popt[0]), rather than just the point estimate alone?",opts:["Uncertainty reporting is purely a formality with no practical value","Reporting the uncertainty (derived from the covariance matrix) alongside the point estimate tells stakeholders how CONFIDENT they can be in that specific elastic modulus value — a large uncertainty relative to the estimate suggests the fit is poorly constrained by the available data, which matters significantly for an engineering specification decision", "pcov values are always identical regardless of data quality", "Only the point estimate matters for engineering decisions"],ans:1,explain:"For an ENGINEERING decision (like qualifying a material batch), knowing not just the BEST-FIT elastic modulus value but also HOW CONFIDENT that estimate is (based on the fit's uncertainty) is critical — an estimate with large relative uncertainty might not be reliable enough to base a pass/fail decision on, whereas a tightly-constrained estimate provides much stronger engineering confidence."},
+  {q:"In Phase 3, why is `hookes_law(strain, E) = E * strain` an appropriate CUSTOM model to fit with curve_fit(), rather than using a generic polynomial regression?",opts:["Generic polynomial regression is always superior for any physical model","Hooke's Law is a KNOWN physical relationship in the ELASTIC region of stress-strain testing (stress is directly proportional to strain, with E as the physically meaningful elastic modulus); curve_fit() lets you fit EXACTLY this known physical form, yielding a parameter (E) with direct engineering meaning and interpretability, rather than an arbitrary polynomial coefficient with no physical significance", "curve_fit() cannot be used with linear relationships", "Hooke's Law only applies to gases, not solid materials"],ans:1,explain:"This mirrors the Day 3 lesson on custom model fitting: when you have domain knowledge about the TRUE underlying physical relationship (here, Hooke's Law in the elastic region), fitting that EXACT known functional form with curve_fit() yields parameters with direct physical/engineering meaning (E = elastic modulus, a real material property), rather than an arbitrary polynomial fit whose coefficients wouldn't correspond to any meaningful physical quantity."},
+  {q:"Why does the capstone use CubicSpline interpolation for the SPARSE secondary strain gauge readings, and then compute an 'interpolation error' by comparing against the TRUE dense data?",opts:["This comparison step is unnecessary and purely decorative","This demonstrates a VALIDATION technique: since we happen to have the true dense data available (for teaching purposes), we can directly measure HOW ACCURATE the interpolation actually was — in real scenarios without dense ground truth, this same exercise builds intuition and confidence about how reliable interpolation-based gap-filling can be expected to be for similar sparse sensor data", "Interpolation errors are always zero and this step confirms nothing useful", "CubicSpline cannot be validated in any way"],ans:1,explain:"By comparing the CubicSpline interpolation's estimates against the TRUE (fully-sampled) data — available here for pedagogical/validation purposes — the exercise demonstrates how to assess interpolation ACCURACY. This builds practical intuition: in real scenarios where you genuinely only have sparse readings (without a 'true' dense comparison available), this kind of validation exercise (perhaps using held-out data) helps establish confidence in how reliable your interpolation-based estimates are likely to be."},
+  {code:"peaks, props = signal.find_peaks(ae_signal, height=1.0, distance=100)\ndetected_times = t[peaks]",q:"What is the purpose of comparing detected_times against the TRUE simulated event times (1.2, 2.5, 3.1, 4.4s) in this exercise?",opts:["This comparison serves no diagnostic purpose","This VALIDATES that the peak-detection algorithm and its parameters (height=1.0, distance=100) correctly and reliably identify the actual simulated micro-fracture events without missing real events or falsely flagging noise as events — confirming the detection pipeline is properly tuned before applying it to real, unlabeled sensor data where the true event times wouldn't be known in advance", "find_peaks() always perfectly detects events with zero possibility of error", "This step is only relevant for audio signals, not acoustic emission testing"],ans:1,explain:"Similar to the interpolation validation, having KNOWN true event times (since we simulated them) allows validating that the peak-detection algorithm's specific parameter choices (height threshold, minimum distance) correctly identify real events without either missing them or generating false positives from noise — building confidence in the detection pipeline's parameters BEFORE applying it to real acoustic emission data where the true fracture event times would be unknown."},
+  {q:"Why does the final QC report combine information from MULTIPLE different analysis stages (strength stats, comparison test, elastic modulus, fracture event count) into ONE structured report, rather than presenting each finding separately?",opts:["Combining findings has no practical communication benefit","A structured, comprehensive report allows stakeholders (engineers, quality managers) to see the FULL PICTURE of the material's qualification status at once, understand how different pieces of evidence (strength level, statistical significance, mechanical properties, structural integrity indicators) COLLECTIVELY inform an overall pass/fail decision — mirroring how real engineering QC reports synthesize multiple test results into one actionable determination", "Separate reports are always more accurate than combined ones", "This combination is purely for aesthetic/formatting reasons"],ans:1,explain:"Real-world engineering quality control decisions rarely rest on a SINGLE metric — they synthesize MULTIPLE lines of evidence (does it meet the strength spec? how does it compare statistically to the previous standard? are its mechanical properties well-characterized? are there concerning structural integrity signals like excessive fracture events?) into one COHERENT overall determination. A structured report combining all this evidence mirrors genuine professional QC/engineering reporting practice, rather than requiring stakeholders to mentally piece together scattered individual findings themselves."},
+  {q:"What is the significance of setting MULTIPLE criteria (mean strength ≥ spec AND fewer than 5 fracture events) for the overall PASS/FAIL/REVIEW determination, rather than relying on just ONE single metric?",opts:["Multiple criteria always make a decision process worse and more confusing","A material could satisfy ONE criterion (e.g., adequate average strength) while still showing concerning signals in ANOTHER dimension (e.g., unusual acoustic emission activity suggesting micro-structural issues); requiring multiple criteria to ALL be satisfied provides a more ROBUST, holistic qualification determination that catches potential issues a single metric alone might miss", "Single-criterion decisions are always more scientifically rigorous", "This approach is specific to materials testing and doesn't generalize to other QC contexts"],ans:1,explain:"Relying on just one metric (like average strength) could miss OTHER important signals — a batch might have adequate average strength but show concerning acoustic emission activity suggesting internal micro-cracking or defects that could cause future failure, even if not yet reflected in strength testing. Requiring multiple, complementary criteria to be satisfied provides a more robust, holistic quality determination, catching issues that any single metric in isolation might overlook — this multi-criteria decision-making approach generalizes well beyond materials testing to most rigorous QC/engineering contexts."},
+  {q:"Reflecting on the ENTIRE SciPy course (Days 1-5), what is the unifying theme connecting scipy.stats (Days 1-2), scipy.optimize/interpolate (Day 3), and scipy.linalg/signal (Day 4)?",opts:["These modules are entirely unrelated topics with no common thread","All these SciPy submodules provide NUMERICAL, ALGORITHMIC tools for extracting reliable, quantitative insight from real-world data — whether characterizing its statistical properties, finding optimal parameters/fits, filling gaps in incomplete measurements, or extracting meaningful signal from underlying noise — collectively forming the 'scientific computing' toolkit that complements NumPy's array foundations with higher-level analytical algorithms", "Only scipy.stats has any practical real-world application", "These modules were arbitrarily grouped together with no logical connection"],ans:1,explain:"Across all its submodules, SciPy consistently provides ALGORITHMIC, NUMERICAL tools for turning raw data into quantitative insight — whether that means characterizing statistical distributions and testing hypotheses (stats), finding optimal model parameters (optimize), filling gaps in sparse measurements (interpolate), understanding matrix relationships (linalg), or extracting true signal from noisy sensor data (signal). This positions SciPy as the 'scientific computing' layer built atop NumPy's array foundations, providing the higher-level analytical algorithms that transform raw arrays into scientific and engineering insight."},
+  {q:"Why does the capstone project deliberately choose a MATERIALS TESTING scenario (rather than, say, a purely abstract mathematical exercise) to demonstrate the full SciPy toolkit?",opts:["Materials testing was chosen arbitrarily with no pedagogical reasoning","A realistic engineering/scientific scenario naturally requires MULTIPLE types of analysis working together (statistical QC, hypothesis comparison, physical model fitting, sensor data interpolation, structural integrity signal detection) — mirroring how SciPy's various submodules are actually used together in real professional practice, rather than presenting each technique in an artificially isolated, purely academic context", "Materials testing is the only valid application domain for SciPy", "This scenario choice has no bearing on the educational value of the exercise"],ans:1,explain:"Choosing a realistic, multi-faceted scenario (materials qualification testing) that GENUINELY requires combining statistical QC, comparative hypothesis testing, physical model fitting, sensor gap-filling, and signal-based structural monitoring mirrors how SciPy tools are ACTUALLY used together in real engineering/scientific practice — providing a much richer, more transferable learning experience than presenting each technique in isolation through purely abstract mathematical exercises disconnected from genuine application context."},
+  {q:"What broader lesson about 'real data science/engineering work' does the progression from Day 1 (single distributions) to Day 5 (integrated multi-stage pipeline) illustrate?",opts:["Real work only ever requires knowledge of a single isolated technique","While individual techniques (a single hypothesis test, a single curve fit) are important building blocks to master first, GENUINE professional data science/engineering work typically requires COMBINING multiple techniques into a coherent, multi-stage analytical PIPELINE — the skill of knowing WHEN and HOW to chain different tools together is itself a distinct, higher-level competency beyond just knowing each individual tool", "Later course days are strictly easier than earlier ones", "This progression has no broader lesson beyond the specific SciPy course content"],ans:1,explain:"The course's progression — from learning individual distributions and tests (Day 1-2) to combining multiple techniques into an integrated pipeline (Day 5) — reflects a genuine truth about professional data science/engineering practice: mastering individual tools is necessary but not sufficient; the higher-level skill of correctly SEQUENCING and COMBINING multiple techniques into a coherent analytical workflow (deciding what to compute first, how outputs from one stage inform the next, and how to synthesize multiple findings into an actionable conclusion) is itself a critical, distinct competency that this capstone specifically aims to develop."},
+  {q:"In the capstone's Phase 1, why compute the '% of batch below spec' using the FITTED normal distribution's CDF (stats.norm.fit() then .cdf(420)) RATHER than simply counting the actual proportion of the 30 samples that happen to fall below 420 directly?",opts:["Both approaches always give identical results with no meaningful difference","The FITTED distribution approach provides a smoother, model-based ESTIMATE of the true underlying population's tail probability, which can be more STABLE and informative than the raw sample proportion — especially valuable with modest sample sizes (n=30) where the exact count crossing a threshold can be a fairly NOISY/discrete estimate of the true underlying rarity of falling below spec", "Counting the raw sample proportion is always the superior approach", "The fitted CDF approach is only valid for datasets larger than 10,000 samples"],ans:1,explain:"With a modest sample size (n=30), directly counting how many samples happen to fall below a threshold gives a somewhat 'noisy'/discrete estimate (e.g., '2 out of 30' jumps in large increments). Using a FITTED distribution's CDF instead leverages the ASSUMED underlying continuous distribution (validated by the earlier normality check) to provide a smoother, potentially more stable and informative estimate of the TRUE underlying population's probability of falling below spec — though this approach's validity depends on the normality assumption actually holding, which is why the earlier Shapiro-Wilk check matters."},
+  {q:"Why might the capstone's stretch challenge suggest wrapping the ENTIRE analysis into a function `process_batch(strength_data, strain_data, ae_signal)` for potential AUTOMATED use on future incoming batches?",opts:["Automation has no practical benefit for a materials testing lab","In a REAL production/testing environment, NEW batches of material would need to be qualified REGULARLY (perhaps daily or weekly); wrapping the entire analysis pipeline into ONE callable function means this comprehensive QC process could be run AUTOMATICALLY on each new incoming batch's data, providing consistent, repeatable, and efficient quality control at scale, rather than requiring manual re-execution of the entire multi-step analysis by hand each time", "This wrapping would only work for a single specific batch and couldn't generalize", "Real materials testing labs never need to process more than one batch"],ans:1,explain:"This reflects the PRACTICAL, real-world value of building reusable analysis tools (a theme introduced earlier in the lesson): in an ACTUAL materials testing operation, batches arrive continuously and each needs the SAME comprehensive qualification analysis. Wrapping the entire pipeline into one reusable function transforms a one-off manual analysis into an efficient, consistent, AUTOMATABLE quality control system — directly applicable to streamlining real laboratory operations at scale, rather than requiring an engineer to manually re-run each analysis step by hand for every new batch."},
+  {q:"Looking back at the full 25-day, 5-library curriculum (NumPy → Pandas → Matplotlib → Seaborn → SciPy), what is the overall logical progression these libraries represent together?",opts:["The libraries have no logical relationship to each other and were combined arbitrarily","NumPy provides the FOUNDATIONAL array/numerical computing layer; Pandas builds structured DATA MANIPULATION on top of arrays; Matplotlib and Seaborn provide VISUALIZATION (with Seaborn adding statistical convenience on Matplotlib's base); and SciPy adds advanced SCIENTIFIC/STATISTICAL algorithms — together forming a complete, integrated Python data science stack from raw numerical arrays through data wrangling, visualization, and rigorous scientific/statistical analysis", "Each library completely replaces the need for all the others", "This progression only applies to materials science specifically"],ans:1,explain:"This 5-library curriculum represents the CLASSIC, foundational Python data science stack, with each library building on or complementing the others: NumPy provides the core numerical array foundation; Pandas adds structured, labeled data manipulation on top of NumPy arrays; Matplotlib provides flexible, foundational visualization while Seaborn adds statistical-graphics convenience built on Matplotlib; and SciPy extends NumPy's array foundation with advanced scientific/statistical/optimization algorithms. Together, they form a genuinely complete toolkit spanning the full data science workflow — from raw numerical computation through data wrangling, visualization, and rigorous quantitative analysis — that mirrors what a professional data scientist or research engineer would actually use day-to-day."},
+  {q:"Why is completing a CAPSTONE PROJECT (as done at the end of each of the 5 libraries in this curriculum) considered pedagogically valuable, compared to only completing the daily practice MCQs and smaller real-world tasks?",opts:["Capstone projects serve no additional educational purpose beyond the daily exercises","A capstone project requires INTEGRATING and APPLYING many individual techniques (learned separately across multiple days) into ONE larger, cohesive, realistic deliverable — testing not just whether you understand each individual concept, but whether you can ORCHESTRATE them together to solve a genuinely complex, multi-faceted real-world problem, which is a distinctly higher-order skill than answering isolated practice questions", "Capstones are only useful for the final library (SciPy) and not the earlier ones", "Daily MCQs and capstones test exactly the same underlying skills"],ans:1,explain:"While daily practice questions and smaller real-world tasks build and verify understanding of INDIVIDUAL concepts and techniques, a capstone project uniquely tests the higher-order skill of INTEGRATION — successfully combining MANY previously-learned techniques into one cohesive, realistic, multi-stage analytical deliverable. This mirrors genuine professional practice far more closely than isolated exercises, and is why this curriculum deliberately includes a substantial capstone at the end of EACH library (not just SciPy), reinforcing the integration skill repeatedly across different technical domains throughout the full 25-day learning journey."},
+  {q:"What does the completion of this entire 25-day curriculum (culminating in this SciPy capstone) represent in terms of practical Python data science readiness?",opts:["Completion means no further learning in data science is ever needed", "Completion represents a SOLID, well-rounded FOUNDATION across the core Python data science toolkit — numerical computing, data manipulation, visualization, and scientific/statistical analysis — providing the essential building blocks and integration skills needed to tackle real-world data analysis projects, though continued learning (deeper statistics, machine learning frameworks, domain-specific tools) would naturally extend from this foundation", "This curriculum covers 100% of everything a data scientist would ever need to know", "Only the SciPy portion of this curriculum has any lasting practical value"],ans:1,explain:"Completing this comprehensive 25-day curriculum across NumPy, Pandas, Matplotlib, Seaborn, and SciPy provides a genuinely SOLID, well-rounded FOUNDATION in the core Python data science toolkit — covering numerical computing, data wrangling, visualization, and scientific/statistical analysis, along with the crucial skill of INTEGRATING these tools into real analytical workflows. This foundation is substantial and immediately practically useful, though (like any foundational education) it naturally sets the stage for further specialized learning — deeper statistical methods, machine learning frameworks (scikit-learn, TensorFlop/PyTorch), or domain-specific tools — that would build upon rather than replace this core foundation."},
+  {q:"Why might a well-designed 'analysis pipeline function' (like the capstone's suggested process_batch()) be considered MORE valuable to a real organization than the same analysis performed manually as a one-off script?",opts:["There is no practical difference between the two approaches for an organization","A well-designed, reusable pipeline function provides CONSISTENCY (the same rigorous analysis applied identically to every batch), EFFICIENCY (no need to manually rewrite or reconfigure the analysis each time), REDUCED ERROR RISK (less chance of a manual mistake when re-running a codified function vs. rewriting code), and SCALABILITY (can be integrated into automated systems, run on schedules, or applied to many datasets) — collectively representing significant additional organizational value beyond a single successful one-off analysis", "One-off scripts are always more scientifically rigorous than reusable functions", "This distinction only matters for very large organizations with 1000+ employees"],ans:1,explain:"A codified, reusable analysis pipeline provides substantial PRACTICAL organizational value beyond a single successful one-off script: it ensures CONSISTENCY (identical rigorous analysis applied to every batch, avoiding ad-hoc variation), EFFICIENCY (no need to manually reconstruct the analysis logic each time), REDUCED ERROR RISK (a tested, codified function is less error-prone than manually re-running/adapting code each time), and SCALABILITY (can be integrated into automated quality control systems, scheduled to run automatically, or applied efficiently across many datasets) — this transformation from 'one successful analysis' to 'a reliable, reusable analytical tool' represents a meaningful step up in practical value for any organization doing repeated, similar analyses."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review pipeline integration concepts, then try again! 📚"],[50,75,"Almost there! Focus on the capstone's multi-stage reasoning. 💪"],[75,90,"Strong finish! You've completed the SciPy course. 🎉"],[90,101,"Perfect score — SciPy Master achieved! 🏆🔬"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — Course Complete! 5 days × 20 MCQs = 100 total questions.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

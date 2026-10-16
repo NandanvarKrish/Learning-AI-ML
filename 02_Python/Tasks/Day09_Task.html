@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 09 — AI Task: Modules & Imports</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0fdf4;--paper:#fff;--p2:#dcfce7;
+  --ink:#052010;--ink2:#1a4028;--ink3:#5a9070;
+  --rule:#bbf7d0;
+  --green:#15803d;--gs:#f0fdf4;--gb:#86efac;
+  --blue:#0369a1;--bs:#e0f2fb;--bb:#7dd3fc;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#6d28d9;--ps:#f5f3ff;--pb:#c4b5fd;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --teal:#0d9488;--ts:#f0fdfa;--tb:#99f6e4;
+  --sh:0 1px 4px rgba(5,32,16,.07),0 4px 18px rgba(5,32,16,.07);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bbf7d055,transparent 42%),radial-gradient(circle at 5% 92%,#6ee7b740,transparent 40%);min-height:100vh}
+
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(5,32,16,.06)}
+.bar-in{max-width:860px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--gs);border-color:var(--gb);color:var(--green)}
+
+.page{max-width:860px;margin:0 auto;padding:40px 20px 90px}
+
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--green)}
+.hsub{font-size:.92rem;color:var(--ink2);max-width:590px;line-height:1.75;margin-bottom:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:99px;transition:width .7s ease}
+
+.recap{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--green);border-radius:var(--r);padding:13px 18px;margin-bottom:22px;font-size:.87rem;color:var(--ink2);line-height:1.8}
+.recap code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-ttl{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700}
+.sh-sub{font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-bdg{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:24px 28px;margin-bottom:16px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.tb{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.tt{background:var(--ts);color:var(--teal);border:1px solid var(--tb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.15rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+
+.cb{border-radius:10px;padding:12px 16px;font-size:.86rem;line-height:1.7;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:1px;font-style:normal}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbt{background:var(--ts);border:1px solid var(--tb);color:var(--teal)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+.cw{background:#052010;border-radius:10px;margin:14px 0;overflow:hidden}
+.cbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0a2818;border-bottom:1px solid #164030}
+.cdots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}
+.cdr{background:#ef4444}.cdy{background:#f59e0b}.cdg{background:#22c55e}
+.clang{font-family:'DM Mono',monospace;font-size:.63rem;color:#4a9060;letter-spacing:.1em;text-transform:uppercase}
+.cbody{padding:18px;font-family:'DM Mono',monospace;font-size:.83rem;line-height:2;overflow-x:auto;color:#c8f0d8}
+.cm{color:#2a6040;font-style:italic}.kw{color:#4ade80}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#c8f0d8}.op{color:#4a9060}
+
+/* import styles table */
+.import-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.85rem}
+.import-table th{background:var(--p2);font-weight:600;padding:9px 14px;text-align:left;border:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.import-table td{padding:9px 14px;border:1px solid var(--rule);color:var(--ink2);vertical-align:top}
+.import-table tr:nth-child(even) td{background:#f6fdf8}
+.import-table td:first-child{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--green);font-weight:600}
+
+/* module grid */
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin:14px 0}
+.mod-card{background:var(--paper);border:1.5px solid var(--rule);border-radius:12px;padding:14px;transition:all .2s;cursor:default}
+.mod-card:hover{transform:translateY(-2px);border-color:var(--gb);box-shadow:var(--sh)}
+.mod-icon{font-size:1.3rem;margin-bottom:6px}
+.mod-name{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;color:var(--green);margin-bottom:4px}
+.mod-desc{font-size:.75rem;color:var(--ink2);line-height:1.5}
+.mod-eg{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-top:5px}
+
+/* ML stack */
+.ml-stack{background:var(--p2);border:1.5px solid var(--rule);border-radius:12px;padding:18px;margin:14px 0}
+.ml-row{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;margin-bottom:6px;transition:border-color .2s}
+.ml-row:hover{border-color:var(--gb)}
+.ml-alias{font-family:'DM Mono',monospace;font-size:.84rem;font-weight:700;color:var(--green);min-width:44px}
+.ml-arrow{color:var(--ink3);font-size:.8rem}
+.ml-full{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--blue);min-width:150px}
+.ml-use{font-size:.75rem;color:var(--ink3);flex:1}
+
+/* live demo */
+.demo{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.demo-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.demo-lbl{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--ink3);min-width:110px}
+.demo-select,.demo-input{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.84rem;color:var(--ink);background:var(--paper);outline:none;transition:border-color .2s;flex:1;min-width:140px}
+.demo-select:focus,.demo-input:focus{border-color:var(--green)}
+.demo-out{margin-top:12px;background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink2);line-height:2;white-space:pre-wrap;display:none}
+.demo-out.show{display:block}
+.hl{color:var(--green);font-weight:700}
+
+/* own module visual */
+.own-mod{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+@media(max-width:580px){.own-mod{grid-template-columns:1fr}}
+.own-file{background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px 16px}
+.own-file-name{font-family:'DM Mono',monospace;font-size:.72rem;font-weight:700;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.own-file-body{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink2);line-height:1.8}
+
+/* playground */
+.pg{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.pgh{background:#f0fdf4;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pgt{font-family:'DM Mono',monospace;font-size:.71rem;color:var(--ink2);font-weight:500;letter-spacing:.07em}
+.pgb{display:flex;gap:7px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#116630}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#025a87}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+.pge{padding:14px 18px;background:#f8fefb}
+.pge textarea{width:100%;border:1.5px solid var(--rule);border-radius:8px;padding:11px 14px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:130px;transition:border-color .2s;line-height:1.8}
+.pge textarea:focus{border-color:var(--green)}
+.out-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:4px;font-family:'DM Mono',monospace}
+.pgo{border-top:1px solid var(--rule);padding:12px 18px;background:#f2fdf5;font-family:'DM Mono',monospace;font-size:.82rem;min-height:44px;white-space:pre-wrap;line-height:1.8;color:var(--ink2)}
+.pgo.ok{color:var(--green)}.pgo.err{color:var(--red)}
+
+/* task list */
+.tlist{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.ti{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;background:var(--bg);border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;transition:all .2s;user-select:none}
+.ti:hover{border-color:var(--gb);background:var(--gs)}
+.ti.done{background:var(--gs);border-color:var(--gb)}
+.tcb{width:20px;height:20px;border:2px solid #6ab88a;border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700}
+.ti.done .tcb{background:var(--green);border-color:var(--green)}
+.tlbl{font-size:.88rem;color:var(--ink2);line-height:1.55}
+.ti.done .tlbl{color:var(--green);text-decoration:line-through}
+.thint{font-size:.75rem;color:var(--ink3);margin-top:2px;display:block}
+
+/* scenarios */
+.scenario{background:var(--p2);border:1.5px solid var(--rule);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.sc-q{font-size:.91rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5;white-space:pre-wrap}
+.sc-opts{display:flex;flex-direction:column;gap:7px}
+.sc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.sc-opt:hover:not(.done){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.sc-opt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.sc-opt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.sc-opt.done{cursor:default}
+.sc-l{width:22px;height:22px;border-radius:6px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.sc-opt.cor .sc-l{background:var(--green);border-color:var(--green);color:#fff}
+.sc-opt.wrg .sc-l{background:var(--red);border-color:var(--red);color:#fff}
+.sc-exp{margin-top:9px;padding:9px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.sc-exp.show{display:block}
+.sc-exp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.sc-exp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* AI chat */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#15803d,#059669);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:340px;overflow-y:auto;background:#f8fefb}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--green);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--gs);border:1px solid var(--gb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--green)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aic-send:hover{background:#116630}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* fill */
+.fq{margin-bottom:14px}
+.fq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fq label code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:360px;transition:border-color .2s}
+.fi:focus{border-color:var(--green)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+
+/* short answer */
+.sq{margin-bottom:16px}
+.sq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:7px;color:var(--ink2);line-height:1.6}
+.sq textarea{width:100%;border:1.5px solid var(--rule);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.7}
+.sq textarea:focus{border-color:var(--green)}
+.cc{font-size:.7rem;color:var(--ink3);text-align:right;margin-top:3px;font-family:'DM Mono',monospace}
+
+/* MCQ */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+
+.final{background:linear-gradient(135deg,#052010,#1a4028);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.fin-emoji{font-size:2.5rem;margin-bottom:10px}
+.fin-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.fin-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.fin-cta{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 22px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.fin-cta:hover{background:rgba(255,255,255,.25)}
+
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+
+@media(max-width:600px){
+  .card{padding:18px 16px}
+  .demo-row{flex-direction:column;align-items:flex-start}
+  .demo-select,.demo-input{width:100%}
+  .aic-msgs{max-height:260px}
+  .ml-row{flex-direction:column;align-items:flex-start;gap:4px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">📅 Day 09</div>
+      <div class="btl">AI Task — Modules · Imports · Standard Library · ML Stack</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 1 · Week 2 · Day 09 Task</div>
+  <h1>Your AI Task:<br><em>Modules & Imports</em></h1>
+  <p class="hsub">Today you learned how Python organises reusable code into <strong>modules</strong>. Every ML library you will ever use — NumPy, Pandas, scikit-learn, TensorFlow — is imported with the exact patterns you practiced today. Master imports and you are ready for Month 2.</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">🐍 Python</span>
+    <span class="pill">📦 import</span>
+    <span class="pill">🔀 from...import</span>
+    <span class="pill">✏️ as alias</span>
+    <span class="pill">📚 stdlib</span>
+    <span class="pill">🤖 ML Stack</span>
+    <span class="pill">🔨 Own Modules</span>
+    <span class="pill">🧠 20 MCQs</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- RECAP -->
+<div class="recap">
+  ✅ <strong>What you learned today:</strong>
+  <code>import math</code> — loads the whole module. Access with prefix: <code>math.sqrt(25)</code>.
+  <code>from math import sqrt</code> — imports one function. Use directly: <code>sqrt(25)</code>.
+  <code>import numpy as np</code> — loads with a short alias. Use as: <code>np.array([1,2,3])</code>.
+  <strong>Standard Library:</strong> <code>math</code> · <code>random</code> · <code>datetime</code> · <code>os</code> · <code>sys</code> — built into Python, no install needed.
+  <strong>ML Stack imports:</strong> <code>import numpy as np</code> · <code>import pandas as pd</code> · <code>import matplotlib.pyplot as plt</code> · <code>from sklearn.model_selection import train_test_split</code>.
+  <strong>Own modules:</strong> Any <code>.py</code> file you create. Save as <code>mytools.py</code>, then <code>import mytools</code>.
+  <code>random.seed(42)</code> — makes randomness reproducible. Same seed = same results every run.
+</div>
+
+<!-- ===== PART 1: IMPORT STYLES ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">📦</div>
+  <div><div class="sh-ttl">Part 1 — The 4 Import Styles</div><div class="sh-sub">Know when to use each and what it gives you</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tg">📦 Import Reference</div>
+  <h2>4 Ways to Import — Side by Side</h2>
+  <p>Python gives you 4 different import syntaxes. Each has a different use case. ML code uses all 4 — sometimes in the same file.</p>
+  <table class="import-table">
+    <thead><tr><th>Syntax</th><th>What It Does</th><th>How to Use</th><th>When to Use</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>import math</td>
+        <td>Loads the entire module</td>
+        <td>math.sqrt(25)<br>math.pi</td>
+        <td>When you need many functions from the module</td>
+      </tr>
+      <tr>
+        <td>from math import sqrt</td>
+        <td>Imports only one specific function</td>
+        <td>sqrt(25) — no prefix!</td>
+        <td>When you only need 1–2 specific items</td>
+      </tr>
+      <tr>
+        <td>from math import sqrt, pi, floor</td>
+        <td>Imports multiple specific items</td>
+        <td>sqrt(25), pi, floor(3.7)</td>
+        <td>When you need a few specific items, no full module</td>
+      </tr>
+      <tr>
+        <td>import numpy as np</td>
+        <td>Loads module with a short alias</td>
+        <td>np.array([1,2,3])<br>np.mean(data)</td>
+        <td>Standard for ML libraries — np, pd, plt are universal conventions</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cb cbr">
+    <i>⚠️</i>
+    <span><strong>Never use:</strong> <code style="font-family:'DM Mono',monospace">from math import *</code> — this imports EVERYTHING and pollutes your namespace. You can accidentally overwrite built-in functions. Professional ML code never uses import *.</span>
+  </div>
+
+  <h2 style="margin-top:20px">🤖 The ML Stack — Memorise These 5 Imports</h2>
+  <div class="ml-stack">
+    <div style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Every ML project starts with these exact imports</div>
+    <div class="ml-row"><span class="ml-alias">np</span><span class="ml-arrow">←</span><span class="ml-full">import numpy as np</span><span class="ml-use">Arrays, maths, matrix operations</span></div>
+    <div class="ml-row"><span class="ml-alias">pd</span><span class="ml-arrow">←</span><span class="ml-full">import pandas as pd</span><span class="ml-use">DataFrames, CSV loading, data manipulation</span></div>
+    <div class="ml-row"><span class="ml-alias">plt</span><span class="ml-arrow">←</span><span class="ml-full">import matplotlib.pyplot as plt</span><span class="ml-use">Charts, graphs, visualisation</span></div>
+    <div class="ml-row"><span class="ml-alias">sklearn</span><span class="ml-arrow">←</span><span class="ml-full">from sklearn.model_selection import train_test_split</span><span class="ml-use">ML models, train/test split, metrics</span></div>
+    <div class="ml-row"><span class="ml-alias">tf</span><span class="ml-arrow">←</span><span class="ml-full">import tensorflow as tf</span><span class="ml-use">Deep learning, neural networks (Month 6+)</span></div>
+  </div>
+  <div class="cb cbg">
+    <i>💡</i>
+    <span><strong>Why np, pd, plt?</strong> These are not required by Python — they are universal community conventions. Every ML tutorial, every Stack Overflow answer, every Kaggle notebook uses the same aliases. Using different names (e.g. <code style="font-family:'DM Mono',monospace">import numpy as num</code>) makes your code unreadable to other ML engineers.</span>
+  </div>
+</div>
+
+<!-- ===== PART 2: STDLIB MODULE EXPLORER ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">📚</div>
+  <div><div class="sh-ttl">Part 2 — Standard Library Explorer</div><div class="sh-sub">Run math, random, datetime, os live — see real outputs</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">📚 Standard Library</div>
+  <h2>6 Built-in Modules — No Install Needed</h2>
+  <p>The Python Standard Library comes with Python — no <code style="font-family:'DM Mono',monospace;color:var(--green)">pip install</code> needed. These 6 modules are used constantly in AI/ML projects for maths, randomness, dates, file operations, and system access.</p>
+  <div class="mod-grid">
+    <div class="mod-card"><div class="mod-icon">🔢</div><div class="mod-name">math</div><div class="mod-desc">sqrt, log, floor, ceil, factorial, pi, e, trigonometry</div><div class="mod-eg">math.sqrt(144) → 12.0</div></div>
+    <div class="mod-card"><div class="mod-icon">🎲</div><div class="mod-name">random</div><div class="mod-desc">randint, uniform, choice, shuffle, sample, seed</div><div class="mod-eg">random.randint(1,10) → 7</div></div>
+    <div class="mod-card"><div class="mod-icon">📅</div><div class="mod-name">datetime</div><div class="mod-desc">today's date, time, age calculation, date arithmetic</div><div class="mod-eg">datetime.date.today()</div></div>
+    <div class="mod-card"><div class="mod-icon">📁</div><div class="mod-name">os</div><div class="mod-desc">file paths, check existence, list directory, create folders</div><div class="mod-eg">os.path.exists("data.csv")</div></div>
+    <div class="mod-card"><div class="mod-icon">🖥️</div><div class="mod-name">sys</div><div class="mod-desc">Python version, command-line args, exit program</div><div class="mod-eg">sys.version → 3.12.0</div></div>
+    <div class="mod-card"><div class="mod-icon">⏱️</div><div class="mod-name">time</div><div class="mod-desc">measure execution time, add delays, Unix timestamps</div><div class="mod-eg">time.time() → timestamp</div></div>
+  </div>
+
+  <!-- LIVE DEMO -->
+  <h2 style="margin-top:20px">🎮 Live Module Demo — Try It</h2>
+  <p>Select a module and enter a value. The simulator runs real Python Standard Library operations and shows the output.</p>
+  <div class="demo">
+    <div class="demo-row">
+      <span class="demo-lbl">Select module:</span>
+      <select class="demo-select" id="dMod" onchange="updateDemoHint()">
+        <option value="math">math</option>
+        <option value="random">random</option>
+        <option value="datetime">datetime</option>
+        <option value="os">os</option>
+      </select>
+    </div>
+    <div class="demo-row">
+      <span class="demo-lbl" id="dHint">Enter a number:</span>
+      <input class="demo-input" id="dVal" value="25" placeholder="Enter value..."/>
+    </div>
+    <button class="btn btn-g" style="width:100%;justify-content:center;margin-top:4px" onclick="runDemo()">▶ Run Module Demo</button>
+    <div class="demo-out" id="dOut"></div>
+  </div>
+</div>
+
+<!-- ===== PART 3: OWN MODULES ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🔨</div>
+  <div><div class="sh-ttl">Part 3 — Creating Your Own Module</div><div class="sh-sub">Any .py file is a module — build reusable ML tools</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🔨 Own Module</div>
+  <h2>Build mltools.py — Your Personal ML Utility Module</h2>
+  <p>A module is simply any <code style="font-family:'DM Mono',monospace;color:var(--green)">.py</code> file. Save your reusable functions in <code style="font-family:'DM Mono',monospace;color:var(--green)">mltools.py</code> — then import them from anywhere. This is exactly how sklearn, pandas, and numpy are structured.</p>
+  <div class="own-mod">
+    <div class="own-file">
+      <div class="own-file-name">📄 mltools.py (your module)</div>
+      <div class="own-file-body">
+        <span style="color:#4ade80">def</span> <span style="color:#67e8f9">normalise</span>(val, mn=0, mx=100):<br>
+        &nbsp;&nbsp;<span style="color:#4ade80">return</span> (val-mn)/(mx-mn)<br><br>
+        <span style="color:#4ade80">def</span> <span style="color:#67e8f9">get_grade</span>(marks):<br>
+        &nbsp;&nbsp;<span style="color:#4ade80">if</span> marks&gt;=80: <span style="color:#4ade80">return</span> <span style="color:#86efac">"A"</span><br>
+        &nbsp;&nbsp;<span style="color:#4ade80">elif</span> marks&gt;=60: <span style="color:#4ade80">return</span> <span style="color:#86efac">"B"</span><br>
+        &nbsp;&nbsp;<span style="color:#4ade80">else</span>: <span style="color:#4ade80">return</span> <span style="color:#86efac">"Fail"</span><br><br>
+        <span style="color:#4ade80">def</span> <span style="color:#67e8f9">class_average</span>(*scores):<br>
+        &nbsp;&nbsp;<span style="color:#4ade80">return</span> sum(scores)/len(scores)
+      </div>
+    </div>
+    <div class="own-file">
+      <div class="own-file-name">📄 main.py (imports your module)</div>
+      <div class="own-file-body">
+        <span style="color:#4ade80">import</span> mltools<br><br>
+        <span style="color:#2a6040"># Use your functions:</span><br>
+        n = mltools.normalise(75)<br>
+        g = mltools.get_grade(85)<br>
+        avg = mltools.class_average(80,90,70)<br><br>
+        <span style="color:#2a6040"># OR import specific:</span><br>
+        <span style="color:#4ade80">from</span> mltools <span style="color:#4ade80">import</span> get_grade<br>
+        grade = get_grade(88)
+      </div>
+    </div>
+  </div>
+  <div class="cb cbb">
+    <i>💡</i>
+    <span><strong>Rules for your own module:</strong> (1) Both files must be in the SAME folder. (2) The filename (without .py) becomes the module name. (3) No spaces in filename — use underscores. (4) Test your module functions by running the .py file directly first.</span>
+  </div>
+</div>
+
+<!-- ===== PART 4: RANDOM.SEED EXPLAINED ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">🎲</div>
+  <div><div class="sh-ttl">Part 4 — random.seed() — Reproducible AI</div><div class="sh-sub">Why seed(42) is the most important line in ML experiments</div></div>
+  <div class="sh-bdg">⏱ 10 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">🎲 random.seed()</div>
+  <h2>Why random.seed(42) is Critical in ML</h2>
+  <p>Every ML model involves randomness — random train/test splits, random initial weights, random data shuffling. Without a seed, results change every run. With a seed, the same "random" sequence is always produced.</p>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Python — seed() demo</div></div>
+    <div class="cbody">
+<span class="kw">import</span> <span class="vr">random</span>
+
+<span class="cm"># WITHOUT seed — different every run:</span>
+<span class="fn">print</span>(<span class="vr">random</span>.<span class="fn">randint</span>(<span class="nm">1</span>,<span class="nm">100</span>))  <span class="cm"># 73 today, 18 tomorrow</span>
+
+<span class="cm"># WITH seed — always the same:</span>
+<span class="vr">random</span>.<span class="fn">seed</span>(<span class="nm">42</span>)
+<span class="fn">print</span>(<span class="vr">random</span>.<span class="fn">randint</span>(<span class="nm">1</span>,<span class="nm">100</span>))  <span class="cm"># always 82</span>
+<span class="fn">print</span>(<span class="vr">random</span>.<span class="fn">randint</span>(<span class="nm">1</span>,<span class="nm">100</span>))  <span class="cm"># always 15</span>
+
+<span class="cm"># In ML — reproducible train/test split:</span>
+<span class="kw">from</span> <span class="vr">sklearn.model_selection</span> <span class="kw">import</span> <span class="vr">train_test_split</span>
+<span class="vr">X_train</span>, <span class="vr">X_test</span> = <span class="fn">train_test_split</span>(<span class="vr">X</span>, <span class="vr">test_size</span>=<span class="nm">0.2</span>, <span class="vr">random_state</span>=<span class="nm">42</span>)
+<span class="cm"># random_state=42 ← same as seed — same split every time!</span>
+    </div>
+  </div>
+  <div class="cb cbp">
+    <i>🔬</i>
+    <span><strong>Why 42?</strong> It is a convention from "The Hitchhiker's Guide to the Galaxy" where 42 is "the answer to everything". Any integer works — 0, 1, 99, 2024. The number itself does not matter; using the SAME number consistently does. When you report ML results, always state your seed so others can reproduce.</span>
+  </div>
+</div>
+
+<!-- ===== PART 5: CHECKLIST ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">📋</div>
+  <div><div class="sh-ttl">Part 5 — IDLE Checklist</div><div class="sh-sub">Complete each task in Python IDLE — tick when done</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✅ Checklist</div>
+  <h2>8 Hands-On Tasks</h2>
+  <ul class="tlist">
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Practice all 4 import styles on the <code style="font-family:'DM Mono',monospace">math</code> module: <code style="font-family:'DM Mono',monospace">import math</code>, <code style="font-family:'DM Mono',monospace">from math import sqrt</code>, <code style="font-family:'DM Mono',monospace">from math import sqrt, pi, log</code>, and <code style="font-family:'DM Mono',monospace">import math as m</code>. Print results of each.</span>
+      <span class="thint">💡 Each style gives access differently — notice how the prefix changes each time</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">random</code>: run <code style="font-family:'DM Mono',monospace">random.randint(1,100)</code> 5 times WITHOUT seed (all different), then WITH <code style="font-family:'DM Mono',monospace">random.seed(42)</code> before each run (same result every time). Observe the difference.</span>
+      <span class="thint">💡 This is why reproducible ML requires seed — same results for fair comparison</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">datetime</code>: print today's date, calculate your age in years, and compute how many days are left this year.</span>
+      <span class="thint">💡 from datetime import date — today = date.today() — age = today.year - birth_year</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">os</code>: print your current working directory, list all files in it, and use <code style="font-family:'DM Mono',monospace">os.path.join()</code> to safely build a cross-platform file path.</span>
+      <span class="thint">💡 import os — os.getcwd() — os.listdir(".") — os.path.join("data","scores.csv")</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Create <code style="font-family:'DM Mono',monospace">mltools.py</code> with 3 functions: <code style="font-family:'DM Mono',monospace">normalise()</code>, <code style="font-family:'DM Mono',monospace">get_grade()</code>, <code style="font-family:'DM Mono',monospace">class_stats()</code>. Then create <code style="font-family:'DM Mono',monospace">main.py</code> and import/use all 3 functions from it.</span>
+      <span class="thint">💡 Save both in the same folder — import mltools — use mltools.normalise(75)</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Write the complete ML import block (all 5 lines: numpy, pandas, matplotlib, sklearn, + random with seed). Add a comment explaining what each import is used for.</span>
+      <span class="thint">💡 import numpy as np # Arrays and maths — import pandas as pd # DataFrames and CSV...</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">random.shuffle()</code> on a list of student names — run it twice with and without a seed. Show how seed ensures the same shuffle order every time.</span>
+      <span class="thint">💡 names = ["Ali","Sara","Usman","Zara"] — random.shuffle(names) — print(names)</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">math</code> and <code style="font-family:'DM Mono',monospace">random</code> together: generate 10 random pixel values (0–255), compute their log and square root using math, normalise to 0–1, and print a formatted table.</span>
+      <span class="thint">💡 Combine: random.seed(42) — pixels = [random.randint(0,255) for _ in range(10)] — math.sqrt(p)</span></div>
+    </li>
+  </ul>
+</div>
+
+<!-- ===== PART 6: PLAYGROUNDS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">⚙️</div>
+  <div><div class="sh-ttl">Part 6 — Code Playgrounds</div><div class="sh-sub">Write import and module code — simulators validate</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<!-- PLAYGROUND 1 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 1</div>
+  <h2>Complete ML Setup — All Imports + Random Seed + Stats</h2>
+  <p>Write the complete ML project setup: all 5 ML imports, random seed, use math module for statistics, and use os to check a file path. This is the exact header of every real ML notebook.</p>
+  <div class="cb cbb"><i>💡</i><span><strong>Expected output:</strong><br>
+=== ML Environment Setup ===<br>
+NumPy version: (simulated)<br>
+Pandas version: (simulated)<br>
+random.seed(42) set — reproducible results guaranteed<br>
+<br>
+=== Math Stats on Pixel Values ===<br>
+Pixels: [120, 45, 200, 78, 255, 33, 189, 67]<br>
+sqrt(mean): 10.63 | log10(max): 2.407<br>
+Normalised: [0.471, 0.176, 0.784, ...]<br>
+<br>
+Data path: data/scores.csv</span></div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 ML Setup Block</span><div class="pgb"><button class="btn btn-g" onclick="runSetup()">▶ Run</button><button class="btn btn-o" onclick="clearPG('s1-code','s1-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="s1-code" spellcheck="false" placeholder="# Standard ML imports&#10;import math&#10;import random&#10;import os&#10;&#10;# (In real ML: import numpy as np, import pandas as pd, etc.)&#10;# Here we simulate with stdlib since numpy isn't installed in the browser&#10;&#10;# Reproducibility&#10;random.seed(42)&#10;&#10;print('=== ML Environment Setup ===')&#10;print('random.seed(42) set — reproducible results guaranteed')&#10;&#10;# Math stats on pixel data&#10;pixels = [120, 45, 200, 78, 255, 33, 189, 67]&#10;mean_val = sum(pixels) / len(pixels)&#10;&#10;print('\n=== Math Stats on Pixel Values ===')&#10;print(f'Pixels: {pixels}')&#10;print(f'sqrt(mean): {math.sqrt(mean_val):.2f} | log10(max): {math.log10(max(pixels)):.3f}')&#10;&#10;normalised = [round(p/255, 3) for p in pixels]&#10;print(f'Normalised: {normalised[:3]}...')&#10;&#10;# OS path building&#10;path = os.path.join('data', 'scores.csv')&#10;print(f'\nData path: {path}')"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="s1-out">Click ▶ Run...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkSetup()">✓ Check My Code</button></div>
+  <div id="s1-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 2 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 2</div>
+  <h2>Build and Import Your Own Module</h2>
+  <p>Write the content of <code style="font-family:'DM Mono',monospace;color:var(--green)">mltools.py</code> (the module) and then write <code style="font-family:'DM Mono',monospace;color:var(--green)">main.py</code> (that imports it). Both parts in the same textarea — labelled with comments.</p>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 mltools.py + main.py</span><div class="pgb"><button class="btn btn-g" onclick="runModule()">▶ Simulate</button><button class="btn btn-o" onclick="clearPG('m1-code','m1-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="m1-code" spellcheck="false" placeholder="# === mltools.py (your module file) ===&#10;&#10;import math&#10;&#10;def normalise(value, min_val=0, max_val=100):&#10;    return round((value - min_val) / (max_val - min_val), 4)&#10;&#10;def get_grade(marks):&#10;    if marks >= 80: return 'A'&#10;    elif marks >= 60: return 'B'&#10;    elif marks >= 50: return 'C'&#10;    else: return 'Fail'&#10;&#10;def class_stats(scores):&#10;    return {&#10;        'count': len(scores),&#10;        'avg': round(sum(scores)/len(scores), 2),&#10;        'max': max(scores),&#10;        'min': min(scores)&#10;    }&#10;&#10;# === main.py (imports the module) ===&#10;&#10;# import mltools  ← would work if files are in same folder&#10;# Simulating here:&#10;&#10;scores = [88, 45, 72, 91, 63, 77]&#10;print('=== mltools.normalise() ===')&#10;for s in scores:&#10;    print(f'  normalise({s}) → {normalise(s)}')&#10;&#10;print('\n=== mltools.get_grade() ===')&#10;for s in scores:&#10;    print(f'  get_grade({s}) → {get_grade(s)}')&#10;&#10;print('\n=== mltools.class_stats() ===')&#10;stats = class_stats(scores)&#10;for k, v in stats.items():&#10;    print(f'  {k}: {v}')"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="m1-out">Click ▶ Simulate...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkModule()">✓ Check</button></div>
+  <div id="m1-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 3: BUG HUNT -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 3 — Bug Hunt</div>
+  <h2>Find and Fix the 4 Import Bugs</h2>
+  <p>4 bugs below — wrong import syntax, missing prefix, import-star usage, and wrong alias convention. Find and fix them all.</p>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Buggy Import Code — Fix All 4</div></div>
+    <div class="cbody">
+<span class="cm"># Bug 1: calling function without module prefix</span>
+<span class="kw">import</span> <span class="vr">math</span>
+<span class="fn">print</span>(<span class="fn" style="color:#ef4444">sqrt</span>(<span class="nm">25</span>))          <span class="cm" style="color:#ef4444"># Bug 1: used 'import math' but forgot math.prefix!</span>
+
+<span class="cm"># Bug 2: wrong alias — not standard convention</span>
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr" style="color:#ef4444">num</span>     <span class="cm" style="color:#ef4444"># Bug 2: should be 'np' not 'num' — global convention!</span>
+<span class="fn">print</span>(<span class="vr">num</span>.<span class="fn">array</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>]))
+
+<span class="cm"># Bug 3: import * is bad practice</span>
+<span class="kw">from</span> <span class="vr">math</span> <span class="kw">import</span> <span class="vr" style="color:#ef4444">*</span>        <span class="cm" style="color:#ef4444"># Bug 3: pollutes namespace — never use import *</span>
+
+<span class="cm"># Bug 4: calling method on wrong module name</span>
+<span class="kw">import</span> <span class="vr">random</span> <span class="kw">as</span> <span class="vr">rnd</span>
+<span class="vr" style="color:#ef4444">random</span>.<span class="fn">seed</span>(<span class="nm">42</span>)          <span class="cm" style="color:#ef4444"># Bug 4: aliased as 'rnd' but still using 'random'!</span>
+    </div>
+  </div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Write the Fixed Version</span><div class="pgb"><button class="btn btn-g" onclick="runBugFix()">▶ Simulate</button><button class="btn btn-o" onclick="clearPG('bf-code','bf-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="bf-code" spellcheck="false" placeholder="# Fix Bug 1: use math.sqrt() OR change import to: from math import sqrt&#10;import math&#10;print(math.sqrt(25))&#10;&#10;# Fix Bug 2: use standard alias 'np'&#10;import numpy as np&#10;print(np.array([1,2,3]))&#10;&#10;# Fix Bug 3: import specific items instead&#10;from math import sqrt, pi, log&#10;&#10;# Fix Bug 4: use the alias you defined&#10;import random as rnd&#10;rnd.seed(42)&#10;print(rnd.randint(1,100))"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Validation</div><div class="pgo" id="bf-out">Click ▶ Simulate...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkBugFix()">✓ Check All 4 Fixes</button></div>
+  <div id="bf-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- ===== PART 7: SCENARIOS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">🌍</div>
+  <div><div class="sh-ttl">Part 7 — Real AI Scenarios</div><div class="sh-sub">Choose the correct import strategy for each ML situation</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div id="sc-wrap"></div>
+<div id="sc-score" style="display:none;margin-top:12px;font-size:.9rem;font-weight:600"></div>
+
+<!-- ===== PART 8: AI TUTOR ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">💬</div>
+  <div><div class="sh-ttl">Part 8 — AI Tutor Chat</div><div class="sh-sub">Ask anything about modules, imports, stdlib, or own modules</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Chat With Your Modules Tutor</h2>
+  <p>Ask anything about <strong>import styles</strong>, <strong>standard library</strong>, <strong>ML stack imports</strong>, <strong>own modules</strong>, or <strong>random.seed()</strong>. Try: <em>"What is the difference between import and from...import?"</em> or <em>"Why do we use np and pd as aliases?"</em></p>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">Python AI Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">Day 09 Specialist · Modules · Imports · Standard Library · ML Stack · Own Modules</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Hello! I am your Day 09 tutor. Ask me anything about <strong>modules</strong>, <strong>import styles</strong>, the <strong>standard library</strong>, or creating <strong>your own modules</strong>. What would you like to understand?</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Day 09 key insight:</strong> The aliases <code>np</code>, <code>pd</code>, and <code>plt</code> are NOT required by Python — they are universal community conventions. Every ML engineer worldwide uses the same aliases. If you use <code>import numpy as num</code>, other engineers reading your code will be confused. Conventions exist to make code universally readable!</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask about imports, stdlib, ML stack, modules, seed..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PART 9: FILL IN BLANKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">✏️</div>
+  <div><div class="sh-ttl">Part 9 — Fill in the Blanks</div><div class="sh-sub">Complete each import statement from memory</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Complete the Code</div>
+  <h2>Fill in the Missing Parts</h2>
+  <div id="fill-wrap"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-b" onclick="checkFill()">Check All Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- ===== PART 10: DEEP THINKING ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">🧠</div>
+  <div><div class="sh-ttl">Part 10 — Deep Thinking Questions</div><div class="sh-sub">Build your ML engineering mindset around code organisation</div></div>
+  <div class="sh-bdg">⏱ 30 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">🧠 Think Deeply</div>
+  <h2>5 Questions — Write Thorough Answers</h2>
+  <div class="sq"><label>Q1. Explain the difference between <code style="font-family:'DM Mono',monospace">import math</code>, <code style="font-family:'DM Mono',monospace">from math import sqrt</code>, and <code style="font-family:'DM Mono',monospace">import math as m</code>. For each, write what you type to call <code style="font-family:'DM Mono',monospace">sqrt(25)</code> and explain when you would choose each style.</label><textarea id="dq1" placeholder="Describe prefix difference, when each style is best, and write the exact call for each..." oninput="cc(this,'dc1')"></textarea><div class="cc" id="dc1">0 chars</div></div>
+  <div class="sq"><label>Q2. Why is <code style="font-family:'DM Mono',monospace">random.seed(42)</code> critical for ML reproducibility? Explain: (1) what changes without a seed, (2) what a seed guarantees, (3) why your colleagues need to know your seed value when you share results.</label><textarea id="dq2" placeholder="Think about train/test splits, model training, result comparison..." oninput="cc(this,'dc2')"></textarea><div class="cc" id="dc2">0 chars</div></div>
+  <div class="sq"><label>Q3. Why are <code style="font-family:'DM Mono',monospace">np</code>, <code style="font-family:'DM Mono',monospace">pd</code>, and <code style="font-family:'DM Mono',monospace">plt</code> considered mandatory conventions in the ML community? What would happen if different engineers used different aliases for the same libraries?</label><textarea id="dq3" placeholder="Think about code readability, team collaboration, tutorial compatibility..." oninput="cc(this,'dc3')"></textarea><div class="cc" id="dc3">0 chars</div></div>
+  <div class="sq"><label>Q4. A Python Standard Library module (like <code style="font-family:'DM Mono',monospace">math</code>, <code style="font-family:'DM Mono',monospace">random</code>, <code style="font-family:'DM Mono',monospace">os</code>) vs a third-party library (like <code style="font-family:'DM Mono',monospace">numpy</code>, <code style="font-family:'DM Mono',monospace">pandas</code>). What is the key difference? When would you use the stdlib vs install a third-party library?</label><textarea id="dq4" placeholder="Think about: no install, availability, performance, specialisation..." oninput="cc(this,'dc4')"></textarea><div class="cc" id="dc4">0 chars</div></div>
+  <div class="sq"><label>Q5. Design a complete Python ML project file structure using your own modules. Describe: (1) what files you would create, (2) what functions each module would contain, (3) how main.py imports and uses them all. This is how real ML projects are organised!</label><textarea id="dq5" placeholder="Design: data_utils.py, model_utils.py, config.py, main.py — what goes in each?" oninput="cc(this,'dc5')"></textarea><div class="cc" id="dc5">0 chars</div></div>
+  <button class="btn btn-g" onclick="saveDQ()">✓ Save All Answers</button>
+  <div id="dq-msg" style="display:none;margin-top:10px;font-size:.84rem"></div>
+</div>
+
+<!-- ===== PART 11: MCQ ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-ttl">Part 11 — MCQ Quiz (20 Questions)</div><div class="sh-sub">Answer from memory — every answer shows a full explanation</div></div>
+  <div class="sh-bdg">📝 20 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 20</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 16/20 (80%). Read each explanation!</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="fin-emoji" id="fin-emoji">🎉</div>
+  <div class="fin-title" id="fin-title">—</div>
+  <div class="fin-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">Day 10 tomorrow: <strong>File I/O — Reading &amp; Writing Files</strong> — load CSVs, save results, process real data!</p>
+  <button class="fin-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+</div>
+<footer>Day 09 of 300+ · AI/ML 15-Month Curriculum · Month 1, Week 2<br>import · from...import · as alias · Standard Library · ML Stack · Own Modules · random.seed()</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let tasksDone=0,mcqScore=0,fillScore=0,mcqDoneSet=new Set();
+function updateProgress(){const t=Math.min(Math.round((tasksDone/8)*30+(mcqScore/20)*50+(fillScore/10)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function tick(el){const done=el.classList.toggle('done');el.querySelector('.tcb').textContent=done?'✓':'';tasksDone=document.querySelectorAll('.ti.done').length;updateProgress();}
+
+// ── DEMO ──
+function updateDemoHint(){
+  const m=document.getElementById('dMod').value;
+  const h=document.getElementById('dHint');
+  const v=document.getElementById('dVal');
+  if(m==='math'){h.textContent='Enter a number:';v.value='25';}
+  else if(m==='random'){h.textContent='Enter seed value:';v.value='42';}
+  else if(m==='datetime'){h.textContent='Birth year:';v.value='2005';}
+  else if(m==='os'){h.textContent='(no input needed):';v.value='.';}
+}
+function factorial(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r;}
+function pseudoRand(seed,n){let x=Math.sin(seed*n+1)*10000;return x-Math.floor(x);}
+function runDemo(){
+  const mod=document.getElementById('dMod').value;
+  const val=document.getElementById('dVal').value;
+  const out=document.getElementById('dOut');
+  out.className='demo-out show';
+  const now=new Date();
+  const y=now.getFullYear();
+  if(mod==='math'){
+    const n=parseFloat(val)||25;
+    out.innerHTML=`<span class="hl">import math</span>\n\nmath.sqrt(${n}) → <span class="hl">${Math.sqrt(n).toFixed(4)}</span>\nmath.ceil(${n}) → <span class="hl">${Math.ceil(n)}</span>\nmath.floor(${n}) → <span class="hl">${Math.floor(n)}</span>\nmath.log10(${n}) → <span class="hl">${n>0?Math.log10(n).toFixed(4):'undefined'}</span>\nmath.factorial(${Math.min(Math.abs(Math.floor(n)),12)}) → <span class="hl">${factorial(Math.min(Math.abs(Math.floor(n)),12))}</span>\nmath.pi → <span class="hl">3.141592653589793</span>`;
+  } else if(mod==='random'){
+    const seed=parseInt(val)||42;
+    const r1=pseudoRand(seed,1),r2=pseudoRand(seed,2),r3=pseudoRand(seed,3),r4=pseudoRand(seed,4);
+    out.innerHTML=`<span class="hl">import random</span>\nrandom.seed(${seed})\n\nrandom.randint(1, 100) → <span class="hl">${Math.floor(r1*99)+1}</span>\nrandom.randint(1, 100) → <span class="hl">${Math.floor(r2*99)+1}</span>\nrandom.uniform(0, 1)   → <span class="hl">${r3.toFixed(4)}</span>\nrandom.choice(["Ali","Sara","Usman"]) → <span class="hl">"${["Ali","Sara","Usman"][Math.floor(r4*3)]}"</span>\n\n<em style="color:var(--ink3)">Run again with seed(${seed}) — same results every time ✅</em>`;
+  } else if(mod==='datetime'){
+    const birth=parseInt(val)||2005;
+    const m2=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
+    const daysThisYear=Math.floor((now-new Date(y,0,1))/86400000);
+    const daysLeft=365-daysThisYear;
+    out.innerHTML=`<span class="hl">from datetime import date, datetime</span>\n\ndate.today() → <span class="hl">${y}-${m2}-${d}</span>\ndatetime.now() → <span class="hl">${y}-${m2}-${d} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>\nAge (born ${birth}) → <span class="hl">${y-birth} years</span>\nDays this year → <span class="hl">${daysThisYear}</span>\nDays left this year → <span class="hl">${daysLeft}</span>`;
+  } else if(mod==='os'){
+    out.innerHTML=`<span class="hl">import os</span>\n\nos.getcwd() → <span class="hl">/your/current/directory</span>\nos.listdir(".") → <span class="hl">["main.py", "mltools.py", "data.csv", ...]</span>\nos.path.exists("data.csv") → <span class="hl">True / False</span>\nos.path.join("data","scores.csv") → <span class="hl">data/scores.csv</span>\nos.makedirs("output", exist_ok=True) → <span class="hl">creates folder safely</span>`;
+  }
+}
+
+// ── PLAYGROUND 1 ──
+function runSetup(){
+  const code=document.getElementById('s1-code').value;
+  const out=document.getElementById('s1-out');
+  if(!code.trim()){out.textContent='Write the code!';out.className='pgo';return;}
+  const hasImport=code.includes('import math')&&code.includes('import random')&&code.includes('import os');
+  const hasSeed=code.includes('random.seed(');
+  const hasMath=code.includes('math.sqrt(')||code.includes('math.log');
+  const hasOS=code.includes('os.path.join(');
+  if(hasImport&&hasSeed&&hasMath&&hasOS){
+    out.textContent='=== ML Environment Setup ===\nrandom.seed(42) set — reproducible results guaranteed\n\n=== Math Stats on Pixel Values ===\nPixels: [120, 45, 200, 78, 255, 33, 189, 67]\nsqrt(mean): 10.63 | log10(max): 2.407\nNormalised: [0.471, 0.176, 0.784]...\n\nData path: data/scores.csv';
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasImport)h.push('Need: import math, import random, import os');
+    if(!hasSeed)h.push('Need: random.seed(42)');
+    if(!hasMath)h.push('Need: math.sqrt() or math.log10()');
+    if(!hasOS)h.push('Need: os.path.join("data","scores.csv")');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkSetup(){
+  const code=document.getElementById('s1-code').value;
+  const fb=document.getElementById('s1-fb');fb.style.display='block';
+  const msgs=[
+    code.includes('import math')&&code.includes('import random')&&code.includes('import os')?'✅ All 3 stdlib modules imported':'❌ Need: import math, import random, import os',
+    code.includes('random.seed(')?'✅ random.seed() set for reproducibility':'❌ Add random.seed(42) for reproducible results',
+    (code.includes('math.sqrt(')||code.includes('math.log'))?'✅ math module used for calculations':'❌ Use math.sqrt() or math.log10() on the pixel data',
+    code.includes('os.path.join(')?'✅ os.path.join() used for cross-platform path':'❌ Use os.path.join("data","scores.csv")',
+    code.includes('[round(p/255')&&code.includes('for p in')||code.includes('/255')?'✅ Normalisation applied to pixel values':'⚠️ Normalise pixels: [round(p/255,3) for p in pixels]',
+  ];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===5?'var(--green)':sc>=3?'var(--amber)':'var(--red)'}">${sc===5?'🎉 Perfect ML setup block!':sc>=3?`${sc}/5 — fix remaining`:'Add more elements'}</div></div>`;
+}
+
+// ── PLAYGROUND 2 ──
+function runModule(){
+  const code=document.getElementById('m1-code').value;
+  const out=document.getElementById('m1-out');
+  if(!code.trim()){out.textContent='Write the module code!';out.className='pgo';return;}
+  const hasFns=code.includes('def normalise')&&code.includes('def get_grade')&&code.includes('def class_stats');
+  const hasReturn=(code.match(/return/g)||[]).length>=3;
+  const hasUsage=code.includes('normalise(')&&code.includes('get_grade(')&&code.includes('class_stats(');
+  if(hasFns&&hasReturn&&hasUsage){
+    out.textContent='=== mltools.normalise() ===\n  normalise(88) → 0.88\n  normalise(45) → 0.45\n  normalise(72) → 0.72\n\n=== mltools.get_grade() ===\n  get_grade(88) → A\n  get_grade(45) → Fail\n  get_grade(72) → B\n\n=== mltools.class_stats() ===\n  count: 6\n  avg: 72.67\n  max: 91\n  min: 45';
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasFns)h.push('Need all 3 functions: normalise, get_grade, class_stats');
+    if(!hasReturn)h.push('Each function must use return');
+    if(!hasUsage)h.push('Must call all 3 functions and print results');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkModule(){
+  const code=document.getElementById('m1-code').value;
+  const fb=document.getElementById('m1-fb');fb.style.display='block';
+  const b1=code.includes('def normalise')&&code.includes('min_val')&&code.includes('max_val');
+  const b2=code.includes('def get_grade')&&code.includes('return')&&code.includes('"A"');
+  const b3=code.includes('def class_stats')&&(code.includes("'avg'")||code.includes('"avg"'));
+  const b4=code.includes('mltools.')||code.includes('normalise(')&&code.includes('get_grade(');
+  const msgs=[b1?'✅ normalise(value, min_val=0, max_val=100) defined':'❌ Define: def normalise(value, min_val=0, max_val=100):',b2?'✅ get_grade() with A/B/C/Fail returns':'❌ Define get_grade(marks) returning "A","B","C","Fail"',b3?'✅ class_stats() returns dict with avg, max, min':'❌ Define class_stats(scores) returning stats dict',b4?'✅ Functions called and results printed':'❌ Call all 3 functions and print their output'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 Perfect module! This is how real ML utils are structured!':sc>=2?`${sc}/4 — fix remaining`:'Review the module structure'}</div></div>`;
+}
+
+// ── BUG FIX ──
+function runBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const out=document.getElementById('bf-out');
+  if(!code.trim()){out.textContent='Write the fixed code!';out.className='pgo';return;}
+  const b1=(code.includes('math.sqrt(25)')||code.includes('from math import sqrt'))&&!code.match(/\bsqrt\(25\)/)||code.includes('math.sqrt');
+  const b2=code.includes('numpy as np')&&!code.includes('numpy as num');
+  const b3=!code.includes('import *')&&(code.includes('from math import sqrt')||code.includes('from math import'));
+  const b4=(code.includes('rnd.seed')||code.includes('random.seed'))&&!code.match(/^random\.seed/m);
+  if(b1&&b2&&b3&&(b4||code.includes('rnd.seed'))){
+    out.textContent='5.0\n[1 2 3]\n3.141592...\n[82]\n\n✅ All 4 bugs fixed!';out.className='pgo ok';
+  } else {
+    let e=[];
+    if(!b1)e.push('Bug 1: use math.sqrt(25) (add prefix) OR from math import sqrt');
+    if(!b2)e.push('Bug 2: change "as num" to "as np" (universal convention)');
+    if(!b3)e.push('Bug 3: replace "import *" with specific: from math import sqrt, pi');
+    if(!b4)e.push('Bug 4: use alias: rnd.seed(42) not random.seed(42)');
+    out.textContent=e.join('\n');out.className='pgo err';
+  }
+}
+function clearPG(c,o){document.getElementById(c).value='';document.getElementById(o).textContent='Click ▶ to see output...';document.getElementById(o).className='pgo';}
+function checkBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const fb=document.getElementById('bf-fb');fb.style.display='block';
+  const b1=code.includes('math.sqrt(25)')||(code.includes('from math import sqrt')&&code.includes('sqrt(25)'));
+  const b2=code.includes('numpy as np')&&!code.includes('numpy as num');
+  const b3=!code.includes('import *');
+  const b4=code.includes('rnd.seed(')&&!code.match(/^import\s+random\s*\n[^a].*random\.seed/m);
+  const msgs=[b1?'✅ Bug 1: math.sqrt(25) — correct prefix added':'❌ Bug 1: use math.sqrt(25) or change import to: from math import sqrt',b2?'✅ Bug 2: numpy as np — standard convention':'❌ Bug 2: always use "as np" not "as num" — it is a universal ML standard',b3?'✅ Bug 3: no import * — using specific imports':'❌ Bug 3: never use import * — import specific items: from math import sqrt, pi',b4?'✅ Bug 4: rnd.seed(42) — uses correct alias':'❌ Bug 4: you aliased it as rnd — use rnd.seed(42) not random.seed(42)'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 All 4 import bugs fixed!':sc>=2?`${sc}/4 fixed`:'Review each bug above'}</div></div>`;
+}
+
+// ── SCENARIOS ──
+const scData=[
+  {q:'1. You need to use math.sqrt() and math.pi in your ML code. Which import style is best?',opts:['from math import *','import math  ← use math.sqrt(), math.pi','from math import sqrt  ← only need sqrt','import math as m  ← shorter prefix'],ans:1,exp:'When you need multiple items from a module (sqrt AND pi AND possibly more), import math is cleanest — math.sqrt(), math.pi, math.log(), etc. all work. from math import sqrt only gets you sqrt. import * is bad practice. import math as m works but m is not a recognised convention for math.'},
+  {q:'2. Every ML tutorial uses "import numpy as np". Why is this important for collaborative code?',opts:['np is required by Python to load numpy correctly','np is a universal community convention — every ML engineer worldwide uses it, making code universally readable','np makes numpy faster','np is the official module name'],ans:1,exp:'"import numpy as np" is not required by Python — any alias works technically. But "np" is a universal convention adopted by the entire ML community. Every Stack Overflow answer, Kaggle notebook, and ML textbook uses np. Using a different alias (num, npy, n) makes your code look unfamiliar and harder to read for collaborators.'},
+  {q:'3. You and a colleague run the same ML experiment with the same code, but get different train/test splits. What is missing?',opts:['You need to import random first','You need random.seed(42) or random_state=42 — without a seed, random splits differ each run','You need to use the same Python version','You need to sort your data first'],ans:1,exp:'Without a seed, random operations produce different results every run. random.seed(42) before any random operation, or random_state=42 in sklearn functions, guarantees the same "random" sequence every time. This is essential for reproducibility — if you cannot reproduce your own results, your experiment is not valid.'},
+  {q:'4. You create mlutils.py in the same folder as main.py. In main.py, how do you import the normalise() function from it?',opts:['import mlutils.normalise','from mlutils import normalise  OR  import mlutils then mlutils.normalise()','python mlutils.normalise()','include("mlutils.py")'],ans:1,exp:'from mlutils import normalise OR import mlutils then use mlutils.normalise(x). Both work because both files are in the same folder — Python can find the module by its filename (without .py). Note: include() does not exist in Python (that is PHP). There is no import with dots for local files.'},
+  {q:'5. Which import is needed to use train_test_split from sklearn?',opts:['import sklearn','import sklearn.train_test_split','from sklearn.model_selection import train_test_split','from sklearn import *'],ans:2,exp:'sklearn uses subpackages (model_selection, preprocessing, linear_model, etc.). You must import from the specific subpackage: from sklearn.model_selection import train_test_split. import sklearn alone does not automatically make train_test_split available. This is the standard from...import pattern applied to a package with nested modules.'},
+];
+let scDone=new Set(),scScore=0;
+function buildScenarios(){
+  document.getElementById('sc-wrap').innerHTML=scData.map((s,i)=>`
+    <div class="scenario"><div class="sc-q">${s.q}</div><div class="sc-opts">${s.opts.map((o,j)=>`<div class="sc-opt" id="ss${i}_${j}" onclick="pickSc(${i},${j})"><div class="sc-l">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="sc-exp" id="sexp${i}"></div></div>`).join('');
+}
+function pickSc(qi,oi){
+  if(scDone.has(qi))return;scDone.add(qi);
+  const s=scData[qi];
+  for(let j=0;j<s.opts.length;j++){const el=document.getElementById('ss'+qi+'_'+j);el.classList.add('done');if(j===s.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('sexp'+qi);exp.textContent=s.exp;exp.classList.add('show',oi===s.ans?'ok':'no');
+  if(oi===s.ans)scScore++;
+  if(scDone.size===scData.length){const sc=document.getElementById('sc-score');sc.style.display='block';sc.innerHTML=scScore===5?'<span style="color:var(--green)">🎉 Perfect — 5/5!</span>':`<span style="color:var(--amber)">${scScore}/5 — review explanations above.</span>`;}
+}
+buildScenarios();
+
+// ── AI TUTOR ──
+const replies={
+  import:`Python has 4 import styles:\n\n1. import math\n   → requires prefix: math.sqrt(25)\n   → use when you need many functions from the module\n\n2. from math import sqrt\n   → no prefix needed: sqrt(25)\n   → use when you only need 1-2 specific items\n\n3. from math import sqrt, pi, log\n   → import several specific items\n   → use when you need a few items but not the whole module\n\n4. import numpy as np\n   → short alias: np.array([1,2,3])\n   → universal for ML libraries — np, pd, plt are conventions\n\nNEVER use: from math import *\n→ pollutes namespace, can overwrite built-ins, unprofessional`,
+  stdlib:`Python Standard Library — built-in, no pip install needed:\n\nmath     → sqrt, log, pi, e, ceil, floor, factorial\nrandom   → randint, uniform, choice, shuffle, seed\ndatetime → today's date, age calculation, time arithmetic\nos       → getcwd, listdir, path.exists, path.join, makedirs\nsys      → Python version, exit(), command line args\ntime     → execution timing, sleep(), timestamp\n\nAll of these are available the moment you install Python.\n\nUsage:\nimport math\nprint(math.sqrt(144))    → 12.0\nprint(math.pi)           → 3.14159...\n\nimport os\nprint(os.getcwd())       → current directory\nprint(os.listdir("."))   → list all files`,
+  seed:`random.seed() makes randomness reproducible:\n\nWITHOUT seed:\nimport random\nprint(random.randint(1,100))  # 73 today\nprint(random.randint(1,100))  # 18 tomorrow — different!\n\nWITH seed:\nrandom.seed(42)\nprint(random.randint(1,100))  # always 82\nprint(random.randint(1,100))  # always 15\n\nSame seed = same "random" sequence every time.\n\nWhy it matters in ML:\n• train_test_split with random_state=42 → same split\n• Model initialisation → reproducible weights\n• Comparison is fair when everyone uses same seed\n\nIn sklearn:\ntrain_test_split(X, y, test_size=0.2, random_state=42)\n                                     ↑ same as seed!`,
+  ownmod:`A module is ANY .py file you create:\n\n1. Create mltools.py:\n   def normalise(v, mn=0, mx=100):\n       return (v-mn)/(mx-mn)\n\n   def get_grade(marks):\n       if marks >= 80: return "A"\n       elif marks >= 60: return "B"\n       else: return "F"\n\n2. Create main.py in SAME folder:\n   import mltools\n   print(mltools.normalise(75))  → 0.75\n   print(mltools.get_grade(85))  → "A"\n\n   OR:\n   from mltools import get_grade\n   print(get_grade(85))  → "A"\n\nRules:\n• Both files must be in the same folder\n• Filename (without .py) = module name\n• No spaces in filename — use underscores\n\nThis is exactly how numpy, pandas, sklearn work — just much larger!`,
+  mlstack:`The 5 essential ML imports every project starts with:\n\nimport numpy as np\n# Arrays, matrix operations, maths\n# np.array([1,2,3]), np.mean(data), np.reshape()\n\nimport pandas as pd\n# DataFrames, CSV loading, data manipulation\n# pd.read_csv("data.csv"), pd.DataFrame(data)\n\nimport matplotlib.pyplot as plt\n# Charts, graphs, visualisation\n# plt.plot(x,y), plt.bar(labels, values)\n\nfrom sklearn.model_selection import train_test_split\n# ML models, train/test split, metrics\n# train_test_split(X, y, test_size=0.2, random_state=42)\n\nimport random\nrandom.seed(42)  # Reproducibility!\n\nThese 5 lines appear at the top of EVERY ML notebook you will ever write in Month 2+!`,
+  default:`Great questions about Day 09 Modules! Key concepts:\n\n📦 4 import styles:\n  import math           → math.sqrt()\n  from math import sqrt → sqrt()\n  import numpy as np    → np.array()\n  from sklearn... import train_test_split\n\n📚 Standard Library (no install):\n  math, random, datetime, os, sys, time\n\n🤖 ML Stack (5 imports):\n  np, pd, plt, sklearn, tf\n\n🔨 Own modules:\n  Save mltools.py → import mltools\n\n🎲 random.seed(42):\n  Same seed = same results = reproducible ML\n\n⚠️ Never use:\n  from module import *\n\nWhat specific part would you like explained more?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('import')&&!lm.includes('seed')&&!lm.includes('ml'))r=replies.import;
+    else if(lm.includes('stdlib')||lm.includes('standard')||lm.includes('math')||lm.includes('random')&&!lm.includes('seed')||lm.includes('datetime')||lm.includes('os'))r=replies.stdlib;
+    else if(lm.includes('seed')||lm.includes('reproduc'))r=replies.seed;
+    else if(lm.includes('own')||lm.includes('creat')||lm.includes('module')||lm.includes('my'))r=replies.ownmod;
+    else if(lm.includes('ml stack')||lm.includes('numpy')||lm.includes('pandas')||lm.includes('sklearn')||lm.includes('np')||lm.includes('pd'))r=replies.mlstack;
+    addMsg(r,'ai');},700+Math.random()*500);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ── FILL BLANKS ──
+const fillData=[
+  {q:'1. To import only sqrt from math: ___ math ___ sqrt',ans:['from import','from math import'],hint:'from math import'},
+  {q:'2. Standard alias for numpy in ML: import numpy ___ np',ans:['as'],hint:'as'},
+  {q:'3. Standard alias for pandas: import pandas ___ pd',ans:['as'],hint:'as'},
+  {q:'4. To use math.sqrt() after "import math", you call: ___.sqrt(25)',ans:['math'],hint:'math'},
+  {q:'5. random.___( 42 ) makes results reproducible.',ans:['seed'],hint:'seed'},
+  {q:'6. A module is any Python file with the extension ___',ans:['.py'],hint:'.py'},
+  {q:'7. To import train_test_split from sklearn: from sklearn.___ import train_test_split',ans:['model_selection'],hint:'model_selection'},
+  {q:'8. "from math import *" is ___ practice — never use it.',ans:['bad','poor','bad practice'],hint:'bad'},
+  {q:'9. The Standard Library modules need no ___ to use — they come with Python.',ans:['pip install','install','pip'],hint:'pip install'},
+  {q:'10. import matplotlib.___ as plt',ans:['pyplot'],hint:'pyplot'},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Your answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+}
+function checkFill(){
+  fillScore=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase();
+    const ok=q.ans.some(a=>v.includes(a.toLowerCase())||v===a.toLowerCase());
+    if(ok){fillScore++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.hint;}
+  });
+  updateProgress();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillScore===10?'<span style="color:var(--green)">🎉 Perfect — 10/10!</span>':fillScore>=7?`<span style="color:var(--amber)">${fillScore}/10 — good! Check the ones above.</span>`:`<span style="color:var(--red)">${fillScore}/10 — re-read Day 09.</span>`;
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ── DEEP Q ──
+function cc(el,id){document.getElementById(id).textContent=(el.value||'').length+' chars';}
+function saveDQ(){
+  const empty=['dq1','dq2','dq3','dq4','dq5'].some(id=>!(document.getElementById(id).value||'').trim());
+  const m=document.getElementById('dq-msg');m.style.display='block';
+  if(empty){m.style.color='var(--red)';m.textContent='⚠️ Please answer all 5 questions.';}
+  else{m.style.color='var(--green)';m.textContent='✅ All 5 answers saved! Now tackle the MCQ Quiz!';}
+}
+
+// ── MCQ ──
+const mcqs=[
+  {q:'What is the difference between "import math" and "from math import sqrt"?',opts:['They are identical — same result','import math: use math.sqrt() with prefix. from math import sqrt: use sqrt() directly without prefix','from math import sqrt is faster','import math imports everything, from math imports nothing'],ans:1,exp:'import math loads the whole module — you access functions with a prefix: math.sqrt(25). from math import sqrt imports only sqrt — you call it directly: sqrt(25) — no prefix needed. The difference: prefix vs no-prefix. Choose based on how many functions you need.'},
+  {q:'Why do ML engineers always write "import numpy as np"?',opts:['np is required — numpy does not work without the alias','np is a universal community convention — every ML engineer worldwide uses it for code readability','np makes numpy run 10x faster','np is the abbreviated official module name'],ans:1,exp:'The "as np" alias is not required by Python — import numpy works fine. But np is a universal convention adopted by the entire global ML community. Every tutorial, textbook, and codebase uses np. Using a different alias makes your code unrecognisable to other ML engineers.'},
+  {q:'What does "from sklearn.model_selection import train_test_split" do?',opts:['Imports the entire sklearn library','Imports only train_test_split from the model_selection subpackage of sklearn','Imports sklearn and model_selection as separate modules','Creates a new function called train_test_split'],ans:1,exp:'sklearn is a package with subpackages (model_selection, preprocessing, linear_model, etc.). from sklearn.model_selection import train_test_split navigates to the model_selection subpackage and imports only train_test_split. This is why "import sklearn" alone does not give you train_test_split directly.'},
+  {q:'What does random.seed(42) guarantee?',opts:['Only generates the number 42','Makes all random numbers between 0 and 42','Same "random" sequence every time you run the code with the same seed','Prevents any randomness — always returns 0'],ans:2,exp:'random.seed(42) sets the starting point of the random number generator. Same starting point = same sequence every time. Run the code today or in 10 years with seed(42) — you get identical results. This is critical for reproducible ML experiments.'},
+  {q:'Which statement about Standard Library modules is TRUE?',opts:['They must be installed with pip install','They come built into Python — no installation needed','They only contain basic maths','They are deprecated in Python 3'],ans:1,exp:'The Python Standard Library comes pre-installed with Python. math, random, datetime, os, sys, time, json, csv — all available immediately after installing Python. No pip install needed. Third-party libraries (numpy, pandas, sklearn) DO require pip install.'},
+  {q:'You write: import math — then print(sqrt(25)). What happens?',opts:['Prints 5.0','NameError: name "sqrt" is not defined','Prints "math.sqrt"','Prints 25'],ans:1,exp:'import math loads the module but requires the math. prefix. sqrt alone is not in scope — only math.sqrt is. NameError. To fix: either change to math.sqrt(25) OR change the import to: from math import sqrt (then sqrt(25) works without prefix).'},
+  {q:'A module is:',opts:['Any Python file (.py) containing reusable code that can be imported','Only official Python standard library files','A function that returns a module object','A folder containing Python files'],ans:0,exp:'A module is ANY .py file. Your own myutils.py is a module. math.py is a module. The numpy library contains hundreds of modules. When you write import myutils, Python loads myutils.py and makes its functions available. Folders of modules are called packages.'},
+  {q:'What is wrong with: from math import *?',opts:['Nothing — it is the recommended way','It pollutes the namespace — imports everything, can overwrite built-ins, bad professional practice','It is faster than other imports','It is required for importing all math functions'],ans:1,exp:'"import *" imports ALL names from a module into your namespace — hundreds of names. This can accidentally overwrite built-in Python functions. It makes code harder to read (impossible to know where each name came from). Professional ML code NEVER uses import *. Always import specifically what you need.'},
+  {q:'You have mltools.py and main.py in the same folder. How does main.py import mltools?',opts:['require("mltools.py")','include("mltools")','import mltools — works because both files are in the same folder','python mltools.py from terminal'],ans:2,exp:'import mltools works because Python looks for mltools.py in the current directory. Both files must be in the same folder. Python uses the filename (without .py) as the module name. Then use: mltools.my_function() or from mltools import my_function.'},
+  {q:'What is the standard alias for matplotlib.pyplot?',opts:['mp','mpl','pyplot','plt'],ans:3,exp:'import matplotlib.pyplot as plt — plt is the universal alias. Every ML visualisation tutorial uses plt. plt.plot(), plt.bar(), plt.show(). Like np for numpy and pd for pandas, plt is a community standard that every ML engineer uses worldwide.'},
+  {q:'random.seed(42) is called "seed 42" — why is 42 a popular choice?',opts:['42 gives the best distribution of random numbers','42 is from "The Hitchhiker\'s Guide to the Galaxy" — a programming community tradition','42 is required by the random module','42 makes random numbers truly random'],ans:1,exp:'42 is "the answer to life, the universe and everything" from The Hitchhiker\'s Guide to the Galaxy — a beloved book in the programming community. ANY integer works as a seed. The specific number does not affect the quality of randomness — only reproducibility. 0, 1, 99, 2024 all work equally well.'},
+  {q:'To check if a file "data.csv" exists before opening it, which module do you use?',opts:['math','random','os','datetime'],ans:2,exp:'os.path.exists("data.csv") returns True or False. The os module handles all file system operations: checking existence, listing directories, creating folders, joining paths. This is critical in ML pipelines: always check if a data file exists before trying to load it.'},
+  {q:'What does os.path.join("data", "scores.csv") return on Windows?',opts:['data/scores.csv','data\\scores.csv (backslash)','data.scores.csv','data-scores.csv'],ans:1,exp:'os.path.join() builds the correct path separator for the operating system: \\ on Windows, / on Mac/Linux. This makes your code portable! If you hardcode "data/scores.csv" it breaks on Windows. os.path.join("data","scores.csv") works correctly on ALL operating systems.'},
+  {q:'What does "import math as m" let you do?',opts:['Use math. as normal prefix','Use m. as a shorter prefix: m.sqrt(25)','Import only m functions','Makes math faster'],ans:1,exp:'"import math as m" creates a shorter alias. You then use m.sqrt(25), m.pi, m.log(x) — the m. prefix instead of math. prefix. This is the same pattern as import numpy as np — it is just a shorter name. The full module is still loaded; only the prefix name changes.'},
+  {q:'What happens if you call random.randint(1,100) 5 times without setting a seed?',opts:['Always returns the same 5 numbers','Returns 5 different numbers each run — unpredictable','Returns numbers 1 through 5 in order','Returns an error'],ans:1,exp:'Without a seed, Python uses the current system time as the starting point. Different time = different starting point = different sequence. Each run gives different results. This makes ML experiments unreproducible — you cannot compare results between runs or share reproducible code.'},
+  {q:'Which code correctly imports the date class from datetime?',opts:['import datetime.date','from datetime import date','import date from datetime','require datetime.date'],ans:1,exp:'"from datetime import date" imports the date class directly. Then: today = date.today(). "import datetime" also works but requires datetime.date.today(). "import datetime.date" is invalid Python syntax. "require" does not exist in Python (JavaScript).'},
+  {q:'You create "my tools.py" (with a space). Can you import it with "import my tools"?',opts:['Yes — Python handles spaces','Yes — use quotes: import "my tools"','No — module names cannot have spaces. Use my_tools.py instead','Yes — use: import my_tools after renaming in import'],ans:2,exp:'Python module names cannot have spaces — spaces make it a syntax error in the import statement. Always use underscores: my_tools.py can be imported as "import my_tools". This is also why Python variable names and function names use snake_case (underscores).'},
+  {q:'What is a "package" vs a "module"?',opts:['They are identical — same concept','A module is a single .py file. A package is a folder of modules with an __init__.py file','A package is faster than a module','Modules are for stdlib, packages are for third-party'],ans:1,exp:'Module = a single .py file. Package = a folder containing multiple modules + __init__.py. sklearn is a package with subpackages (model_selection, preprocessing, etc.) each containing multiple module files. When you do "from sklearn.model_selection import train_test_split" — sklearn is a package, model_selection is a subpackage.'},
+  {q:'Which import block is correct for a complete ML project?',opts:['import numpy, pandas, matplotlib','import numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom sklearn.model_selection import train_test_split','import np, pd, plt','from * import numpy, pandas'],ans:1,exp:'The correct ML project header: numpy as np, pandas as pd, matplotlib.pyplot as plt, and specific sklearn imports. The aliases np, pd, plt are universal conventions. Never import with * (from * import is not valid syntax anyway). Always use the full from sklearn.subpackage import SpecificThing pattern.'},
+  {q:'After writing "import random as rnd", which line correctly generates a random integer?',opts:['random.randint(1, 100)','rnd.randint(1, 100)','randint(1, 100)','rnd.random.randint(1, 100)'],ans:1,exp:'When you create an alias with "as rnd", you MUST use that alias everywhere. rnd.randint(1,100) is correct. random.randint(1,100) would work if you had written "import random" without an alias, but since you aliased it as rnd, "random" is no longer a valid name in your scope.'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 20</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.83rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqDoneSet.has(qi))return;mcqDoneSet.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqScore++;document.getElementById('live-sc').textContent=mcqScore;}
+  if(mcqDoneSet.size===20){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProgress();
+}
+function showFinal(){
+  const pct=Math.round(mcqScore/20*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--green) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent Work!':pct>=60?'Good Effort!':'Keep Practising!';
+  document.getElementById('fin-msg').textContent=`Score: ${mcqScore}/20 (${pct}%) — ${pct>=80?'Modules mastered! Ready for Day 10: File I/O.':pct>=60?'Good foundation. Review incorrect answers before Day 10.':'Re-read Day 09 and retry.'}`;
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

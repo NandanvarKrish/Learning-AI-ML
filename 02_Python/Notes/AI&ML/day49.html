@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 49 — Mini Project: Number Guessing Game</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.game-box{background:var(--ink); color:var(--paper); border-radius:8px; padding:26px; text-align:center;}
+.game-box h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.game-input-row{display:flex; gap:10px; justify-content:center; margin:16px 0;}
+.game-input-row input{width:100px; padding:10px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono); font-size:16px; text-align:center;}
+.game-input-row button{background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:15px;}
+.game-feedback{font-size:20px; font-family:var(--font-mono); min-height:32px; margin:10px 0;}
+.game-feedback.hot{color:#e8837a;}
+.game-feedback.cold{color:#7ab8e8;}
+.game-feedback.win{color:#8fdb9c; font-size:24px; font-weight:bold;}
+.game-attempts{color:#cfc8b8; font-size:14px;}
+.game-history{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:14px;}
+.guess-chip{background:#2a3442; padding:4px 10px; border-radius:12px; font-family:var(--font-mono); font-size:13px;}
+.reset-btn{background:transparent; border:1px solid #555; color:#cfc8b8; padding:8px 16px; border-radius:4px; cursor:pointer; margin-top:14px; font-size:13px;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:230px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver .input-label{font-family:var(--font-mono); font-size:12px; color:#cfc8b8; margin-top:14px; display:block;}
+.solver textarea.inputs{min-height:80px; margin-top:6px;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.note-box{background:#fdf6ea; border:1px solid var(--accent-soft); border-radius:6px; padding:14px 18px; margin:14px 0; font-size:14px;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 49 of 210 · Phase 2: Mini Projects</span>
+    <h1>Mini Project: Number Guessing Game</h1>
+    <div class="subtitle">~2 hours · Your first complete, playable Python program</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>This project itself isn't ML — but it's the first time you'll combine randomness, loops, conditionals, and user interaction into one complete, working program. That combination (generate/sample something, evaluate a condition, loop until a stopping criterion) is structurally similar to how many training and simulation loops work later. Mostly, though, today is about the genuine confidence boost of finishing something real.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> New tool: the random module</h2>
+  <div class="code">import random
+number = random.randint(1, 100)
+print(number)   # a random whole number between 1 and 100, INCLUSIVE of both ends</div>
+  <p><code>import random</code> loads Python's built-in random number toolkit. <strong>Note: unlike range(), <code>randint(a, b)</code> includes BOTH endpoints</strong> — <code>randint(1, 100)</code> can produce 1 or 100 or anything between, a different rule from range()'s exclusive stop.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> New tool: input()</h2>
+  <div class="code">guess = input("Enter your guess: ")
+print(guess)</div>
+  <p><code>input()</code> pauses the program and waits for the user to type something, returning whatever they typed. <strong>Critical detail: input() ALWAYS returns a string</strong>, even if the user types a number — you must convert it with <code>int()</code> before comparing it to a number.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Building the game, step by step</h2>
+  <div class="panel">
+    <p><strong>Step 1:</strong> pick a secret number and set up a counter</p>
+    <div class="code">import random
+secret = random.randint(1, 100)
+attempts = 0</div>
+    <p><strong>Step 2:</strong> loop until guessed correctly, using <code>while True</code> + <code>break</code></p>
+    <div class="code">while True:
+    guess = int(input("Guess a number (1-100): "))
+    attempts = attempts + 1
+
+    if guess < secret:
+        print("Too low!")
+    elif guess > secret:
+        print("Too high!")
+    else:
+        print("Correct! You got it in " + str(attempts) + " attempts.")
+        break</div>
+    <p><code>while True:</code> creates a loop that would run forever — the <code>break</code> inside the <code>else</code> branch is what actually stops it, the moment the guess is correct. This is a genuinely standard Python pattern: "loop forever until a specific condition inside says stop."</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> The complete program</h2>
+  <div class="panel">
+    <div class="code">import random
+
+secret = random.randint(1, 100)
+attempts = 0
+
+print("I'm thinking of a number between 1 and 100.")
+
+while True:
+    guess = int(input("Your guess: "))
+    attempts = attempts + 1
+
+    if guess < secret:
+        print("Too low!")
+    elif guess > secret:
+        print("Too high!")
+    else:
+        print("Correct! You got it in " + str(attempts) + " attempts.")
+        break</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Forgetting int() around input().</strong> Comparing a string guess to an integer secret with <code>&lt;</code> or <code>&gt;</code> causes a TypeError in real Python — always convert immediately: <code>int(input(...))</code>.</p>
+    <p><strong>Mistake 2 — Forgetting the break.</strong> Without it, <code>while True</code> genuinely never stops — the game would loop forever even after a correct guess.</p>
+    <p><strong>Mistake 3 — Confusing randint's inclusive range with range()'s exclusive one.</strong> <code>random.randint(1, 100)</code> CAN produce 100; <code>range(1, 100)</code> stops before 100 — easy to mix these up.</p>
+    <p><strong>Mistake 4 — Not incrementing the attempt counter, or incrementing it in the wrong place.</strong> If placed after the win-check instead of right after getting the guess, a correct final guess wouldn't get counted.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Play it — a real, working version</h2>
+  <div class="game-box">
+    <h3>Guess the number (1–100)</h3>
+    <div class="game-attempts" id="gameAttempts">Attempts: 0</div>
+    <div class="game-input-row">
+      <input type="number" id="guessInput" min="1" max="100" placeholder="?">
+      <button onclick="submitGuess()">Guess</button>
+    </div>
+    <div class="game-feedback" id="gameFeedback">Pick a number between 1 and 100</div>
+    <div class="game-history" id="gameHistory"></div>
+    <button class="reset-btn" onclick="resetGame()">New Game</button>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">This is the exact logic from the code above, running live — play a round or two, then go trace through the code until it clicks.</p>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Code Console (simulated input)</h2>
+  <div class="solver">
+    <h3>Since a real terminal isn't available here, pre-fill your guesses below</h3>
+    <textarea id="codeInput">import random
+secret = random.randint(1, 100)
+attempts = 0
+print("Secret number generated (hidden)")
+
+while True:
+    guess = int(input("Your guess: "))
+    attempts = attempts + 1
+    if guess < secret:
+        print("Too low!")
+    elif guess > secret:
+        print("Too high!")
+    else:
+        print("Correct! You got it in " + str(attempts) + " attempts.")
+        break</textarea>
+    <label class="input-label">Simulated inputs (one guess per line — since the secret is random, try a wide spread like 50, 25, 75, 10, 90, 5, 95... and keep guessing until it hits):</label>
+    <textarea class="inputs" id="inputQueue">50
+25
+75
+12
+88
+6
+94
+3
+97
+1</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 50 is your second mini project — a console-based to-do list, combining lists, loops, and functions into a small interactive tool people actually use.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 49 of 210 · AI & ML Study Plan · Phase 2: Mini Projects</div>
+</footer>
+
+<script>
+// --- Playable game widget ---
+let secretNumber = Math.floor(Math.random()*100)+1;
+let gameAttempts = 0;
+let won = false;
+
+function submitGuess(){
+  if(won) return;
+  const input = document.getElementById('guessInput');
+  const val = parseInt(input.value);
+  const feedback = document.getElementById('gameFeedback');
+  if(isNaN(val) || val<1 || val>100){
+    feedback.textContent = "Enter a number between 1 and 100";
+    feedback.className = 'game-feedback';
+    return;
+  }
+  gameAttempts++;
+  document.getElementById('gameAttempts').textContent = 'Attempts: ' + gameAttempts;
+
+  const history = document.getElementById('gameHistory');
+  const chip = document.createElement('span');
+  chip.className = 'guess-chip';
+
+  if(val === secretNumber){
+    feedback.textContent = "🎉 Correct! It was " + secretNumber + " (" + gameAttempts + " attempts)";
+    feedback.className = 'game-feedback win';
+    chip.textContent = val + ' ✓';
+    won = true;
+  } else if(val < secretNumber){
+    feedback.textContent = "Too low! Try higher.";
+    feedback.className = 'game-feedback cold';
+    chip.textContent = val + ' ↑';
+  } else {
+    feedback.textContent = "Too high! Try lower.";
+    feedback.className = 'game-feedback hot';
+    chip.textContent = val + ' ↓';
+  }
+  history.appendChild(chip);
+  input.value = '';
+  input.focus();
+}
+function resetGame(){
+  secretNumber = Math.floor(Math.random()*100)+1;
+  gameAttempts = 0;
+  won = false;
+  document.getElementById('gameAttempts').textContent = 'Attempts: 0';
+  document.getElementById('gameFeedback').textContent = 'Pick a number between 1 and 100';
+  document.getElementById('gameFeedback').className = 'game-feedback';
+  document.getElementById('gameHistory').innerHTML = '';
+  document.getElementById('guessInput').value = '';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('guessInput');
+  if(inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') submitGuess(); });
+});
+
+// --- Code console interpreter with input(), while/break, random.randint ---
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  return String(val);
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+let inputQueueArr = [];
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function evalComplex(argRaw, vars, output){
+  const arg = argRaw.trim();
+  let m = arg.match(/^random\.randint\((.+),(.+)\)$/);
+  if(m){
+    const a = evalGeneral(m[1], vars), b = evalGeneral(m[2], vars);
+    return Math.floor(Math.random()*(b-a+1))+a;
+  }
+  m = arg.match(/^input\((.*)\)$/);
+  if(m){
+    const promptText = m[1].trim() ? evalComplex(m[1], vars, output) : '';
+    if(inputQueueArr.length === 0){
+      throw new Error('EOFError: no more simulated input available');
+    }
+    const val = inputQueueArr.shift();
+    output.push((typeof promptText==='string'?promptText:'') + val);
+    return val;
+  }
+  const intMatch = arg.match(/^int\((.+)\)$/);
+  if(intMatch){
+    const v = evalComplex(intMatch[1], vars, output);
+    if(typeof v === 'string'){
+      const n = parseInt(v.trim(),10);
+      if(isNaN(n)) throw new Error(`ValueError: invalid literal for int(): '${v}'`);
+      return n;
+    }
+    return Math.trunc(v);
+  }
+  const strMatch = arg.match(/^str\((.+)\)$/);
+  if(strMatch) return pyRepr(evalComplex(strMatch[1], vars, output));
+  return evalGeneral(arg, vars);
+}
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+const BREAK_SIGNAL = {__signal:'break'};
+const CONTINUE_SIGNAL = {__signal:'continue'};
+function execLine(line, vars, output){
+  if(line === 'break') throw BREAK_SIGNAL;
+  if(line === 'continue') throw CONTINUE_SIGNAL;
+  if(line.startsWith('import ')) return;
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  if(printMatch){
+    const parts = splitTopLevel(printMatch[1], ',');
+    output.push(parts.map(p => { const v = evalComplex(p, vars, output); return typeof v==='string'?v:pyRepr(v); }).join(' '));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars, output);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    const whileMatch = trimmed.match(/^while (.+):$/);
+
+    if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars, output)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(whileMatch){
+      const condRaw = whileMatch[1];
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      const condVal = () => condRaw.trim() === 'True' ? true : evalComplex(condRaw, vars, output);
+      while(condVal()){
+        guard.count++;
+        if(guard.count > 500){ output.push('<span class="error">Stopped: loop ran too long</span>'); return lines.length; }
+        try{
+          execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        } catch(sig){
+          if(sig === BREAK_SIGNAL) break;
+          else if(sig === CONTINUE_SIGNAL) continue;
+          else throw sig;
+        }
+      }
+      i = bEnd;
+      continue;
+    } else {
+      execLine(trimmed, vars, output);
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  const output = [];
+  inputQueueArr = document.getElementById('inputQueue').value.split('\n').map(s=>s.trim()).filter(s=>s!=='');
+  try{
+    execBlock(lines, 0, 0, vars, output, {count:0});
+  } catch(err){
+    output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "random.randint(1, 10) can produce which of these?", opts: ["Only 1-9","1 through 10, inclusive of both","Only even numbers","0 through 10"], correct: 1, explain: "randint's range is inclusive on both ends, unlike range()." },
+  { q: "What does input() always return, regardless of what the user types?", opts: ["An integer","A float","A string","A boolean"], correct: 2, explain: "input() always returns text (a string) — you must convert it yourself." },
+  { q: "Why is 'while True:' paired with a 'break' inside the loop body?", opts: [
+      "It's not necessary, while True stops on its own",
+      "while True never stops on its own — break is what explicitly ends the loop when the condition is met",
+      "break restarts the loop",
+      "This combination is invalid Python"
+    ], correct: 1, explain: "while True is an intentionally infinite loop; break is the explicit exit mechanism." },
+  { q: "guess = input('Enter: '); if guess < 50: — what's wrong here?", opts: [
+      "Nothing is wrong",
+      "guess is a string; comparing a string to a number like this causes a TypeError",
+      "The prompt text is invalid",
+      "input() should not have a prompt"
+    ], correct: 1, explain: "guess must be converted with int() before comparing to a number." },
+  { q: "attempts = attempts + 1 placed right after getting the guess (before checking win) ensures:", opts: [
+      "The winning guess doesn't get counted",
+      "Every guess, including the winning one, is counted",
+      "It causes an infinite loop",
+      "It has no effect on the count"
+    ], correct: 1, explain: "Incrementing before the check means the final, correct guess is included in the total." },
+  { q: "In an elif chain checking 'guess < secret' then 'guess > secret' then else, when does the else run?", opts: ["Never","When guess < secret","When guess > secret","When guess equals secret (neither condition above was true)"], correct: 3, explain: "else runs when neither of the prior conditions matched — meaning the guess is exactly correct." },
+  { q: "import random — what does this line do?", opts: ["Creates a random number immediately","Loads Python's built-in random number toolkit so its functions can be used", "Deletes randomness from the program","Only works inside functions"], correct: 1, explain: "import brings in a module's functionality, like random.randint(), for use in your code." },
+  { q: "Why is completing this project a meaningful milestone, even though it's not itself an ML program?", opts: [
+      "It isn't meaningful",
+      "It combines variables, loops, conditionals, and user interaction into one complete, working program — the same kind of integration real projects require",
+      "It teaches machine learning directly",
+      "It's only useful for games, nothing else"
+    ], correct: 1, explain: "Building one small but complete, working program end-to-end is a genuinely important confidence and skill milestone." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+
+// init widget listener without waiting for full DOMContentLoaded issues
+(function(){
+  const inp = document.getElementById('guessInput');
+  if(inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') submitGuess(); });
+})();
+</script>
+
+</body>
+</html>

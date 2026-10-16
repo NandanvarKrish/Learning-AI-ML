@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SciPy – Day 3 | Optimization & Interpolation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F0FDF4;--surface:#FFFFFF;--border:#BBF7D0;--accent:#15803D;--accent2:#14532D;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--purple:#7C3AED;--copper:#C2410C;
+    --text:#052E16;--muted:#15803D;--code-bg:#03130A;--code-text:#BBF7D0;--tag-bg:#DCFCE7;--tag-text:#14532D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(21,128,61,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#15803D 0%,#14532D 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#BBF7D0;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#4ADE80;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#86EFAC;} .fn{color:#93C5FD;} .st{color:#FDE68A;} .nm{color:#FCA5A5;} .cm{color:#14532D;font-style:italic;} .op{color:#BBF7D0;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.copper{border-color:var(--copper);background:#FFF7ED;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.copper .callout-title{color:var(--copper);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#14532D,#15803D);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#15803D,#14532D);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#15803D,#C2410C);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔬 SciPy</div><span class="sep">|</span><span class="day-label">Day 3 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">60%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:60%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">SciPy Full Course · Day 3</div>
+  <h1>Optimization &amp; <span>Interpolation</span></h1>
+  <p>Find minima, fit curves to data, solve equations numerically, and fill gaps between known data points.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🎯 minimize()</span>
+    <span class="hero-pill">📈 curve_fit()</span>
+    <span class="hero-pill">🔍 root() &amp; brentq()</span>
+    <span class="hero-pill">📊 linprog()</span>
+    <span class="hero-pill">📐 interp1d &amp; splines</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🎯</div>
+    <div><h2>scipy.optimize.minimize() — Finding the Best Value</h2><p>The general-purpose function minimizer</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><code>minimize()</code> finds the input value(s) that produce the SMALLEST output of a function you define. Nearly every optimization problem — machine learning training, resource allocation, curve fitting — reduces to "minimize this function."</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy <span class="kw">import</span> optimize
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># Minimize a simple function: f(x) = (x-3)^2 + 5  →  minimum is at x=3</span>
+<span class="kw">def</span> <span class="fn">f</span>(x):
+    <span class="kw">return</span> (x - <span class="nm">3</span>)**<span class="nm">2</span> + <span class="nm">5</span>
+
+result = optimize.<span class="fn">minimize</span>(f, x0=<span class="nm">0</span>)   <span class="cm"># x0 = initial guess to start searching from</span>
+<span class="fn">print</span>(result.x)        <span class="cm"># the x-value that minimizes f  → ~3.0</span>
+<span class="fn">print</span>(result.fun)      <span class="cm"># the minimum function value    → ~5.0</span>
+<span class="fn">print</span>(result.success)  <span class="cm"># whether the optimizer converged successfully</span>
+
+<span class="cm"># Multi-variable minimization — the Rosenbrock "banana" function (classic optimization test)</span>
+<span class="kw">def</span> <span class="fn">rosenbrock</span>(params):
+    x, y = params
+    <span class="kw">return</span> (<span class="nm">1</span>-x)**<span class="nm">2</span> + <span class="nm">100</span>*(y - x**<span class="nm">2</span>)**<span class="nm">2</span>
+
+result = optimize.<span class="fn">minimize</span>(rosenbrock, x0=[<span class="nm">0</span>,<span class="nm">0</span>])
+<span class="fn">print</span>(result.x)   <span class="cm"># converges to [1, 1], the true minimum</span>
+
+<span class="cm"># With bounds — constrain the search to a specific range</span>
+result = optimize.<span class="fn">minimize</span>(f, x0=<span class="nm">0</span>, bounds=[(<span class="nm">-10</span>,<span class="nm">1</span>)])   <span class="cm"># force x to stay in [-10, 1]</span>
+<span class="fn">print</span>(result.x)   <span class="cm"># finds the best value WITHIN the bound → 1.0 (closest allowed to the true min of 3)</span>
+
+<span class="cm"># Choosing a method (algorithm) explicitly</span>
+result = optimize.<span class="fn">minimize</span>(rosenbrock, x0=[<span class="nm">0</span>,<span class="nm">0</span>], method=<span class="st">'Nelder-Mead'</span>)</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Only Minimize? What About Maximizing?</div>
+      SciPy's optimize module ONLY provides minimization. To MAXIMIZE a function, minimize its NEGATIVE: <code>optimize.minimize(lambda x: -f(x), x0)</code>. This simple trick means you never need a separate "maximize" function.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📈</div>
+    <div><h2>curve_fit() — Fitting Custom Models to Data</h2><p>When your relationship isn't a standard distribution or simple regression</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><code>curve_fit()</code> finds the BEST parameters for ANY custom function you define, to match observed data — more flexible than Seaborn's regplot() which only fits polynomials.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy.optimize <span class="kw">import</span> curve_fit
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="cm"># Define ANY custom mathematical model — here, exponential decay</span>
+<span class="kw">def</span> <span class="fn">exp_decay</span>(x, a, b, c):
+    <span class="kw">return</span> a * <span class="op">np</span>.<span class="fn">exp</span>(-b * x) + c
+
+<span class="cm"># Generate noisy sample data following this shape</span>
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">0</span>)
+x_data = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">4</span>, <span class="nm">50</span>)
+y_data = exp_decay(x_data, <span class="nm">2.5</span>, <span class="nm">1.3</span>, <span class="nm">0.5</span>) + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">0.2</span>, <span class="nm">50</span>)
+
+<span class="cm"># Fit the model — returns optimal parameters AND their covariance (uncertainty)</span>
+popt, pcov = <span class="fn">curve_fit</span>(exp_decay, x_data, y_data, p0=[<span class="nm">1</span>,<span class="nm">1</span>,<span class="nm">1</span>])   <span class="cm"># p0 = initial parameter guesses</span>
+a_fit, b_fit, c_fit = popt
+<span class="fn">print</span>(<span class="st">f"Fitted: a={a_fit:.2f}, b={b_fit:.2f}, c={c_fit:.2f}"</span>)
+
+<span class="cm"># Standard errors of the fitted parameters (uncertainty estimate)</span>
+perr = <span class="op">np</span>.<span class="fn">sqrt</span>(<span class="op">np</span>.<span class="fn">diag</span>(pcov))
+<span class="fn">print</span>(<span class="st">f"Uncertainty: ±{perr}"</span>)
+
+<span class="cm"># Visualize the fit</span>
+<span class="op">plt</span>.<span class="fn">scatter</span>(x_data, y_data, alpha=<span class="nm">0.6</span>, label=<span class="st">'Data'</span>)
+<span class="op">plt</span>.<span class="fn">plot</span>(x_data, exp_decay(x_data, *popt), <span class="st">'r-'</span>, linewidth=<span class="nm">2</span>, label=<span class="st">'Fitted curve'</span>)
+<span class="op">plt</span>.<span class="fn">legend</span>()</pre>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Good Initial Guesses (p0) Matter</div>
+      curve_fit() uses iterative optimization internally — a poor initial guess (<code>p0</code>) can cause it to converge to a wrong local optimum, fail to converge, or take much longer. Always provide a reasonable p0 based on a rough visual inspection of your data whenever possible.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🔍</div>
+    <div><h2>Root Finding — Solving Equations Numerically</h2><p>Where does a function equal zero?</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Find where f(x) = 0 — e.g., x^3 - x - 2 = 0</span>
+<span class="kw">def</span> <span class="fn">g</span>(x):
+    <span class="kw">return</span> x**<span class="nm">3</span> - x - <span class="nm">2</span>
+
+<span class="cm"># General-purpose root finder — needs an initial guess</span>
+result = optimize.<span class="fn">root</span>(g, x0=<span class="nm">1</span>)
+<span class="fn">print</span>(result.x)   <span class="cm"># ~1.5214</span>
+
+<span class="cm"># brentq() — often faster/more reliable IF you can bracket the root
+# (know a range [a,b] where the function changes sign)</span>
+root_value = optimize.<span class="fn">brentq</span>(g, a=<span class="nm">1</span>, b=<span class="nm">2</span>)   <span class="cm"># g(1) is negative, g(2) is positive → root is between</span>
+<span class="fn">print</span>(root_value)
+
+<span class="cm"># Real-world use: solve "at what price does supply equal demand?"</span>
+<span class="kw">def</span> <span class="fn">supply_minus_demand</span>(price):
+    supply = <span class="nm">50</span> * price - <span class="nm">100</span>
+    demand = <span class="nm">500</span> - <span class="nm">30</span> * price
+    <span class="kw">return</span> supply - demand
+
+equilibrium_price = optimize.<span class="fn">brentq</span>(supply_minus_demand, a=<span class="nm">0</span>, b=<span class="nm">50</span>)
+<span class="fn">print</span>(<span class="st">f"Equilibrium price: {equilibrium_price:.2f}"</span>)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Function</th><th>Requires</th><th>Best For</th></tr>
+        <tr><td><code>optimize.root()</code></td><td>Initial guess (x0)</td><td>General-purpose, multi-dimensional systems</td></tr>
+        <tr><td><code>optimize.brentq()</code></td><td>A bracket [a,b] where sign changes</td><td>Single-variable, very reliable when applicable</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📊</div>
+    <div><h2>linprog() — Linear Programming</h2><p>Optimal resource allocation under linear constraints</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>Linear programming</strong> finds the best allocation of resources to minimize (or maximize) a linear objective, subject to linear constraints — classic operations research.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy.optimize <span class="kw">import</span> linprog
+
+<span class="cm"># Example: A factory makes 2 products. Maximize profit given resource constraints.
+# Profit: 3x + 5y (x=units of Product A, y=units of Product B)
+# scipy's linprog MINIMIZES by default, so negate for maximization: minimize -3x - 5y</span>
+c = [-<span class="nm">3</span>, -<span class="nm">5</span>]   <span class="cm"># coefficients of the (negated) objective function</span>
+
+<span class="cm"># Constraints in the form: A_ub @ x <= b_ub</span>
+<span class="cm"># Constraint 1: 1x + 0y <= 4   (Product A machine-hours limit)</span>
+<span class="cm"># Constraint 2: 0x + 2y <= 12  (Product B machine-hours limit)</span>
+<span class="cm"># Constraint 3: 3x + 2y <= 18  (shared raw material limit)</span>
+A_ub = [[<span class="nm">1</span>,<span class="nm">0</span>], [<span class="nm">0</span>,<span class="nm">2</span>], [<span class="nm">3</span>,<span class="nm">2</span>]]
+b_ub = [<span class="nm">4</span>, <span class="nm">12</span>, <span class="nm">18</span>]
+
+result = <span class="fn">linprog</span>(c, A_ub=A_ub, b_ub=b_ub, bounds=[(<span class="nm">0</span>,<span class="kw">None</span>), (<span class="nm">0</span>,<span class="kw">None</span>)])   <span class="cm"># x,y >= 0</span>
+
+<span class="fn">print</span>(<span class="st">f"Optimal units — Product A: {result.x[0]:.1f}, Product B: {result.x[1]:.1f}"</span>)
+<span class="fn">print</span>(<span class="st">f"Maximum profit: {-result.fun:.2f}"</span>)   <span class="cm"># negate back since we minimized -profit</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ linprog() Only MINIMIZES — Negate for Maximization Problems</div>
+      Like <code>minimize()</code>, <code>linprog()</code> only minimizes. For a maximization problem (like maximizing profit), NEGATE the objective coefficients, solve, then negate the RESULT back to get the true maximum value.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">📐</div>
+    <div><h2>Interpolation — Filling Gaps Between Known Points</h2><p>Estimating values you didn't directly measure</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy.interpolate <span class="kw">import</span> interp1d, CubicSpline
+
+<span class="cm"># Suppose you have temperature readings only at certain hours</span>
+hours = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">4</span>, <span class="nm">8</span>, <span class="nm">12</span>, <span class="nm">16</span>, <span class="nm">20</span>, <span class="nm">24</span>])
+temps = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">15</span>, <span class="nm">13</span>, <span class="nm">18</span>, <span class="nm">25</span>, <span class="nm">23</span>, <span class="nm">18</span>, <span class="nm">15</span>])
+
+<span class="cm"># LINEAR interpolation — straight lines connecting each pair of points</span>
+linear_interp = <span class="fn">interp1d</span>(hours, temps, kind=<span class="st">'linear'</span>)
+<span class="fn">print</span>(linear_interp(<span class="nm">10</span>))   <span class="cm"># estimated temperature at hour 10</span>
+
+<span class="cm"># CUBIC interpolation — smooth curve through all points (more realistic for natural phenomena)</span>
+cubic_interp = <span class="fn">interp1d</span>(hours, temps, kind=<span class="st">'cubic'</span>)
+<span class="fn">print</span>(cubic_interp(<span class="nm">10</span>))
+
+<span class="cm"># CubicSpline — a dedicated, often smoother/more robust spline class</span>
+spline = <span class="fn">CubicSpline</span>(hours, temps)
+fine_hours = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">24</span>, <span class="nm">200</span>)   <span class="cm"># 200 smoothly spaced points</span>
+smooth_temps = spline(fine_hours)
+
+<span class="cm"># Plot comparison</span>
+<span class="op">plt</span>.<span class="fn">scatter</span>(hours, temps, color=<span class="st">'black'</span>, zorder=<span class="nm">5</span>, label=<span class="st">'Measured'</span>)
+<span class="op">plt</span>.<span class="fn">plot</span>(fine_hours, linear_interp(fine_hours), <span class="st">'--'</span>, label=<span class="st">'Linear'</span>)
+<span class="op">plt</span>.<span class="fn">plot</span>(fine_hours, smooth_temps, label=<span class="st">'Cubic Spline'</span>)
+<span class="op">plt</span>.<span class="fn">legend</span>()
+
+<span class="cm"># Handling values OUTSIDE the known range (extrapolation)</span>
+safe_interp = <span class="fn">interp1d</span>(hours, temps, kind=<span class="st">'linear'</span>, fill_value=<span class="st">'extrapolate'</span>)
+<span class="cm"># Without fill_value='extrapolate', requesting x outside [0,24] raises a ValueError</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Method</th><th>Shape Between Points</th><th>Best For</th></tr>
+        <tr><td><code>kind='linear'</code></td><td>Straight line segments</td><td>Simple, fast, safe default</td></tr>
+        <tr><td><code>kind='cubic'</code></td><td>Smooth curved segments</td><td>Naturally smooth phenomena (temperature, physical measurements)</td></tr>
+        <tr><td><code>CubicSpline</code></td><td>Smooth, continuous 2nd derivative</td><td>Scientific/engineering data needing smooth derivatives too</td></tr>
+      </table>
+    </div>
+
+    <div class="callout copper">
+      <div class="callout-title">⚠️ Interpolation vs Extrapolation</div>
+      Interpolation (estimating WITHIN the range of known x-values) is generally reliable. Extrapolation (estimating OUTSIDE that range) is much riskier — the fitted curve's behavior beyond your data is unverified and can produce wildly unrealistic results, especially with higher-order/cubic methods.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">optimize.minimize()</div><div class="mc-desc">Find function minimum</div><div class="mc-ex">x0, bounds, method</div></div>
+      <div class="mini-card"><div class="mc-name">curve_fit()</div><div class="mc-desc">Fit custom model to data</div><div class="mc-ex">returns popt, pcov</div></div>
+      <div class="mini-card"><div class="mc-name">optimize.brentq()</div><div class="mc-desc">Root finding with bracket</div><div class="mc-ex">a, b sign-change bounds</div></div>
+      <div class="mini-card"><div class="mc-name">linprog()</div><div class="mc-desc">Linear programming</div><div class="mc-ex">c, A_ub, b_ub, bounds</div></div>
+      <div class="mini-card"><div class="mc-name">interp1d()</div><div class="mc-desc">1D interpolation</div><div class="mc-ex">kind='linear'/'cubic'</div></div>
+      <div class="mini-card"><div class="mc-name">CubicSpline()</div><div class="mc-desc">Smooth spline interpolation</div><div class="mc-ex">continuous derivatives</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>minimize, curve_fit, root finding, linprog, interpolation. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#15803D">🏆</div>
+    <div><h2>Real-World Task — Factory Production &amp; Sensor Calibration</h2><p>Estimated time: 85–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are an <strong>Operations Research Analyst</strong>. Solve a production optimization problem with linprog(), fit a sensor calibration curve with curve_fit(), and interpolate missing sensor readings.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#15803D">1</div><h4>Phase 1 — Production Optimization</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Solve the Production Mix Problem</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> scipy.optimize <span class="kw">import</span> linprog, minimize, curve_fit, brentq
+<span class="kw">from</span> scipy.interpolate <span class="kw">import</span> CubicSpline
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="cm"># A factory makes Chairs (x) and Tables (y).
+# Profit: ₹40/chair, ₹90/table. Maximize profit.
+# Constraints:
+#   Wood:   4x + 8y <= 400   (units of wood available)
+#   Labor:  3x + 2y <= 180   (labor hours available)
+#   Chairs demand cap: x <= 80</span>
+c = [-<span class="nm">40</span>, -<span class="nm">90</span>]
+A_ub = [[<span class="nm">4</span>,<span class="nm">8</span>], [<span class="nm">3</span>,<span class="nm">2</span>], [<span class="nm">1</span>,<span class="nm">0</span>]]
+b_ub = [<span class="nm">400</span>, <span class="nm">180</span>, <span class="nm">80</span>]
+
+result = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=[(<span class="nm">0</span>,<span class="kw">None</span>),(<span class="nm">0</span>,<span class="kw">None</span>)])
+<span class="fn">print</span>(<span class="st">f"Chairs: {result.x[0]:.1f}, Tables: {result.x[1]:.1f}"</span>)
+<span class="fn">print</span>(<span class="st">f"Max profit: ₹{-result.fun:.2f}"</span>)</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Sensor Calibration Curve Fitting</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Fit a Calibration Model</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># A pressure sensor's raw voltage output relates to actual pressure via
+# a known saturating (logistic-like) curve: P = L / (1 + exp(-k*(V - V0)))</span>
+<span class="kw">def</span> <span class="fn">calibration_curve</span>(V, L, k, V0):
+    <span class="kw">return</span> L / (<span class="nm">1</span> + <span class="op">np</span>.<span class="fn">exp</span>(-k * (V - V0)))
+
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">4</span>)
+voltage = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">40</span>)
+true_pressure = calibration_curve(voltage, <span class="nm">100</span>, <span class="nm">1.2</span>, <span class="nm">5</span>)
+measured_pressure = true_pressure + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">3</span>, <span class="fn">len</span>(voltage))
+
+popt, pcov = curve_fit(calibration_curve, voltage, measured_pressure, p0=[<span class="nm">100</span>,<span class="nm">1</span>,<span class="nm">5</span>])
+<span class="fn">print</span>(<span class="st">f"Fitted: L={popt[0]:.1f}, k={popt[1]:.2f}, V0={popt[2]:.2f}"</span>)</pre></div>
+          <p>Plot the raw data points against the fitted calibration curve. Use the fitted model to predict pressure at V=7.5V.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Find the Voltage for a Target Pressure</h5>
+          <p>Using brentq(), find what voltage produces EXACTLY 50 units of pressure (solve calibration_curve(V, *popt) - 50 = 0 for V).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Interpolating Missing Readings</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Fill Gaps in a Temperature Log</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Sensor only logged every 3 hours due to a malfunction</span>
+logged_hours = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>,<span class="nm">3</span>,<span class="nm">6</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">15</span>,<span class="nm">18</span>,<span class="nm">21</span>,<span class="nm">24</span>])
+logged_temps = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">12</span>,<span class="nm">10</span>,<span class="nm">14</span>,<span class="nm">22</span>,<span class="nm">27</span>,<span class="nm">26</span>,<span class="nm">21</span>,<span class="nm">15</span>,<span class="nm">12</span>])
+
+spline = CubicSpline(logged_hours, logged_temps)
+all_hours = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">0</span>, <span class="nm">24.5</span>, <span class="nm">0.5</span>)   <span class="cm"># every 30 minutes</span>
+interpolated_temps = spline(all_hours)</pre></div>
+          <p>Plot the original sparse readings alongside the smooth interpolated curve. Estimate the temperature at 2:30 PM (hour 14.5) and identify the interpolated peak temperature hour.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Solved the production mix linear program with linprog()</li>
+        <li>Identified optimal chair/table quantities and max profit</li>
+        <li>Generated synthetic sensor calibration data</li>
+        <li>Fit the logistic calibration curve with curve_fit()</li>
+        <li>Predicted pressure at a specific voltage using fitted parameters</li>
+        <li>Used brentq() to solve for voltage at a target pressure</li>
+        <li>Built a CubicSpline interpolation of sparse temperature data</li>
+        <li>Estimated temperature at a specific unmeasured time</li>
+        <li>Identified the interpolated peak temperature hour</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 15 min)</div>
+      Add a 4th product constraint to the linear program (a shared machine that both chairs and tables use) and re-solve. Does the optimal mix change?
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">SciPy Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Intro &amp; Distributions</span>
+    <span class="day-pill done">Day 2 · Hypothesis Testing</span>
+    <span class="day-pill done active">Day 3 · Optimization &amp; Interpolation</span>
+    <span class="day-pill">Day 4 · Linear Algebra &amp; Signal Processing</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"result = optimize.minimize(f, x0=0)\nprint(result.x)",q:"What does x0=0 specify in this call?",opts:["The exact answer","The INITIAL GUESS from which the optimization algorithm starts searching — minimize() is iterative and needs a starting point, not the final answer", "The minimum allowed value of x","The number of iterations"],ans:1,explain:"minimize() uses iterative numerical algorithms that start from an initial guess (x0) and progressively refine it toward the actual minimum. x0 is NOT the answer — it's just the starting point for the search, though a reasonable starting point can help convergence speed and reliability."},
+  {q:"SciPy's optimize.minimize() only MINIMIZES functions. How do you use it to MAXIMIZE a function f(x)?",opts:["Call optimize.maximize(f, x0) instead","Minimize the NEGATIVE of the function instead: optimize.minimize(lambda x: -f(x), x0) — since minimizing -f(x) is mathematically equivalent to maximizing f(x)", "Set a special maximize=True parameter","This is not possible with SciPy"],ans:1,explain:"There's no separate maximize() function in SciPy — since minimizing -f(x) achieves the same result as maximizing f(x), the standard trick is to negate your objective function before passing it to minimize(), then (if needed) negate the resulting minimum value back to get the true maximum."},
+  {code:"popt, pcov = curve_fit(exp_decay, x_data, y_data, p0=[1,1,1])",q:"What do popt and pcov represent?",opts:["Both are the same thing","popt contains the OPTIMAL fitted parameter values for the model; pcov is the COVARIANCE matrix of those parameters, from which you can derive uncertainty/standard error estimates", "popt is the p-value, pcov is the confidence interval","Neither has meaningful interpretation"],ans:1,explain:"curve_fit() returns two things: popt (the best-fit parameter values that make your custom function match the data) and pcov (a covariance matrix describing the uncertainty and correlations between those fitted parameters — taking the square root of its diagonal gives standard errors for each parameter)."},
+  {q:"Why does providing a reasonable p0 (initial parameter guess) matter for curve_fit()?",opts:["p0 has no real effect on the outcome","curve_fit() uses iterative optimization internally; a poor p0 can cause the algorithm to converge to an incorrect local optimum, fail to converge at all, or take much longer — providing a reasonable starting guess based on rough data inspection improves reliability", "p0 determines the exact final answer directly","p0 is only needed for linear models"],ans:1,explain:"Like minimize(), curve_fit() relies on iterative numerical optimization under the hood. A poor initial guess can lead the algorithm astray — getting stuck in a wrong local minimum of the fitting error, failing to converge, or simply taking much longer to find the right answer. A sensible p0 (even a rough visual estimate) significantly improves fitting reliability."},
+  {code:"root_value = optimize.brentq(g, a=1, b=2)",q:"What must be true about g(1) and g(2) for brentq() to work correctly here?",opts:["They must both be positive","g(1) and g(2) must have OPPOSITE SIGNS (one positive, one negative) — this guarantees (by the intermediate value theorem) that a root exists somewhere between them, which brentq() relies on for its bracketing algorithm", "They must both equal zero","There's no requirement on their signs"],ans:1,explain:"brentq() is a 'bracketing' root-finder — it requires that the function's values at the two endpoints (a and b) have OPPOSITE signs, guaranteeing (by the intermediate value theorem, since the function is continuous) that a root exists somewhere in between. This requirement makes brentq() very reliable when it CAN be applied, but it needs this sign-change bracket to be identified beforehand."},
+  {q:"What is the key difference between optimize.root() and optimize.brentq() for finding where a function equals zero?",opts:["They are identical in requirements and use","root() only needs an initial guess (x0) and works for multi-dimensional systems; brentq() requires a bracket [a,b] where the function changes sign, but is often faster and more reliable for single-variable problems when such a bracket is known", "brentq() works for any number of dimensions","root() cannot handle nonlinear equations"],ans:1,explain:"root() is more general-purpose, accepting just an initial guess and working even for systems of multiple equations/variables, but can sometimes fail to converge or find the wrong root. brentq() is restricted to single-variable problems and requires you to already know a bracket where the function changes sign, but within that constraint, it's typically very fast and guaranteed to converge."},
+  {q:"What type of problem is scipy.optimize.linprog() specifically designed to solve?",opts:["Any nonlinear optimization problem","LINEAR programming problems — optimizing (minimizing by default) a LINEAR objective function subject to LINEAR equality/inequality constraints, a classic operations research formulation for resource allocation", "Only root-finding problems","Curve fitting problems only"],ans:1,explain:"linprog() is specifically built for Linear Programming: both the objective function being optimized AND all constraints must be linear (no squared terms, products of variables, etc.). This restricted but very common problem structure (resource allocation, production planning, transportation problems) has efficient, guaranteed-to-converge algorithms, unlike general nonlinear optimization."},
+  {code:"c = [-3, -5]  # for maximizing 3x + 5y\nresult = linprog(c, A_ub=A_ub, b_ub=b_ub, bounds=[(0,None),(0,None)])",q:"Why are the objective coefficients [-3, -5] instead of [3, 5]?",opts:["This is a typo/error","linprog() only MINIMIZES; since the actual goal is to MAXIMIZE 3x+5y (e.g., profit), the coefficients are negated so that minimizing -3x-5y achieves the equivalent effect of maximizing the original 3x+5y objective", "Negative coefficients are required syntax regardless of the problem","This makes the constraints tighter"],ans:1,explain:"Since linprog() only minimizes, a maximization problem (like maximizing profit = 3x + 5y) must be converted by negating the objective: minimize(-3x - 5y) achieves the same result as maximize(3x + 5y). After solving, you'd also negate result.fun back to get the true maximum profit value."},
+  {code:"bounds=[(0, None), (0, None)]",q:"What does this bounds specification enforce in a linprog() call?",opts:["Both variables must be exactly 0","Both decision variables (x and y) must be GREATER THAN OR EQUAL TO 0 (non-negative), with NO upper limit (None) — a very common real-world constraint since quantities like units produced can't be negative", "Both variables must be less than 0","This specifies the objective function"],ans:1,explain:"Each tuple in bounds specifies (lower_bound, upper_bound) for one variable. (0, None) means that variable must be ≥ 0 with no upper limit. This is extremely common in resource allocation problems where decision variables represent physical quantities (units produced, hours worked) that cannot logically be negative."},
+  {q:"What is the fundamental purpose of interpolation (e.g., interp1d, CubicSpline)?",opts:["To generate completely new random data","To ESTIMATE values at points BETWEEN known, measured data points — filling in gaps where you don't have direct measurements but need a reasonable estimate based on the surrounding known values", "To remove outliers from data","To calculate summary statistics"],ans:1,explain:"Interpolation techniques take a set of known (x, y) data points and construct a function that passes through (or near) them, allowing you to ESTIMATE the y-value at any x-value WITHIN the range of your original data — useful when you have sparse measurements but need finer-grained or continuous estimates."},
+  {q:"What is the key difference between kind='linear' and kind='cubic' in interp1d()?",opts:["They produce identical results","'linear' connects consecutive data points with straight line SEGMENTS (simple, can look 'jagged'); 'cubic' fits smooth CURVED segments between points, often better matching naturally smooth phenomena like temperature or physical measurements", "'cubic' is always less accurate than 'linear'","'linear' only works with integer data"],ans:1,explain:"Linear interpolation draws straight lines directly connecting each pair of adjacent known points — simple and safe, but can look artificially 'jagged' with sharp corners at each data point. Cubic interpolation fits smooth curves through the points, often producing more visually natural and often more physically realistic estimates for continuously-varying phenomena, at the cost of some additional computational complexity."},
+  {q:"Why is EXTRAPOLATION (estimating values OUTSIDE the range of your known data) considered riskier than interpolation?",opts:["Extrapolation and interpolation carry identical risk","Interpolation estimates within a range where you have surrounding data constraining the fit; extrapolation projects the fitted curve's behavior into UNKNOWN territory beyond your data, where the true underlying pattern could behave completely differently (e.g., a smooth curve that looks reasonable inside your data range could shoot off unrealistically just beyond it)", "Extrapolation is always more accurate", "This distinction only matters for linear interpolation"],ans:1,explain:"Within your data's range (interpolation), the fitted curve is constrained by actual observed points on both sides, keeping estimates reasonably grounded. Beyond that range (extrapolation), there's no such constraint — especially with higher-order polynomial or cubic spline fits, the curve's behavior just outside your data can diverge wildly and unrealistically, since nothing in your actual data informs what happens out there."},
+  {code:"safe_interp = interp1d(hours, temps, kind='linear', fill_value='extrapolate')",q:"What does fill_value='extrapolate' change compared to the default behavior?",opts:["It has no effect", "By default, requesting an interp1d() value OUTSIDE the original data's x-range raises a ValueError; fill_value='extrapolate' instead allows the function to project (extrapolate) an estimate beyond that range rather than erroring out", "It only affects the y-axis limits when plotting","It forces cubic interpolation regardless of kind="],ans:1,explain:"Without this setting, calling your interpolation function with an x-value outside the range of your original known data points would raise an error, since interp1d() by default assumes you'll only query WITHIN the known range. Setting fill_value='extrapolate' relaxes this, allowing (but not necessarily making SAFE or RELIABLE) estimates beyond the original data range."},
+  {q:"In the sensor calibration example, why is curve_fit() with a CUSTOM logistic-like function more appropriate than a simple regplot()-style polynomial fit?",opts:["curve_fit() is always better regardless of context","The relationship between voltage and pressure follows a KNOWN specific physical/mathematical form (a saturating logistic curve) rather than an arbitrary polynomial shape; curve_fit() lets you fit EXACTLY that meaningful functional form with physically interpretable parameters (L=max value, k=steepness, V0=midpoint), rather than an arbitrary polynomial with no physical meaning", "Polynomial fits are always more accurate for sensor data","curve_fit() cannot be used for logistic curves"],ans:1,explain:"When you have domain knowledge about the TRUE underlying functional form of a relationship (like a sensor's known saturating response curve), curve_fit() lets you fit that EXACT mathematical form with parameters that have real physical meaning and interpretation. A generic polynomial fit (like regplot's order=2/3) doesn't respect this known structure and its coefficients wouldn't correspond to meaningful physical quantities."},
+  {q:"Why might an operations analyst use linprog() rather than a general-purpose minimize() for a production allocation problem with linear costs and linear resource constraints?",opts:["minimize() cannot handle any constraints at all","linprog() is specifically designed and optimized for LINEAR objective/constraint structures, offering GUARANTEED convergence to the true global optimum for such problems (via specialized algorithms like simplex or interior-point methods), whereas general-purpose minimize() is designed for potentially nonlinear problems and may not guarantee finding the global optimum as reliably", "linprog() and minimize() produce completely different types of results","There's no meaningful difference between the two for this use case"],ans:1,explain:"For problems where BOTH the objective and constraints are genuinely linear, linprog() leverages specialized, mathematically well-understood algorithms (simplex, interior-point methods) that GUARANTEE finding the true global optimum efficiently. General-purpose minimize() is designed for the broader (and harder) class of potentially nonlinear problems, where such guarantees are generally not available — using the more specialized tool when your problem fits its assumptions is both more reliable and often more efficient."},
+  {q:"If a CubicSpline interpolation of sparse temperature readings produces an INTERPOLATED peak temperature that's notably different from any of the actually MEASURED peak values, what should you keep in mind?",opts:["The spline calculation must contain an error","The spline's ESTIMATED peak (potentially occurring between measured points) is a model-based PROJECTION, not a directly observed value — while informative, it should be treated with appropriate caution as an inference rather than confirmed fact, since the true underlying temperature curve's exact peak location and value between sparse measurements remains genuinely uncertain", "Interpolated values are always more accurate than measured values", "This situation is impossible with proper interpolation methods"],ans:1,explain:"An interpolated estimate (like a spline-predicted peak occurring between two sparse actual measurements) represents the model's BEST GUESS at the smooth underlying pattern, but it is NOT a directly observed, confirmed data point. This is an important distinction: while such interpolated insights can be genuinely useful (e.g., 'the peak likely occurred around hour 13, between our hour-12 and hour-15 readings'), presenting them with the same confidence as actual measurements would be misleading — proper communication should distinguish between measured data and model-based interpolated inferences."},
+  {q:"What would happen if you attempted to fit a strongly non-monotonic (e.g., wave-like, oscillating) relationship using curve_fit() with a simple monotonic function like exp_decay (a * exp(-b*x) + c)?",opts:["curve_fit() would automatically detect and fix the mismatch","The fit would likely be POOR — since exp_decay can only produce a single smooth decreasing/increasing curve shape, it fundamentally cannot capture oscillating or non-monotonic patterns in the data, regardless of how good the initial guess (p0) is or how much optimization is performed", "curve_fit() would raise an error and refuse to proceed","Any function can be perfectly fit to any data given enough optimization"],ans:1,explain:"curve_fit() finds the BEST parameters for the SPECIFIC functional FORM you provide — but it cannot change that form itself. If you choose a fundamentally monotonic function (like exponential decay) to fit genuinely oscillating/non-monotonic data, no amount of parameter optimization can make that mismatched functional form correctly capture the oscillating pattern — you'd need to choose a different, more appropriate function (like a sinusoidal model) that can actually represent the true shape of your data."},
+  {q:"Why is it valuable to examine both the FITTED PARAMETERS (popt) and their UNCERTAINTY (derived from pcov) after running curve_fit(), rather than just the parameter point-estimates alone?",opts:["Uncertainty estimates are purely academic with no practical value","The point estimates (popt) tell you the BEST single-value fit, but the associated uncertainty (from pcov) tells you how CONFIDENT you can be in those specific values — a parameter estimate with very large uncertainty relative to its value suggests the fit is poorly constrained by the available data and should be interpreted more cautiously", "pcov values are always identical regardless of data quality", "Only popt matters; pcov is deprecated and unused in practice"],ans:1,explain:"Just like reporting a correlation coefficient alongside its p-value, reporting curve_fit()'s parameter estimates alongside their uncertainty (standard errors derived from pcov) gives a much fuller picture. A parameter estimate of '5.2 ± 4.8' indicates the true value is quite uncertain and the data may not strongly constrain that parameter, while '5.2 ± 0.1' indicates a much more confident, well-determined estimate — this distinction matters for correctly interpreting and communicating the reliability of your fitted model."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review minimize/curve_fit and linprog, then try again! 📚"],[50,75,"Good progress! Focus on root finding and interpolation. 💪"],[75,90,"Strong Day 3! Optimization skills are solid. 🎉"],[90,101,"Excellent! Day 3 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 8 — Data Distributions & the Normal Curve</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.shape-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:14px 0;}
+.shape-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px; text-align:center;}
+.shape-box .name{font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:bold; margin-bottom:8px;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:120px;}
+.solver input[type=range]{flex:1; min-width:140px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:44px; text-align:center;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:14px; line-height:1.9;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 8 of 210 · Phase 1: Statistics & Probability Week</span>
+    <h1>Data Distributions & the Normal Curve</h1>
+    <div class="subtitle">~2 hours · Builds on Day 6–7's mean, median & std dev</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Many ML techniques quietly assume your data looks like a "normal distribution" — the classic bell curve. Linear regression's error assumptions, z-score standardization (which you previewed on Day 7), anomaly detection, and even how neural network weights get initialized all lean on this shape. Today you learn to recognize it — and just as importantly, recognize when your data does <em>not</em> look like it.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> What is a distribution?</h2>
+  <p>A distribution shows <strong>how often each value (or range of values) occurs</strong> in your data. The most common way to see this is a <strong>histogram</strong> — bars showing how many data points fall into each range.</p>
+  <div class="panel">
+    <p><strong>Example:</strong> Marks of 20 students, grouped into ranges:</p>
+    <p>0–20: 1 student · 20–40: 2 students · 40–60: 5 students · 60–80: 8 students · 80–100: 4 students</p>
+    <p>Plotted as bars, this shape tells you at a glance where most students scored — here, clustered in the 60–80 range, tapering off on both sides.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> The normal distribution (bell curve)</h2>
+  <p>A normal distribution is a specific, very common shape: symmetric, bell-shaped, with most values clustered near the mean and fewer values as you move away in either direction.</p>
+  <div class="panel">
+    <p><strong>Key property:</strong> in a perfect normal distribution, <strong>mean = median = mode</strong> — all three land at the exact center of the bell.</p>
+    <p><strong>Classic real-world examples:</strong> adult human heights, blood pressure readings, measurement errors, IQ scores — many natural phenomena settle into this shape when you have enough data.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> The 68-95-99.7 rule</h2>
+  <p>This is the single most useful fact about normal distributions, and it connects directly to Day 7's standard deviation:</p>
+  <div class="panel">
+    <p><strong>68%</strong> of data falls within <strong>1 standard deviation</strong> of the mean</p>
+    <p><strong>95%</strong> of data falls within <strong>2 standard deviations</strong> of the mean</p>
+    <p><strong>99.7%</strong> of data falls within <strong>3 standard deviations</strong> of the mean</p>
+  </div>
+  <details>
+    <summary>Worked example</summary>
+    <div class="details-body">
+      <p>Adult height: mean = 165cm, std dev = 7cm (roughly, for illustration).</p>
+      <p>68% of people are between 158cm and 172cm (165 ± 7)</p>
+      <p>95% of people are between 151cm and 179cm (165 ± 14)</p>
+      <p>Someone at 190cm would be about 3.5 std devs away — genuinely rare, which matches real life.</p>
+    </div>
+  </details>
+  <p>This rule is exactly why standard deviation is so powerful: once you know mean and std dev, you can estimate how "normal" or "unusual" any specific value is — the foundation of outlier and anomaly detection.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Skewed distributions (when data is NOT symmetric)</h2>
+  <div class="shape-grid">
+    <div class="shape-box"><div class="name">Symmetric (Normal)</div>Bell-shaped, mean = median</div>
+    <div class="shape-box"><div class="name">Right-Skewed</div>Long tail to the right, mean &gt; median</div>
+    <div class="shape-box"><div class="name">Left-Skewed</div>Long tail to the left, mean &lt; median</div>
+  </div>
+  <div class="panel">
+    <p class="example-tag">Reconnecting to Day 6's salary example</p>
+    <p>Remember the company salaries: 25, 28, 27, 26, 30, 250 (₹'000)? Mean = 64.3, Median = 27.5. Mean sits far to the right of the median — that's the signature of a <strong>right-skewed distribution</strong>: most values are low/moderate, but a long tail of high earners drags the mean upward. Income, house prices, and company revenues are almost always right-skewed in real life — this is precisely why median is preferred for reporting them.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Assuming all real-world data is normally distributed.</strong> It often isn't — income, city population sizes, and website traffic are usually skewed, not bell-shaped.</p>
+    <p><strong>Mistake 2 — Mixing up skew direction.</strong> The skew is named after which side the <em>tail</em> stretches toward, not where most of the data sits. A long tail to the right = right-skewed, even though most data might sit on the left.</p>
+    <p><strong>Mistake 3 — Applying the 68-95-99.7 rule to non-normal data.</strong> This rule only holds for (approximately) normal distributions — applying it to heavily skewed data gives wrong estimates.</p>
+    <p><strong>Mistake 4 — Confusing "distribution" with just "range."</strong> Range only tells you min and max; distribution tells you the full shape of how data is spread between them.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Normal Curve Explorer</h2>
+  <div class="solver">
+    <h3>Adjust mean and standard deviation, see the bell curve change</h3>
+    <div class="solver-row">
+      <label>Mean (μ)</label>
+      <input type="range" id="meanSlider" min="-20" max="20" step="1" value="0">
+      <span class="val" id="meanVal">0</span>
+    </div>
+    <div class="solver-row">
+      <label>Std Dev (σ)</label>
+      <input type="range" id="stdSlider" min="1" max="15" step="1" value="5">
+      <span class="val" id="stdVal">5</span>
+    </div>
+    <canvas id="plot" width="600" height="280"></canvas>
+    <div class="solver-result" id="result"></div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">The shaded bands mark 1, 2, and 3 standard deviations from the mean — watch how the curve widens or narrows as σ changes, while the 68-95-99.7 proportions always stay the same relative to it.</p>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Next up is probability — the natural next step from "how is my data shaped" to "what's the chance a new data point falls in a certain range," which is exactly what classification models predict.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 8 of 210 · AI & ML Study Plan · Phase 1: Statistics & Probability Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "A dataset has mean = 50, median = 50, mode = 50. What shape is this distribution likely?", steps: "Symmetric / approximately normal — all three central measures coincide." },
+  { q: "A dataset has mean = 80, median = 60. What direction is it skewed?", steps: "Right-skewed — mean is pulled higher than the median by a long tail of high values." },
+  { q: "A dataset has mean = 40, median = 55. What direction is it skewed?", steps: "Left-skewed — mean is pulled lower than the median, meaning a tail of low values." },
+  { q: "Test scores: mean = 70, std dev = 10. What range covers about 68% of students?", steps: "70 ± 10 → 60 to 80" },
+  { q: "Using the same data (mean=70, std dev=10), what range covers about 95%?", steps: "70 ± 20 → 50 to 90" },
+  { q: "A student scores 100 on that test (mean=70, sd=10). How many std devs away is that?", steps: "(100-70)/10 = 3 std devs — quite rare, near the edge of the 99.7% range." },
+  { q: "Would you expect house prices in a city to be normally distributed or skewed? Why?", steps: "Right-skewed — most homes cluster in a moderate price range, but a few luxury properties create a long tail on the high end." },
+  { q: "If mean and median of a dataset are equal, what does that suggest?", steps: "The data is likely roughly symmetric (not strongly skewed in either direction)." },
+  { q: "In a right-skewed distribution, which is larger: mean or median?", steps: "Mean is larger — it gets pulled toward the long tail on the right." },
+  { q: "Why might reporting 'average income' alone be misleading for a country?", steps: "Income distributions are typically right-skewed (a small number of very high earners), so the mean overstates what a 'typical' person earns — median gives a more honest picture." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+const meanSlider = document.getElementById('meanSlider');
+const stdSlider = document.getElementById('stdSlider');
+const meanVal = document.getElementById('meanVal');
+const stdVal = document.getElementById('stdVal');
+const result = document.getElementById('result');
+
+function normalPDF(x, mean, std){
+  return (1/(std*Math.sqrt(2*Math.PI))) * Math.exp(-0.5*Math.pow((x-mean)/std,2));
+}
+
+function drawCurve(){
+  const mean = parseFloat(meanSlider.value);
+  const std = parseFloat(stdSlider.value);
+  meanVal.textContent = mean;
+  stdVal.textContent = std;
+
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const padding = 40;
+  const xMin = mean - 4*std, xMax = mean + 4*std;
+  const peak = normalPDF(mean, mean, std);
+
+  const scaleX = x => padding + ((x - xMin)/(xMax - xMin)) * (w - padding*2);
+  const scaleY = y => h - padding - (y/peak) * (h - padding*2 - 20);
+
+  // shaded bands: 3,2,1 std dev
+  const bands = [
+    {n:3, color:'rgba(192,86,33,0.08)'},
+    {n:2, color:'rgba(192,86,33,0.14)'},
+    {n:1, color:'rgba(192,86,33,0.22)'}
+  ];
+  bands.forEach(band => {
+    const x1 = scaleX(mean - band.n*std);
+    const x2 = scaleX(mean + band.n*std);
+    ctx.fillStyle = band.color;
+    ctx.fillRect(x1, padding, x2-x1, h-padding*2);
+  });
+
+  // axis
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, h-padding); ctx.lineTo(w-padding, h-padding); ctx.stroke();
+
+  // curve
+  ctx.strokeStyle = '#c05621'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  for(let px=padding; px<=w-padding; px++){
+    const x = xMin + ((px-padding)/(w-padding*2)) * (xMax-xMin);
+    const y = normalPDF(x, mean, std);
+    const py = scaleY(y);
+    if(px===padding) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+
+  // mean line
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,4]);
+  const meanX = scaleX(mean);
+  ctx.beginPath(); ctx.moveTo(meanX, padding); ctx.lineTo(meanX, h-padding); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#6b6459'; ctx.font = '11px monospace';
+  ctx.fillText('μ (mean)', meanX-24, padding-8);
+  ctx.fillText(`μ-1σ = ${(mean-std).toFixed(1)}`, scaleX(mean-std)-30, h-padding+20);
+  ctx.fillText(`μ+1σ = ${(mean+std).toFixed(1)}`, scaleX(mean+std)-10, h-padding+20);
+
+  result.innerHTML = `68% of values fall between <strong style="color:#e8a86b;">${(mean-std).toFixed(1)}</strong> and <strong style="color:#e8a86b;">${(mean+std).toFixed(1)}</strong> &nbsp;|&nbsp; 95% between ${(mean-2*std).toFixed(1)} and ${(mean+2*std).toFixed(1)}`;
+}
+meanSlider.addEventListener('input', drawCurve);
+stdSlider.addEventListener('input', drawCurve);
+drawCurve();
+
+const quizData = [
+  { q: "In a perfectly normal distribution, how do mean, median, and mode relate?", opts: ["Mean is always highest","They are all equal","Mode is always lowest","There's no relationship"], correct: 1, explain: "In a symmetric normal distribution, mean = median = mode, all at the center." },
+  { q: "About what % of data falls within 1 standard deviation of the mean in a normal distribution?", opts: ["50%","68%","95%","99.7%"], correct: 1, explain: "This is the first part of the 68-95-99.7 rule." },
+  { q: "A distribution with a long tail to the right (mean > median) is called:", opts: ["Left-skewed","Symmetric","Right-skewed","Normal"], correct: 2, explain: "Right-skewed means the tail stretches toward higher values, pulling the mean above the median." },
+  { q: "Income distributions in most countries are typically:", opts: ["Perfectly normal","Right-skewed","Left-skewed","Impossible to determine"], correct: 1, explain: "A small number of very high earners create a long right tail — classic right-skew." },
+  { q: "If mean = 30 and median = 45, the data is:", opts: ["Right-skewed","Left-skewed","Symmetric","Normal"], correct: 1, explain: "Mean is lower than median — pulled down by a tail of low values, so it's left-skewed." },
+  { q: "Test scores: mean=75, std dev=5. Which score is more unusual: 78 or 92?", opts: ["78","92","Both equally unusual","Neither is unusual"], correct: 1, explain: "78 is less than 1 std dev away (within the 68% zone); 92 is over 3 std devs away — very rare." },
+  { q: "What does a histogram show?", opts: ["The exact mean of a dataset","How frequently values fall into different ranges","Only the maximum value","The correlation between two variables"], correct: 1, explain: "A histogram bins data into ranges and shows the frequency (count) in each bin — revealing the distribution's shape." },
+  { q: "Why do ML practitioners care whether their data is normally distributed?", opts: [
+      "They don't — it never matters",
+      "Many statistical techniques and assumptions (like z-score scaling or regression error assumptions) rely on approximate normality",
+      "Normal distributions are illegal to use in models",
+      "Only image data needs to be normal"
+    ], correct: 1, explain: "Several common ML/statistical methods assume or work best with roughly normal data — recognizing when that assumption breaks down matters for choosing the right approach." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

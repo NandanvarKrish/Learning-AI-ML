@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 24 — Gradients & Gradient Descent</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:130px;}
+.solver input[type=range]{flex:1; min-width:120px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:50px; text-align:center;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-right:8px;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:13px; line-height:1.7; max-height:160px; overflow-y:auto;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 24 of 210 · Phase 1: Calculus Basics</span>
+    <h1>Gradients & Gradient Descent</h1>
+    <div class="subtitle">~2 hours · The exact algorithm that trains almost every ML model</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Today's topic isn't preparation for something later — it IS the thing. Gradient descent, built entirely from yesterday's derivative concept, is the algorithm that trains linear regression, logistic regression, and every neural network you'll build in this entire plan. Understanding it well here means Phase 3 and 4 will feel like applying a familiar idea, not learning something brand new.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> From derivative to gradient</h2>
+  <p>Yesterday's derivative worked for functions with ONE input variable, like f(x). Real ML models have functions with many input variables — a "weight" for every feature. A <strong>gradient</strong> is simply the extension of the derivative idea to functions with multiple variables: it's a vector containing the <strong>partial derivative</strong> with respect to each variable.</p>
+  <div class="eq">∇f(x,y) = [ ∂f/∂x, ∂f/∂y ]</div>
+  <p>A "partial derivative" (written ∂ instead of d) means: take the derivative with respect to ONE variable, while treating every other variable as a constant that doesn't change.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Worked example</h2>
+  <div class="panel">
+    <p>f(x,y) = x² + y²</p>
+    <p><strong>Partial derivative with respect to x</strong> (treat y as a constant, so y² contributes 0): ∂f/∂x = 2x</p>
+    <p><strong>Partial derivative with respect to y</strong> (treat x as a constant, so x² contributes 0): ∂f/∂y = 2y</p>
+    <p>So the gradient: <code>∇f(x,y) = [2x, 2y]</code>. At the point (3,4): <code>∇f(3,4) = [6, 8]</code></p>
+  </div>
+  <details>
+    <summary>What does this gradient vector mean?</summary>
+    <div class="details-body">
+      <p>The gradient [6,8] points in the direction of <strong>steepest increase</strong> of the function at that point — like an arrow pointing straight uphill on a landscape. This is the crucial idea for the next section.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Gradient descent — the actual algorithm</h2>
+  <p>Since the gradient points toward the steepest <em>increase</em>, to <strong>minimize</strong> a function (like an error/cost function), you move in the <strong>opposite</strong> direction — "descending" the gradient:</p>
+  <div class="eq">new_x = old_x − (learning_rate × gradient)</div>
+  <p>You repeat this step over and over: calculate the gradient, take a small step in the opposite direction, recalculate, step again — gradually walking downhill toward the minimum (lowest error).</p>
+  <div class="panel">
+    <p><strong>The fog-on-a-mountain analogy:</strong> imagine you're standing on a hillside in thick fog, trying to reach the valley floor. You can't see the whole landscape, but you can feel the slope right under your feet. So you take a step in the steepest downhill direction, feel the new slope, take another step, and repeat. That's gradient descent — no global view needed, just repeated local information.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> The learning rate matters enormously</h2>
+  <div class="panel">
+    <p class="example-tag">The most important practical detail</p>
+    <p><strong>Too small a learning rate:</strong> tiny steps, converges correctly but painfully slowly — could take enormous amounts of time/computation.</p>
+    <p><strong>Too large a learning rate:</strong> huge steps that overshoot the minimum, potentially bouncing back and forth or even diverging further away instead of converging.</p>
+    <p><strong>Just right:</strong> steady, efficient steps that settle into the minimum in a reasonable number of iterations.</p>
+    <p>Try this directly in the interactive tool below — it's one of the most common things you'll tune by hand once you start training real models in Phase 3.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Moving in the direction of the gradient instead of against it.</strong> The gradient points toward increase — to minimize, you MUST subtract it (move opposite), not add it.</p>
+    <p><strong>Mistake 2 — Assuming a single derivative is the same as a gradient.</strong> A gradient is a vector (one value per input variable); a derivative alone is a single scalar, only meaningful for one-variable functions.</p>
+    <p><strong>Mistake 3 — Ignoring the learning rate's role.</strong> The same gradient value can lead to totally different outcomes (smooth convergence vs. wild divergence) purely based on the learning rate chosen.</p>
+    <p><strong>Mistake 4 — Expecting gradient descent to always find the absolute best answer.</strong> For complicated, bumpy (non-convex) functions, gradient descent can get stuck in a "local" low point that isn't the true lowest point overall — a real limitation you'll encounter again in Phase 4's neural networks.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Gradient Descent Simulator</h2>
+  <div class="solver">
+    <h3>Minimize f(x) = (x-3)² + 2 — watch the ball roll downhill</h3>
+    <div class="solver-row">
+      <label>Starting point x₀</label>
+      <input type="range" id="startX" min="-6" max="10" step="0.5" value="-4">
+      <span class="val" id="startXVal">-4</span>
+    </div>
+    <div class="solver-row">
+      <label>Learning rate</label>
+      <input type="range" id="lrSlider" min="0.01" max="1.1" step="0.01" value="0.2">
+      <span class="val" id="lrVal">0.2</span>
+    </div>
+    <button onclick="runGradientDescent()">Run Gradient Descent (10 steps)</button>
+    <canvas id="plot" width="600" height="320"></canvas>
+    <div class="solver-result" id="result"></div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Try learning rate 0.2 first (smooth convergence), then try 1.0 or higher (watch it overshoot/diverge), then try 0.02 (painfully slow progress in only 10 steps).</p>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 25 is your final Phase 1 review — a complete self-test across everything from Day 1 to Day 24 (algebra, statistics, probability, linear algebra, and calculus). After that, Day 26 begins Python programming, where you'll start actually coding gradient descent by hand as one of your first real ML exercises.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 24 of 210 · AI & ML Study Plan · Phase 1: Calculus Basics</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Find the partial derivatives of f(x,y) = x² + 3y².", steps: "∂f/∂x = 2x. ∂f/∂y = 6y" },
+  { q: "Find the gradient of f(x,y) = x² + 3y² at the point (2,1).", steps: "∇f = [2x, 6y] → at (2,1): [4, 6]" },
+  { q: "Find the partial derivatives of f(x,y) = 4x + y² (note: 4x is linear in x).", steps: "∂f/∂x = 4 (constant, since 4x is linear). ∂f/∂y = 2y" },
+  { q: "For f(x) = (x-5)², find f'(x) using the chain rule idea: treat (x-5) as the variable.", steps: "f'(x) = 2(x-5) — same power rule pattern, just applied to (x-5) instead of x alone" },
+  { q: "Using f'(x) = 2(x-5) from above, if you're at x=2 with learning rate 0.1, what's the next x in gradient descent?", steps: "f'(2) = 2(2-5) = 2(-3) = -6. new_x = 2 - 0.1×(-6) = 2 + 0.6 = 2.6" },
+  { q: "In the calculation above, why did x INCREASE even though we're doing gradient 'descent'?", steps: "Because the gradient was negative there (curve sloping downward toward the minimum at x=5) — moving opposite a negative gradient means moving in the positive x direction, correctly heading toward the minimum." },
+  { q: "If a learning rate is too large, what typically happens during gradient descent?", steps: "The steps overshoot the minimum, potentially bouncing between points or diverging further away instead of settling down." },
+  { q: "If a learning rate is very small, what's the tradeoff?", steps: "Convergence is more stable/reliable but very slow, potentially requiring many more iterations to reach the minimum." },
+  { q: "What is the key difference between a 'derivative' and a 'gradient'?", steps: "A derivative is a single number (scalar) for a one-variable function; a gradient is a vector of partial derivatives, one per variable, for multi-variable functions." },
+  { q: "Why must you SUBTRACT the gradient (not add it) to minimize a function?", steps: "The gradient points toward the direction of steepest INCREASE — subtracting it moves you in the opposite direction, toward decrease, which is what minimizing requires." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const startXSlider = document.getElementById('startX');
+const lrSlider = document.getElementById('lrSlider');
+const startXVal = document.getElementById('startXVal');
+const lrVal = document.getElementById('lrVal');
+const result = document.getElementById('result');
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+
+function f(x){ return Math.pow(x-3,2) + 2; }
+function fPrime(x){ return 2*(x-3); }
+
+startXSlider.addEventListener('input', () => { startXVal.textContent = startXSlider.value; drawCurveOnly(); });
+lrSlider.addEventListener('input', () => { lrVal.textContent = lrSlider.value; });
+
+function drawCurveOnly(points){
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const originX = w/2, originY = h - 30;
+  const scale = 25;
+
+  ctx.strokeStyle = '#e5ded0'; ctx.lineWidth = 1;
+  for(let gx=0; gx<=w; gx+=scale){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for(let px=0; px<=w; px++){
+    const x = (px-originX)/scale;
+    const y = f(x);
+    const py = originY - y*scale;
+    if(px===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+
+  if(points){
+    points.forEach((x, i) => {
+      const y = f(x);
+      const px = originX + x*scale;
+      const py = originY - y*scale;
+      ctx.fillStyle = i === points.length-1 ? '#c05621' : `rgba(47,109,79,${0.3 + 0.7*(i/points.length)})`;
+      ctx.beginPath();
+      ctx.arc(px, py, i===points.length-1 ? 7 : 5, 0, 2*Math.PI);
+      ctx.fill();
+      if(i>0){
+        const prevX = points[i-1], prevY = f(prevX);
+        ctx.strokeStyle = 'rgba(192,86,33,0.4)'; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(originX+prevX*scale, originY-prevY*scale);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+      }
+    });
+  }
+}
+drawCurveOnly();
+
+function runGradientDescent(){
+  let x = parseFloat(startXSlider.value);
+  const lr = parseFloat(lrSlider.value);
+  const points = [x];
+  let log = `Start: x₀ = ${x.toFixed(3)}, f(x) = ${f(x).toFixed(3)}\n`;
+
+  for(let i=0; i<10; i++){
+    const grad = fPrime(x);
+    const newX = x - lr*grad;
+    log += `Step ${i+1}: gradient=${grad.toFixed(3)}, x = ${x.toFixed(3)} - ${lr}×${grad.toFixed(3)} = ${newX.toFixed(3)}, f(x)=${f(newX).toFixed(3)}\n`;
+    x = newX;
+    points.push(x);
+    if(Math.abs(x) > 1000) break; // prevent runaway
+  }
+
+  drawCurveOnly(points);
+  result.innerHTML = `<pre style="white-space:pre-wrap; font-family:inherit; margin:0;">${log}</pre>`;
+}
+
+const quizData = [
+  { q: "A gradient is:", opts: ["A single number always","A vector of partial derivatives, one per input variable","Only used for 1-variable functions","The same thing as a matrix"], correct: 1, explain: "Gradients generalize derivatives to multi-variable functions as a vector." },
+  { q: "For f(x,y) = x² + y², find the gradient at (1,2).", opts: ["[1,2]","[2,4]","[4,2]","[1,4]"], correct: 1, explain: "∇f = [2x,2y] → at (1,2): [2,4]." },
+  { q: "To MINIMIZE a function using gradient descent, you should move:", opts: ["In the same direction as the gradient","In the opposite direction of the gradient","Perpendicular to the gradient","It doesn't matter which direction"], correct: 1, explain: "The gradient points toward increase — moving opposite it heads toward the minimum." },
+  { q: "What role does the learning rate play?", opts: ["It has no real effect","It controls how big each step is during gradient descent","It's only used for classification, not regression","It replaces the gradient entirely"], correct: 1, explain: "Learning rate scales the step size taken in each gradient descent update." },
+  { q: "A learning rate that's too large typically causes:", opts: ["Perfect, fast convergence always","Overshooting the minimum, possibly diverging","No change to the algorithm's behavior","Guaranteed correct results"], correct: 1, explain: "Large steps can jump past the minimum repeatedly instead of settling into it." },
+  { q: "A learning rate that's too small typically causes:", opts: ["Instant convergence","Very slow progress toward the minimum","The algorithm to fail immediately","No difference from a large learning rate"], correct: 1, explain: "Tiny steps mean many more iterations are needed to reach the minimum." },
+  { q: "The 'fog on a mountain' analogy illustrates that gradient descent:", opts: [
+      "Requires seeing the entire landscape at once",
+      "Only needs local slope information at each step to make progress",
+      "Always finds the absolute lowest point no matter what",
+      "Has nothing to do with real optimization"
+    ], correct: 1, explain: "Gradient descent works step-by-step using only local gradient information, just like feeling the ground in fog." },
+  { q: "Why is gradient descent described as central to training ML models?", opts: [
+      "It's only used for data cleaning",
+      "It's the algorithm that repeatedly adjusts a model's parameters to minimize error/loss",
+      "It's unrelated to model training",
+      "It's only used once, before training even starts"
+    ], correct: 1, explain: "Gradient descent (or variants of it) is how linear regression, logistic regression, and neural networks all learn their parameters." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

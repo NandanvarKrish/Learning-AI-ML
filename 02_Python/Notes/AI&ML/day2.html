@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 2 — Functions, f(x) & Plotting by Hand</title>
+<style>
+:root{
+  --ink:#1b2430;
+  --paper:#f6f3ea;
+  --panel:#ffffff;
+  --accent:#c05621;
+  --accent-soft:#f0dcc8;
+  --line:#d8d2c2;
+  --muted:#6b6459;
+  --good:#2f6d4f;
+  --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font-body); line-height:1.65; padding-bottom:60px;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{
+  background:var(--ink); color:var(--paper); padding:40px 24px 34px;
+  border-bottom:6px solid var(--accent);
+}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{
+  font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase;
+  font-size:12px; color:var(--accent); font-weight:bold;
+}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{
+  font-family:var(--font-display); font-size:22px; font-weight:normal;
+  border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px;
+  display:flex; align-items:baseline; gap:10px;
+}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{
+  background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  padding:20px 22px; margin:16px 0;
+}
+.eq{
+  font-family:var(--font-mono); background:var(--ink); color:#f5efe3;
+  padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0;
+  display:inline-block;
+}
+.example-tag{
+  display:inline-block; font-family:var(--font-mono); font-size:11px;
+  letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft);
+  color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;
+}
+details{
+  background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  margin:12px 0; padding:0;
+}
+summary{
+  cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none;
+  display:flex; justify-content:space-between; align-items:center;
+}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+table{width:100%; border-collapse:collapse; margin:12px 0; font-family:var(--font-mono); font-size:14px;}
+th,td{border:1px solid var(--line); padding:8px 10px; text-align:center;}
+th{background:var(--accent-soft); color:var(--accent);}
+.solver{
+  background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;
+}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:14px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:90px;}
+.solver input[type=range]{flex:1; min-width:140px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:44px; text-align:center;}
+.solver-eq{font-family:var(--font-mono); font-size:18px; margin-bottom:6px;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:10px; max-width:100%;}
+.quiz-q{
+  background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  padding:18px; margin:14px 0;
+}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{
+  display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0;
+  border:1px solid var(--line); border-radius:4px; background:#fdfcf8;
+  cursor:pointer; font-family:var(--font-body); font-size:15px;
+}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{
+  border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft);
+  border-radius:0 6px 6px 0; margin-top:20px;
+}
+.tie-in strong{color:var(--accent);}
+footer{
+  max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line);
+  color:var(--muted); font-size:13px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 2 of 210 · Phase 1: Math Foundations</span>
+    <h1>Functions, f(x) & Plotting by Hand</h1>
+    <div class="subtitle">~2 hours · Builds directly on Day 1's equations</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>An ML model <strong>is</strong> a function. Give it an input (house size, image pixels, your search query), it gives you an output (predicted price, "cat" or "dog", the next word). Everything from "linear regression" to "GPT" is, at its core, a very complicated <code>f(x)</code>. Today you learn what that notation actually means and how to reason about it — in plain, visual terms.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> What is a function?</h2>
+  <p>A function is a rule that takes an <strong>input</strong> and produces exactly <strong>one output</strong>. We write it as:</p>
+  <div class="eq">f(x) = 2x + 3</div>
+  <p>Read this as: <em>"f of x equals 2x plus 3."</em> It means: "take whatever number x is, double it, then add 3." The letter <code>f</code> is just the function's name (like naming a machine), and <code>x</code> is the input you feed into it.</p>
+  <div class="panel">
+    <p><strong>Think of it like a machine:</strong> you drop a number in one end (input), the machine processes it using a fixed rule, and a result comes out the other end (output). Same input → always the same output. That consistency is what makes it a "function" and not just a random guess.</p>
+  </div>
+  <details>
+    <summary>See it evaluated for a few values of x</summary>
+    <div class="details-body">
+      <p>For <code>f(x) = 2x + 3</code>:</p>
+      <table>
+        <tr><th>x (input)</th><td>0</td><td>1</td><td>2</td><td>3</td><td>-1</td></tr>
+        <tr><th>f(x) (output)</th><td>3</td><td>5</td><td>7</td><td>9</td><td>1</td></tr>
+      </table>
+      <p>Notice: every time x goes up by 1, f(x) goes up by 2 — that "2" is the same number multiplying x in the rule. That consistent rate of change is what you'll later call the <strong>slope</strong>.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Real-world example (mobile recharge plan)</h2>
+  <div class="panel">
+    <p class="example-tag">Everyday example</p>
+    <p>Your mobile operator charges a <strong>fixed monthly plan fee of ₹99</strong>, plus <strong>₹1 per GB</strong> of extra data you use beyond your limit. This is a function of how much extra data (<code>x</code>, in GB) you use:</p>
+    <div class="eq">f(x) = 99 + 1x</div>
+    <p>If you use 10 extra GB this month: <code>f(10) = 99 + 10 = ₹109</code>. If you use 0 extra GB: <code>f(0) = ₹99</code> (just the base fee).</p>
+    <p>Notice this is the exact same structure as yesterday's "fixed cost + rate × units." A function is just that same idea, given a formal name and notation so we can talk about it precisely — and, importantly, <strong>plug in any x we want to instantly get an answer</strong>, without re-deriving the equation each time.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Plotting a function by hand</h2>
+  <p>To plot <code>f(x) = 2x + 3</code>, you turn it into points on a graph. Each x-value and its f(x) becomes a coordinate pair <code>(x, y)</code>:</p>
+  <table>
+    <tr><th>x</th><td>-2</td><td>-1</td><td>0</td><td>1</td><td>2</td></tr>
+    <tr><th>f(x)</th><td>-1</td><td>1</td><td>3</td><td>5</td><td>7</td></tr>
+    <tr><th>Point</th><td>(-2,-1)</td><td>(-1,1)</td><td>(0,3)</td><td>(1,5)</td><td>(2,7)</td></tr>
+  </table>
+  <div class="panel">
+    <p><strong>Steps to plot by hand on graph paper:</strong></p>
+    <p>1. Draw an x-axis (horizontal) and y-axis (vertical), crossing at (0,0).</p>
+    <p>2. Pick 4–5 values of x (e.g., -2, -1, 0, 1, 2).</p>
+    <p>3. Calculate f(x) for each — build a table like above.</p>
+    <p>4. Plot each (x, f(x)) as a dot.</p>
+    <p>5. Since this is a <em>linear</em> function, connect the dots — you'll get a straight line.</p>
+  </div>
+  <p><strong>Do this on paper right now</strong> for <code>f(x) = 2x + 3</code> before moving on. Actually drawing the axes and plotting dots builds spatial intuition that reading alone never will.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Second real-world example (simple interest)</h2>
+  <div class="panel">
+    <p class="example-tag">Finance example — familiar from commerce</p>
+    <p>You deposit ₹10,000 in a savings account earning simple interest of ₹500 per year. Your balance as a function of years (<code>x</code>) elapsed:</p>
+    <div class="eq">f(x) = 10000 + 500x</div>
+    <p>After 3 years: <code>f(3) = 10000 + 1500 = ₹11,500</code>. Plot this function (x = years on the horizontal axis, f(x) = balance on the vertical axis) and you get the classic "growing savings" line you've probably seen in a finance textbook — except now you know it's just a function being evaluated and plotted.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Confusing f(x) with f times x.</strong> f(x) does NOT mean "f multiplied by x." It means "the function f, evaluated at the input x." This confuses almost everyone at first — it's just notation, not multiplication.</p>
+    <p><strong>Mistake 2 — Plotting too few points for a curve.</strong> For straight lines, 2 points are technically enough, but use 4–5 to catch calculation errors. For curves (later, non-linear functions), you'll need many more points.</p>
+    <p><strong>Mistake 3 — Mixing up which axis is which.</strong> By convention, x (input) is always horizontal, f(x)/y (output) is always vertical.</p>
+    <p><strong>Mistake 4 — Forgetting order of operations.</strong> In f(x) = 2x + 3, always multiply before adding — f(4) is 2×4+3 = 11, not 2×(4+3) = 14.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <p>For each function, calculate f(x) at the given input — on paper first. Then, for the last 3, try plotting them using 4 points each.</p>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Interactive Function Plotter</h2>
+  <div class="solver">
+    <h3>f(x) = mx + c — drag the sliders</h3>
+    <div class="solver-eq" id="eqLabel">f(x) = 1x + 0</div>
+    <div class="solver-row">
+      <label>m (slope)</label>
+      <input type="range" id="mSlider" min="-5" max="5" step="1" value="1">
+      <span class="val" id="mVal">1</span>
+    </div>
+    <div class="solver-row">
+      <label>c (intercept)</label>
+      <input type="range" id="cSlider" min="-10" max="10" step="1" value="0">
+      <span class="val" id="cVal">0</span>
+    </div>
+    <canvas id="plot" width="600" height="320"></canvas>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Watch how the line tilts as you change m, and how it shifts up/down as you change c. This is the exact visual you'll rely on constantly once you reach linear regression.</p>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Every ML model you'll build is a function — input goes in, prediction comes out. "Training" a model literally means the computer searching for the best m and c (and, later, thousands of similar numbers) so that f(x) matches real-world outcomes as closely as possible.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 2 of 210 · AI & ML Study Plan · Phase 1: Math Foundations</div>
+</footer>
+
+<script>
+// Practice problems
+const practiceData = [
+  { q: "f(x) = 3x + 1. Find f(2).", steps: "f(2) = 3(2) + 1 = 7" },
+  { q: "f(x) = 5x − 4. Find f(0).", steps: "f(0) = 5(0) − 4 = −4" },
+  { q: "f(x) = −2x + 6. Find f(3).", steps: "f(3) = −2(3) + 6 = 0" },
+  { q: "f(x) = 4x. Find f(-2).", steps: "f(−2) = 4(−2) = −8" },
+  { q: "f(x) = x + 10. Find f(15).", steps: "f(15) = 15 + 10 = 25" },
+  { q: "A recharge plan is f(x) = 99 + 2x (₹2 per extra GB). Find f(5).", steps: "f(5) = 99 + 2(5) = 109 → ₹109" },
+  { q: "f(x) = 7 − x. Find f(1) and f(4).", steps: "f(1) = 7−1 = 6; f(4) = 7−4 = 3" },
+  { q: "Plot f(x) = x + 2 using x = -2,-1,0,1,2.", steps: "Points: (−2,0), (−1,1), (0,2), (1,3), (2,4) — plot and connect with a straight line." },
+  { q: "Plot f(x) = 3x using x = -2,-1,0,1,2.", steps: "Points: (−2,−6), (−1,−3), (0,0), (1,3), (2,6) — steeper line through the origin." },
+  { q: "Plot f(x) = −x + 5 using x = -2,-1,0,1,2.", steps: "Points: (−2,7), (−1,6), (0,5), (1,4), (2,3) — a downward-sloping line." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `
+    <p><strong>${i+1}.</strong> ${item.q}</p>
+    <details>
+      <summary>Reveal Answer</summary>
+      <div class="details-body">${item.steps}</div>
+    </details>
+  `;
+  practiceEl.appendChild(box);
+});
+
+// Interactive plotter
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+const mSlider = document.getElementById('mSlider');
+const cSlider = document.getElementById('cSlider');
+const mVal = document.getElementById('mVal');
+const cVal = document.getElementById('cVal');
+const eqLabel = document.getElementById('eqLabel');
+
+function drawPlot(){
+  const m = parseFloat(mSlider.value);
+  const c = parseFloat(cSlider.value);
+  mVal.textContent = m;
+  cVal.textContent = c;
+  eqLabel.textContent = `f(x) = ${m}x + ${c}`;
+
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const originX = w/2, originY = h/2;
+  const scale = 20; // pixels per unit
+
+  // grid
+  ctx.strokeStyle = '#e5ded0';
+  ctx.lineWidth = 1;
+  for(let gx = 0; gx <= w; gx += scale){
+    ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke();
+  }
+  for(let gy = 0; gy <= h; gy += scale){
+    ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke();
+  }
+
+  // axes
+  ctx.strokeStyle = '#1b2430';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+  // line for f(x) = mx + c
+  ctx.strokeStyle = '#c05621';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  const xMin = -((originX)/scale), xMax = (w-originX)/scale;
+  const yStart = m*xMin + c;
+  ctx.moveTo(originX + xMin*scale, originY - yStart*scale);
+  const yEnd = m*xMax + c;
+  ctx.lineTo(originX + xMax*scale, originY - yEnd*scale);
+  ctx.stroke();
+
+  // labels
+  ctx.fillStyle = '#6b6459';
+  ctx.font = '11px monospace';
+  ctx.fillText('x', w-14, originY-6);
+  ctx.fillText('f(x)', originX+6, 12);
+}
+mSlider.addEventListener('input', drawPlot);
+cSlider.addEventListener('input', drawPlot);
+drawPlot();
+
+// Quiz
+const quizData = [
+  {
+    q: "What does f(4) mean if f(x) = 2x + 1?",
+    opts: ["2 times 4, times 1", "The function f evaluated at x = 4", "f multiplied by 4", "None of these"],
+    correct: 1,
+    explain: "f(4) means: substitute x = 4 into the rule. f(4) = 2(4) + 1 = 9."
+  },
+  {
+    q: "If f(x) = 5x − 2, what is f(0)?",
+    opts: ["0", "-2", "5", "3"],
+    correct: 1,
+    explain: "f(0) = 5(0) − 2 = −2."
+  },
+  {
+    q: "On a standard graph, which axis represents the input (x)?",
+    opts: ["Vertical", "Horizontal", "Either, doesn't matter", "Diagonal"],
+    correct: 1,
+    explain: "By convention, input (x) is always on the horizontal axis, output (f(x)) on the vertical."
+  },
+  {
+    q: "A recharge plan f(x) = 149 + 3x charges ₹3 per extra GB. What does 149 represent?",
+    opts: ["The rate per GB", "The number of GB used", "The fixed base plan cost", "The total bill"],
+    correct: 2,
+    explain: "149 is the constant added regardless of x — the fixed/base cost."
+  },
+  {
+    q: "For f(x) = 4x + 3, if x increases by 1, how much does f(x) increase by?",
+    opts: ["1", "3", "4", "7"],
+    correct: 2,
+    explain: "The coefficient of x (4) tells you the rate of change — this becomes 'slope' soon."
+  },
+  {
+    q: "Which point would NOT lie on f(x) = 2x + 1?",
+    opts: ["(0, 1)", "(1, 3)", "(2, 5)", "(3, 8)"],
+    correct: 3,
+    explain: "f(3) = 2(3)+1 = 7, not 8 — so (3,8) is not on this function's line."
+  },
+  {
+    q: "In the interactive plotter, what happens when you increase c while keeping m fixed?",
+    opts: ["The line gets steeper", "The line shifts up or down without changing steepness", "The line flips direction", "Nothing changes"],
+    correct: 1,
+    explain: "c is the intercept — it shifts the whole line vertically without changing its slope."
+  },
+  {
+    q: "Why is an ML model described as 'a function'?",
+    opts: [
+      "Because it runs on a computer",
+      "Because it takes an input and produces exactly one output based on a rule it has learned",
+      "Because it uses Python functions in code",
+      "It's not really a function, just a metaphor"
+    ],
+    correct: 1,
+    explain: "That's the literal mathematical definition — an ML model maps inputs to outputs via a (very complex) rule, exactly like f(x)."
+  }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      const buttons = box.querySelectorAll('.opt');
+      buttons.forEach(b => b.disabled = true);
+      if(j === item.correct){
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+        buttons[item.correct].classList.add('correct');
+      }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

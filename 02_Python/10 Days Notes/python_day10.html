@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Python – Day 10 | Capstone: Full CLI Application</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F8FAFC;--surface:#FFFFFF;--border:#CBD5E1;--accent:#0F172A;--accent2:#1E293B;
+    --green:#059669;--red:#EF233C;--gold:#B45309;--blue:#1E40AF;--purple:#7C3AED;
+    --text:#0F172A;--muted:#334155;--code-bg:#070B14;--code-text:#CBD5E1;--tag-bg:#F1F5F9;--tag-text:#1E293B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#B45309 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐍';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#B45309,#F59E0B);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#94A3B8;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FDBA74;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#475569;font-style:italic;} .op{color:#CBD5E1;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.gold{border-color:var(--gold);background:#FFFBEB;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.gold .callout-title{color:var(--gold);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .pipeline-visual{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:16px 0;}
+  .pipe-step{background:var(--tag-bg);color:var(--tag-text);padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:600;border:1px solid var(--border);}
+  .pipe-arrow{color:var(--muted);font-size:16px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0F172A,#1E293B,#B45309);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#0F172A,#B45309);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;} .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .certificate{border:3px solid var(--gold);border-radius:16px;padding:40px;text-align:center;background:linear-gradient(135deg,#FFFBEB,#F8FAFC);margin-top:32px;position:relative;overflow:hidden;}
+  .certificate::before{content:'🐍';font-size:200px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;}
+  .certificate .cert-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+  .certificate h2{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);margin-bottom:8px;}
+  .certificate .cert-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin:16px 0;}
+  .certificate p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto 20px;}
+  .cert-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;}
+  .cert-skill{background:var(--accent);color:#fff;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐍 Python</div><span class="sep">|</span><span class="day-label">Day 10 of 10 · Final</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">100%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Python Full Course · Day 10 · Capstone</div>
+  <h1>Build a Complete<br><span>CLI Task Manager</span></h1>
+  <p>The final day. Combine everything from the course — data structures, OOP, files, exceptions, decorators, generators — into one real, working command-line application.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔗 Integrating Everything</span>
+    <span class="hero-pill">🏗️ Application Architecture</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Full Capstone App</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎓 <strong>Final Day!</strong> You've built up fundamentals, OOP, generators/decorators, and concurrency. Today integrates it ALL into one real, runnable application — and completes your Python journey from core to advanced.</p>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔗</div>
+    <div><h2>Designing a Real Application</h2><p>How a CLI app's pieces fit together</p></div>
+  </div>
+  <div class="section-body">
+    <p>A real application isn't just one script — it's organized into layers: data model, persistence (saving/loading), business logic, and a user-facing interface. Today's capstone touches every layer.</p>
+
+    <div class="pipeline-visual">
+      <span class="pipe-step">📦 Data Model (dataclass)</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">💾 Persistence (JSON file)</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">🧠 Business Logic (class methods)</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">🎀 Decorators (logging/validation)</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">⌨️ CLI Interface (input loop)</span>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># The core building blocks you'll combine today — a quick refresher of the full toolkit</span>
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field       <span class="cm"># Day 8 — data model</span>
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+<span class="kw">from</span> functools <span class="kw">import</span> wraps                    <span class="cm"># Day 7 — decorators</span>
+<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod            <span class="cm"># Day 8 — abstract contracts</span>
+<span class="kw">import</span> json                                  <span class="cm"># Day 5/6 — file I/O</span
+><span class="kw">import</span> os
+
+<span class="cm"># Custom exceptions — Day 5, gives clear, specific error types</span>
+<span class="kw">class</span> <span class="fn">TaskNotFoundError</span>(Exception):
+    <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">InvalidPriorityError</span>(Exception):
+    <span class="kw">pass</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Real Applications Are Built From Small, Composed Pieces</div>
+      No single concept from this course "is" the app. The value comes from COMBINING a dataclass model, exception handling for bad input, a decorator for logging actions, file persistence with JSON, and a clean CLI loop — each piece doing ONE job well.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🏗️</div>
+    <div><h2>Application Architecture Pattern</h2><p>A reference structure you can reuse for future projects</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># 1. DATA MODEL — a dataclass representing one unit of your domain</span>
+<span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="fn">Task</span>:
+    <span class="fn">id</span>: <span class="fn">int</span>
+    title: <span class="fn">str</span>
+    priority: <span class="fn">str</span> = <span class="st">"medium"</span>
+    done: <span class="fn">bool</span> = <span class="kw">False</span>
+    created_at: <span class="fn">str</span> = field(default_factory=<span class="kw">lambda</span>: datetime.<span class="fn">now</span>().<span class="fn">isoformat</span>())
+
+    <span class="kw">def</span> <span class="fn">to_dict</span>(self):
+        <span class="kw">return</span> self.__dict__   <span class="cm"># every object instance has __dict__ of its attributes</span>
+
+<span class="cm"># 2. LOGGING DECORATOR — wraps actions with a consistent audit trail</span>
+<span class="kw">def</span> <span class="fn">log_action</span>(func):
+    <span class="kw">@wraps</span>(func)
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        result = func(*args, **kwargs)
+        <span class="fn">print</span>(<span class="st">f"[LOG] {func.__name__} executed"</span>)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper
+
+<span class="cm"># 3. BUSINESS LOGIC — a manager class owning the collection and operations</span>
+<span class="kw">class</span> <span class="fn">TaskManager</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, filepath=<span class="st">"tasks.json"</span>):
+        self.filepath = filepath
+        self.tasks = self.<span class="fn">_load</span>()
+
+    <span class="kw">def</span> <span class="fn">_load</span>(self):
+        <span class="kw">if</span> <span class="kw">not</span> os.path.<span class="fn">exists</span>(self.filepath):
+            <span class="kw">return</span> []
+        <span class="kw">try</span>:
+            <span class="kw">with</span> <span class="fn">open</span>(self.filepath) <span class="kw">as</span> f:
+                <span class="kw">return</span> [Task(**d) <span class="kw">for</span> d <span class="kw">in</span> json.<span class="fn">load</span>(f)]
+        <span class="kw">except</span> json.JSONDecodeError:
+            <span class="fn">print</span>(<span class="st">"Warning: corrupted task file, starting fresh."</span>)
+            <span class="kw">return</span> []
+
+    <span class="kw">def</span> <span class="fn">_save</span>(self):
+        <span class="kw">with</span> <span class="fn">open</span>(self.filepath, <span class="st">"w"</span>) <span class="kw">as</span> f:
+            json.<span class="fn">dump</span>([t.<span class="fn">to_dict</span>() <span class="kw">for</span> t <span class="kw">in</span> self.tasks], f, indent=<span class="nm">2</span>)
+
+    <span class="kw">@log_action</span>
+    <span class="kw">def</span> <span class="fn">add_task</span>(self, title, priority=<span class="st">"medium"</span>):
+        <span class="kw">if</span> priority <span class="kw">not</span> <span class="kw">in</span> (<span class="st">"low"</span>,<span class="st">"medium"</span>,<span class="st">"high"</span>):
+            <span class="kw">raise</span> InvalidPriorityError(<span class="st">f"Invalid priority: {priority}"</span>)
+        new_id = <span class="fn">max</span>([t.id <span class="kw">for</span> t <span class="kw">in</span> self.tasks], default=<span class="nm">0</span>) + <span class="nm">1</span>
+        self.tasks.<span class="fn">append</span>(Task(id=new_id, title=title, priority=priority))
+        self.<span class="fn">_save</span>()
+
+    <span class="kw">def</span> <span class="fn">complete_task</span>(self, task_id):
+        <span class="kw">for</span> t <span class="kw">in</span> self.tasks:
+            <span class="kw">if</span> t.id == task_id:
+                t.done = <span class="kw">True</span>
+                self.<span class="fn">_save</span>()
+                <span class="kw">return</span>
+        <span class="kw">raise</span> TaskNotFoundError(<span class="st">f"No task with id {task_id}"</span>)
+
+    <span class="kw">def</span> <span class="fn">pending_tasks</span>(self):
+        <span class="cm"># generator — yields lazily, doesn't build an unnecessary intermediate list</span>
+        <span class="kw">for</span> t <span class="kw">in</span> self.tasks:
+            <span class="kw">if</span> <span class="kw">not</span> t.done:
+                <span class="kw">yield</span> t</pre>
+    </div>
+
+    <div class="callout gold">
+      <div class="callout-title">✅ This Structure Scales to Real Projects</div>
+      The pattern here — dataclass model, private <code>_load</code>/<code>_save</code> persistence methods, a manager class with public methods, custom exceptions for domain-specific errors — is a genuinely reusable structure you'll see in real Python codebases, from small scripts to production web backends.
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Final Practice MCQs — 20 Questions</h2><p>Application design integrating the full course. Pass: 16/20.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPSTONE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#0F172A,#B45309)">🏆</div>
+    <div><h2>Capstone Project — Full CLI Task Manager Application</h2><p>Estimated time: 3–4 hours &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐ &nbsp;|&nbsp; Uses the whole course</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>📋 Project Brief — TaskFlow CLI</h3>
+      <p>Build a complete, persistent, menu-driven task manager you can actually run and use from your terminal — combining data classes, custom exceptions, decorators, generators, file persistence, and a polished CLI loop.</p>
+      <span class="cap-badge">Variables &amp; Control Flow</span>
+      <span class="cap-badge">Functions &amp; Data Structures</span>
+      <span class="cap-badge">OOP + Advanced OOP</span>
+      <span class="cap-badge">Files &amp; Exceptions</span>
+      <span class="cap-badge">Generators &amp; Decorators</span>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0F172A">1</div><h4>Phase 1 — Data Model &amp; Persistence</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build the Task Dataclass and File Persistence</h5>
+          <p>Use the Task dataclass and TaskManager skeleton from Section 2 above as your starting point. Ensure _load() gracefully handles a missing OR corrupted JSON file (using try/except), and _save() writes readable, indented JSON.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Add Custom Exceptions</h5>
+          <p>Define TaskNotFoundError and InvalidPriorityError (shown above) and raise them appropriately from TaskManager's methods, rather than letting generic errors propagate.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Business Logic &amp; Generators</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Complete the TaskManager Class</h5>
+          <p>Add methods: delete_task(id), edit_task(id, new_title), tasks_by_priority(priority) [as a generator using yield], and a summary() method returning counts of total/done/pending tasks using list comprehensions.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Add the @log_action Decorator to Every Mutating Method</h5>
+          <p>Apply @log_action (from Section 2) to add_task, complete_task, delete_task, and edit_task — but NOT to read-only methods like summary() or pending_tasks().</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — CLI Interface</h4><span class="phase-time">~45 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build the Interactive Menu Loop</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER STRUCTURE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">print_menu</span>():
+    <span class="fn">print</span>(<span class="st">"""
+1. Add task
+2. List all tasks
+3. List pending tasks only
+4. Complete a task
+5. Delete a task
+6. Show summary
+7. Exit
+"""</span>)
+
+<span class="kw">def</span> <span class="fn">main</span>():
+    manager = TaskManager()
+    <span class="kw">while</span> <span class="kw">True</span>:
+        <span class="fn">print_menu</span>()
+        choice = <span class="fn">input</span>(<span class="st">"Choose an option: "</span>).<span class="fn">strip</span>()
+        <span class="kw">try</span>:
+            <span class="kw">if</span> choice == <span class="st">"1"</span>:
+                title = <span class="fn">input</span>(<span class="st">"Task title: "</span>)
+                priority = <span class="fn">input</span>(<span class="st">"Priority (low/medium/high): "</span>) <span class="kw">or</span> <span class="st">"medium"</span>
+                manager.<span class="fn">add_task</span>(title, priority)
+            <span class="kw">elif</span> choice == <span class="st">"7"</span>:
+                <span class="fn">print</span>(<span class="st">"Goodbye!"</span>)
+                <span class="kw">break</span>
+            <span class="cm"># ... handle remaining options ...</span>
+        <span class="kw">except</span> (InvalidPriorityError, TaskNotFoundError) <span class="kw">as</span> e:
+            <span class="fn">print</span>(<span class="st">f"Error: {e}"</span>)
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    main()</pre></div>
+          <p>Complete all 7 menu options, ensuring every user-facing error is caught and displayed cleanly (never letting a raw traceback reach the user).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Capstone Completion Checklist</div>
+      <ul class="checklist">
+        <li>Built the Task dataclass with sensible defaults</li>
+        <li>Built TaskManager with robust _load/_save JSON persistence</li>
+        <li>Defined and raised custom exceptions for invalid input</li>
+        <li>Implemented add, complete, delete, and edit task methods</li>
+        <li>Implemented tasks_by_priority as a generator</li>
+        <li>Implemented summary() using list comprehensions</li>
+        <li>Applied @log_action to all mutating methods only</li>
+        <li>Built a full 7-option interactive CLI menu loop</li>
+        <li>Ensured all user errors are caught and shown cleanly, never crashing</li>
+        <li>Verified tasks persist correctly across program restarts</li>
+      </ul>
+    </div>
+
+    <div class="callout gold" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges — Prove Mastery</div>
+      <ol style="margin-top:8px;">
+        <li><strong>Concurrent bulk import</strong>: Add a "bulk import from CSV" feature using ThreadPoolExecutor to validate many rows concurrently before adding them.</li>
+        <li><strong>Abstract storage backend</strong>: Refactor persistence behind an abstract StorageBackend class, with JSONStorage as one implementation — enabling a future SQLiteStorage without changing TaskManager.</li>
+        <li><strong>Package it properly</strong>: Split the single script into a proper package (models.py, manager.py, cli.py, exceptions.py) with a setup.py, making it pip-installable.</li>
+      </ol>
+    </div>
+
+    <div class="certificate">
+      <div class="cert-title">Certificate of Completion</div>
+      <h2>Python Full Course</h2>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">This certifies that you have completed all 10 days of</div>
+      <div class="cert-name">🐍 Python Core-to-Advanced Mastery Track</div>
+      <p>You have built expertise spanning fundamentals, functions, data structures, object-oriented programming (basic and advanced), file handling, exceptions, iterators, generators, decorators, and concurrency — culminating in a complete real-world application.</p>
+      <div class="cert-skills">
+        <span class="cert-skill">✓ Variables &amp; Operators</span>
+        <span class="cert-skill">✓ Control Flow &amp; Functions</span>
+        <span class="cert-skill">✓ Data Structures</span>
+        <span class="cert-skill">✓ OOP Fundamentals</span>
+        <span class="cert-skill">✓ Files &amp; Exceptions</span>
+        <span class="cert-skill">✓ Modules &amp; Packages</span>
+        <span class="cert-skill">✓ Iterators &amp; Generators</span>
+        <span class="cert-skill">✓ Decorators</span>
+        <span class="cert-skill">✓ Advanced OOP</span>
+        <span class="cert-skill">✓ Concurrency</span>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--muted);">⭐ 100+ MCQs passed &nbsp;|&nbsp; Multiple real-world projects &nbsp;|&nbsp; 1 full CLI application capstone</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Python Full Course — Complete! 🎉</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Basics</span>
+    <span class="day-pill">Day 2 · Control Flow &amp; Functions</span>
+    <span class="day-pill">Day 3 · Data Structures</span>
+    <span class="day-pill">Day 4 · OOP</span>
+    <span class="day-pill">Day 5 · Files &amp; Exceptions</span>
+    <span class="day-pill">Day 6 · Modules &amp; Packages</span>
+    <span class="day-pill done">Day 7 · Iterators, Generators &amp; Decorators</span>
+    <span class="day-pill done">Day 8 · Advanced OOP</span>
+    <span class="day-pill done">Day 9 · Concurrency</span>
+    <span class="day-pill done active">Day 10 · Capstone ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">🎉 Days 2, 3, 5, and 6 (Control Flow, Data Structures, Files/Exceptions, Modules) are still open — say "day 2" any time to fill in the gaps!</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"@dataclass\nclass Task:\n    id: int\n    title: str\n    priority: str = \"medium\"",q:"In the capstone's Task model, why is @dataclass a better choice than a plain class with a manually written __init__?",opts:["@dataclass runs significantly faster at execution time","@dataclass automatically generates __init__, __repr__, and __eq__ from the declared fields, eliminating repetitive boilerplate code while still producing a fully functional, readable, and comparable class — exactly matching the needs of a simple data-holding model like Task", "Plain classes cannot have default values for their attributes","@dataclass is required for any class used with JSON"],ans:1,explain:"Task is fundamentally a simple DATA-HOLDING structure (an id, title, priority, etc.) — exactly the use case @dataclass is designed for. It eliminates the repetitive boilerplate of manually writing __init__ (assigning each parameter to self), __repr__ (for readable printing), and __eq__ (for comparison), while still producing a fully-featured, idiomatic Python class."},
+  {code:"def _load(self):\n    if not os.path.exists(self.filepath):\n        return []\n    try:\n        with open(self.filepath) as f:\n            return [Task(**d) for d in json.load(f)]\n    except json.JSONDecodeError:\n        print(\"Warning: corrupted task file, starting fresh.\")\n        return []",q:"Why does this method handle TWO separate failure scenarios (missing file AND corrupted file) differently?",opts:["Both scenarios are actually handled identically with no real difference","A MISSING file is an expected, normal situation for a first-time run (simply return an empty list, no error); a CORRUPTED/malformed file is an unexpected problem (caught via try/except around json.load, since attempting to parse invalid JSON would raise json.JSONDecodeError) — distinguishing these cases lets the app gracefully handle both without crashing, giving appropriate feedback for each situation", "This code contains a bug and doesn't actually handle either case correctly", "Only file-not-found errors are possible; JSONDecodeError can never actually occur"],ans:1,explain:"This demonstrates thoughtful exception handling: a missing file (os.path.exists returns False) is a NORMAL scenario on first run — no error, just start with an empty task list. A CORRUPTED file (exists, but contains invalid JSON) is caught via try/except json.JSONDecodeError specifically, since attempting json.load() on malformed content would otherwise crash the whole application — instead, the app warns the user and gracefully starts fresh rather than crashing entirely."},
+  {code:"class TaskNotFoundError(Exception):\n    pass\n\nclass InvalidPriorityError(Exception):\n    pass",q:"Why define these CUSTOM exception classes rather than just using generic built-in exceptions like ValueError everywhere?",opts:["Custom exceptions have no practical benefit over generic built-ins","Custom, domain-specific exception classes make error handling code more READABLE and PRECISE — calling code can specifically catch `except TaskNotFoundError` to handle 'task doesn't exist' scenarios distinctly from `except InvalidPriorityError` for 'bad priority value' scenarios, rather than catching a generic ValueError that could mean many different things and require additional logic to distinguish the actual cause", "Python requires all custom applications to define at least 2 exception classes","Custom exceptions automatically fix the underlying error without any handling code needed"],ans:1,explain:"Custom exception classes create a clear, self-documenting VOCABULARY for your application's specific error conditions. Code that catches these exceptions can precisely distinguish 'this task ID doesn't exist' (TaskNotFoundError) from 'this priority value is invalid' (InvalidPriorityError) at the except clause level itself, rather than catching a generic exception type and needing additional logic (like checking the error message text) to figure out what actually went wrong."},
+  {code:"@log_action\ndef add_task(self, title, priority=\"medium\"):\n    ...",q:"Why apply the @log_action decorator specifically to MUTATING methods (add_task, complete_task, delete_task) but NOT to read-only methods like summary()?",opts:["Decorators can only be applied to methods that modify data, never to read-only methods","Logging is typically most valuable for tracking ACTIONS that CHANGE application state (creating, completing, deleting tasks) — these represent meaningful events worth recording in an audit trail; read-only queries (like summary(), which just reports counts without changing anything) generally don't need the same logging since they don't represent a state-changing event worth auditing", "This is purely arbitrary with no underlying design reasoning", "@log_action would cause an error if applied to a read-only method"],ans:1,explain:"This reflects thoughtful application design: logging/auditing is typically most valuable for tracking events that CHANGE the system's state (since these represent meaningful, potentially significant actions worth recording — 'a task was added', 'a task was deleted'). Read-only operations like summary() (which just reports information without modifying anything) generally don't need the same audit trail, since there's no state change to track — applying logging selectively (only where it adds real value) is a sign of thoughtful, non-noisy application design."},
+  {code:"def tasks_by_priority(self, priority):\n    for t in self.tasks:\n        if t.priority == priority:\n            yield t",q:"Why implement this as a GENERATOR (using yield) rather than building and returning a complete list?",opts:["Generators are required syntax for any filtering operation in Python","Using yield makes this LAZY — it produces matching tasks one at a time as the caller iterates, without building an entire intermediate list upfront; for a task manager this may have modest practical benefit at small scale, but it demonstrates the memory-efficient generator PATTERN that becomes genuinely valuable for large datasets, and allows the caller to stop iterating early without wasted computation on the remaining tasks", "This code would not function correctly without yield", "Generators automatically sort tasks by priority, which lists cannot do"],ans:1,explain:"While for a small in-memory task list the practical difference is modest, using yield here demonstrates and reinforces the GENERATOR PATTERN taught on Day 7: it produces matching results lazily, one at a time, without needing to build and store an entire filtered list before returning anything — beneficial for very large datasets, and allowing a caller to stop consuming results early (e.g., just checking 'is there at least one high-priority task?') without wastefully computing the full filtered set first."},
+  {code:"except (InvalidPriorityError, TaskNotFoundError) as e:\n    print(f\"Error: {e}\")",q:"What does catching MULTIPLE exception types together in one except clause (using a tuple) accomplish?",opts:["This syntax is invalid and would cause a SyntaxError","It allows ONE except block to handle SEVERAL different, related exception types with the SAME handling logic (here, simply printing a user-friendly error message) — avoiding repetitive duplicate except blocks when multiple distinct exception types should be handled identically", "Only the FIRST exception type in the tuple is ever actually caught", "This syntax causes both exceptions to be raised simultaneously"],ans:1,explain:"Python allows specifying multiple exception types as a TUPLE in a single except clause: except (TypeA, TypeB) as e. This catches EITHER type of exception and handles both with the SAME code block — useful here since both InvalidPriorityError and TaskNotFoundError should be handled identically from the CLI's perspective (just show the error message to the user), avoiding the need for two separate, duplicate except blocks."},
+  {q:"Why does the CLI's main() loop wrap the menu option handling in a try/except block INSIDE the while loop, rather than around the entire while loop?",opts:["Placement of try/except makes no functional difference in this scenario","Placing try/except INSIDE the loop (around each individual menu action) ensures that if ONE operation fails (e.g., invalid priority), the exception is caught and handled WITHOUT exiting the entire loop — the user sees an error message and can immediately try again; wrapping try/except AROUND the entire loop would instead cause the WHOLE program to exit after just the FIRST error, which would be a much worse user experience", "try/except can only be used inside loops, never around them", "This placement is required syntax and has no design implications"],ans:1,explain:"Placing the try/except INSIDE the loop body (around each individual menu operation) means a single failed operation (like an invalid input) gets caught, displayed to the user, and then the loop CONTINUES to the next iteration, letting the user try again immediately. If try/except instead wrapped the ENTIRE while loop from outside, the first exception encountered would propagate out and terminate the ENTIRE program (and thus the entire interactive session) — a much worse user experience for an interactive CLI application meant to handle many operations across a long-running session."},
+  {q:"Why does the capstone's TaskManager separate PERSISTENCE logic (_load, _save) from BUSINESS LOGIC (add_task, complete_task) into distinct, clearly-named methods, rather than mixing file I/O code directly throughout every business method?",opts:["This separation has no practical software design benefit","Separating concerns this way (a pattern sometimes called 'separation of concerns') makes the code more MAINTAINABLE — if you later wanted to switch from JSON file storage to a database, you'd only need to change the _load/_save methods, without touching any of the business logic methods (add_task, complete_task, etc.) that don't need to know or care HOW data is actually persisted", "Business logic methods are technically incapable of directly performing file I/O in Python", "This separation is purely a stylistic preference enforced by Python syntax rules"],ans:1,explain:"This reflects a valuable, widely-applicable software design principle: separating WHAT the business logic does (add a task, mark it complete) from HOW data is actually stored (JSON file, database, cloud storage, etc.). By centralizing persistence logic in _load/_save, if requirements later change (e.g., switching to a database), only those two methods need modification — the business logic methods remain untouched, since they interact with self.tasks as an in-memory list and simply call self._save() when something changes, without needing to know the underlying storage mechanism's details."},
+  {q:"What broader lesson does the capstone's use of a leading underscore in `_load` and `_save` (as opposed to `add_task`, which has no underscore) reinforce from Day 8's advanced OOP concepts?",opts:["The underscore prefix has no meaningful convention behind it in this context","The leading underscore signals these are INTERNAL implementation details not meant to be called directly by code OUTSIDE the class (like the CLI interface) — the CLI should interact with TaskManager through its PUBLIC methods (add_task, complete_task, etc.), while _load/_save remain private internal helpers used only by TaskManager itself", "Methods with underscore prefixes literally cannot be called from outside the class under any circumstances", "This underscore convention is specific to dataclasses and doesn't apply to regular classes"],ans:1,explain:"This reinforces the Day 8 concept of using a leading underscore as a CONVENTION signaling 'internal implementation detail, not part of the public interface.' The CLI code (main()) is expected to interact with TaskManager exclusively through its PUBLIC methods (add_task, complete_task, delete_task, etc.) — the _load and _save methods remain internal helpers that TaskManager uses for its own persistence needs, not something external code should need to call directly, keeping the public interface clean and focused on the actual USER-FACING operations."},
+  {q:"Why might the capstone's stretch challenge suggest refactoring persistence behind an 'abstract StorageBackend class' (reintroducing Day 8's ABC concept) as a further improvement?",opts:["Abstract classes provide no additional benefit beyond what's already implemented","An abstract StorageBackend contract (with abstractmethods like save() and load()) would let you support MULTIPLE storage implementations (JSONStorage now, potentially SQLiteStorage or CloudStorage later) that all fulfill the SAME interface — TaskManager could work with ANY compliant storage backend without modification, since it only depends on the ABSTRACT CONTRACT (save/load), not on JSON-specific implementation details", "This refactoring would make the application significantly slower", "ABCs can only be used for data models, never for storage/persistence logic"],ans:1,explain:"This applies the Day 8 Abstract Base Class pattern to a genuinely valuable real-world scenario: defining an ABSTRACT CONTRACT for 'storage backends' (requiring any implementation to provide save() and load() methods) would let TaskManager depend only on THAT ABSTRACT INTERFACE, remaining completely unaware of whether it's actually talking to a JSON file, a SQLite database, or a cloud storage service. This is the same 'open for extension, closed for modification' principle from Day 8's payment system exercise, now applied to a persistence layer — a genuinely common, valuable pattern in real production software architecture."},
+  {q:"Why does the capstone deliberately combine features from MULTIPLE different days (dataclasses from Day 8, exceptions conceptually from Day 5, decorators from Day 7, generators from Day 7, file I/O conceptually from Day 5/6) into ONE cohesive project, rather than each day's material remaining permanently isolated?",opts:["This combination happened by pure coincidence with no pedagogical intent", "This directly demonstrates the capstone philosophy applied consistently throughout this ENTIRE curriculum (as seen in the NumPy/Pandas/Matplotlib/Seaborn/SciPy capstones too): genuine professional software development virtually ALWAYS requires INTEGRATING multiple techniques together into one cohesive solution, and the highest-value learning outcome is not just knowing individual concepts in isolation, but developing the skill of correctly COMBINING them to build something genuinely functional and useful", "Only the most recent day's material (Day 9, concurrency) has any relevance to the capstone", "Real Python applications never actually combine techniques from different areas like this"],ans:1,explain:"This mirrors the exact same pedagogical philosophy demonstrated throughout the ENTIRE broader curriculum (visible in every prior capstone across NumPy, Pandas, Matplotlib, Seaborn, and SciPy as well): genuine professional software development requires INTEGRATING many individual techniques into one cohesive, functional solution — not just knowing each technique in isolation. A real task manager application NATURALLY needs a data model (dataclasses), error handling (custom exceptions), an audit trail (decorators), efficient filtering (generators), and persistent storage (file I/O) all working TOGETHER — and developing the skill of correctly combining previously-separate concepts into one coherent, working system is precisely the higher-order competency this capstone (and the course's capstone-based structure overall) is specifically designed to build."},
+  {q:"In the CLI menu loop, why does `priority = input(\"Priority (low/medium/high): \") or \"medium\"` use the `or` operator this way?",opts:["This is invalid syntax and would raise an error","This is a common Python IDIOM: since an empty string \"\" is FALSY, if the user presses Enter without typing anything (input() returns \"\"), the `or` expression falls through to the DEFAULT value \"medium\"; if the user DOES type something (a non-empty, TRUTHY string), that typed value is used instead — providing a compact way to apply a default value for optional user input", "The or operator here always returns \"medium\" regardless of user input", "This syntax only works with numeric input, not strings"],ans:1,explain:"This leverages Python's truthy/falsy evaluation (from Day 1!) combined with how `or` works: `or` returns its LEFT operand if that operand is truthy, otherwise it returns the RIGHT operand. Since an empty string (what input() returns if the user just presses Enter) is FALSY, `input(...) or \"medium\"` elegantly provides a default value — if the user types something (truthy), that's used; if they type nothing (falsy empty string), \"medium\" is used instead. This is a compact, idiomatic Python pattern for applying default values to optional user input."},
+  {q:"Why does the capstone recommend that the CLI NEVER let a 'raw traceback reach the user' — what does this design goal mean practically?",opts:["Tracebacks should always be shown to users since they're helpful debugging information","A raw Python traceback (the technical, code-line-by-line error dump Python shows for uncaught exceptions) is CONFUSING and unprofessional for an END USER interacting with a finished application — proper exception handling should catch ALL foreseeable error conditions (invalid input, missing tasks, corrupted files, etc.) and translate them into CLEAR, USER-FRIENDLY messages, reserving raw tracebacks for DEVELOPER-facing debugging contexts only, not production end-user interactions", "Tracebacks are a security risk that must be legally hidden from users in all software", "This goal is impossible to achieve in any real Python application"],ans:1,explain:"A raw Python traceback (showing internal file paths, line numbers, and technical exception details) is appropriate for a DEVELOPER debugging code, but deeply unhelpful and unprofessional for an END USER simply trying to use an application — they generally don't know Python and would be confused/alarmed by a wall of technical text. A well-designed application anticipates foreseeable error conditions (which this capstone models with custom exceptions caught and displayed as clean messages) so that end users see helpful, understandable feedback like 'Error: No task with id 5' rather than a raw traceback dump."},
+  {q:"What is the significance of the capstone explicitly noting that Days 2, 3, 5, and 6 remain available to be built later, even though the capstone project uses concepts typically covered on those days (control flow, data structures, exceptions, file/module handling)?",opts:["This indicates the capstone project is fundamentally broken without those specific days", "It acknowledges that while the capstone NATURALLY requires and applies concepts that would normally be taught explicitly on those intervening days (if-statements, lists/dicts, try/except, file I/O module organization), the DEDICATED, in-depth lessons for those specific topics are still available to build for a more THOROUGH, systematic treatment — the capstone demonstrates INTEGRATED application of these ideas, but a dedicated lesson would provide more comprehensive, focused coverage of each individual topic", "Skipping days is always harmless and dedicated lessons provide no additional value", "The capstone secretly contains the complete content of all 4 skipped days already"],ans:1,explain:"This is an honest acknowledgment: the capstone project NATURALLY uses concepts like control flow (if/while), data structures (lists, dicts), exception handling, and file/module organization — because building a real, working application requires ALL of these things working together. However, this INTEGRATED, applied usage within the capstone is different from a DEDICATED, systematic lesson on each specific topic (which would cover it more thoroughly, with its own focused examples, MCQs, and a topic-specific real-world task) — the note transparently flags that those dedicated deep-dives remain available to build, for learners who want more comprehensive, focused coverage of each individual foundational topic beyond what the integrated capstone demonstrates."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review the app architecture and try again! 📚"],[50,75,"Good progress! Focus on error handling and design separation. 💪"],[75,90,"Strong finish! You've completed the Python course. 🎉"],[90,101,"Perfect score — Python Master achieved! 🏆🐍"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — Course Complete!`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

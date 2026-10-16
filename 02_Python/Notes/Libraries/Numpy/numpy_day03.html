@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NumPy – Day 3 | Broadcasting & Vectorisation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+
+  :root {
+    --bg:        #FFF8F0;
+    --surface:   #FFFFFF;
+    --border:    #F0DEC8;
+    --accent:    #D97706;
+    --accent2:   #92400E;
+    --green:     #059669;
+    --red:       #EF233C;
+    --blue:      #3B82F6;
+    --purple:    #7C3AED;
+    --teal:      #0891B2;
+    --text:      #1C1007;
+    --muted:     #78614A;
+    --code-bg:   #1C1407;
+    --code-text: #FDE68A;
+    --tag-bg:    #FEF3C7;
+    --tag-text:  #92400E;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); font-size:15px; line-height:1.75; }
+
+  /* NAV */
+  .topnav { position:sticky; top:0; z-index:100; background:var(--surface); border-bottom:2px solid var(--border); display:flex; align-items:center; gap:12px; padding:0 32px; height:58px; box-shadow:0 2px 12px rgba(0,0,0,.05); }
+  .topnav .logo { font-family:'Sora',sans-serif; font-size:18px; font-weight:800; color:var(--accent); }
+  .topnav .sep  { color:var(--border); font-size:22px; }
+  .topnav .day-label { background:var(--tag-bg); color:var(--tag-text); font-size:12px; font-weight:600; padding:3px 10px; border-radius:20px; }
+  .topnav .spacer { flex:1; }
+  .topnav .progress-label { font-size:12px; color:var(--muted); }
+  .progress-bar-wrap { width:120px; height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--accent); border-radius:99px; }
+
+  /* HERO */
+  .hero { background:linear-gradient(135deg,#D97706 0%,#92400E 100%); color:#fff; padding:64px 40px 56px; text-align:center; }
+  .hero .eyebrow { font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; opacity:.7; margin-bottom:14px; }
+  .hero h1 { font-family:'Sora',sans-serif; font-size:clamp(28px,5vw,48px); font-weight:800; line-height:1.15; margin-bottom:18px; }
+  .hero h1 span { color:#FDE68A; }
+  .hero p { max-width:640px; margin:0 auto 28px; opacity:.88; font-size:15px; }
+  .hero-pills { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .hero-pill { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); border-radius:99px; padding:5px 14px; font-size:12px; font-weight:500; }
+
+  /* LAYOUT */
+  .container { max-width:960px; margin:0 auto; padding:0 24px; }
+
+  /* SECTION */
+  .section { background:var(--surface); border:1px solid var(--border); border-radius:14px; margin:28px 0; overflow:hidden; }
+  .section-header { display:flex; align-items:center; gap:14px; padding:20px 28px; border-bottom:1px solid var(--border); background:var(--bg); }
+  .section-icon { width:40px; height:40px; border-radius:10px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .section-header h2 { font-family:'Sora',sans-serif; font-size:18px; font-weight:700; }
+  .section-header p  { font-size:13px; color:var(--muted); margin-top:2px; }
+  .section-body { padding:28px; }
+
+  h3 { font-size:16px; font-weight:600; margin:24px 0 8px; color:var(--accent2); }
+  h3:first-child { margin-top:0; }
+  p  { margin-bottom:10px; }
+  ul,ol { padding-left:22px; margin-bottom:10px; }
+  li { margin-bottom:5px; }
+  strong { font-weight:600; }
+  code { font-family:'JetBrains Mono',monospace; font-size:12.5px; background:var(--tag-bg); color:var(--accent2); padding:1px 5px; border-radius:4px; }
+
+  /* CODE */
+  .code-wrap { background:var(--code-bg); border-radius:10px; margin:14px 0; overflow:hidden; }
+  .code-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.05); }
+  .code-lang { font-size:11px; color:#A0856A; font-weight:500; letter-spacing:.5px; }
+  .copy-btn { font-size:11px; padding:3px 10px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); color:#aaa; border-radius:5px; cursor:pointer; transition:all .2s; }
+  .copy-btn:hover { background:rgba(255,255,255,.2); color:#fff; }
+  pre { padding:18px 20px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; color:var(--code-text); }
+  .kw { color:#FCA5A5; }
+  .fn { color:#93C5FD; }
+  .st { color:#86EFAC; }
+  .nm { color:#FDBA74; }
+  .cm { color:#6B5A40; font-style:italic; }
+  .op { color:#FDE68A; }
+  .hl { color:#FFFFFF; font-weight:600; }
+
+  /* CALLOUT */
+  .callout { border-left:4px solid var(--accent); background:var(--tag-bg); padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; font-size:14px; }
+  .callout.green  { border-color:var(--green);  background:#ECFDF5; }
+  .callout.blue   { border-color:var(--blue);   background:#EFF6FF; }
+  .callout.red    { border-color:var(--red);    background:#FFF1F2; }
+  .callout.purple { border-color:var(--purple); background:#F5F3FF; }
+  .callout.teal   { border-color:var(--teal);   background:#ECFEFF; }
+  .callout .callout-title { font-weight:700; font-size:12px; letter-spacing:.5px; text-transform:uppercase; margin-bottom:4px; }
+  .callout        .callout-title { color:var(--accent); }
+  .callout.green  .callout-title { color:var(--green); }
+  .callout.blue   .callout-title { color:var(--blue); }
+  .callout.red    .callout-title { color:var(--red); }
+  .callout.purple .callout-title { color:var(--purple); }
+  .callout.teal   .callout-title { color:var(--teal); }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x:auto; margin:14px 0; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { background:var(--accent); color:#fff; padding:10px 14px; text-align:left; font-weight:600; }
+  td { padding:9px 14px; border-bottom:1px solid var(--border); }
+  tr:last-child td { border-bottom:none; }
+  tr:nth-child(even) td { background:var(--bg); }
+
+  /* BROADCAST VISUAL */
+  .bc-demo { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:16px 0; }
+  .bc-arr {
+    background:var(--code-bg); border-radius:8px; padding:12px 16px;
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--code-text);
+    display:inline-block;
+  }
+  .bc-arr .arr-label { font-size:10px; color:#A0856A; margin-bottom:4px; letter-spacing:.5px; }
+  .bc-op { font-size:24px; color:var(--accent); font-weight:700; }
+  .bc-eq { font-size:20px; color:var(--muted); }
+  .bc-cell { display:inline-block; width:36px; height:36px; border-radius:5px; line-height:36px; text-align:center; font-size:13px; font-weight:500; margin:1px; }
+  .bc-val { background:#2A1E08; color:#FDE68A; }
+  .bc-expand { background:#0D3B2E; color:#86EFAC; }
+  .bc-result { background:#1A2840; color:#93C5FD; }
+
+  /* CARD GRID */
+  .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; margin:16px 0; }
+  .mini-card { border:1px solid var(--border); border-radius:10px; padding:14px 16px; background:var(--bg); }
+  .mini-card .mc-name { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:500; color:var(--accent); margin-bottom:4px; }
+  .mini-card .mc-desc { font-size:12.5px; color:var(--muted); }
+  .mini-card .mc-ex   { margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--green); background:#ECFDF5; padding:2px 7px; border-radius:5px; display:inline-block; }
+
+  /* SHAPE RULE BOX */
+  .rule-box { border:2px solid var(--accent); border-radius:12px; padding:20px 24px; margin:16px 0; background:var(--tag-bg); }
+  .rule-box h4 { font-family:'Sora',sans-serif; font-size:15px; font-weight:700; color:var(--accent2); margin-bottom:12px; }
+  .rule-step { display:flex; gap:12px; margin-bottom:10px; font-size:14px; }
+  .rule-num { width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+
+  /* PERF TABLE */
+  .perf-bar { height:18px; background:var(--accent); border-radius:3px; display:inline-block; margin-right:8px; vertical-align:middle; }
+
+  /* QUIZ */
+  .quiz-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
+  .quiz-stat .num { font-family:'Sora',sans-serif; font-size:26px; font-weight:800; color:var(--accent); }
+  .quiz-stat .lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  .q-card { border:1.5px solid var(--border); border-radius:12px; margin-bottom:20px; overflow:hidden; transition:border-color .2s; }
+  .q-card.correct { border-color:var(--green); }
+  .q-card.wrong   { border-color:var(--red); }
+  .q-header { display:flex; align-items:flex-start; gap:12px; padding:16px 20px; background:var(--bg); border-bottom:1px solid var(--border); }
+  .q-num { width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+  .q-text { font-weight:500; font-size:14.5px; }
+  .q-code { font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--code-bg); color:var(--code-text); padding:8px 12px; border-radius:7px; margin:8px 0; display:block; white-space:pre; }
+  .q-options { padding:14px 20px; display:grid; gap:8px; }
+  .opt { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all .15s; font-size:14px; user-select:none; }
+  .opt:hover { border-color:var(--accent); background:var(--tag-bg); }
+  .opt.selected { border-color:var(--accent); background:var(--tag-bg); }
+  .opt.correct-ans { border-color:var(--green); background:#ECFDF5; }
+  .opt.wrong-ans   { border-color:var(--red);   background:#FFF1F2; }
+  .opt-letter { width:24px; height:24px; border-radius:6px; background:var(--border); color:var(--muted); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .opt.selected .opt-letter    { background:var(--accent); color:#fff; }
+  .opt.correct-ans .opt-letter { background:var(--green);  color:#fff; }
+  .opt.wrong-ans .opt-letter   { background:var(--red);    color:#fff; }
+  .q-explain { margin:0 20px 14px; padding:10px 14px; border-radius:8px; font-size:13px; display:none; }
+  .q-explain.show { display:block; }
+  .q-explain.exp-correct { background:#ECFDF5; border-left:3px solid var(--green); color:#065F46; }
+  .q-explain.exp-wrong   { background:#FFF1F2; border-left:3px solid var(--red);   color:#9B1C1C; }
+  .quiz-btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
+  .btn { padding:11px 24px; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all .2s; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:var(--accent2); }
+  .btn-outline { background:transparent; color:var(--accent); border:2px solid var(--accent); }
+  .btn-outline:hover { background:var(--tag-bg); }
+  .score-box { background:linear-gradient(135deg,#D97706,#92400E); color:#fff; border-radius:14px; padding:28px; text-align:center; display:none; margin-top:20px; }
+  .score-box.show { display:block; }
+  .score-box .big-score { font-family:'Sora',sans-serif; font-size:52px; font-weight:800; }
+  .score-box .score-msg { font-size:16px; opacity:.9; margin-top:6px; }
+  .score-box .score-detail { font-size:13px; opacity:.7; margin-top:4px; }
+
+  /* TASK */
+  .task-hero { background:linear-gradient(135deg,#D97706,#0369A1); padding:28px; border-radius:10px; color:#fff; margin-bottom:22px; }
+  .task-hero h3 { color:#fff; margin:0 0 8px; font-size:18px; }
+  .task-hero p  { margin:0; opacity:.9; }
+  .task-phase { border:1px solid var(--border); border-radius:10px; margin-bottom:16px; overflow:hidden; }
+  .task-phase-header { background:var(--bg); padding:12px 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .task-phase-header:hover { background:var(--tag-bg); }
+  .phase-num { width:28px; height:28px; border-radius:50%; font-size:12px; font-weight:700; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .task-phase-header h4 { font-size:14.5px; font-weight:600; flex:1; }
+  .phase-time { font-size:12px; color:var(--muted); background:var(--border); padding:2px 8px; border-radius:99px; }
+  .chevron { font-size:14px; transition:transform .3s; }
+  .chevron.open { transform:rotate(180deg); }
+  .task-phase-body { padding:18px; display:none; }
+  .task-phase-body.open { display:block; }
+  .task-step { display:flex; gap:14px; margin-bottom:18px; align-items:flex-start; }
+  .step-dot { width:22px; height:22px; border-radius:50%; border:2px solid var(--accent); color:var(--accent); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-content h5 { font-size:14px; font-weight:600; margin-bottom:5px; }
+  .step-content p  { font-size:13.5px; color:#374151; margin-bottom:6px; }
+  .checklist { list-style:none; padding:0; }
+  .checklist li { display:flex; align-items:flex-start; gap:8px; font-size:13.5px; margin-bottom:6px; color:#374151; }
+  .checklist li::before { content:'☐'; font-size:15px; color:var(--accent); flex-shrink:0; line-height:1.5; }
+
+  /* FOOTER */
+  .day-footer { background:var(--surface); border-top:2px solid var(--border); padding:28px 40px; text-align:center; margin-top:40px; }
+  .day-footer .series { font-size:13px; color:var(--muted); margin-bottom:8px; }
+  .day-footer .days-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .day-pill { padding:5px 12px; border-radius:99px; font-size:12px; font-weight:500; border:1px solid var(--border); color:var(--muted); cursor:default; }
+  .day-pill.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .day-pill.done   { background:var(--green);  color:#fff; border-color:var(--green); }
+
+  @media(max-width:600px){
+    .topnav{padding:0 16px;}
+    .hero{padding:44px 20px 40px;}
+    .section-body{padding:18px;}
+    .bc-demo{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔢 NumPy</div>
+  <span class="sep">|</span>
+  <span class="day-label">Day 3 of 5</span>
+  <div class="spacer"></div>
+  <span class="progress-label" style="margin-right:8px">60%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:60%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">NumPy Full Course · Day 3</div>
+  <h1>Broadcasting &amp; <span>Vectorisation</span></h1>
+  <p>Unlock NumPy's most powerful concept — operate on arrays of different shapes without copying data. Plus fancy indexing, array manipulation, and performance secrets.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📡 Broadcasting Rules</span>
+    <span class="hero-pill">⚡ Vectorisation Speed</span>
+    <span class="hero-pill">🎯 Fancy Indexing</span>
+    <span class="hero-pill">🧩 Array Manipulation</span>
+    <span class="hero-pill">🔁 Stack &amp; Split</span>
+    <span class="hero-pill">🧠 np.where Advanced</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1 — BROADCASTING
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📡</div>
+    <div>
+      <h2>Broadcasting — The Most Powerful NumPy Concept</h2>
+      <p>How NumPy applies operations between arrays of different shapes</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>Broadcasting is NumPy's mechanism for performing arithmetic on arrays of <strong>different shapes</strong> without explicitly copying data. It makes code cleaner, faster, and more memory-efficient.</p>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 The Core Idea</div>
+      When operating on two arrays, NumPy compares their shapes <strong>from right to left</strong>. Dimensions are compatible if they are <strong>equal</strong>, or if <strong>one of them is 1</strong>. A size-1 dimension is "stretched" to match the other.
+    </div>
+
+    <h3>Simple Example — Scalar Broadcasting</h3>
+    <div class="bc-demo">
+      <div class="bc-arr"><div class="arr-label">ARRAY (3,)</div><div class="bc-cell bc-val">1</div><div class="bc-cell bc-val">2</div><div class="bc-cell bc-val">3</div></div>
+      <div class="bc-op">+</div>
+      <div class="bc-arr"><div class="arr-label">SCALAR → (1,) stretched to (3,)</div><div class="bc-cell bc-expand">10</div><div class="bc-cell bc-expand">10</div><div class="bc-cell bc-expand">10</div></div>
+      <div class="bc-eq">=</div>
+      <div class="bc-arr"><div class="arr-label">RESULT (3,)</div><div class="bc-cell bc-result">11</div><div class="bc-cell bc-result">12</div><div class="bc-cell bc-result">13</div></div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+
+<span class="cm"># Scalar broadcasts to EVERY element</span>
+<span class="fn">print</span>(arr + <span class="nm">10</span>)      <span class="cm"># [11 12 13]</span>
+<span class="fn">print</span>(arr * <span class="nm">5</span>)       <span class="cm"># [ 5 10 15]</span>
+<span class="fn">print</span>(arr ** <span class="nm">2</span>)      <span class="cm"># [ 1  4  9]</span>
+<span class="fn">print</span>(arr > <span class="nm">1</span>)       <span class="cm"># [False True True]</span>
+
+<span class="cm"># These all work WITHOUT loops — C speed under the hood</span></pre>
+    </div>
+
+    <h3>1D + 2D Broadcasting</h3>
+    <div class="bc-demo">
+      <div class="bc-arr">
+        <div class="arr-label">MATRIX (3×3)</div>
+        <div><div class="bc-cell bc-val">1</div><div class="bc-cell bc-val">2</div><div class="bc-cell bc-val">3</div></div>
+        <div><div class="bc-cell bc-val">4</div><div class="bc-cell bc-val">5</div><div class="bc-cell bc-val">6</div></div>
+        <div><div class="bc-cell bc-val">7</div><div class="bc-cell bc-val">8</div><div class="bc-cell bc-val">9</div></div>
+      </div>
+      <div class="bc-op">+</div>
+      <div class="bc-arr">
+        <div class="arr-label">ROW (1×3) → stretched to (3×3)</div>
+        <div><div class="bc-cell bc-expand">10</div><div class="bc-cell bc-expand">20</div><div class="bc-cell bc-expand">30</div></div>
+        <div><div class="bc-cell bc-expand">10</div><div class="bc-cell bc-expand">20</div><div class="bc-cell bc-expand">30</div></div>
+        <div><div class="bc-cell bc-expand">10</div><div class="bc-cell bc-expand">20</div><div class="bc-cell bc-expand">30</div></div>
+      </div>
+      <div class="bc-eq">=</div>
+      <div class="bc-arr">
+        <div class="arr-label">RESULT (3×3)</div>
+        <div><div class="bc-cell bc-result">11</div><div class="bc-cell bc-result">22</div><div class="bc-cell bc-result">33</div></div>
+        <div><div class="bc-cell bc-result">14</div><div class="bc-cell bc-result">25</div><div class="bc-cell bc-result">36</div></div>
+        <div><div class="bc-cell bc-result">17</div><div class="bc-cell bc-result">28</div><div class="bc-cell bc-result">39</div></div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>matrix = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],
+                  [<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>],
+                  [<span class="nm">7</span>,<span class="nm">8</span>,<span class="nm">9</span>]])         <span class="cm"># shape (3, 3)</span>
+
+row = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>])          <span class="cm"># shape (3,)  → treated as (1, 3)</span>
+col = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">10</span>],[<span class="nm">20</span>],[<span class="nm">30</span>]])       <span class="cm"># shape (3, 1)</span>
+
+<span class="fn">print</span>(matrix + row)
+<span class="cm"># [[11 22 33]   ← row added to EACH row of matrix
+#  [14 25 36]
+#  [17 28 39]]</span>
+
+<span class="fn">print</span>(matrix + col)
+<span class="cm"># [[11 12 13]   ← col added to EACH column of matrix
+#  [24 25 26]
+#  [37 38 39]]</span></pre>
+    </div>
+
+    <h3>The 3 Broadcasting Rules</h3>
+    <div class="rule-box">
+      <h4>NumPy's Broadcasting Rules — Applied Right to Left</h4>
+      <div class="rule-step">
+        <div class="rule-num">1</div>
+        <div>If arrays have <strong>different number of dimensions</strong>, the shape of the smaller array is <strong>padded with 1s on the LEFT</strong>.<br><small style="color:var(--muted)">e.g. shape (3,) becomes (1,3) when paired with a (4,3) array</small></div>
+      </div>
+      <div class="rule-step">
+        <div class="rule-num">2</div>
+        <div>Arrays with <strong>size 1 along any dimension</strong> act as if they have the size of the array with the largest size in that dimension. They are "stretched".<br><small style="color:var(--muted)">e.g. (1,3) stretches to (4,3)</small></div>
+      </div>
+      <div class="rule-step">
+        <div class="rule-num">3</div>
+        <div>If dimensions are <strong>neither equal nor 1</strong>, NumPy raises a <strong>ValueError</strong>. Broadcasting fails.<br><small style="color:var(--muted)">e.g. (3,) and (4,) → ERROR: cannot broadcast</small></div>
+      </div>
+    </div>
+
+    <h3>Broadcasting Compatibility Quick Reference</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Array A shape</th><th>Array B shape</th><th>Result shape</th><th>Compatible?</th></tr>
+        <tr><td>(3,)</td><td>scalar</td><td>(3,)</td><td>✅ Yes</td></tr>
+        <tr><td>(3, 4)</td><td>(4,)</td><td>(3, 4)</td><td>✅ Yes — (4,) → (1,4) → (3,4)</td></tr>
+        <tr><td>(3, 4)</td><td>(3, 1)</td><td>(3, 4)</td><td>✅ Yes — col broadcasts across</td></tr>
+        <tr><td>(3, 1)</td><td>(1, 4)</td><td>(3, 4)</td><td>✅ Yes — outer product style</td></tr>
+        <tr><td>(3, 4)</td><td>(3,)</td><td>❌ Error</td><td>❌ No — 3≠4, neither is 1</td></tr>
+        <tr><td>(2, 3, 4)</td><td>(3, 4)</td><td>(2, 3, 4)</td><td>✅ Yes — (3,4) → (1,3,4) → (2,3,4)</td></tr>
+      </table>
+    </div>
+
+    <h3>Real-World Broadcasting Examples</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># ① Normalise each row of a matrix (subtract row mean)</span>
+data = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>],
+                  [<span class="nm">100</span>, <span class="nm">200</span>, <span class="nm">300</span>],
+                  [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>]])
+
+row_means = data.<span class="fn">mean</span>(axis=<span class="nm">1</span>, keepdims=<span class="kw">True</span>)  <span class="cm"># shape (3,1)</span>
+normalised = data - row_means                    <span class="cm"># (3,3) - (3,1) → broadcasts!</span>
+<span class="fn">print</span>(normalised)
+<span class="cm"># [[-10.   0.  10. ]
+#  [-100.   0. 100. ]
+#  [ -1.   0.   1. ]]</span>
+
+<span class="cm"># ② Apply different discounts to each product across all months
+# products: 4 items, months: 3</span>
+prices   = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">100</span>,<span class="nm">200</span>,<span class="nm">150</span>],
+                      [<span class="nm">80</span>, <span class="nm">160</span>,<span class="nm">120</span>],
+                      [<span class="nm">300</span>,<span class="nm">350</span>,<span class="nm">280</span>],
+                      [<span class="nm">50</span>, <span class="nm">60</span>, <span class="nm">55</span>]])   <span class="cm"># (4, 3)</span>
+
+discounts = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">0.9</span>],[<span class="nm">0.85</span>],[<span class="nm">0.95</span>],[<span class="nm">0.80</span>]])  <span class="cm"># (4, 1)</span>
+discounted = prices * discounts               <span class="cm"># (4,3) * (4,1) → (4,3)</span>
+
+<span class="cm"># ③ Distance matrix — all pair distances</span>
+points = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">0</span>,<span class="nm">0</span>],[<span class="nm">3</span>,<span class="nm">4</span>],[<span class="nm">6</span>,<span class="nm">8</span>]])   <span class="cm"># 3 points (x,y)</span>
+diff = points[:, <span class="op">np</span>.newaxis] - points[<span class="op">np</span>.newaxis, :]  <span class="cm"># (3,1,2) - (1,3,2)</span>
+dist = <span class="op">np</span>.<span class="fn">sqrt</span>((diff**<span class="nm">2</span>).<span class="fn">sum</span>(axis=<span class="nm">-1</span>))
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(dist, <span class="nm">2</span>))
+<span class="cm"># [[0.  5.  10.]
+#  [5.  0.   5.]
+#  [10. 5.   0.]]</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">🔑 keepdims=True — The Secret Ingredient</div>
+      When computing aggregations like <code>mean(axis=1)</code>, use <code>keepdims=True</code> to preserve the dimension as size-1. This makes broadcasting work automatically. Without it, the result collapses to 1D and can't broadcast against the original 2D array.
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>m = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>]])
+
+<span class="cm"># Without keepdims</span>
+r1 = m.<span class="fn">mean</span>(axis=<span class="nm">1</span>)
+<span class="fn">print</span>(r1.shape)           <span class="cm"># (2,)  ← dimension gone!</span>
+<span class="cm"># m - r1  → ERROR: shapes (2,3) and (2,) not aligned</span>
+
+<span class="cm"># With keepdims=True</span>
+r2 = m.<span class="fn">mean</span>(axis=<span class="nm">1</span>, keepdims=<span class="kw">True</span>)
+<span class="fn">print</span>(r2.shape)           <span class="cm"># (2, 1) ← preserved as column</span>
+<span class="fn">print</span>(m - r2)             <span class="cm"># works! [[-1. 0. 1.] [-1. 0. 1.]]</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2 — VECTORISATION
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">⚡</div>
+    <div>
+      <h2>Vectorisation — Writing Fast NumPy Code</h2>
+      <p>Replace Python loops with array operations for dramatic speed gains</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>Vectorisation</strong> means expressing computations as operations on entire arrays rather than looping element-by-element. The result: cleaner code that runs in C speed.</p>
+
+    <h3>Loop vs Vectorised — Speed Comparison</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+<span class="kw">import</span> time
+
+n = <span class="nm">1_000_000</span>
+a = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(n)
+b = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(n)
+
+<span class="cm"># ❌ SLOW — Python loop</span>
+result_loop = <span class="op">np</span>.<span class="fn">zeros</span>(n)
+t0 = time.<span class="fn">perf_counter</span>()
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):
+    result_loop[i] = a[i] * b[i] + a[i] ** <span class="nm">2</span>
+loop_time = time.<span class="fn">perf_counter</span>() - t0
+<span class="fn">print</span>(<span class="st">f"Loop:   {loop_time:.3f} sec"</span>)
+
+<span class="cm"># ✅ FAST — Vectorised</span>
+t0 = time.<span class="fn">perf_counter</span>()
+result_vec = a * b + a ** <span class="nm">2</span>
+vec_time = time.<span class="fn">perf_counter</span>() - t0
+<span class="fn">print</span>(<span class="st">f"NumPy:  {vec_time:.3f} sec"</span>)
+<span class="fn">print</span>(<span class="st">f"Speedup: {loop_time/vec_time:.0f}×"</span>)
+
+<span class="cm"># Typical output:
+# Loop:   1.842 sec
+# NumPy:  0.009 sec
+# Speedup: 200×</span></pre>
+    </div>
+
+    <h3>Vectorisation Patterns — Before &amp; After</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>prices = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">100</span>,<span class="nm">200</span>,<span class="nm">350</span>,<span class="nm">80</span>,<span class="nm">500</span>,<span class="nm">120</span>])
+tax_rate = <span class="nm">0.18</span>
+
+<span class="cm"># ❌ PATTERN 1: Loop to apply formula</span>
+totals_loop = []
+<span class="kw">for</span> p <span class="kw">in</span> prices:
+    totals_loop.<span class="fn">append</span>(p + p * tax_rate)
+
+<span class="cm"># ✅ VECTORISED: One line, 200× faster</span>
+totals_vec = prices * (<span class="nm">1</span> + tax_rate)
+<span class="fn">print</span>(totals_vec)  <span class="cm"># [118. 236. 413. 94.4 590. 141.6]</span>
+
+<span class="cm"># ───────────────────────────────────────
+# ❌ PATTERN 2: Loop to find qualifying items</span>
+above_150 = []
+<span class="kw">for</span> p <span class="kw">in</span> prices:
+    <span class="kw">if</span> p > <span class="nm">150</span>:
+        above_150.<span class="fn">append</span>(p)
+
+<span class="cm"># ✅ VECTORISED: Boolean indexing</span>
+above_150 = prices[prices > <span class="nm">150</span>]
+
+<span class="cm"># ───────────────────────────────────────
+# ❌ PATTERN 3: Loop to build result based on condition</span>
+categories = []
+<span class="kw">for</span> p <span class="kw">in</span> prices:
+    <span class="kw">if</span> p < <span class="nm">100</span>: categories.<span class="fn">append</span>(<span class="st">'Budget'</span>)
+    <span class="kw">elif</span> p < <span class="nm">300</span>: categories.<span class="fn">append</span>(<span class="st">'Mid'</span>)
+    <span class="kw">else</span>: categories.<span class="fn">append</span>(<span class="st">'Premium'</span>)
+
+<span class="cm"># ✅ VECTORISED: np.select</span>
+conditions = [prices < <span class="nm">100</span>, prices < <span class="nm">300</span>]
+choices    = [<span class="st">'Budget'</span>, <span class="st">'Mid'</span>]
+categories = <span class="op">np</span>.<span class="fn">select</span>(conditions, choices, default=<span class="st">'Premium'</span>)
+<span class="fn">print</span>(categories)  <span class="cm"># ['Mid' 'Mid' 'Premium' 'Budget' 'Premium' 'Mid']</span>
+
+<span class="cm"># ───────────────────────────────────────
+# ❌ PATTERN 4: Loop to sum rows</span>
+row_totals = [<span class="fn">sum</span>(row) <span class="kw">for</span> row <span class="kw">in</span> matrix]
+
+<span class="cm"># ✅ VECTORISED: axis parameter</span>
+matrix = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>]])
+row_totals = matrix.<span class="fn">sum</span>(axis=<span class="nm">1</span>)   <span class="cm"># [6 15]</span></pre>
+    </div>
+
+    <h3>np.vectorize — Last Resort for Custom Functions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Use when you CANNOT avoid calling a Python function per element
+# Note: np.vectorize is syntactic sugar, NOT truly fast (still loops internally)</span>
+
+<span class="kw">def</span> <span class="fn">grade</span>(score):
+    <span class="kw">if</span> score >= <span class="nm">90</span>: <span class="kw">return</span> <span class="st">'A+'</span>
+    <span class="kw">elif</span> score >= <span class="nm">75</span>: <span class="kw">return</span> <span class="st">'A'</span>
+    <span class="kw">elif</span> score >= <span class="nm">60</span>: <span class="kw">return</span> <span class="st">'B'</span>
+    <span class="kw">elif</span> score >= <span class="nm">50</span>: <span class="kw">return</span> <span class="st">'C'</span>
+    <span class="kw">else</span>: <span class="kw">return</span> <span class="st">'F'</span>
+
+vgrade = <span class="op">np</span>.<span class="fn">vectorize</span>(grade)
+
+scores = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">92</span>, <span class="nm">78</span>, <span class="nm">55</span>, <span class="nm">63</span>, <span class="nm">45</span>, <span class="nm">88</span>])
+<span class="fn">print</span>(vgrade(scores))   <span class="cm"># ['A+' 'A' 'C' 'B' 'F' 'A']</span>
+
+<span class="cm"># BETTER alternative with np.select:</span>
+cond    = [scores >= <span class="nm">90</span>, scores >= <span class="nm">75</span>, scores >= <span class="nm">60</span>, scores >= <span class="nm">50</span>]
+choices = [<span class="st">'A+'</span>, <span class="st">'A'</span>, <span class="st">'B'</span>, <span class="st">'C'</span>]
+grades  = <span class="op">np</span>.<span class="fn">select</span>(cond, choices, default=<span class="st">'F'</span>)   <span class="cm"># truly vectorised</span></pre>
+    </div>
+
+    <h3>np.apply_along_axis — Apply Function to Each Row/Column</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>data = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">3</span>, <span class="nm">1</span>, <span class="nm">4</span>, <span class="nm">1</span>, <span class="nm">5</span>],
+                  [<span class="nm">9</span>, <span class="nm">2</span>, <span class="nm">6</span>, <span class="nm">5</span>, <span class="nm">3</span>],
+                  [<span class="nm">5</span>, <span class="nm">8</span>, <span class="nm">9</span>, <span class="nm">7</span>, <span class="nm">9</span>]])
+
+<span class="cm"># Apply custom function to each ROW (axis=1)</span>
+<span class="kw">def</span> <span class="fn">range_norm</span>(row):
+    <span class="kw">return</span> (row - row.<span class="fn">min</span>()) / (row.<span class="fn">max</span>() - row.<span class="fn">min</span>())
+
+result = <span class="op">np</span>.<span class="fn">apply_along_axis</span>(range_norm, axis=<span class="nm">1</span>, arr=data)
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(result, <span class="nm">2</span>))
+<span class="cm"># [[0.5  0.   0.75 0.   1.  ]
+#  [1.   0.   0.57 0.43 0.14]
+#  [0.   0.25 0.5  0.25 0.5 ]]</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3 — FANCY INDEXING
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DC2626">🎯</div>
+    <div>
+      <h2>Fancy Indexing</h2>
+      <p>Index arrays with integer arrays to pick arbitrary elements in any order</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>Fancy indexing lets you pass an <strong>array of indices</strong> instead of a single integer or slice. Unlike slices, fancy indexing always returns a <strong>copy</strong>, not a view.</p>
+
+    <h3>1D Fancy Indexing</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>, <span class="nm">60</span>, <span class="nm">70</span>, <span class="nm">80</span>])
+
+<span class="cm"># Pass list of indices to get specific elements</span>
+idx = [<span class="nm">0</span>, <span class="nm">2</span>, <span class="nm">5</span>, <span class="nm">7</span>]
+<span class="fn">print</span>(arr[idx])           <span class="cm"># [10 30 60 80]</span>
+
+<span class="cm"># Can repeat indices</span>
+<span class="fn">print</span>(arr[[<span class="nm">0</span>, <span class="nm">0</span>, <span class="nm">3</span>, <span class="nm">3</span>]])  <span class="cm"># [10 10 40 40]</span>
+
+<span class="cm"># Negative indices work too</span>
+<span class="fn">print</span>(arr[[-<span class="nm">1</span>, -<span class="nm">3</span>, <span class="nm">0</span>]])   <span class="cm"># [80 60 10]</span>
+
+<span class="cm"># Fancy indexing with argsort — pick top 3</span>
+scores = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">72</span>, <span class="nm">88</span>, <span class="nm">55</span>, <span class="nm">95</span>, <span class="nm">63</span>])
+top3_idx = <span class="op">np</span>.<span class="fn">argsort</span>(scores)[-<span class="nm">3</span>:][::-<span class="nm">1</span>]   <span class="cm"># indices of top 3</span>
+<span class="fn">print</span>(scores[top3_idx])   <span class="cm"># [95 88 72]</span></pre>
+    </div>
+
+    <h3>2D Fancy Indexing</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>m = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>],
+              [<span class="nm">4</span>, <span class="nm">5</span>, <span class="nm">6</span>],
+              [<span class="nm">7</span>, <span class="nm">8</span>, <span class="nm">9</span>],
+              [<span class="nm">10</span>,<span class="nm">11</span>,<span class="nm">12</span>]])
+
+<span class="cm"># Select specific rows</span>
+<span class="fn">print</span>(m[[<span class="nm">0</span>, <span class="nm">2</span>]])
+<span class="cm"># [[1 2 3]
+#  [7 8 9]]</span>
+
+<span class="cm"># Select specific rows AND columns (paired)</span>
+rows = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">2</span>])
+cols = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">2</span>])
+<span class="fn">print</span>(m[rows, cols])   <span class="cm"># [1 5 9]  ← diagonal!</span>
+
+<span class="cm"># Mix fancy + slice</span>
+<span class="fn">print</span>(m[[<span class="nm">0</span>,<span class="nm">2</span>], <span class="nm">1</span>:])   <span class="cm"># [[2 3] [8 9]]  ← rows 0,2; cols from 1 onwards</span>
+
+<span class="cm"># Fancy indexing on columns</span>
+<span class="fn">print</span>(m[:, [<span class="nm">0</span>, <span class="nm">2</span>]])   <span class="cm"># all rows, cols 0 and 2</span>
+<span class="cm"># [[ 1  3]
+#  [ 4  6]
+#  [ 7  9]
+#  [10 12]]</span></pre>
+    </div>
+
+    <h3>np.ix_ — Grid-Based Fancy Indexing</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># np.ix_ creates an open mesh for multiple dimensions</span>
+<span class="cm"># Use when you want the FULL submatrix at given rows AND cols</span>
+
+m = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">1</span>, <span class="nm">26</span>).<span class="fn">reshape</span>(<span class="nm">5</span>, <span class="nm">5</span>)
+<span class="fn">print</span>(m)
+<span class="cm"># [[ 1  2  3  4  5]
+#  [ 6  7  8  9 10]
+#  [11 12 13 14 15]
+#  [16 17 18 19 20]
+#  [21 22 23 24 25]]</span>
+
+<span class="cm"># Get a 3×2 sub-matrix from rows [0,2,4] × cols [1,3]</span>
+row_idx = [<span class="nm">0</span>, <span class="nm">2</span>, <span class="nm">4</span>]
+col_idx = [<span class="nm">1</span>, <span class="nm">3</span>]
+sub = m[<span class="op">np</span>.<span class="fn">ix_</span>(row_idx, col_idx)]
+<span class="fn">print</span>(sub)
+<span class="cm"># [[ 2  4]
+#  [12 14]
+#  [22 24]]</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Fancy Indexing vs Slicing</div>
+      Slicing returns a <strong>view</strong> (shared memory). Fancy indexing returns a <strong>copy</strong>. This means modifying fancy-indexed results does NOT change the original. Use this to your advantage when you need safe copies.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 4 — ARRAY MANIPULATION
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🧩</div>
+    <div>
+      <h2>Array Manipulation — Shape, Stack, Split, Tile</h2>
+      <p>Every technique for reshaping and restructuring arrays</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>Adding &amp; Removing Dimensions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])   <span class="cm"># shape (3,)</span>
+
+<span class="cm"># Add a NEW axis to turn 1D into 2D</span>
+row_vec = arr[<span class="op">np</span>.newaxis, :]   <span class="cm"># shape (1, 3) ← row vector</span>
+col_vec = arr[:, <span class="op">np</span>.newaxis]   <span class="cm"># shape (3, 1) ← column vector</span>
+
+<span class="cm"># Same with np.expand_dims</span>
+row_vec2 = <span class="op">np</span>.<span class="fn">expand_dims</span>(arr, axis=<span class="nm">0</span>)   <span class="cm"># (1, 3)</span>
+col_vec2 = <span class="op">np</span>.<span class="fn">expand_dims</span>(arr, axis=<span class="nm">1</span>)   <span class="cm"># (3, 1)</span>
+
+<span class="cm"># Remove size-1 dimensions</span>
+x = <span class="op">np</span>.<span class="fn">array</span>([[[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>]]])   <span class="cm"># shape (1, 1, 3)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">squeeze</span>(x).shape)    <span class="cm"># (3,)  ← all size-1 axes removed</span></pre>
+    </div>
+
+    <h3>Concatenating Arrays</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>a = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>],[<span class="nm">3</span>,<span class="nm">4</span>]])   <span class="cm"># (2, 2)</span>
+b = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">5</span>,<span class="nm">6</span>],[<span class="nm">7</span>,<span class="nm">8</span>]])   <span class="cm"># (2, 2)</span>
+
+<span class="cm"># Join along axis=0 → ROWS stacked (vertical)</span>
+v = <span class="op">np</span>.<span class="fn">concatenate</span>([a, b], axis=<span class="nm">0</span>)
+<span class="fn">print</span>(v.shape)   <span class="cm"># (4, 2)</span>
+<span class="fn">print</span>(v)
+<span class="cm"># [[1 2]
+#  [3 4]
+#  [5 6]
+#  [7 8]]</span>
+
+<span class="cm"># Join along axis=1 → COLUMNS added (horizontal)</span>
+h = <span class="op">np</span>.<span class="fn">concatenate</span>([a, b], axis=<span class="nm">1</span>)
+<span class="fn">print</span>(h.shape)   <span class="cm"># (2, 4)</span>
+<span class="fn">print</span>(h)
+<span class="cm"># [[1 2 5 6]
+#  [3 4 7 8]]</span></pre>
+    </div>
+
+    <h3>Stacking — vstack, hstack, dstack, column_stack</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>a = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">4</span>, <span class="nm">5</span>, <span class="nm">6</span>])
+c = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">7</span>, <span class="nm">8</span>, <span class="nm">9</span>])
+
+<span class="cm"># vstack — rows on top of each other</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">vstack</span>([a, b, c]))
+<span class="cm"># [[1 2 3]
+#  [4 5 6]
+#  [7 8 9]]   shape (3, 3)</span>
+
+<span class="cm"># hstack — side by side</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">hstack</span>([a, b, c]))
+<span class="cm"># [1 2 3 4 5 6 7 8 9]   shape (9,)</span>
+
+<span class="cm"># column_stack — 1D arrays become columns of 2D</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">column_stack</span>([a, b, c]))
+<span class="cm"># [[1 4 7]
+#  [2 5 8]
+#  [3 6 9]]   shape (3, 3)</span>
+
+<span class="cm"># np.stack — adds a NEW dimension</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">stack</span>([a, b, c], axis=<span class="nm">0</span>).shape)   <span class="cm"># (3, 3)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">stack</span>([a, b, c], axis=<span class="nm">1</span>).shape)   <span class="cm"># (3, 3) — different layout</span></pre>
+    </div>
+
+    <h3>Splitting Arrays</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>arr = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">1</span>, <span class="nm">13</span>)   <span class="cm"># [1..12]</span>
+
+<span class="cm"># Split into 3 equal parts</span>
+p1, p2, p3 = <span class="op">np</span>.<span class="fn">split</span>(arr, <span class="nm">3</span>)
+<span class="fn">print</span>(p1, p2, p3)   <span class="cm"># [1 2 3 4]  [5 6 7 8]  [9 10 11 12]</span>
+
+<span class="cm"># Split at specific positions (like cut points)</span>
+parts = <span class="op">np</span>.<span class="fn">split</span>(arr, [<span class="nm">3</span>, <span class="nm">7</span>])   <span class="cm"># cut at index 3 and 7</span>
+<span class="fn">print</span>(parts[<span class="nm">0</span>])   <span class="cm"># [1 2 3]</span>
+<span class="fn">print</span>(parts[<span class="nm">1</span>])   <span class="cm"># [4 5 6 7]</span>
+<span class="fn">print</span>(parts[<span class="nm">2</span>])   <span class="cm"># [8 9 10 11 12]</span>
+
+<span class="cm"># For 2D: vsplit (split rows), hsplit (split cols)</span>
+matrix = <span class="op">np</span>.<span class="fn">arange</span>(<span class="nm">1</span>, <span class="nm">13</span>).<span class="fn">reshape</span>(<span class="nm">4</span>, <span class="nm">3</span>)
+top, bottom = <span class="op">np</span>.<span class="fn">vsplit</span>(matrix, <span class="nm">2</span>)   <span class="cm"># split 4 rows → 2+2</span>
+left, right = <span class="op">np</span>.<span class="fn">hsplit</span>(matrix, [<span class="nm">2</span>])  <span class="cm"># cols: [:2] and [2:]</span></pre>
+    </div>
+
+    <h3>Tile &amp; Repeat</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+
+<span class="cm"># np.tile — repeat the ENTIRE array</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">tile</span>(arr, <span class="nm">3</span>))       <span class="cm"># [1 2 3 1 2 3 1 2 3]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">tile</span>(arr, (<span class="nm">2</span>,<span class="nm">3</span>)))   <span class="cm"># 2D: [[1 2 3 1 2 3 1 2 3]
+                                #       [1 2 3 1 2 3 1 2 3]]</span>
+
+<span class="cm"># np.repeat — repeat each ELEMENT</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">repeat</span>(arr, <span class="nm">3</span>))     <span class="cm"># [1 1 1 2 2 2 3 3 3]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">repeat</span>(arr, [<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">4</span>]))  <span class="cm"># [1 2 2 3 3 3 3]  ← variable repeats</span></pre>
+    </div>
+
+    <h3>Manipulation Cheat Sheet</h3>
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">np.reshape()</div><div class="mc-desc">Change shape without copying</div><div class="mc-ex">(12,) → (3,4)</div></div>
+      <div class="mini-card"><div class="mc-name">np.flatten()</div><div class="mc-desc">Collapse to 1D (copy)</div><div class="mc-ex">(3,4) → (12,)</div></div>
+      <div class="mini-card"><div class="mc-name">arr.T</div><div class="mc-desc">Transpose (rows ↔ cols)</div><div class="mc-ex">(3,4) → (4,3)</div></div>
+      <div class="mini-card"><div class="mc-name">np.vstack()</div><div class="mc-desc">Stack vertically (rows)</div><div class="mc-ex">2×(3,) → (2,3)</div></div>
+      <div class="mini-card"><div class="mc-name">np.hstack()</div><div class="mc-desc">Stack horizontally (cols)</div><div class="mc-ex">2×(3,) → (6,)</div></div>
+      <div class="mini-card"><div class="mc-name">np.column_stack()</div><div class="mc-desc">1D arrays as columns</div><div class="mc-ex">→ (n, k) matrix</div></div>
+      <div class="mini-card"><div class="mc-name">np.split()</div><div class="mc-desc">Split at indices or n parts</div><div class="mc-ex">(12,) → 3×(4,)</div></div>
+      <div class="mini-card"><div class="mc-name">np.tile()</div><div class="mc-desc">Repeat whole array</div><div class="mc-ex">[1,2]×3 → [1,2,1,2,1,2]</div></div>
+      <div class="mini-card"><div class="mc-name">np.repeat()</div><div class="mc-desc">Repeat each element</div><div class="mc-ex">[1,2]×3 → [1,1,1,2,2,2]</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 5 — NP.WHERE ADVANCED + MISC
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🧠</div>
+    <div>
+      <h2>Advanced np.where, newaxis &amp; Structured Ops</h2>
+      <p>Power techniques that combine everything from Days 1–3</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>np.where — Full Power</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Form 1: np.where(condition) → indices of True values</span>
+arr = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">5</span>, <span class="nm">15</span>, <span class="nm">3</span>, <span class="nm">20</span>, <span class="nm">8</span>])
+idx = <span class="op">np</span>.<span class="fn">where</span>(arr > <span class="nm">10</span>)
+<span class="fn">print</span>(idx)   <span class="cm"># (array([1, 3]),)</span>
+
+<span class="cm"># Form 2: np.where(cond, if_true, if_false) → values</span>
+result = <span class="op">np</span>.<span class="fn">where</span>(arr > <span class="nm">10</span>, arr * <span class="nm">2</span>, <span class="nm">0</span>)
+<span class="fn">print</span>(result)   <span class="cm"># [ 0 30  0 40  0]  ← doubled if >10, else 0</span>
+
+<span class="cm"># Nested np.where (like nested if-elif-else)</span>
+prices = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">50</span>, <span class="nm">120</span>, <span class="nm">300</span>, <span class="nm">80</span>, <span class="nm">450</span>])
+discount = <span class="op">np</span>.<span class="fn">where</span>(prices >= <span class="nm">300</span>, prices * <span class="nm">0.80</span>,
+             <span class="op">np</span>.<span class="fn">where</span>(prices >= <span class="nm">100</span>, prices * <span class="nm">0.90</span>,
+               prices))            <span class="cm"># no discount below 100</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(discount, <span class="nm">2</span>))   <span class="cm"># [ 50. 108.  240.  80.  360.]</span>
+
+<span class="cm"># np.where on 2D — same rules apply</span>
+matrix = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">5</span>,<span class="nm">3</span>],[<span class="nm">8</span>,<span class="nm">2</span>,<span class="nm">9</span>]])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">where</span>(matrix > <span class="nm">4</span>, <span class="st">'H'</span>, <span class="st">'L'</span>))
+<span class="cm"># [['L' 'H' 'L']
+#  ['H' 'L' 'H']]</span></pre>
+    </div>
+
+    <h3>np.newaxis — Manual Dimension Control</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>x = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>])    <span class="cm"># shape (4,)</span>
+y = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>])    <span class="cm"># shape (3,)</span>
+
+<span class="cm"># Outer product using broadcasting</span>
+outer = x[:, <span class="op">np</span>.newaxis] * y[<span class="op">np</span>.newaxis, :]
+<span class="cm"># x becomes (4,1), y becomes (1,3) → result is (4,3)</span>
+<span class="fn">print</span>(outer)
+<span class="cm"># [[ 10  20  30]
+#  [ 20  40  60]
+#  [ 30  60  90]
+#  [ 40  80 120]]</span>
+
+<span class="cm"># Same as np.outer(x, y) but more explicit</span>
+
+<span class="cm"># Distance from ONE point to many points</span>
+reference = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">0</span>])
+points    = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">3</span>,<span class="nm">4</span>],[<span class="nm">5</span>,<span class="nm">12</span>],[<span class="nm">8</span>,<span class="nm">15</span>]])
+diffs     = points - reference      <span class="cm"># (3,2) - (2,) → broadcasts!</span>
+distances = <span class="op">np</span>.<span class="fn">sqrt</span>((diffs**<span class="nm">2</span>).<span class="fn">sum</span>(axis=<span class="nm">1</span>))
+<span class="fn">print</span>(distances)   <span class="cm"># [ 5. 13. 17.]</span></pre>
+    </div>
+
+    <h3>np.clip — Clamping Values</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>raw_scores = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">105</span>, <span class="nm">87</span>, -<span class="nm">5</span>, <span class="nm">92</span>, <span class="nm">110</span>, <span class="nm">43</span>])
+
+<span class="cm"># Ensure scores stay between 0 and 100</span>
+valid = <span class="op">np</span>.<span class="fn">clip</span>(raw_scores, <span class="nm">0</span>, <span class="nm">100</span>)
+<span class="fn">print</span>(valid)   <span class="cm"># [100  87   0  92 100  43]</span>
+
+<span class="cm"># Clip per-element using arrays (different bounds per element)</span>
+lo = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>,  <span class="nm">0</span>,  <span class="nm">0</span>, <span class="nm">50</span>, <span class="nm">0</span>,  <span class="nm">0</span>])   <span class="cm"># min per element</span>
+hi = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">100</span>,<span class="nm">80</span>,<span class="nm">100</span>,<span class="nm">100</span>,<span class="nm">100</span>,<span class="nm">100</span>])  <span class="cm"># max per element</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">clip</span>(raw_scores, lo, hi))</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 6 — QUIZ
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div>
+      <h2>Practice MCQs — 20 Questions</h2>
+      <p>Broadcasting, vectorisation, fancy indexing, manipulation. Need 16/20 to pass.</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div>
+      <div class="score-msg"  id="score-msg"></div>
+      <div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 7 — REAL WORLD TASK
+══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🏆</div>
+    <div>
+      <h2>Real-World Task — Image Processor &amp; Filter Engine</h2>
+      <p>Estimated time: 80–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Computer Vision Engineer</strong> at <em>PixelWorks AI</em>. Images are just NumPy arrays — a grayscale image is a 2D array of pixel values (0–255), and a colour image is a 3D array (height × width × 3 channels). Build a <strong>complete image processing pipeline</strong> using only NumPy — no OpenCV, no PIL — applying filters, adjustments, and transformations using broadcasting and vectorisation.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">1</div>
+        <h4>Phase 1 — Create &amp; Explore the Image</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Simulate a Grayscale Image</h5>
+            <p>Create a 256×256 grayscale image as a NumPy array with values 0–255. Then create a colour image (256×256×3) with random RGB channels.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(<span class="nm">42</span>)
+
+<span class="cm"># Grayscale image: H×W, values 0–255</span>
+gray = rng.<span class="fn">integers</span>(<span class="nm">0</span>, <span class="nm">256</span>, size=(<span class="nm">256</span>, <span class="nm">256</span>), dtype=<span class="op">np</span>.uint8)
+
+<span class="cm"># Colour image: H×W×3  (R, G, B channels)</span>
+colour = rng.<span class="fn">integers</span>(<span class="nm">0</span>, <span class="nm">256</span>, size=(<span class="nm">256</span>, <span class="nm">256</span>, <span class="nm">3</span>), dtype=<span class="op">np</span>.uint8)
+
+<span class="fn">print</span>(<span class="st">f"Gray:   shape={gray.shape}, dtype={gray.dtype}"</span>)
+<span class="fn">print</span>(<span class="st">f"Colour: shape={colour.shape}, dtype={colour.dtype}"</span>)
+<span class="fn">print</span>(<span class="st">f"Gray stats: min={gray.min()}, max={gray.max()}, mean={gray.mean():.1f}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Create a Synthetic Gradient Image</h5>
+            <p>Build a 256×256 image where pixel values form a smooth gradient from 0 (top-left) to 255 (bottom-right) using linspace and broadcasting. This tests your shape manipulation skills.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>row_grad = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">255</span>, <span class="nm">256</span>)[:, <span class="op">np</span>.newaxis]  <span class="cm"># (256,1)</span>
+col_grad = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">255</span>, <span class="nm">256</span>)[<span class="op">np</span>.newaxis, :]  <span class="cm"># (1,256)</span>
+gradient = ((row_grad + col_grad) / <span class="nm">2</span>).<span class="fn">astype</span>(<span class="op">np</span>.uint8)  <span class="cm"># (256,256)</span></pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0369A1">2</div>
+        <h4>Phase 2 — Brightness, Contrast &amp; Colour Adjustments</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Brightness Adjustment</h5>
+            <p>Add a fixed value to every pixel to increase brightness. <strong>Clip to 0–255</strong> to prevent overflow. Test with +50 (brighter) and -50 (darker).</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">adjust_brightness</span>(img, delta):
+    <span class="cm"># Cast to int16 first to avoid uint8 overflow</span>
+    adjusted = img.<span class="fn">astype</span>(<span class="op">np</span>.int16) + delta
+    <span class="kw">return</span> <span class="op">np</span>.<span class="fn">clip</span>(adjusted, <span class="nm">0</span>, <span class="nm">255</span>).<span class="fn">astype</span>(<span class="op">np</span>.uint8)
+
+brighter = <span class="fn">adjust_brightness</span>(gray, <span class="nm">50</span>)
+darker   = <span class="fn">adjust_brightness</span>(gray, -<span class="nm">50</span>)
+<span class="fn">print</span>(<span class="st">f"Original mean: {gray.mean():.1f}"</span>)
+<span class="fn">print</span>(<span class="st">f"Brighter mean: {brighter.mean():.1f}"</span>)
+<span class="fn">print</span>(<span class="st">f"Darker mean:   {darker.mean():.1f}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Contrast Adjustment</h5>
+            <p>Contrast is stretched by multiplying pixel values by a factor around the midpoint (128). Formula: <code>new = clip(128 + factor × (old − 128), 0, 255)</code>. Test with factor=1.5 (more contrast) and 0.5 (less contrast).</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Colour Channel Manipulation — Broadcasting Magic</h5>
+            <p>Using the colour image (256×256×3), boost only the Red channel by 30, drop the Blue channel by 20. Use <strong>broadcasting</strong> — create a (1,1,3) adjustment array and add it to the (256,256,3) image.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>adjustment = <span class="op">np</span>.<span class="fn">array</span>([[[<span class="nm">30</span>, <span class="nm">0</span>, -<span class="nm">20</span>]]])  <span class="cm"># shape (1,1,3)</span>
+adjusted = <span class="op">np</span>.<span class="fn">clip</span>(colour.<span class="fn">astype</span>(<span class="op">np</span>.int16) + adjustment, <span class="nm">0</span>, <span class="nm">255</span>).<span class="fn">astype</span>(<span class="op">np</span>.uint8)
+<span class="cm"># (256,256,3) + (1,1,3) → broadcasts over all pixels!</span></pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">4</div>
+          <div class="step-content">
+            <h5>Grayscale Conversion from Colour</h5>
+            <p>Convert the colour image to grayscale using the standard luminance formula: <code>Y = 0.299R + 0.587G + 0.114B</code>. Use a weights array <code>[0.299, 0.587, 0.114]</code> and broadcasting/dot product.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>weights = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0.299</span>, <span class="nm">0.587</span>, <span class="nm">0.114</span>])   <span class="cm"># (3,)</span>
+gray_from_colour = (colour * weights).sum(axis=<span class="nm">-1</span>).<span class="fn">astype</span>(<span class="op">np</span>.uint8)
+<span class="fn">print</span>(gray_from_colour.shape)  <span class="cm"># (256, 256)</span></pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">3</div>
+        <h4>Phase 3 — Image Filters Using Vectorisation</h4>
+        <span class="phase-time">~25 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Threshold Filter (Binary Image)</h5>
+            <p>Convert the grayscale image to pure black and white. Pixels above 128 become 255 (white), pixels at or below 128 become 0 (black). Use <code>np.where</code>.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>binary = <span class="op">np</span>.<span class="fn">where</span>(gray > <span class="nm">128</span>, <span class="nm">255</span>, <span class="nm">0</span>).<span class="fn">astype</span>(<span class="op">np</span>.uint8)
+white_pct = (binary == <span class="nm">255</span>).<span class="fn">mean</span>() * <span class="nm">100</span>
+<span class="fn">print</span>(<span class="st">f"White pixels: {white_pct:.1f}%"</span>)  <span class="cm"># should be ~50%</span></pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Invert Filter (Negative Image)</h5>
+            <p>Invert every pixel: <code>255 − pixel</code>. Dark areas become bright and vice versa. Apply to the grayscale image in one vectorised line.</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Box Blur (3×3 Average Filter)</h5>
+            <p>A blur filter replaces each pixel with the average of its 3×3 neighbourhood. Implement this as a vectorised sliding window using array slicing (no loops).</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">GUIDE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">box_blur</span>(img):
+    <span class="cm"># Average of 8 neighbours + center using sliced overlapping views</span>
+    h, w = img.shape
+    blurred = <span class="op">np</span>.<span class="fn">zeros_like</span>(img, dtype=<span class="fn">float</span>)
+    <span class="cm"># Center pixels (excluding border)</span>
+    blurred[<span class="nm">1</span>:-<span class="nm">1</span>, <span class="nm">1</span>:-<span class="nm">1</span>] = (
+        img[<span class="nm">0</span>:-<span class="nm">2</span>, <span class="nm">0</span>:-<span class="nm">2</span>] + img[<span class="nm">0</span>:-<span class="nm">2</span>, <span class="nm">1</span>:-<span class="nm">1</span>] + img[<span class="nm">0</span>:-<span class="nm">2</span>, <span class="nm">2</span>:] +
+        img[<span class="nm">1</span>:-<span class="nm">1</span>, <span class="nm">0</span>:-<span class="nm">2</span>] + img[<span class="nm">1</span>:-<span class="nm">1</span>, <span class="nm">1</span>:-<span class="nm">1</span>] + img[<span class="nm">1</span>:-<span class="nm">1</span>, <span class="nm">2</span>:] +
+        img[<span class="nm">2</span>:,   <span class="nm">0</span>:-<span class="nm">2</span>] + img[<span class="nm">2</span>:,   <span class="nm">1</span>:-<span class="nm">1</span>] + img[<span class="nm">2</span>:,   <span class="nm">2</span>:]
+    ) / <span class="nm">9.0</span>
+    <span class="kw">return</span> blurred.<span class="fn">astype</span>(<span class="op">np</span>.uint8)
+
+blurred_gray = <span class="fn">box_blur</span>(gray)
+<span class="fn">print</span>(<span class="st">f"Blur std: {blurred_gray.std():.1f} vs original: {gray.std():.1f}"</span>)
+<span class="cm"># Std should be LOWER after blur (smoother image)</span></pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#DC2626">4</div>
+        <h4>Phase 4 — Geometric Transformations</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Flip Horizontally &amp; Vertically</h5>
+            <p>Use array slicing to flip the image. Horizontal flip = reverse columns. Vertical flip = reverse rows.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>flip_h = gray[:, ::-<span class="nm">1</span>]   <span class="cm"># horizontal (mirror)</span>
+flip_v = gray[::-<span class="nm">1</span>, :]   <span class="cm"># vertical (upside down)</span>
+flip_both = gray[::-<span class="nm">1</span>, ::-<span class="nm">1</span>]   <span class="cm"># 180° rotation</span></pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Crop a Region of Interest (ROI)</h5>
+            <p>Crop the centre 128×128 region from the 256×256 image using slicing.</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Downsample (Shrink Image by 2×)</h5>
+            <p>Take every 2nd row and every 2nd column using step slicing to produce a 128×128 image.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span></div>
+<pre>small = gray[::<span class="nm">2</span>, ::<span class="nm">2</span>]   <span class="cm"># 256×256 → 128×128</span>
+<span class="fn">print</span>(small.shape)         <span class="cm"># (128, 128)</span></pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">5</div>
+        <h4>Phase 5 — Histogram &amp; Final Stats Report</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Compute Pixel Histogram</h5>
+            <p>Use <code>np.histogram(gray.flatten(), bins=8, range=(0,256))</code> to get pixel value distribution across 8 brightness buckets (0–31, 32–63, etc.). Print the counts.</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Detect Overexposed &amp; Underexposed Areas</h5>
+            <p>Count pixels that are "clipped white" (≥250) and "clipped black" (≤5). These represent overexposed and underexposed areas.</p>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Print Final Image Analysis Report</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED FORMAT</span></div>
+<pre>══════════════════════════════════
+   PIXELWORKS AI — IMAGE REPORT
+══════════════════════════════════
+IMAGE PROPERTIES
+  Dimensions  : 256 × 256 pixels
+  Channels    : 1 (Grayscale)
+  Total Pixels: 65,536
+  Data Type   : uint8
+
+BRIGHTNESS STATS
+  Min : 0      Max : 255
+  Mean: 127.4  Std : 73.8
+
+EXPOSURE ANALYSIS
+  Overexposed  (≥250): ???  pixels (??%)
+  Underexposed (≤5)  : ???  pixels (??%)
+
+PIXEL DISTRIBUTION (8 bins)
+  0–31  : ████ ??? px
+  32–63 : ████ ??? px
+  ...
+
+FILTERS APPLIED
+  ✅ Brightness +50  | New mean: ???
+  ✅ Box Blur        | Std dev:  ???
+  ✅ Threshold 128   | White %:  ???%
+══════════════════════════════════</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px; padding:20px; background:var(--bg); border-radius:10px; border:1px solid var(--border);">
+      <div style="font-weight:700; font-size:15px; margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Created 256×256 grayscale and colour (256×256×3) images as NumPy arrays</li>
+        <li>Built a synthetic gradient image using linspace + broadcasting with newaxis</li>
+        <li>Implemented brightness adjustment with int16 casting and np.clip</li>
+        <li>Implemented contrast adjustment using midpoint formula</li>
+        <li>Boosted Red channel and reduced Blue channel using (1,1,3) broadcasting</li>
+        <li>Converted colour image to grayscale using luminance weights [0.299, 0.587, 0.114]</li>
+        <li>Applied threshold (binary) filter using np.where</li>
+        <li>Applied invert filter in one vectorised line</li>
+        <li>Implemented box blur using overlapping array slices (no loops)</li>
+        <li>Flipped image horizontally, vertically, and both (180° rotation)</li>
+        <li>Cropped centre 128×128 region using slicing</li>
+        <li>Downsampled image 2× using step slicing</li>
+        <li>Computed 8-bin pixel histogram using np.histogram</li>
+        <li>Printed full formatted analysis report</li>
+      </ul>
+    </div>
+
+    <div class="callout green" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 30 min)</div>
+      Implement a <strong>3×3 Sobel edge detection filter</strong>. Apply a Sobel-X kernel <code>[[-1,0,1],[-2,0,2],[-1,0,1]]</code> and Sobel-Y kernel using slice-based convolution (same approach as the box blur). Combine with <code>np.sqrt(Gx² + Gy²)</code> to get edge magnitude.
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="day-footer">
+  <div class="series">NumPy Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Arrays</span>
+    <span class="day-pill done">Day 2 · Math &amp; Stats</span>
+    <span class="day-pill done active">Day 3 · Broadcasting</span>
+    <span class="day-pill">Day 4 · Linear Algebra</span>
+    <span class="day-pill">Day 5 · Capstone Project</span>
+  </div>
+</div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    q:"What are NumPy's two conditions for broadcasting compatibility between two dimensions?",
+    opts:["They must be equal, or the array must be 1D","They must be equal, or one of them must be 1","They must both be powers of 2","The larger must divide evenly into the smaller"],
+    ans:1,
+    explain:"Broadcasting checks dimensions right-to-left. Two dimensions are compatible if they are EQUAL or if one of them is 1 (size-1 is stretched to match the other)."
+  },
+  {
+    code:"a = np.array([[1],[2],[3]])  # shape (3,1)\nb = np.array([10,20,30])    # shape (3,)\nprint((a + b).shape)",
+    q:"What is the output shape?",
+    opts:["(3,)","(3,3)","Error","(9,)"],
+    ans:1,
+    explain:"a has shape (3,1), b is treated as (1,3). Rule 1 pads b's shape → (1,3). Both 3-dims match; the 1s stretch. Result: (3,3)."
+  },
+  {
+    q:"What does `keepdims=True` do in `np.mean(arr, axis=1, keepdims=True)`?",
+    opts:["Keeps the original array unchanged","Preserves the collapsed axis as size-1 so broadcasting works","Computes cumulative mean","Makes the result an integer"],
+    ans:1,
+    explain:"Without keepdims, mean(axis=1) on a (4,3) array gives shape (4,). With keepdims=True it gives (4,1), which can broadcast against the original (4,3) array."
+  },
+  {
+    code:"arr = np.array([10,20,30,40,50])\nidx = np.array([0,0,3,1])\nprint(arr[idx])",
+    q:"What is printed?",
+    opts:["[10 20 30 40]","[10 10 40 20]","Error — cannot repeat indices","[0 0 3 1]"],
+    ans:1,
+    explain:"Fancy indexing allows repeated indices. arr[0]=10, arr[0]=10, arr[3]=40, arr[1]=20 → [10 10 40 20]."
+  },
+  {
+    q:"What is the key difference between slicing and fancy indexing in terms of memory?",
+    opts:["Slicing is always faster","Slicing returns a VIEW (shared memory); fancy indexing returns a COPY","Fancy indexing returns a view; slicing returns a copy","Both return copies"],
+    ans:1,
+    explain:"Slices share memory with the original array (views). Modifying a slice changes the original. Fancy indexing always creates an independent copy."
+  },
+  {
+    code:"np.vstack([np.array([1,2,3]), np.array([4,5,6])])",
+    q:"What is the resulting shape?",
+    opts:["(6,)","(1,6)","(2,3)","(3,2)"],
+    ans:2,
+    explain:"vstack stacks 1D arrays as rows. Two (3,) arrays stacked vertically → (2,3) matrix."
+  },
+  {
+    q:"What does `np.column_stack([a, b, c])` do when a, b, c are 1D arrays of length n?",
+    opts:["Concatenates them end-to-end into a 1D array of length 3n","Stacks them as COLUMNS, creating an (n, 3) matrix","Creates a 3D array","Raises an error — only works with 2D arrays"],
+    ans:1,
+    explain:"column_stack treats 1D arrays as columns. Three arrays of length n → one (n, 3) matrix with each original array as a column."
+  },
+  {
+    code:"arr = np.arange(12)\nparts = np.split(arr, [3, 7])\nprint(len(parts), parts[1])",
+    q:"What is printed?",
+    opts:["2  [3 4 5 6 7]","3  [3 4 5 6]","3  [3 4 5 6 7]","2  [0 1 2]"],
+    ans:1,
+    explain:"Split at indices [3,7] gives 3 parts: [0,1,2], [3,4,5,6], [7,8,9,10,11]. len=3, parts[1]=[3,4,5,6]."
+  },
+  {
+    code:"arr = np.array([1,2,3])\nprint(np.tile(arr, 3))\nprint(np.repeat(arr, 3))",
+    q:"What is printed?",
+    opts:["[1,2,3,1,2,3,1,2,3] then [1,1,1,2,2,2,3,3,3]","[1,1,1,2,2,2,3,3,3] then [1,2,3,1,2,3,1,2,3]","[3,6,9] then [3,6,9]","Both are the same"],
+    ans:0,
+    explain:"np.tile repeats the WHOLE array n times: [1,2,3,1,2,3,1,2,3]. np.repeat repeats each ELEMENT n times: [1,1,1,2,2,2,3,3,3]."
+  },
+  {
+    q:"What does `arr[:, np.newaxis]` do to a 1D array of shape (5,)?",
+    opts:["Returns shape (5,) unchanged","Converts to shape (5,1) — a column vector","Converts to shape (1,5) — a row vector","Removes the dimension"],
+    ans:1,
+    explain:"np.newaxis inserts a new axis at that position. arr[:,np.newaxis] adds axis at position 1, turning (5,) into (5,1) — a column vector."
+  },
+  {
+    code:"scores = np.array([88,72,95,60,78])\nprint(np.where(scores >= 80, 'Pass', 'Fail'))",
+    q:"What is printed?",
+    opts:["[True False True False False]","['Pass' 'Fail' 'Pass' 'Fail' 'Fail']","[88 72 95 60 78]","['Pass' 'Fail' 'Pass' 'Fail' 'Pass']"],
+    ans:1,
+    explain:"np.where(cond, x, y) returns 'Pass' where score≥80, 'Fail' otherwise. 88≥80→Pass, 72<80→Fail, 95≥80→Pass, 60<80→Fail, 78<80→Fail."
+  },
+  {
+    q:"Why is `np.vectorize()` NOT a true speedup tool?",
+    opts:["It uses GPU acceleration instead of CPU","It still loops through elements internally in Python — it only provides syntactic sugar","It duplicates the array in memory","It requires special data types"],
+    ans:1,
+    explain:"np.vectorize is primarily a convenience tool. Internally it still loops through elements, so it doesn't provide the C-speed benefits of true ufuncs. Use np.select or boolean indexing instead."
+  },
+  {
+    code:"m = np.arange(1,26).reshape(5,5)\nprint(m[np.ix_([0,2],[1,3])])",
+    q:"What shape is the result?",
+    opts:["(2,) — just two elements","(2,2) — a 2×2 sub-matrix","(4,) — four individual elements","(5,5) — unchanged"],
+    ans:1,
+    explain:"np.ix_([0,2],[1,3]) creates an open mesh selecting rows 0&2 and cols 1&3, giving a full 2×2 sub-matrix (not just 2 diagonal elements)."
+  },
+  {
+    q:"What does `np.expand_dims(arr, axis=0)` do to an array of shape (4,3)?",
+    opts:["(4,3) → (4,3) — no change","(4,3) → (1,4,3) — adds dimension at front","(4,3) → (4,3,1) — adds at back","(4,3) → (4,1,3) — adds in middle"],
+    ans:1,
+    explain:"expand_dims(arr, axis=0) inserts a new axis at position 0. (4,3) becomes (1,4,3). Use axis=1 for (4,1,3), axis=2 for (4,3,1)."
+  },
+  {
+    code:"a = np.array([[1,2],[3,4]])  # (2,2)\nb = np.array([[5,6],[7,8]])  # (2,2)\nprint(np.concatenate([a,b], axis=1).shape)",
+    q:"What is the shape?",
+    opts:["(4,2)","(2,4)","(4,4)","(2,2,2)"],
+    ans:1,
+    explain:"Concatenating along axis=1 (columns) places arrays side by side. Two (2,2) arrays → (2,4). axis=0 would give (4,2)."
+  },
+  {
+    q:"In the context of image processing, what is a grayscale image represented as?",
+    opts:["A 1D array of pixel values","A 2D array (height × width) of values 0–255","A 3D array (height × width × 1)","A list of tuples"],
+    ans:1,
+    explain:"A grayscale image is a 2D NumPy array of shape (H, W) where each value (0–255 for uint8) represents pixel brightness. Colour images add a 3rd dimension for channels: (H, W, 3)."
+  },
+  {
+    code:"prices = np.array([50,120,300,80,450])\nresult = np.where(prices>=300, prices*0.8, np.where(prices>=100, prices*0.9, prices))\nprint(result[0], result[1], result[4])",
+    q:"What is printed?",
+    opts:["50.0 108.0 360.0","40.0 96.0 360.0","50.0 120.0 450.0","50.0 108.0 450.0"],
+    ans:0,
+    explain:"prices[0]=50 < 100 → no discount → 50. prices[1]=120 ≥ 100 → 0.9×120=108. prices[4]=450 ≥ 300 → 0.8×450=360."
+  },
+  {
+    q:"What does `np.squeeze(arr)` do?",
+    opts:["Compresses the array to use less memory","Removes all axes of size 1","Sorts and removes duplicates","Flattens a 2D array to 1D"],
+    ans:1,
+    explain:"np.squeeze removes all dimensions of size 1. Shape (1,3,1,5) → (3,5). You can specify which axis to squeeze with the axis parameter."
+  },
+  {
+    q:"To normalise each COLUMN of a (100,5) matrix to mean=0, which keepdims call is correct?",
+    opts:["mean(axis=0, keepdims=True) → shape (1,5) — broadcasts over rows","mean(axis=1, keepdims=True) → shape (100,1) — broadcasts over cols","mean() → scalar","mean(axis=0) → shape (5,) — no keepdims needed"],
+    ans:0,
+    explain:"To normalise columns: compute column means with axis=0 → (1,5) with keepdims=True. Subtract from (100,5) broadcasts correctly across all 100 rows."
+  },
+  {
+    code:"x = np.array([1,2,3,4])[:,np.newaxis]  # (4,1)\ny = np.array([10,20,30])                # (3,)\nprint((x * y).shape)",
+    q:"What is the result shape?",
+    opts:["(4,)","(3,)","(4,3)","Error"],
+    ans:2,
+    explain:"x has shape (4,1) and y is treated as (1,3). Broadcasting: (4,1) * (1,3) → (4,3). This is an outer product — every element of x times every element of y."
+  }
+];
+
+let userAnswers = Array(questions.length).fill(null);
+let submitted = false;
+
+function buildQuiz(){
+  const c = document.getElementById('quiz-container');
+  c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');
+    card.className='q-card';
+    card.id=`q${i}`;
+    card.innerHTML=`
+      <div class="q-header"><div class="q-num">${i+1}</div>
+      <div><div class="q-text">${q.q}</div>${cb}</div></div>
+      <div class="q-options" id="opts${i}">
+        ${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}
+      </div>
+      <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{
+    el.classList.remove('selected');
+    if(j===oi)el.classList.add('selected');
+  });
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+
+function submitQuiz(){
+  if(submitted)return;
+  submitted=true;
+  let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`);
+    const od=document.getElementById(`opts${i}`);
+    const ed=document.getElementById(`exp${i}`);
+    const ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{
+      if(j===q.ans)el.classList.add('correct-ans');
+      else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');
+    });
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review broadcasting rules carefully and try again! 📚"],[50,75,"Getting there! Focus on shapes and axes. 💪"],[75,90,"Solid work — broadcasting is clicking! 🎉"],[90,101,"Outstanding! Day 3 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+
+function resetQuiz(){
+  submitted=false;
+  userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+
+function togglePhase(h){
+  const b=h.nextElementSibling;
+  const ch=h.querySelector('.chevron');
+  b.classList.toggle('open');
+  ch.classList.toggle('open');
+}
+
+function copyCode(btn){
+  const pre=btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy',1800);
+  });
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

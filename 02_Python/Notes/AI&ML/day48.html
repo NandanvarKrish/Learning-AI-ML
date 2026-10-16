@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 48 — OOP Practice: Build a Library System</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+.milestone{background:var(--ink); color:var(--paper); border-radius:8px; padding:28px; text-align:center; margin:24px 0;}
+.milestone .big{font-size:26px; font-family:var(--font-display); color:var(--accent-soft);}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.tag-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+.tag{font-family:var(--font-mono); font-size:10px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 8px; border-radius:3px;}
+.recap-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+.recap-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px 14px;}
+.recap-box .day{font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:bold; margin-bottom:4px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:10px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.progress-wrap{background:var(--ink); border-radius:8px; padding:20px; color:var(--paper); margin:16px 0;}
+.progress-bar-bg{background:#2a3442; border-radius:20px; height:14px; overflow:hidden; margin-top:10px;}
+.progress-bar-fill{background:var(--accent); height:100%; width:0%; transition:width 0.3s;}
+.progress-text{font-family:var(--font-mono); font-size:14px; margin-top:8px;}
+.self-check-btn{background:var(--accent); color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-size:12px; font-family:var(--font-body); margin-top:8px;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:260px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 48 of 210 · Phase 2 Complete</span>
+    <h1>OOP Practice: Build a Library System</h1>
+    <div class="subtitle">~2 hours · No new theory — build a small program from scratch</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="milestone">
+  <div class="big">Object-Oriented Programming Complete 🎉</div>
+  <p style="color:#cfc8b8; margin-top:8px;">Classes, constructors, inheritance — all yours. Today, put it all together.</p>
+</div>
+
+<section>
+  <h2><span class="num">01</span> Recap — Days 45–47</h2>
+  <div class="recap-grid">
+    <div class="recap-box"><div class="day">Day 45</div>class = blueprint; object = instance; self = "this object"</div>
+    <div class="recap-box"><div class="day">Day 46</div>__init__ sets attributes automatically at creation</div>
+    <div class="recap-box"><div class="day">Day 47</div>class Child(Parent): inherits; super().__init__() reuses parent setup</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Guided project: a small Library System</h2>
+  <p>Build this step by step in the console below. The goal: a <code>Book</code> class, an <code>EBook</code> subclass that extends it, and a simple checkout system.</p>
+
+  <div class="panel">
+    <p><strong>Step 1 — the Book class</strong></p>
+    <div class="code">class Book:
+    def __init__(self, title, author, copies):
+        self.title = title
+        self.author = author
+        self.copies = copies
+
+    def checkout(self):
+        if self.copies > 0:
+            self.copies = self.copies - 1
+            print(self.title + " checked out. " + str(self.copies) + " left.")
+        else:
+            print(self.title + " is out of stock.")</div>
+  </div>
+
+  <div class="panel">
+    <p><strong>Step 2 — EBook inherits from Book, adds file_size</strong></p>
+    <div class="code">class EBook(Book):
+    def __init__(self, title, author, copies, file_size_mb):
+        super().__init__(title, author, copies)
+        self.file_size_mb = file_size_mb
+
+    def checkout(self):
+        print(self.title + " (ebook, " + str(self.file_size_mb) + "MB) downloaded instantly.")</div>
+    <p>Notice EBook overrides <code>checkout()</code> completely (ebooks never run out of "copies"), while still reusing Book's <code>__init__</code> via <code>super()</code> for the shared fields.</p>
+  </div>
+
+  <div class="panel">
+    <p><strong>Step 3 — use both together</strong></p>
+    <div class="code">b1 = Book("Dune", "Frank Herbert", 2)
+e1 = EBook("Dune", "Frank Herbert", 999, 4.2)
+
+b1.checkout()   # Dune checked out. 1 left.
+b1.checkout()   # Dune checked out. 0 left.
+b1.checkout()   # Dune is out of stock.
+e1.checkout()   # Dune (ebook, 4.2MB) downloaded instantly.</div>
+  </div>
+
+  <p>Type all three steps into the console below and run it — then try extending it yourself (e.g., add an <code>AudioBook</code> subclass with a <code>narrator</code> attribute).</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Self-Assessment Tracker</h2>
+  <div class="progress-wrap">
+    <div class="progress-text" id="progressText">0 / 10 attempted</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> 10 Mixed Problems — Days 45–47</h2>
+  <div id="mixed"></div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Try it yourself — Full Practice Console</h2>
+  <div class="solver">
+    <h3>Build the Library System here, or try your own class hierarchy</h3>
+    <textarea id="codeInput">class Book:
+    def __init__(self, title, author, copies):
+        self.title = title
+        self.author = author
+        self.copies = copies
+
+    def checkout(self):
+        if self.copies > 0:
+            self.copies = self.copies - 1
+            print(self.title + " checked out. " + str(self.copies) + " left.")
+        else:
+            print(self.title + " is out of stock.")
+
+class EBook(Book):
+    def __init__(self, title, author, copies, file_size_mb):
+        super().__init__(title, author, copies)
+        self.file_size_mb = file_size_mb
+
+    def checkout(self):
+        print(self.title + " (ebook, " + str(self.file_size_mb) + "MB) downloaded instantly.")
+
+b1 = Book("Dune", "Frank Herbert", 2)
+e1 = EBook("Dune", "Frank Herbert", 999, 4.2)
+
+b1.checkout()
+b1.checkout()
+b1.checkout()
+e1.checkout()</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Readiness Check (10 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Days 49–65 shift into Python mini-projects and the core data libraries — starting with NumPy and Pandas, the tools you'll use to load and manipulate every real dataset from here on.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 48 of 210 · AI & ML Study Plan · Phase 2: Object-Oriented Programming</div>
+</footer>
+
+<script>
+const mixedData = [
+  { tag: "Day 45 · Classes", q: "Write an empty class 'Shape', create an instance called 's', set s.name='Circle', print it.", steps: 'class Shape:\n    pass\ns = Shape()\ns.name = "Circle"\nprint(s.name)' },
+  { tag: "Day 45 · Methods", q: "Add a method 'describe' to Shape that prints self.name.", steps: "class Shape:\n    def describe(self):\n        print(self.name)" },
+  { tag: "Day 46 · Constructor", q: "Rewrite Shape with __init__ setting self.name directly at creation.", steps: "class Shape:\n    def __init__(self, name):\n        self.name = name" },
+  { tag: "Day 46 · Defaults", q: "Add a default parameter 'color=\"black\"' to Shape's __init__.", steps: 'def __init__(self, name, color="black"):\n    self.name = name\n    self.color = color' },
+  { tag: "Day 47 · Inheritance", q: "Write a Square class that inherits from Shape.", steps: "class Square(Shape):\n    pass" },
+  { tag: "Day 47 · super()", q: "Give Square its own __init__ that adds self.side_length, reusing Shape's setup via super().", steps: "class Square(Shape):\n    def __init__(self, name, side_length):\n        super().__init__(name)\n        self.side_length = side_length" },
+  { tag: "Day 47 · Overriding", q: "Override 'describe' in Square to print name AND side_length.", steps: 'def describe(self):\n    print(self.name + " with side " + str(self.side_length))' },
+  { tag: "Mixed · Full flow", q: "Create a Square named 'MySquare' with side_length=5, then call describe() on it.", steps: 'sq = Square("MySquare", 5)\nsq.describe()   # MySquare with side 5' },
+  { tag: "Mixed · Reuse", q: "Why does Square not need to redefine __init__'s 'name' handling logic?", steps: "Because super().__init__(name) reuses Shape's existing logic for setting self.name — no need to duplicate that line in Square." },
+  { tag: "Mixed · Design", q: "Would 'Wheel inherits from Car' be good design? Why or why not?", steps: "No — a Car HAS wheels (composition), it isn't a type of Wheel. This should be modeled with Car holding Wheel objects as attributes, not inheritance." }
+];
+
+let attempted = 0;
+const total = mixedData.length;
+const progressText = document.getElementById('progressText');
+const progressFill = document.getElementById('progressFill');
+function updateProgress(){
+  progressText.textContent = `${attempted} / ${total} attempted`;
+  progressFill.style.width = (attempted/total*100) + '%';
+}
+const mixedEl = document.getElementById('mixed');
+mixedData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  let marked = false;
+  box.innerHTML = `
+    <div class="tag-row"><span class="tag">${item.tag}</span></div>
+    <p><strong>${i+1}.</strong> ${item.q}</p>
+    <details>
+      <summary>Reveal Solution</summary>
+      <div class="details-body">
+        <div class="code">${item.steps.replace(/\n/g,'\n')}</div>
+        <div>
+          <button class="self-check-btn" data-result="right">✓ Got it right</button>
+          <button class="self-check-btn" data-result="wrong" style="background:var(--bad);">✗ Missed it</button>
+        </div>
+      </div>
+    </details>
+  `;
+  box.querySelectorAll('.self-check-btn').forEach(btn => {
+    btn.onclick = () => {
+      if(!marked){ marked = true; attempted++; updateProgress(); }
+      box.querySelectorAll('.self-check-btn').forEach(b => b.style.opacity = '0.4');
+      btn.style.opacity = '1';
+      btn.style.fontWeight = 'bold';
+    };
+  });
+  mixedEl.appendChild(box);
+});
+
+// --- Interpreter (same engine as Day 47: classes, inheritance, super()) ---
+let classes = {};
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val && val.__isInstance) return `<${val.__class} object>`;
+  if(Array.isArray(val)) return '[' + val.map(v => typeof v==='string'?`'${v}'`:pyRepr(v)).join(', ') + ']';
+  return String(val);
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || (v && v.__isInstance)) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function paramDefault(p){
+  const [name, def] = p.split('=');
+  if(def === undefined) return {name: p.trim(), hasDefault:false};
+  return {name: name.trim(), hasDefault:true, defaultExpr: def.trim()};
+}
+function resolveDefault(defExpr, vars){
+  const t = defExpr.trim();
+  if(t === 'True') return true;
+  if(t === 'False') return false;
+  if((t.startsWith('"')&&t.endsWith('"'))||(t.startsWith("'")&&t.endsWith("'"))) return t.slice(1,-1);
+  if(!isNaN(parseFloat(t))) return t.includes('.')?parseFloat(t):parseInt(t);
+  return vars.hasOwnProperty(t) ? vars[t] : t;
+}
+function findMethod(className, methodName){
+  let cur = className;
+  while(cur){
+    const cls = classes[cur];
+    if(!cls) return null;
+    if(cls.methods[methodName]) return {method: cls.methods[methodName], owner: cur};
+    cur = cls.parent;
+  }
+  return null;
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+  let m = arg.match(/^super\(\)\.(\w+)\((.*)\)$/);
+  if(m && vars['self']) return callSuper(vars['self'], m[1], m[2], vars);
+  m = arg.match(/^(\w+)\((.*)\)$/);
+  if(m && classes[m[1]]){
+    const inst = {__isInstance:true, __class:m[1], attrs:{}};
+    const found = findMethod(m[1], '__init__');
+    if(found) callMethod(inst, '__init__', m[2], vars);
+    else if(m[2].trim() !== '') throw new Error(`TypeError: ${m[1]}() takes no arguments`);
+    return inst;
+  }
+  m = arg.match(/^(\w+)\.(\w+)\((.*)\)$/);
+  if(m && vars[m[1]] && vars[m[1]].__isInstance) return callMethod(vars[m[1]], m[2], m[3], vars);
+  m = arg.match(/^(\w+)\.(\w+)$/);
+  if(m && vars[m[1]] && vars[m[1]].__isInstance){
+    const inst = vars[m[1]];
+    if(!inst.attrs.hasOwnProperty(m[2])) throw new Error(`AttributeError: '${inst.__class}' object has no attribute '${m[2]}'`);
+    return inst.attrs[m[2]];
+  }
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p => evalComplex(p, vars));
+  }
+  const strMatch = arg.match(/^str\((.+)\)$/);
+  if(strMatch) return pyRepr(evalComplex(strMatch[1], vars)).replace(/^'(.*)'$/, '$1');
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch) return vars[lenMatch[1]].length;
+  return evalGeneral(arg, vars);
+}
+function bindAndRun(method, instance, argsStr, callerVars){
+  const argExprs = splitTopLevel(argsStr, ',').filter(s=>s.trim()!=='');
+  const localVars = Object.assign({}, callerVars);
+  localVars['self'] = instance;
+  const params = method.params.slice(1).map(p => paramDefault(p));
+  for(let idx=0; idx<params.length; idx++){
+    const p = params[idx];
+    if(idx < argExprs.length) localVars[p.name] = evalComplex(argExprs[idx], callerVars);
+    else if(p.hasDefault) localVars[p.name] = resolveDefault(p.defaultExpr, callerVars);
+    else throw new Error(`TypeError: missing required argument: '${p.name}'`);
+  }
+  const output = [];
+  let returnValue = null;
+  try{ execBlock(method.lines, method.bStart, method.bodyIndent, localVars, output, {count:0}); }
+  catch(sig){ if(sig && sig.__return) returnValue = sig.value; else throw sig; }
+  return {returnValue, output};
+}
+function callMethod(instance, methodName, argsStr, callerVars){
+  const found = findMethod(instance.__class, methodName);
+  if(!found) throw new Error(`AttributeError: '${instance.__class}' object has no attribute '${methodName}'`);
+  return bindAndRun(found.method, instance, argsStr, callerVars);
+}
+function callSuper(instance, methodName, argsStr, callerVars){
+  const ownClass = classes[instance.__class];
+  const parentName = ownClass.parent;
+  if(!parentName) throw new Error(`AttributeError: no parent class for '${instance.__class}'`);
+  const found = findMethod(parentName, methodName);
+  if(!found) throw new Error(`AttributeError: parent has no attribute '${methodName}'`);
+  return bindAndRun(found.method, instance, argsStr, callerVars);
+}
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+function execLine(line, vars, output){
+  if(line.match(/^return(\s|$)/)){
+    const exprPart = line.replace(/^return\s*/, '').trim();
+    const val = exprPart === '' ? null : evalComplex(exprPart, vars);
+    const sig = new Error('__return__'); sig.__return = true; sig.value = val; throw sig;
+  }
+  if(line === 'pass') return;
+  const superCall = line.match(/^super\(\)\.(\w+)\((.*)\)$/);
+  if(superCall && vars['self']){
+    const result = callSuper(vars['self'], superCall[1], superCall[2], vars);
+    result.output.forEach(o => output.push(o));
+    return;
+  }
+  const attrAssign = line.match(/^(\w+)\.(\w+)\s*=\s*(.+)$/);
+  if(attrAssign && vars[attrAssign[1]] && vars[attrAssign[1]].__isInstance){
+    vars[attrAssign[1]].attrs[attrAssign[2]] = evalComplex(attrAssign[3], vars);
+    return;
+  }
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  const bareMethodCall = line.match(/^(\w+)\.(\w+)\((.*)\)$/);
+  if(printMatch){
+    const parts = splitTopLevel(printMatch[1], ',');
+    output.push(parts.map(p => {
+      let v = evalComplex(p, vars);
+      if(v && typeof v === 'object' && v.hasOwnProperty('returnValue')) v = v.returnValue;
+      return typeof v === 'string' ? v : pyRepr(v);
+    }).join(' '));
+  } else if(bareMethodCall && vars[bareMethodCall[1]] && vars[bareMethodCall[1]].__isInstance){
+    const result = callMethod(vars[bareMethodCall[1]], bareMethodCall[2], bareMethodCall[3], vars);
+    result.output.forEach(o => output.push(o));
+  } else if(assignMatch){
+    let v = evalComplex(assignMatch[2], vars);
+    if(v && typeof v === 'object' && v.hasOwnProperty('returnValue')){
+      v.output.forEach(o => output.push(o));
+      v = v.returnValue;
+    }
+    vars[assignMatch[1]] = v;
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+    const classMatch = trimmed.match(/^class (\w+)(\((\w+)\))?:$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    if(classMatch){
+      const className = classMatch[1];
+      const parentName = classMatch[3] || null;
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      const methods = {};
+      let k = bStart;
+      while(k < bEnd){
+        const line2 = lines[k];
+        if(line2.trim()===''){ k++; continue; }
+        const defMatch = line2.trim().match(/^def (\w+)\((.*)\):$/);
+        if(defMatch && getIndent(line2) === baseIndent+4){
+          const mName = defMatch[1];
+          const params = defMatch[2].split(',').map(s=>s.trim()).filter(s=>s!=='');
+          const mStart = k+1, mEnd = findBlockExtent(lines, mStart, baseIndent+4);
+          methods[mName] = {params, bStart:mStart, bEnd:mEnd, bodyIndent: baseIndent+8, lines};
+          k = mEnd;
+        } else k++;
+      }
+      classes[className] = {methods, lines, parent: parentName};
+      i = bEnd;
+      continue;
+    } else if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else {
+      try{ execLine(trimmed, vars, output); }
+      catch(err){
+        if(err && err.__return) throw err;
+        output.push(`<span class="error">${escapeHtml(err.message || 'Error')}</span>`);
+      }
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  classes = {};
+  const output = [];
+  try{ execBlock(lines, 0, 0, vars, output, {count:0}); }
+  catch(err){ if(!(err && err.__return)) output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`); }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const readinessQuiz = [
+  { q: "What is the difference between a class and an object?", opts: ["No difference","A class is the blueprint; an object is one instance built from it","An object is always bigger","A class can only be used once"], correct: 1, explain: "Classes define structure/behavior; objects are actual instances." },
+  { q: "What does __init__ do?", opts: ["Deletes an object","Runs automatically to set up an object's initial attributes","Only runs when explicitly called","Nothing, it's optional syntax with no effect"], correct: 1, explain: "It's the constructor, run automatically at creation." },
+  { q: "class B(A): means:", opts: ["B and A are unrelated","B inherits from A","A inherits from B","A syntax error"], correct: 1, explain: "B is the child, A is the parent." },
+  { q: "What does super().__init__() do inside a child's __init__?", opts: ["Nothing","Calls the parent class's __init__ to reuse its setup","Deletes the parent class","Creates an infinite loop"], correct: 1, explain: "It explicitly reuses the parent's constructor logic." },
+  { q: "class A:\n    def x(self): print('A')\nclass B(A):\n    def x(self): print('B')\nB().x() prints:", opts: ["A","B","Both","Error"], correct: 1, explain: "B's own method overrides A's." },
+  { q: "class A:\n    def x(self): print('A')\nclass B(A): pass\nB().x() prints:", opts: ["A","B","Nothing","Error"], correct: 0, explain: "B inherits A's method unchanged since it doesn't override it." },
+  { q: "Forgetting 'self' as a method's first parameter causes:", opts: ["Nothing, it's optional","An error, since Python automatically passes the object as first argument","Faster code","The method to run twice"], correct: 1, explain: "self is required for every method." },
+  { q: "A Car 'has-a' Engine is best modeled with:", opts: ["Inheritance (Car(Engine))","Composition — Car holds an Engine object as an attribute","Neither works","Both are identical"], correct: 1, explain: "Has-a relationships fit composition, not inheritance." },
+  { q: "Why does scikit-learn's consistent .fit() interface across different models relate to today's topics?", opts: [
+      "It's unrelated to OOP",
+      "Different model classes likely share common functionality via inheritance from a base class",
+      "scikit-learn doesn't use classes",
+      "Only true for one specific model"
+    ], correct: 1, explain: "This is exactly the pattern practiced today — shared base behavior via inheritance." },
+  { q: "What comes next after OOP in this study plan?", opts: [
+      "Deep learning directly",
+      "Python mini-projects, then NumPy and Pandas for real data work",
+      "Nothing, the plan ends here",
+      "Repeating Phase 1 math"
+    ], correct: 1, explain: "Days 49+ move into mini-projects and the core data science libraries." }
+];
+const quizEl = document.getElementById('quiz');
+readinessQuiz.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q.replace(/\n/g,'<br>')}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

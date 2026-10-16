@@ -1,0 +1,2903 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Day 11 — AI Task: Error Handling · try/except/finally</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #f0fdf4;
+        --paper: #fff;
+        --p2: #dcfce7;
+        --ink: #052010;
+        --ink2: #1a4028;
+        --ink3: #5a9070;
+        --rule: #bbf7d0;
+        --green: #15803d;
+        --gs: #f0fdf4;
+        --gb: #86efac;
+        --blue: #0369a1;
+        --bs: #e0f2fb;
+        --bb: #7dd3fc;
+        --amber: #b45309;
+        --as: #fffbeb;
+        --ab: #fde68a;
+        --purple: #6d28d9;
+        --ps: #f5f3ff;
+        --pb: #c4b5fd;
+        --red: #be123c;
+        --rs: #fff1f2;
+        --rb: #fecdd3;
+        --teal: #0d9488;
+        --ts: #f0fdfa;
+        --tb: #99f6e4;
+        --sh: 0 1px 4px rgba(5, 32, 16, 0.07), 0 4px 18px rgba(5, 32, 16, 0.07);
+        --r: 14px;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "DM Sans", sans-serif;
+        font-size: 15px;
+        line-height: 1.7;
+        background-image:
+          radial-gradient(circle at 90% 5%, #bbf7d055, transparent 42%),
+          radial-gradient(circle at 5% 92%, #6ee7b740, transparent 40%);
+        min-height: 100vh;
+      }
+
+      .bar {
+        background: var(--paper);
+        border-bottom: 1px solid var(--rule);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 1px 6px rgba(5, 32, 16, 0.06);
+      }
+      .bar-in {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 20px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .bl {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .bdg {
+        background: var(--green);
+        color: #fff;
+        font-family: "DM Mono", monospace;
+        font-size: 0.67rem;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 4px;
+      }
+      .btl {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--ink2);
+      }
+      .tmr {
+        font-family: "DM Mono", monospace;
+        font-size: 0.77rem;
+        color: var(--ink3);
+        background: var(--p2);
+        padding: 5px 13px;
+        border-radius: 99px;
+        border: 1px solid var(--rule);
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+      }
+      .tmr.on {
+        background: var(--gs);
+        border-color: var(--gb);
+        color: var(--green);
+      }
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 40px 20px 90px;
+      }
+      .bc {
+        font-family: "DM Mono", monospace;
+        font-size: 0.68rem;
+        color: var(--ink3);
+        margin-bottom: 10px;
+      }
+      h1 {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: clamp(1.9rem, 5vw, 3rem);
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 10px;
+      }
+      h1 em {
+        font-style: italic;
+        color: var(--green);
+      }
+      .hsub {
+        font-size: 0.92rem;
+        color: var(--ink2);
+        max-width: 590px;
+        line-height: 1.75;
+        margin-bottom: 16px;
+      }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 28px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: 99px;
+        padding: 4px 13px;
+        font-size: 0.73rem;
+        font-family: "DM Mono", monospace;
+        color: var(--ink2);
+      }
+      .prog {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: var(--r);
+        padding: 13px 20px;
+        margin-bottom: 22px;
+        box-shadow: var(--sh);
+      }
+      .prog-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.69rem;
+        font-family: "DM Mono", monospace;
+        color: var(--ink3);
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .prog-track {
+        height: 7px;
+        background: var(--rule);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .prog-fill {
+        height: 100%;
+        width: 3%;
+        background: linear-gradient(90deg, var(--green), #34d399);
+        border-radius: 99px;
+        transition: width 0.7s ease;
+      }
+      .recap {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-left: 3px solid var(--green);
+        border-radius: var(--r);
+        padding: 13px 18px;
+        margin-bottom: 22px;
+        font-size: 0.87rem;
+        color: var(--ink2);
+        line-height: 1.8;
+      }
+      .recap code {
+        font-family: "DM Mono", monospace;
+        font-size: 0.82rem;
+        background: var(--p2);
+        padding: 1px 6px;
+        border-radius: 4px;
+        color: var(--green);
+      }
+      .sh {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 30px 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--rule);
+      }
+      .sh-ic {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+      .sh-ttl {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.22rem;
+        font-weight: 700;
+      }
+      .sh-sub {
+        font-size: 0.73rem;
+        color: var(--ink3);
+        font-family: "DM Mono", monospace;
+        margin-top: 2px;
+      }
+      .sh-bdg {
+        margin-left: auto;
+        font-family: "DM Mono", monospace;
+        font-size: 0.67rem;
+        color: var(--ink3);
+        background: var(--p2);
+        padding: 4px 12px;
+        border-radius: 99px;
+        border: 1px solid var(--rule);
+        white-space: nowrap;
+      }
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: var(--r);
+        padding: 24px 28px;
+        margin-bottom: 16px;
+        box-shadow: var(--sh);
+      }
+      .ctag {
+        display: inline-flex;
+        align-items: center;
+        font-family: "DM Mono", monospace;
+        font-size: 0.63rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+      }
+      .tg {
+        background: var(--gs);
+        color: var(--green);
+        border: 1px solid var(--gb);
+      }
+      .tb {
+        background: var(--bs);
+        color: var(--blue);
+        border: 1px solid var(--bb);
+      }
+      .ta {
+        background: var(--as);
+        color: var(--amber);
+        border: 1px solid var(--ab);
+      }
+      .tp {
+        background: var(--ps);
+        color: var(--purple);
+        border: 1px solid var(--pb);
+      }
+      .tt {
+        background: var(--ts);
+        color: var(--teal);
+        border: 1px solid var(--tb);
+      }
+      .card h2 {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        line-height: 1.3;
+      }
+      .card p {
+        font-size: 0.9rem;
+        color: var(--ink2);
+        line-height: 1.8;
+        margin-bottom: 10px;
+      }
+      .card p:last-child {
+        margin-bottom: 0;
+      }
+      .cb {
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.86rem;
+        line-height: 1.7;
+        margin: 12px 0;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .cb i {
+        flex-shrink: 0;
+        margin-top: 1px;
+        font-style: normal;
+      }
+      .cbb {
+        background: var(--bs);
+        border: 1px solid var(--bb);
+        color: var(--blue);
+      }
+      .cbg {
+        background: var(--gs);
+        border: 1px solid var(--gb);
+        color: #166534;
+      }
+      .cba {
+        background: var(--as);
+        border: 1px solid var(--ab);
+        color: #92400e;
+      }
+      .cbp {
+        background: var(--ps);
+        border: 1px solid var(--pb);
+        color: var(--purple);
+      }
+      .cbt {
+        background: var(--ts);
+        border: 1px solid var(--tb);
+        color: var(--teal);
+      }
+      .cbr {
+        background: var(--rs);
+        border: 1px solid var(--rb);
+        color: var(--red);
+      }
+      .cw {
+        background: #052010;
+        border-radius: 10px;
+        margin: 14px 0;
+        overflow: hidden;
+      }
+      .cbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 14px;
+        background: #0a2818;
+        border-bottom: 1px solid #164030;
+      }
+      .cdots {
+        display: flex;
+        gap: 5px;
+      }
+      .cd {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .cdr {
+        background: #ef4444;
+      }
+      .cdy {
+        background: #f59e0b;
+      }
+      .cdg {
+        background: #22c55e;
+      }
+      .clang {
+        font-family: "DM Mono", monospace;
+        font-size: 0.63rem;
+        color: #4a9060;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .cbody {
+        padding: 18px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.83rem;
+        line-height: 2;
+        overflow-x: auto;
+        color: #c8f0d8;
+      }
+      .cm {
+        color: #2a6040;
+        font-style: italic;
+      }
+      .kw {
+        color: #4ade80;
+      }
+      .fn {
+        color: #67e8f9;
+      }
+      .st {
+        color: #86efac;
+      }
+      .nm {
+        color: #fbbf24;
+      }
+      .vr {
+        color: #c8f0d8;
+      }
+      .op {
+        color: #4a9060;
+      }
+      .er {
+        color: #f87171;
+      }
+
+      /* flow diagram */
+      .flow {
+        display: grid;
+        grid-template-columns: 1fr 24px 1fr 24px 1fr;
+        gap: 0;
+        margin: 16px 0;
+        align-items: center;
+      }
+      .flow-box {
+        border-radius: 10px;
+        padding: 14px;
+        text-align: center;
+        border: 1.5px solid;
+      }
+      .flow-box.ftry {
+        background: var(--bs);
+        border-color: var(--bb);
+        color: var(--blue);
+      }
+      .flow-box.fexc {
+        background: var(--rs);
+        border-color: var(--rb);
+        color: var(--red);
+      }
+      .flow-box.ffin {
+        background: var(--gs);
+        border-color: var(--gb);
+        color: var(--green);
+      }
+      .flow-icon {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+        display: block;
+      }
+      .flow-title {
+        font-weight: 700;
+        font-size: 0.88rem;
+        margin-bottom: 3px;
+        font-family: "Fraunces", Georgia, serif;
+      }
+      .flow-desc {
+        font-size: 0.72rem;
+        line-height: 1.4;
+      }
+      .flow-arr {
+        text-align: center;
+        color: var(--ink3);
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+
+      /* exception grid */
+      .exc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+        gap: 10px;
+        margin: 14px 0;
+      }
+      .exc-card {
+        background: var(--paper);
+        border: 1.5px solid var(--rule);
+        border-radius: 10px;
+        padding: 13px 14px;
+        transition: transform 0.2s;
+      }
+      .exc-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--gb);
+      }
+      .exc-name {
+        font-family: "DM Mono", monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--red);
+        margin-bottom: 4px;
+      }
+      .exc-cause {
+        font-size: 0.74rem;
+        color: var(--ink2);
+        margin-bottom: 5px;
+        line-height: 1.4;
+      }
+      .exc-eg {
+        font-family: "DM Mono", monospace;
+        font-size: 0.67rem;
+        background: var(--rs);
+        color: var(--red);
+        padding: 2px 7px;
+        border-radius: 4px;
+        display: inline-block;
+      }
+
+      /* live demo */
+      .try-demo {
+        background: var(--p2);
+        border: 1.5px solid var(--rule);
+        border-radius: var(--r);
+        padding: 22px;
+        margin: 14px 0;
+      }
+      .try-demo-title {
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--ink3);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 14px;
+      }
+      .td-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .td-lbl {
+        font-family: "DM Mono", monospace;
+        font-size: 0.75rem;
+        color: var(--ink3);
+        min-width: 100px;
+      }
+      .td-inp {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1.5px solid var(--rule);
+        border-radius: 8px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.84rem;
+        color: var(--ink);
+        background: var(--paper);
+        outline: none;
+        transition: border-color 0.2s;
+        min-width: 120px;
+      }
+      .td-inp:focus {
+        border-color: var(--green);
+      }
+      .td-select {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1.5px solid var(--rule);
+        border-radius: 8px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.84rem;
+        color: var(--ink);
+        background: var(--paper);
+        outline: none;
+        min-width: 120px;
+        transition: border-color 0.2s;
+      }
+      .td-select:focus {
+        border-color: var(--green);
+      }
+      .td-out {
+        margin-top: 12px;
+        background: var(--paper);
+        border: 1.5px solid var(--rule);
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.83rem;
+        line-height: 2;
+        white-space: pre-wrap;
+        display: none;
+        min-height: 52px;
+      }
+      .td-out.show {
+        display: block;
+      }
+      .ok {
+        color: var(--green);
+        font-weight: 700;
+      }
+      .err {
+        color: var(--red);
+        font-weight: 700;
+      }
+      .fin {
+        color: var(--purple);
+        font-weight: 700;
+      }
+      .warn {
+        color: var(--amber);
+        font-weight: 700;
+      }
+
+      /* pipeline sim */
+      .pipeline-sim {
+        background: var(--paper);
+        border: 1.5px solid var(--rule);
+        border-radius: var(--r);
+        overflow: hidden;
+        margin: 14px 0;
+      }
+      .ps-head {
+        background: #f0fdf4;
+        border-bottom: 1px solid var(--rule);
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .ps-title {
+        font-family: "DM Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--ink2);
+        font-weight: 600;
+        letter-spacing: 0.07em;
+      }
+      .ps-body {
+        padding: 16px 20px;
+      }
+      .ps-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 14px;
+        border: 1.5px solid var(--rule);
+        border-radius: 9px;
+        margin-bottom: 7px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+      }
+      .ps-row.processing {
+        background: var(--as);
+        border-color: var(--ab);
+        color: var(--amber);
+      }
+      .ps-row.success {
+        background: var(--gs);
+        border-color: var(--gb);
+        color: var(--green);
+      }
+      .ps-row.failed {
+        background: var(--rs);
+        border-color: var(--rb);
+        color: var(--red);
+      }
+      .ps-row.idle {
+        background: var(--bg);
+        color: var(--ink3);
+      }
+      .ps-num {
+        font-weight: 700;
+        min-width: 70px;
+        flex-shrink: 0;
+      }
+      .ps-val {
+        flex: 1;
+      }
+      .ps-status {
+        min-width: 80px;
+        text-align: right;
+        font-size: 0.72rem;
+      }
+      .ps-summary {
+        margin-top: 12px;
+        padding: 12px 16px;
+        background: var(--p2);
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.82rem;
+        color: var(--ink2);
+        display: none;
+        line-height: 1.9;
+      }
+      .ps-summary.show {
+        display: block;
+      }
+
+      /* playground */
+      .pg {
+        background: var(--paper);
+        border: 1.5px solid var(--rule);
+        border-radius: var(--r);
+        overflow: hidden;
+        margin: 14px 0;
+      }
+      .pgh {
+        background: #f0fdf4;
+        border-bottom: 1px solid var(--rule);
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pgt {
+        font-family: "DM Mono", monospace;
+        font-size: 0.71rem;
+        color: var(--ink2);
+        font-weight: 500;
+        letter-spacing: 0.07em;
+      }
+      .pgb {
+        display: flex;
+        gap: 7px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        font-family: "DM Sans", sans-serif;
+        transition: all 0.2s;
+      }
+      .btn-g {
+        background: var(--green);
+        color: #fff;
+      }
+      .btn-g:hover {
+        background: #116630;
+      }
+      .btn-b {
+        background: var(--blue);
+        color: #fff;
+      }
+      .btn-b:hover {
+        background: #025a87;
+      }
+      .btn-o {
+        background: var(--paper);
+        color: var(--ink2);
+        border: 1.5px solid var(--rule);
+      }
+      .btn-o:hover {
+        background: var(--p2);
+      }
+      .pge {
+        padding: 14px 18px;
+        background: #f8fefb;
+      }
+      .pge textarea {
+        width: 100%;
+        border: 1.5px solid var(--rule);
+        border-radius: 8px;
+        padding: 11px 14px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.83rem;
+        background: var(--paper);
+        color: var(--ink);
+        outline: none;
+        resize: vertical;
+        min-height: 140px;
+        transition: border-color 0.2s;
+        line-height: 1.8;
+      }
+      .pge textarea:focus {
+        border-color: var(--green);
+      }
+      .out-lbl {
+        font-size: 0.63rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--ink3);
+        margin-bottom: 4px;
+        font-family: "DM Mono", monospace;
+      }
+      .pgo {
+        border-top: 1px solid var(--rule);
+        padding: 12px 18px;
+        background: #f2fdf5;
+        font-family: "DM Mono", monospace;
+        font-size: 0.82rem;
+        min-height: 44px;
+        white-space: pre-wrap;
+        line-height: 1.8;
+        color: var(--ink2);
+      }
+      .pgo.ok {
+        color: var(--green);
+      }
+      .pgo.err {
+        color: var(--red);
+      }
+
+      /* task list */
+      .tlist {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .ti {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 11px 14px;
+        background: var(--bg);
+        border: 1.5px solid var(--rule);
+        border-radius: 9px;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+      }
+      .ti:hover {
+        border-color: var(--gb);
+        background: var(--gs);
+      }
+      .ti.done {
+        background: var(--gs);
+        border-color: var(--gb);
+      }
+      .tcb {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #6ab88a;
+        border-radius: 5px;
+        flex-shrink: 0;
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        background: var(--paper);
+        font-size: 0.72rem;
+        color: #fff;
+        font-weight: 700;
+      }
+      .ti.done .tcb {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      .tlbl {
+        font-size: 0.88rem;
+        color: var(--ink2);
+        line-height: 1.55;
+      }
+      .ti.done .tlbl {
+        color: var(--green);
+        text-decoration: line-through;
+      }
+      .thint {
+        font-size: 0.75rem;
+        color: var(--ink3);
+        margin-top: 2px;
+        display: block;
+      }
+
+      /* scenarios */
+      .scenario {
+        background: var(--p2);
+        border: 1.5px solid var(--rule);
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin-bottom: 12px;
+      }
+      .sc-q {
+        font-size: 0.91rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 10px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+      .sc-opts {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .sc-opt {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 13px;
+        border: 1.5px solid var(--rule);
+        border-radius: 9px;
+        cursor: pointer;
+        font-size: 0.84rem;
+        color: var(--ink2);
+        transition: all 0.2s;
+        user-select: none;
+        background: var(--paper);
+      }
+      .sc-opt:hover:not(.done) {
+        background: var(--gs);
+        border-color: var(--gb);
+        color: var(--green);
+      }
+      .sc-opt.cor {
+        background: var(--gs);
+        border-color: var(--gb);
+        color: var(--green);
+        font-weight: 600;
+      }
+      .sc-opt.wrg {
+        background: var(--rs);
+        border-color: var(--rb);
+        color: var(--red);
+      }
+      .sc-opt.done {
+        cursor: default;
+      }
+      .sc-l {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: var(--p2);
+        border: 1.5px solid var(--rule);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "DM Mono", monospace;
+        font-size: 0.67rem;
+        font-weight: 600;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .sc-opt.cor .sc-l {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+      }
+      .sc-opt.wrg .sc-l {
+        background: var(--red);
+        border-color: var(--red);
+        color: #fff;
+      }
+      .sc-exp {
+        margin-top: 9px;
+        padding: 9px 13px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        line-height: 1.65;
+        display: none;
+      }
+      .sc-exp.show {
+        display: block;
+      }
+      .sc-exp.ok {
+        background: var(--gs);
+        border: 1px solid var(--gb);
+        color: #166534;
+      }
+      .sc-exp.no {
+        background: var(--rs);
+        border: 1px solid var(--rb);
+        color: var(--red);
+      }
+
+      /* AI chat */
+      .aic {
+        background: var(--paper);
+        border: 1.5px solid var(--rule);
+        border-radius: var(--r);
+        overflow: hidden;
+        margin: 14px 0;
+      }
+      .aic-hd {
+        background: linear-gradient(135deg, #15803d, #059669);
+        color: #fff;
+        padding: 13px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .aic-av {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+      }
+      .aic-msgs {
+        padding: 14px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+        max-height: 340px;
+        overflow-y: auto;
+        background: #f8fefb;
+      }
+      .msg {
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+      }
+      .msg.user {
+        flex-direction: row-reverse;
+      }
+      .bbl {
+        max-width: 82%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.86rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+      .msg.ai .bbl {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        color: var(--ink2);
+        border-radius: 12px 12px 12px 3px;
+      }
+      .msg.user .bbl {
+        background: var(--green);
+        color: #fff;
+        border-radius: 12px 12px 3px 12px;
+      }
+      .m-av {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+      }
+      .msg.ai .m-av {
+        background: var(--gs);
+        border: 1px solid var(--gb);
+      }
+      .msg.user .m-av {
+        background: var(--p2);
+        border: 1px solid var(--rule);
+      }
+      .aic-inp-row {
+        border-top: 1px solid var(--rule);
+        padding: 11px 15px;
+        display: flex;
+        gap: 8px;
+        background: var(--paper);
+      }
+      .aic-inp {
+        flex: 1;
+        border: 1.5px solid var(--rule);
+        border-radius: 99px;
+        padding: 8px 16px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.87rem;
+        outline: none;
+        background: var(--bg);
+        color: var(--ink);
+        transition: border-color 0.2s;
+      }
+      .aic-inp:focus {
+        border-color: var(--green);
+      }
+      .aic-send {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--green);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .aic-send:hover {
+        background: #116630;
+      }
+      .typing {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        padding: 3px 0;
+      }
+      .dt {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--ink3);
+        animation: bop 0.8s infinite;
+      }
+      .dt:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .dt:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes bop {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-6px);
+        }
+      }
+
+      /* fill */
+      .fq {
+        margin-bottom: 14px;
+      }
+      .fq label {
+        font-size: 0.89rem;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 6px;
+        color: var(--ink2);
+        line-height: 1.6;
+      }
+      .fq label code {
+        font-family: "DM Mono", monospace;
+        font-size: 0.82rem;
+        background: var(--p2);
+        padding: 1px 6px;
+        border-radius: 4px;
+        color: var(--green);
+      }
+      .fi {
+        border: 1.5px solid var(--rule);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.85rem;
+        background: var(--paper);
+        color: var(--ink);
+        outline: none;
+        width: 100%;
+        max-width: 360px;
+        transition: border-color 0.2s;
+      }
+      .fi:focus {
+        border-color: var(--green);
+      }
+      .fi.ok {
+        border-color: var(--green);
+        background: var(--gs);
+      }
+      .fi.no {
+        border-color: var(--red);
+        background: var(--rs);
+      }
+      .ff {
+        font-size: 0.77rem;
+        margin-top: 4px;
+        min-height: 16px;
+        font-family: "DM Mono", monospace;
+      }
+      .ff.ok {
+        color: var(--green);
+      }
+      .ff.no {
+        color: var(--red);
+      }
+      .sq {
+        margin-bottom: 16px;
+      }
+      .sq label {
+        font-size: 0.89rem;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 7px;
+        color: var(--ink2);
+        line-height: 1.6;
+      }
+      .sq textarea {
+        width: 100%;
+        border: 1.5px solid var(--rule);
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.88rem;
+        background: var(--paper);
+        color: var(--ink);
+        outline: none;
+        resize: vertical;
+        min-height: 80px;
+        transition: border-color 0.2s;
+        line-height: 1.7;
+      }
+      .sq textarea:focus {
+        border-color: var(--green);
+      }
+      .cc {
+        font-size: 0.7rem;
+        color: var(--ink3);
+        text-align: right;
+        margin-top: 3px;
+        font-family: "DM Mono", monospace;
+      }
+
+      /* MCQ */
+      .mcq {
+        background: var(--paper);
+        border: 1.5px solid var(--rule);
+        border-radius: var(--r);
+        padding: 22px 24px;
+        margin-bottom: 12px;
+      }
+      .qnum {
+        font-family: "DM Mono", monospace;
+        font-size: 0.63rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink3);
+        margin-bottom: 6px;
+      }
+      .qtext {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 13px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      .qopts {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .qopt {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 14px;
+        border: 1.5px solid var(--rule);
+        border-radius: 9px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: var(--ink2);
+        transition: all 0.2s;
+        user-select: none;
+        background: var(--paper);
+      }
+      .qopt:hover:not(.dis) {
+        background: var(--gs);
+        border-color: var(--gb);
+        color: var(--green);
+      }
+      .qopt.cor {
+        background: var(--gs);
+        border-color: var(--gb);
+        color: var(--green);
+        font-weight: 600;
+      }
+      .qopt.wrg {
+        background: var(--rs);
+        border-color: var(--rb);
+        color: var(--red);
+      }
+      .qopt.dis {
+        cursor: default;
+      }
+      .qind {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        background: var(--p2);
+        border: 1.5px solid var(--rule);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "DM Mono", monospace;
+        font-size: 0.67rem;
+        font-weight: 600;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .qopt.cor .qind {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+      }
+      .qopt.wrg .qind {
+        background: var(--red);
+        border-color: var(--red);
+        color: #fff;
+      }
+      .qexp {
+        margin-top: 10px;
+        padding: 10px 13px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        line-height: 1.65;
+        display: none;
+      }
+      .qexp.show {
+        display: block;
+      }
+      .qexp.ok {
+        background: var(--gs);
+        border: 1px solid var(--gb);
+        color: #166534;
+      }
+      .qexp.no {
+        background: var(--rs);
+        border: 1px solid var(--rb);
+        color: var(--red);
+      }
+      .sb {
+        background: var(--paper);
+        border: 1.5px solid var(--rule);
+        border-radius: var(--r);
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: var(--sh);
+      }
+      .sb-ring {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--p2);
+        border: 2px solid var(--rule);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background 1s;
+      }
+      .sb-n {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.2rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+      .sb-d {
+        font-family: "DM Mono", monospace;
+        font-size: 0.59rem;
+        color: var(--ink3);
+      }
+      .final {
+        background: linear-gradient(135deg, #052010, #1a4028);
+        color: #fff;
+        border-radius: var(--r);
+        padding: 36px;
+        text-align: center;
+        display: none;
+        margin-top: 8px;
+      }
+      .final.show {
+        display: block;
+      }
+      .fin-emoji {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+      .fin-title {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        margin-bottom: 8px;
+      }
+      .fin-msg {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.75);
+        margin-bottom: 20px;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.65;
+      }
+      .fin-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: "DM Sans", sans-serif;
+        transition: background 0.2s;
+      }
+      .fin-cta:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      footer {
+        text-align: center;
+        margin-top: 48px;
+        padding-top: 22px;
+        border-top: 1px solid var(--rule);
+        font-family: "DM Mono", monospace;
+        font-size: 0.69rem;
+        color: var(--ink3);
+        letter-spacing: 0.04em;
+        line-height: 2;
+      }
+
+      @media (max-width: 600px) {
+        .card {
+          padding: 18px 16px;
+        }
+        .flow {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+        .flow-arr {
+          transform: rotate(90deg);
+        }
+        .exc-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .aic-msgs {
+          max-height: 260px;
+        }
+        .td-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .td-inp,
+        .td-select {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <div class="bar">
+      <div class="bar-in">
+        <div class="bl">
+          <div class="bdg">📅 Day 11</div>
+          <div class="btl">
+            AI Task — try · except · finally · raise · Exception Types
+          </div>
+        </div>
+        <div class="tmr" id="tmr" onclick="toggleTimer()">
+          ⏱ <span id="tdisp">00:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page">
+      <!-- HERO -->
+      <div style="margin-bottom: 28px">
+        <div class="bc">AI/ML 15-Month · Month 1 · Week 3 · Day 11 Task</div>
+        <h1>Your AI Task:<br /><em>Error Handling</em></h1>
+        <p class="hsub">
+          Today you started <strong>Week 3</strong> with the most important
+          production skill in Python. An ML pipeline processing 10,000 records
+          with no error handling crashes on the first bad row. With
+          <code
+            style="
+              font-family: &quot;DM Mono&quot;, monospace;
+              color: var(--green);
+            "
+            >try/except</code
+          >, one bad record logs and skips — the other 9,999 process perfectly.
+        </p>
+        <div class="pills">
+          <span class="pill">⏱ 4–5 Hours</span>
+          <span class="pill">🐍 Python</span>
+          <span class="pill">🛡️ try/except</span>
+          <span class="pill">✅ finally</span>
+          <span class="pill">🔺 raise</span>
+          <span class="pill">🚨 Exception types</span>
+          <span class="pill">🤖 ML pipeline</span>
+          <span class="pill">🧠 20 MCQs</span>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="prog">
+        <div class="prog-row">
+          <span>Task Progress</span><span id="prog-pct">3%</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="prog-fill"></div>
+        </div>
+      </div>
+
+      <!-- RECAP -->
+      <div class="recap">
+        ✅ <strong>What you learned today:</strong> <code>try:</code> — the code
+        that MIGHT raise an error. Always runs first.
+        <code>except ValueError:</code> — runs ONLY if a ValueError occurred in
+        the try block. <code>except Exception as e:</code> — catch-all with the
+        error message stored in <code>e</code>. <code>finally:</code> — runs
+        ALWAYS, error or not. Used for cleanup (close files, release locks).
+        <code>raise ValueError("message")</code> — deliberately trigger an error
+        when data is invalid. <strong>Bare except:</strong> is dangerous —
+        catches KeyboardInterrupt and SystemExit — never use it.
+        <strong>ML rule:</strong> wrap each record in try/except → log error →
+        skip → continue with all other records.
+      </div>
+
+      <!-- ===== PART 1: FLOW DIAGRAM ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--gs)">🔄</div>
+        <div>
+          <div class="sh-ttl">
+            Part 1 — try/except/finally Flow + Exception Types
+          </div>
+          <div class="sh-sub">
+            Understand the execution order before writing any code
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 15 min</div>
+      </div>
+
+      <div class="card">
+        <div class="ctag tg">🔄 Flow Diagram</div>
+        <h2>Execution Flow — What Runs When</h2>
+        <div class="flow">
+          <div class="flow-box ftry">
+            <span class="flow-icon">▶</span>
+            <div class="flow-title">try</div>
+            <div class="flow-desc">
+              Code that might fail. ALWAYS runs first. If no error → skips to
+              finally.
+            </div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-box fexc">
+            <span class="flow-icon">🛡️</span>
+            <div class="flow-title">except</div>
+            <div class="flow-desc">
+              Runs ONLY if an error occurred. Catches specific exception types.
+            </div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-box ffin">
+            <span class="flow-icon">✅</span>
+            <div class="flow-title">finally</div>
+            <div class="flow-desc">
+              ALWAYS runs — success OR failure. Cleanup: close files, release
+              resources.
+            </div>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 20px">
+          🚨 The 6 Most Common Python Exceptions in ML
+        </h2>
+        <div class="exc-grid">
+          <div class="exc-card">
+            <div class="exc-name">ValueError</div>
+            <div class="exc-cause">Right type, wrong value</div>
+            <span class="exc-eg">int("hello")</span>
+          </div>
+          <div class="exc-card">
+            <div class="exc-name">TypeError</div>
+            <div class="exc-cause">Wrong type for operation</div>
+            <span class="exc-eg">"5" + 5</span>
+          </div>
+          <div class="exc-card">
+            <div class="exc-name">KeyError</div>
+            <div class="exc-cause">Dict key doesn't exist</div>
+            <span class="exc-eg">d["missing"]</span>
+          </div>
+          <div class="exc-card">
+            <div class="exc-name">IndexError</div>
+            <div class="exc-cause">List index out of range</div>
+            <span class="exc-eg">[1,2,3][9]</span>
+          </div>
+          <div class="exc-card">
+            <div class="exc-name">FileNotFoundError</div>
+            <div class="exc-cause">File doesn't exist</div>
+            <span class="exc-eg">open("x.csv")</span>
+          </div>
+          <div class="exc-card">
+            <div class="exc-name">ZeroDivisionError</div>
+            <div class="exc-cause">Division by zero</div>
+            <span class="exc-eg">100 / 0</span>
+          </div>
+        </div>
+
+        <div class="cb cbr">
+          <i>⚠️</i>
+          <span
+            ><strong>Never use bare except:</strong> — it catches EVERYTHING
+            including
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >KeyboardInterrupt</code
+            >
+            (Ctrl+C) and
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >SystemExit</code
+            >. Your program becomes impossible to stop and real bugs are hidden.
+            Always be specific:
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >except ValueError:</code
+            >
+            or at minimum
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >except Exception as e:</code
+            ></span
+          >
+        </div>
+      </div>
+
+      <!-- ===== PART 2: LIVE DEMO ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--as)">🎮</div>
+        <div>
+          <div class="sh-ttl">Part 2 — Live try/except Simulator</div>
+          <div class="sh-sub">
+            Trigger different exceptions and watch how each is caught
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 20 min</div>
+      </div>
+
+      <div class="card">
+        <div class="ctag ta">🎮 Interactive Simulator</div>
+        <h2>Test try/except Live — Trigger Real Exceptions</h2>
+        <p>
+          Choose an operation and enter values. The simulator runs the actual
+          error handling logic and shows exactly which block executes — try,
+          except, or finally.
+        </p>
+        <div class="try-demo">
+          <div class="try-demo-title">🧪 try/except/finally Simulator</div>
+          <div class="td-row">
+            <span class="td-lbl">Operation:</span>
+            <select class="td-select" id="op-type" onchange="updateOpHints()">
+              <option value="int_convert">
+                Convert string to int — test ValueError
+              </option>
+              <option value="division">
+                Division — test ZeroDivisionError
+              </option>
+              <option value="dict_key">Dict key lookup — test KeyError</option>
+              <option value="list_index">List index — test IndexError</option>
+              <option value="marks_validate">
+                Validate marks (0–100) — test raise
+              </option>
+              <option value="file_open">
+                File open — test FileNotFoundError
+              </option>
+            </select>
+          </div>
+          <div class="td-row">
+            <span class="td-lbl" id="op-lbl">Input value:</span>
+            <input
+              class="td-inp"
+              id="op-val"
+              value="hello"
+              placeholder="Enter test value..."
+            />
+          </div>
+          <button
+            class="btn btn-g"
+            style="width: 100%; justify-content: center; margin-top: 4px"
+            onclick="runSim()"
+          >
+            ▶ Run try/except
+          </button>
+          <div class="td-out" id="td-out"></div>
+        </div>
+
+        <div class="cw" style="margin-top: 16px">
+          <div class="cbar">
+            <div class="cdots">
+              <div class="cd cdr"></div>
+              <div class="cd cdy"></div>
+              <div class="cd cdg"></div>
+            </div>
+            <div class="clang">Python — Full Exception Handling Pattern</div>
+          </div>
+          <div class="cbody">
+            <span class="kw">def</span>
+            <span class="fn">validate_marks</span>(<span class="vr">marks</span
+            >): <span class="kw">try</span>: <span class="vr">m</span> =
+            <span class="fn">float</span>(<span class="vr">marks</span>)
+            <span class="cm"># might raise ValueError</span>
+            <span class="kw">if</span> <span class="vr">m</span> &lt;
+            <span class="nm">0</span> <span class="kw">or</span>
+            <span class="vr">m</span> &gt; <span class="nm">100</span>:
+            <span class="kw">raise</span>
+            <span class="er">ValueError</span>(<span class="st"
+              >f"marks must be 0-100, got {m}"</span
+            >) <span class="vr">grade</span> = <span class="st">"A"</span>
+            <span class="kw">if</span> <span class="vr">m</span>&gt;=<span
+              class="nm"
+              >80</span
+            >
+            <span class="kw">else</span> <span class="st">"B"</span>
+            <span class="kw">if</span> <span class="vr">m</span>&gt;=<span
+              class="nm"
+              >60</span
+            >
+            <span class="kw">else</span> <span class="st">"F"</span>
+            <span class="fn">print</span>(<span class="st"
+              >f"✅ {marks} → Grade: {grade}"</span
+            >) <span class="kw">except</span> <span class="er">ValueError</span>
+            <span class="kw">as</span> <span class="vr">e</span>:
+            <span class="fn">print</span>(<span class="st"
+              >f"❌ ValueError: {e}"</span
+            >) <span class="kw">finally</span>:
+            <span class="fn">print</span>(<span class="st"
+              >"📋 Validation complete"</span
+            >) <span class="cm"># always runs</span>
+
+            <span class="cm"># Test with valid and invalid inputs</span>
+            <span class="kw">for</span> <span class="vr">test</span>
+            <span class="kw">in</span> [<span class="nm">85</span>,
+            <span class="nm">150</span>, <span class="st">"abc"</span>,
+            <span class="nm">42</span>]:
+            <span class="fn">validate_marks</span>(<span class="vr">test</span>)
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PART 3: ML PIPELINE SIM ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--ps)">🤖</div>
+        <div>
+          <div class="sh-ttl">Part 3 — ML Pipeline Error Simulator</div>
+          <div class="sh-sub">
+            Watch how try/except keeps 9 records processing when 1 fails
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 15 min</div>
+      </div>
+
+      <div class="card">
+        <div class="ctag tp">🤖 Production ML Pipeline</div>
+        <h2>
+          Process 10 Records — Some Are Bad — None Should Crash The Pipeline
+        </h2>
+        <p>
+          This is the core pattern for production AI. Every record is wrapped in
+          <code
+            style="
+              font-family: &quot;DM Mono&quot;, monospace;
+              color: var(--green);
+            "
+            >try/except</code
+          >. Bad records are logged and skipped — the rest continue processing.
+        </p>
+        <div class="pipeline-sim">
+          <div class="ps-head">
+            <span class="ps-title">🔄 ML Data Pipeline — 10 Records</span>
+            <div style="display: flex; gap: 8px">
+              <button
+                class="btn btn-g"
+                onclick="runPipeline()"
+                style="padding: 6px 14px; font-size: 0.78rem"
+              >
+                ▶ Run Pipeline
+              </button>
+              <button
+                class="btn btn-o"
+                onclick="resetPipeline()"
+                style="padding: 6px 14px; font-size: 0.78rem"
+              >
+                ↺ Reset
+              </button>
+            </div>
+          </div>
+          <div class="ps-body">
+            <div id="ps-grid">
+              <div
+                style="
+                  text-align: center;
+                  color: var(--ink3);
+                  font-family: &quot;DM Mono&quot;, monospace;
+                  font-size: 0.82rem;
+                  padding: 16px;
+                "
+              >
+                Click ▶ Run Pipeline to process all 10 records...
+              </div>
+            </div>
+            <div class="ps-summary" id="ps-summary"></div>
+          </div>
+        </div>
+        <div class="cb cbg">
+          <i>💡</i>
+          <span
+            ><strong>The production Python pattern:</strong><br />
+            <code
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 0.8rem;
+              "
+              >errors = []</code
+            ><br />
+            <code
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 0.8rem;
+              "
+              >for i, record in enumerate(dataset):</code
+            ><br />
+            <code
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 0.8rem;
+              "
+              >&nbsp;&nbsp;try:</code
+            ><br />
+            <code
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 0.8rem;
+              "
+              >&nbsp;&nbsp;&nbsp;&nbsp;result = process(record)</code
+            ><br />
+            <code
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 0.8rem;
+              "
+              >&nbsp;&nbsp;except Exception as e:</code
+            ><br />
+            <code
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 0.8rem;
+              "
+              >&nbsp;&nbsp;&nbsp;&nbsp;errors.append({"row": i, "error":
+              str(e)})</code
+            ><br />
+            <code
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 0.8rem;
+              "
+              >&nbsp;&nbsp;&nbsp;&nbsp;continue # skip to next record</code
+            ></span
+          >
+        </div>
+      </div>
+
+      <!-- ===== PART 4: CHECKLIST ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--as)">📋</div>
+        <div>
+          <div class="sh-ttl">Part 4 — IDLE Checklist</div>
+          <div class="sh-sub">
+            Complete each task in Python IDLE — tick when done
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 40 min</div>
+      </div>
+
+      <div class="card">
+        <div class="ctag ta">✅ Checklist</div>
+        <h2>8 Hands-On Tasks</h2>
+        <ul class="tlist">
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Write your first try/except: ask user for a number with
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >input()</code
+                >, convert with
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >int()</code
+                >, catch
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >ValueError</code
+                >. Test with "abc" and "25".</span
+              >
+              <span class="thint"
+                >💡 try: n = int(input("Number: ")) — except ValueError:
+                print("Not a number!")</span
+              >
+            </div>
+          </li>
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Add
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >finally</code
+                >: print a cleanup message that appears whether the input was
+                valid OR invalid. Confirm it runs in BOTH cases.</span
+              >
+              <span class="thint"
+                >💡 finally: print("Validation complete") — run with valid and
+                invalid input to see it always appears</span
+              >
+            </div>
+          </li>
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Write a function with multiple except blocks: catch
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >ValueError</code
+                >,
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >ZeroDivisionError</code
+                >, AND
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >Exception as e</code
+                >
+                as a catch-all. Test each case.</span
+              >
+              <span class="thint"
+                >💡 try: x = int(a) / int(b) — except ValueError: — except
+                ZeroDivisionError: — except Exception as e: print(e)</span
+              >
+            </div>
+          </li>
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Use
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >raise</code
+                >: write a
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >validate_age(age)</code
+                >
+                function that raises
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >ValueError</code
+                >
+                if age is negative or over 150. Test it with valid and invalid
+                ages inside a try/except.</span
+              >
+              <span class="thint"
+                >💡 if age < 0: raise ValueError(f"Age cannot be negative:
+                {age}") — test with validate_age(-5) inside try:</span
+              >
+            </div>
+          </li>
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Write a safe CSV loader using
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >try/except FileNotFoundError</code
+                >. Test with a file that exists and one that doesn't — observe
+                the difference in behaviour.</span
+              >
+              <span class="thint"
+                >💡 try: with open(filepath) as f: ... — except
+                FileNotFoundError: print(f"File {filepath} not found")</span
+              >
+            </div>
+          </li>
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Build the production ML pipeline: loop through a list of 8
+                student marks (including some bad values like "abc", -5, 150,
+                None), wrap each in try/except, log errors, print grades for
+                valid records.</span
+              >
+              <span class="thint"
+                >💡 errors = [] — for i, m in enumerate(data): try: ... — except
+                Exception as e: errors.append({"row":i, "error":str(e)})</span
+              >
+            </div>
+          </li>
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Catch a
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >KeyError</code
+                >: create a student dict, try to access a key that doesn't exist
+                using
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >d["email"]</code
+                >, catch the error and print a helpful message.</span
+              >
+              <span class="thint"
+                >💡 try: print(student["email"]) — except KeyError as e:
+                print(f"Missing field: {e}")</span
+              >
+            </div>
+          </li>
+          <li class="ti" onclick="tick(this)">
+            <div class="tcb"></div>
+            <div>
+              <span class="tlbl"
+                >Use
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >except Exception as e</code
+                >
+                to print the type and message of unknown errors:
+                <code style="font-family: &quot;DM Mono&quot;, monospace"
+                  >print(type(e).__name__, e)</code
+                >. Test on 3 different types of errors.</span
+              >
+              <span class="thint"
+                >💡 try: x = [][0] — except Exception as e:
+                print(type(e).__name__, e) → "IndexError list index out of
+                range"</span
+              >
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- ===== PART 5: PLAYGROUNDS ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--as)">⚙️</div>
+        <div>
+          <div class="sh-ttl">Part 5 — Code Playgrounds</div>
+          <div class="sh-sub">
+            Write error handling code — simulators validate your logic
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 40 min</div>
+      </div>
+
+      <!-- PG 1 -->
+      <div class="card">
+        <div class="ctag ta">🧪 Exercise 1</div>
+        <h2>Robust ML Data Validator — try/except/raise/finally</h2>
+        <p>
+          Write a complete data validation function that uses all four patterns:
+          try, except, raise, and finally. Process a list of mixed-quality
+          records — log errors, report results.
+        </p>
+        <div class="cb cbb">
+          <i>💡</i
+          ><span
+            ><strong>Expected output:</strong><br />
+            === Processing 7 records ===<br />
+            ✅ Ali | 88 | Grade: A<br />
+            ❌ Record 2 | ValueError: marks must be 0-100, got 150<br />
+            ✅ Usman | 72 | Grade: B<br />
+            ❌ Record 4 | ValueError: cannot convert 'abc' to float<br />
+            ✅ Zara | 33 | Grade: F<br />
+            ❌ Record 6 | TypeError: marks must be a number<br />
+            ✅ Ahmed | 91 | Grade: A<br />
+            <br />
+            📊 Results: 4 processed, 3 errors<br />
+            📋 Validation complete (finally ran)</span
+          >
+        </div>
+        <div class="pg">
+          <div class="pgh">
+            <span class="pgt">🐍 Robust Data Validator</span>
+            <div class="pgb">
+              <button class="btn btn-g" onclick="runValidator()">▶ Run</button
+              ><button class="btn btn-o" onclick="clearPG('v1-code', 'v1-out')">
+                Clear
+              </button>
+            </div>
+          </div>
+          <div class="pge">
+            <textarea
+              id="v1-code"
+              spellcheck="false"
+              placeholder="def validate_and_grade(marks):&#10;    m = float(marks)  # may raise ValueError&#10;    if m < 0 or m > 100:&#10;        raise ValueError(f'marks must be 0-100, got {m}')&#10;    return 'A' if m >= 80 else 'B' if m >= 60 else 'C' if m >= 50 else 'F'&#10;&#10;records = [&#10;    {'name':'Ali',   'marks':88},&#10;    {'name':'Sara',  'marks':150},&#10;    {'name':'Usman', 'marks':72},&#10;    {'name':'Zara',  'marks':'abc'},&#10;    {'name':'Ahmed', 'marks':33},&#10;    {'name':'Nadia', 'marks':None},&#10;    {'name':'Bilal', 'marks':91},&#10;]&#10;&#10;errors = []&#10;processed = 0&#10;print(f'=== Processing {len(records)} records ===')&#10;&#10;try:&#10;    for i, r in enumerate(records, 1):&#10;        try:&#10;            if not isinstance(r['marks'], (int, float, str)):&#10;                raise TypeError('marks must be a number')&#10;            if r['marks'] is None:&#10;                raise TypeError('marks must be a number')&#10;            g = validate_and_grade(r['marks'])&#10;            print(f'✅ {r[&quot;name&quot;]:<8} | {r[&quot;marks&quot;]:<5} | Grade: {g}')&#10;            processed += 1&#10;        except (ValueError, TypeError) as e:&#10;            print(f'❌ Record {i} | {type(e).__name__}: {e}')&#10;            errors.append({'row': i, 'error': str(e)})&#10;finally:&#10;    print(f'\n📊 Results: {processed} processed, {len(errors)} errors')&#10;    print('📋 Validation complete (finally ran)')"
+            ></textarea>
+          </div>
+          <div style="padding: 8px 18px 0; background: #f2fdf5">
+            <div class="out-lbl">Output</div>
+            <div class="pgo" id="v1-out">Click ▶ Run...</div>
+          </div>
+        </div>
+        <div style="margin-top: 10px">
+          <button class="btn btn-g" onclick="checkValidator()">
+            ✓ Check My Code
+          </button>
+        </div>
+        <div id="v1-fb" style="display: none; margin-top: 10px"></div>
+      </div>
+
+      <!-- PG 2 -->
+      <div class="card">
+        <div class="ctag ta">🧪 Exercise 2</div>
+        <h2>Safe File Reader + Dict Access — Multiple Exception Types</h2>
+        <p>
+          Write a safe data loader that handles both
+          <code
+            style="
+              font-family: &quot;DM Mono&quot;, monospace;
+              color: var(--green);
+            "
+            >FileNotFoundError</code
+          >
+          and
+          <code
+            style="
+              font-family: &quot;DM Mono&quot;, monospace;
+              color: var(--green);
+            "
+            >KeyError</code
+          >. Process student records safely — handle missing files and missing
+          dictionary keys gracefully.
+        </p>
+        <div class="pg">
+          <div class="pgh">
+            <span class="pgt">🐍 Safe File + Dict Handler</span>
+            <div class="pgb">
+              <button class="btn btn-g" onclick="runSafeLoader()">▶ Run</button
+              ><button class="btn btn-o" onclick="clearPG('sl-code', 'sl-out')">
+                Clear
+              </button>
+            </div>
+          </div>
+          <div class="pge">
+            <textarea
+              id="sl-code"
+              spellcheck="false"
+              placeholder="def safe_get(record, key, default='N/A'):&#10;    try:&#10;        return record[key]&#10;    except KeyError:&#10;        return default&#10;&#10;def process_record(r):&#10;    name = safe_get(r, 'name', 'Unknown')&#10;    marks = safe_get(r, 'marks', 0)&#10;    city = safe_get(r, 'city', 'Not specified')&#10;    return f'{name:<10} | marks: {marks} | city: {city}'&#10;&#10;records = [&#10;    {'name': 'Ali',   'marks': 88, 'city': 'Karachi'},&#10;    {'name': 'Sara',  'marks': 72},             # missing city&#10;    {'marks': 45,     'city': 'Lahore'},         # missing name&#10;    {'name': 'Ahmed', 'city': 'Islamabad'},      # missing marks&#10;    {'name': 'Zara',  'marks': 91, 'city': 'Peshawar'},&#10;]&#10;&#10;print('=== Safe Record Processor ===')&#10;for r in records:&#10;    try:&#10;        print('✅ ' + process_record(r))&#10;    except Exception as e:&#10;        print(f'❌ Unexpected error: {type(e).__name__}: {e}')&#10;&#10;print('\n✅ All records processed — missing keys used defaults, no crash!')"
+            ></textarea>
+          </div>
+          <div style="padding: 8px 18px 0; background: #f2fdf5">
+            <div class="out-lbl">Output</div>
+            <div class="pgo" id="sl-out">Click ▶ Run...</div>
+          </div>
+        </div>
+        <div style="margin-top: 10px">
+          <button class="btn btn-g" onclick="checkSafeLoader()">✓ Check</button>
+        </div>
+        <div id="sl-fb" style="display: none; margin-top: 10px"></div>
+      </div>
+
+      <!-- PG 3: BUG HUNT -->
+      <div class="card">
+        <div class="ctag ta">🧪 Exercise 3 — Bug Hunt</div>
+        <h2>Find and Fix the 4 Error Handling Bugs</h2>
+        <p>
+          4 bugs below — bare except, wrong exception type, catching exception
+          too broadly, and raise in wrong place.
+        </p>
+        <div class="cw">
+          <div class="cbar">
+            <div class="cdots">
+              <div class="cd cdr"></div>
+              <div class="cd cdy"></div>
+              <div class="cd cdg"></div>
+            </div>
+            <div class="clang">Buggy Error Handling — Fix All 4</div>
+          </div>
+          <div class="cbody">
+            <span class="cm"># Bug 1: bare except — dangerous!</span>
+            <span class="kw">try</span>: <span class="vr">x</span> =
+            <span class="fn">int</span>(<span class="st">"hello"</span>)
+            <span class="kw">except</span
+            ><span class="er" style="color: #ef4444">:</span>
+            <span class="cm" style="color: #ef4444"
+              ># Bug 1: catches EVERYTHING — even Ctrl+C!</span
+            >
+            <span class="fn">print</span>(<span class="st">"Error!"</span>)
+
+            <span class="cm"># Bug 2: wrong exception type</span>
+            <span class="kw">try</span>: <span class="vr">d</span> = {<span
+              class="st"
+              >"name"</span
+            >: <span class="st">"Ali"</span>}
+            <span class="fn">print</span>(<span class="vr">d</span>[<span
+              class="st"
+              >"email"</span
+            >]) <span class="kw">except</span>
+            <span class="er" style="color: #ef4444">ValueError</span>:
+            <span class="cm" style="color: #ef4444"
+              ># Bug 2: dict missing key → KeyError, not ValueError!</span
+            >
+            <span class="fn">print</span>(<span class="st">"Key missing"</span>)
+
+            <span class="cm"># Bug 3: raise without a valid exception</span>
+            <span class="kw">def</span> <span class="fn">validate</span>(<span
+              class="vr"
+              >x</span
+            >): <span class="kw">if</span> <span class="vr">x</span> &lt;
+            <span class="nm">0</span>: <span class="kw">raise</span>
+            <span class="st" style="color: #ef4444"
+              >"Value must be positive"</span
+            >
+            <span class="cm" style="color: #ef4444"
+              ># Bug 3: raise a string — must raise an Exception!</span
+            >
+
+            <span class="cm"># Bug 4: except BEFORE the error can happen</span>
+            <span class="kw">try</span>: <span class="fn">print</span>(<span
+              class="st"
+              >"hello"</span
+            >) <span class="kw">except</span>
+            <span class="er">ValueError</span>:
+            <span class="fn">print</span>(<span class="st">"oops"</span>)
+            <span class="vr">result</span> = <span class="fn">int</span>(<span
+              class="st"
+              >"abc"</span
+            >)
+            <span class="cm" style="color: #ef4444"
+              ># Bug 4: risky code is OUTSIDE try — not protected!</span
+            >
+          </div>
+        </div>
+        <div class="pg">
+          <div class="pgh">
+            <span class="pgt">🐍 Write the Fixed Version</span>
+            <div class="pgb">
+              <button class="btn btn-g" onclick="runBugFix()">▶ Simulate</button
+              ><button class="btn btn-o" onclick="clearPG('bf-code', 'bf-out')">
+                Clear
+              </button>
+            </div>
+          </div>
+          <div class="pge">
+            <textarea
+              id="bf-code"
+              spellcheck="false"
+              placeholder="# Fix Bug 1: use specific exception type&#10;try:&#10;    x = int('hello')&#10;except ValueError:  # specific, not bare except&#10;    print('ValueError: not a number!')&#10;&#10;# Fix Bug 2: correct exception type for missing key&#10;try:&#10;    d = {'name': 'Ali'}&#10;    print(d['email'])&#10;except KeyError:  # KeyError for missing dict key&#10;    print('Key missing')&#10;&#10;# Fix Bug 3: raise a proper Exception&#10;def validate(x):&#10;    if x < 0:&#10;        raise ValueError('Value must be positive')  # not a string!&#10;&#10;# Fix Bug 4: put risky code INSIDE try&#10;try:&#10;    print('hello')&#10;    result = int('abc')  # inside try — now protected!&#10;except ValueError:&#10;    print('oops')&#10;print('All 4 bugs fixed!')"
+            ></textarea>
+          </div>
+          <div style="padding: 8px 18px 0; background: #f2fdf5">
+            <div class="out-lbl">Validation</div>
+            <div class="pgo" id="bf-out">Click ▶ Simulate...</div>
+          </div>
+        </div>
+        <div style="margin-top: 10px">
+          <button class="btn btn-g" onclick="checkBugFix()">
+            ✓ Check All 4 Fixes
+          </button>
+        </div>
+        <div id="bf-fb" style="display: none; margin-top: 10px"></div>
+      </div>
+
+      <!-- ===== PART 6: SCENARIOS ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--gs)">🌍</div>
+        <div>
+          <div class="sh-ttl">Part 6 — Real AI Scenarios</div>
+          <div class="sh-sub">
+            Choose the correct error handling approach for each ML situation
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 20 min</div>
+      </div>
+      <div id="sc-wrap"></div>
+      <div
+        id="sc-score"
+        style="
+          display: none;
+          margin-top: 12px;
+          font-size: 0.9rem;
+          font-weight: 600;
+        "
+      ></div>
+
+      <!-- ===== PART 7: AI TUTOR ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--ps)">💬</div>
+        <div>
+          <div class="sh-ttl">Part 7 — AI Tutor Chat</div>
+          <div class="sh-sub">
+            Ask anything about try/except, finally, raise, or exception types
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 15 min</div>
+      </div>
+
+      <div class="card">
+        <div class="ctag tp">🤖 AI Tutor</div>
+        <h2>Chat With Your Error Handling Tutor</h2>
+        <p>
+          Ask anything about <strong>try/except</strong>,
+          <strong>finally</strong>, <strong>raise</strong>,
+          <strong>exception types</strong>, or the
+          <strong>ML pipeline pattern</strong>. Try:
+          <em>"What is the difference between ValueError and TypeError?"</em> or
+          <em>"When should I use finally?"</em>
+        </p>
+        <div class="aic">
+          <div class="aic-hd">
+            <div class="aic-av">🤖</div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.87rem">
+                Python AI Tutor
+              </div>
+              <div style="font-size: 0.7rem; opacity: 0.8; margin-top: 1px">
+                Day 11 Specialist · try · except · finally · raise · Exception
+                types · ML pipelines
+              </div>
+            </div>
+          </div>
+          <div class="aic-msgs" id="chat-msgs">
+            <div class="msg ai">
+              <div class="m-av">🤖</div>
+              <div class="bbl">
+                Hello! I am your Day 11 Error Handling tutor. Ask me anything
+                about <strong>try/except/finally</strong>,
+                <strong>raise</strong>, or exception types. What would you like
+                to understand?
+              </div>
+            </div>
+            <div class="msg ai">
+              <div class="m-av">🤖</div>
+              <div class="bbl">
+                💡 <strong>Day 11 key rule:</strong> NEVER use bare
+                <code>except:</code> without specifying the exception type. It
+                catches KeyboardInterrupt (Ctrl+C) and SystemExit — making your
+                program impossible to stop. Always use at minimum
+                <code>except Exception as e:</code> and ideally be specific:
+                <code>except ValueError:</code>
+              </div>
+            </div>
+          </div>
+          <div class="aic-inp-row">
+            <input
+              class="aic-inp"
+              id="chat-in"
+              placeholder="Ask about try/except, finally, raise, exception types..."
+              onkeydown="if (event.key === 'Enter') sendChat();"
+            />
+            <button class="aic-send" onclick="sendChat()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PART 8: FILL BLANKS ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--as)">✏️</div>
+        <div>
+          <div class="sh-ttl">Part 8 — Fill in the Blanks</div>
+          <div class="sh-sub">
+            Complete each error handling statement from memory
+          </div>
+        </div>
+        <div class="sh-bdg">⏱ 15 min</div>
+      </div>
+
+      <div class="card">
+        <div class="ctag ta">✏️ Complete the Code</div>
+        <h2>Fill in the Missing Parts</h2>
+        <div id="fill-wrap"></div>
+        <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap">
+          <button class="btn btn-b" onclick="checkFill()">
+            Check All Answers
+          </button>
+          <button class="btn btn-o" onclick="resetFill()">Clear</button>
+        </div>
+        <div
+          id="fill-score"
+          style="
+            display: none;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+          "
+        ></div>
+      </div>
+
+      <!-- ===== PART 9: DEEP THINKING ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--bs)">🧠</div>
+        <div>
+          <div class="sh-ttl">Part 9 — Deep Thinking Questions</div>
+          <div class="sh-sub">Build your AI production engineering mindset</div>
+        </div>
+        <div class="sh-bdg">⏱ 30 min</div>
+      </div>
+
+      <div class="card">
+        <div class="ctag tb">🧠 Think Deeply</div>
+        <h2>5 Questions — Write Thorough Answers</h2>
+        <div class="sq">
+          <label
+            >Q1. Explain the execution flow of try/except/finally step by step
+            for TWO scenarios: (1) when NO exception occurs, (2) when a
+            ValueError IS raised. Include which blocks run in each case.</label
+          ><textarea
+            id="dq1"
+            placeholder="Walk through both scenarios line by line..."
+            oninput="cc(this, 'dc1')"
+          ></textarea>
+          <div class="cc" id="dc1">0 chars</div>
+        </div>
+        <div class="sq">
+          <label
+            >Q2. Why is bare
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >except:</code
+            >
+            dangerous? Give 3 specific scenarios where it would cause serious
+            problems in a production ML system — and what the correct approach
+            is for each.</label
+          ><textarea
+            id="dq2"
+            placeholder="Think about Ctrl+C, SystemExit, and hiding unknown bugs..."
+            oninput="cc(this, 'dc2')"
+          ></textarea>
+          <div class="cc" id="dc2">0 chars</div>
+        </div>
+        <div class="sq">
+          <label
+            >Q3. Explain the difference between
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >ValueError</code
+            >,
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >TypeError</code
+            >, and
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >KeyError</code
+            >. For each, write a real ML data processing scenario where that
+            exception would be raised and how you would handle it.</label
+          ><textarea
+            id="dq3"
+            placeholder="Give specific ML examples for each exception type..."
+            oninput="cc(this, 'dc3')"
+          ></textarea>
+          <div class="cc" id="dc3">0 chars</div>
+        </div>
+        <div class="sq">
+          <label
+            >Q4. Design a production ML data pipeline that processes a CSV of
+            10,000 student records. Some records have bad data. Write the
+            complete Python structure using try/except/finally — ensuring
+            maximum records are processed and all errors are logged.</label
+          ><textarea
+            id="dq4"
+            placeholder="Write the full pipeline structure: load CSV, loop with try/except, error log, finally summary..."
+            oninput="cc(this, 'dc4')"
+          ></textarea>
+          <div class="cc" id="dc4">0 chars</div>
+        </div>
+        <div class="sq">
+          <label
+            >Q5. Explain when and why you would use
+            <code style="font-family: &quot;DM Mono&quot;, monospace"
+              >raise</code
+            >
+            in your own functions. Give 3 examples of validation functions (age
+            checker, marks validator, file path checker) that use raise to
+            signal invalid data — and explain how these connect to data quality
+            in ML.</label
+          ><textarea
+            id="dq5"
+            placeholder="Write 3 validation functions with raise, and explain why early data validation is critical in ML..."
+            oninput="cc(this, 'dc5')"
+          ></textarea>
+          <div class="cc" id="dc5">0 chars</div>
+        </div>
+        <button class="btn btn-g" onclick="saveDQ()">✓ Save All Answers</button>
+        <div
+          id="dq-msg"
+          style="display: none; margin-top: 10px; font-size: 0.84rem"
+        ></div>
+      </div>
+
+      <!-- ===== PART 10: MCQ ===== -->
+      <div class="sh">
+        <div class="sh-ic" style="background: var(--ps)">🧪</div>
+        <div>
+          <div class="sh-ttl">Part 10 — MCQ Quiz (20 Questions)</div>
+          <div class="sh-sub">
+            Answer from memory — every answer shows a full explanation
+          </div>
+        </div>
+        <div class="sh-bdg">📝 20 MCQs</div>
+      </div>
+
+      <div class="sb">
+        <div class="sb-ring" id="sb-ring">
+          <div class="sb-n" id="live-sc">0</div>
+          <div class="sb-d">/ 20</div>
+        </div>
+        <div>
+          <strong style="display: block; margin-bottom: 3px">Live Score</strong
+          ><span style="font-size: 0.84rem; color: var(--ink3)"
+            >Target: 16/20 (80%). Read each explanation!</span
+          >
+        </div>
+      </div>
+
+      <div id="mcq-wrap"></div>
+
+      <div style="text-align: center; margin-top: 20px">
+        <button
+          class="btn btn-b"
+          id="fin-btn"
+          style="display: none; font-size: 0.9rem; padding: 12px 28px"
+          onclick="showFinal()"
+        >
+          Show Final Score 🎯
+        </button>
+      </div>
+
+      <div class="final" id="final-card">
+        <div class="fin-emoji" id="fin-emoji">🎉</div>
+        <div class="fin-title" id="fin-title">—</div>
+        <div class="fin-msg" id="fin-msg">—</div>
+        <p
+          style="
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 18px;
+          "
+        >
+          Day 12 tomorrow: <strong>OOP — Classes & Objects</strong> — build
+          reusable AI model blueprints!
+        </p>
+        <button
+          class="fin-cta"
+          onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        >
+          ↑ Back to Top
+        </button>
+      </div>
+    </div>
+    <footer>
+      Day 11 of 300+ · AI/ML 15-Month Curriculum · Month 1, Week 3<br />try ·
+      except · finally · raise · ValueError · TypeError · KeyError ·
+      FileNotFoundError · ML Pipeline
+    </footer>
+
+    <script>
+      // ── TIMER ──
+      let sec=0,ton=false,tiv;
+      function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+      // ── PROGRESS ──
+      let tasksDone=0,mcqScore=0,fillScore=0,mcqDoneSet=new Set();
+      function updateProgress(){const t=Math.min(Math.round((tasksDone/8)*30+(mcqScore/20)*50+(fillScore/10)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+      function tick(el){const done=el.classList.toggle('done');el.querySelector('.tcb').textContent=done?'✓':'';tasksDone=document.querySelectorAll('.ti.done').length;updateProgress();}
+
+      // ── OP HINTS ──
+      function updateOpHints(){
+        const op=document.getElementById('op-type').value;
+        const lbl=document.getElementById('op-lbl');
+        const inp=document.getElementById('op-val');
+        const hints={
+          int_convert:{lbl:'String to convert:',val:'hello',ph:'Try: "hello", "25", "3.14"'},
+          division:{lbl:'Divisor (0 = crash):',val:'0',ph:'Try: 0, 5, -2'},
+          dict_key:{lbl:'Key to look up:',val:'email',ph:'Valid: "name","marks" | Invalid: "email"'},
+          list_index:{lbl:'Index to access:',val:'10',ph:'Valid: 0,1,2 | Invalid: 10,99'},
+          marks_validate:{lbl:'Marks value (0-100):',val:'150',ph:'Try: 85, 150, -5, "abc"'},
+          file_open:{lbl:'Filename to open:',val:'missing.csv',ph:'Try any filename'},
+        };
+        const h=hints[op]||hints.int_convert;
+        lbl.textContent=h.lbl;inp.value=h.val;inp.placeholder=h.ph;
+      }
+
+      // ── SIM ──
+      function runSim(){
+        const op=document.getElementById('op-type').value;
+        const val=document.getElementById('op-val').value.trim();
+        const out=document.getElementById('td-out');
+        out.className='td-out show';
+        let html='<span style="color:var(--purple);font-weight:700">▶ try block starts...</span>\n';
+        try{
+          if(op==='int_convert'){
+            const n=parseInt(val);
+            if(isNaN(n))throw {name:'ValueError',msg:`invalid literal for int() with base 10: '${val}'`};
+            html+=`<span class="ok">✅ int("${val}") = ${n} — no exception!</span>\n`;
+          } else if(op==='division'){
+            const d=parseFloat(val);
+            if(isNaN(d))throw {name:'ValueError',msg:`could not convert string to float: '${val}'`};
+            if(d===0)throw {name:'ZeroDivisionError',msg:'division by zero'};
+            html+=`<span class="ok">✅ 100 / ${d} = ${(100/d).toFixed(4)} — no exception!</span>\n`;
+          } else if(op==='dict_key'){
+            const valid=['name','marks','city'];
+            if(!valid.includes(val))throw {name:'KeyError',msg:`'${val}'`};
+            html+=`<span class="ok">✅ d["${val}"] = "Ali" — key exists!</span>\n`;
+          } else if(op==='list_index'){
+            const i=parseInt(val);
+            if(isNaN(i))throw {name:'ValueError',msg:'index must be integer'};
+            if(i<0||i>2)throw {name:'IndexError',msg:`list index out of range (list has 3 items, got index ${i})`};
+            const lst=['Ali','Sara','Usman'];
+            html+=`<span class="ok">✅ list[${i}] = "${lst[i]}" — index valid!</span>\n`;
+          } else if(op==='marks_validate'){
+            const m=parseFloat(val);
+            if(isNaN(m))throw {name:'ValueError',msg:`could not convert '${val}' to float`};
+            if(m<0||m>100)throw {name:'ValueError',msg:`marks must be 0-100, got ${m}`};
+            const g=m>=80?'A':m>=60?'B':m>=50?'C':'F';
+            html+=`<span class="ok">✅ marks=${m} valid → Grade: ${g}</span>\n`;
+          } else {
+            throw {name:'FileNotFoundError',msg:`[Errno 2] No such file or directory: '${val}'`};
+          }
+          html+='\n<span style="color:var(--ink3)">→ except block: SKIPPED (no exception)</span>\n';
+        }catch(e){
+          html+=`\n<span class="err">❌ ${e.name||'Error'}: ${e.msg||e.message||e}</span>\n`;
+          html+=`<span style="color:var(--ink3)">→ except ${e.name||'Exception'}: block runs</span>\n`;
+        }finally{
+          html+='\n<span class="fin">✅ finally: cleanup — ALWAYS runs (error or not)</span>';
+        }
+        out.innerHTML=html;
+      }
+
+      // ── ML PIPELINE ──
+      const PIPELINE_DATA=[
+        {id:1,record:'{"name":"Ali","marks":88}',marks:88,valid:true},
+        {id:2,record:'{"name":"Sara","marks":"abc"}',marks:'abc',valid:false,err:'ValueError'},
+        {id:3,record:'{"name":"Usman","marks":72}',marks:72,valid:true},
+        {id:4,record:'{"name":"Zara","marks":150}',marks:150,valid:false,err:'ValueError'},
+        {id:5,record:'{"name":"Ahmed","marks":91}',marks:91,valid:true},
+        {id:6,record:'{"name":"Nadia","marks":null}',marks:null,valid:false,err:'TypeError'},
+        {id:7,record:'{"name":"Ali2","marks":45}',marks:45,valid:true},
+        {id:8,record:'{"name":"Sara2","marks":-5}',marks:-5,valid:false,err:'ValueError'},
+        {id:9,record:'{"name":"Usman2","marks":60}',marks:60,valid:true},
+        {id:10,record:'{"name":"Bilal","marks":77}',marks:77,valid:true},
+      ];
+      let pipeRunning=false;
+      function runPipeline(){
+        if(pipeRunning)return;pipeRunning=true;
+        const grid=document.getElementById('ps-grid');const sum=document.getElementById('ps-summary');
+        grid.innerHTML='';sum.className='ps-summary';
+        PIPELINE_DATA.forEach((r,i)=>{
+          const div=document.createElement('div');div.className='ps-row idle';div.id='pr'+i;
+          div.innerHTML=`<span class="ps-num">Record ${r.id}</span><span class="ps-val">${r.record}</span><span class="ps-status">⏳ Waiting</span>`;
+          grid.appendChild(div);
+        });
+        let ok=0,err=0;
+        PIPELINE_DATA.forEach((r,i)=>{
+          setTimeout(()=>{
+            const el=document.getElementById('pr'+i);
+            el.className='ps-row processing';
+            el.querySelector('.ps-status').textContent='⚙️ Processing';
+            setTimeout(()=>{
+              if(r.valid){ok++;el.className='ps-row success';const g=r.marks>=80?'A':r.marks>=60?'B':r.marks>=50?'C':'F';el.querySelector('.ps-status').textContent=`✅ Grade: ${g}`;}
+              else{err++;el.className='ps-row failed';el.querySelector('.ps-status').textContent=`❌ ${r.err}`;}
+              if(i===PIPELINE_DATA.length-1){
+                sum.className='ps-summary show';
+                sum.innerHTML=`✅ Processed: ${ok} | ❌ Errors: ${err} | 📊 Total: ${PIPELINE_DATA.length}\nError handling prevented ${err} crash(es). All ${ok} valid records processed!\n\nIn Python:\nfor record in dataset:\n  try:\n    result = process(record)\n  except Exception as e:\n    errors.append(str(e))\n    continue  # skip bad record, keep going`;
+                pipeRunning=false;
+              }
+            },300);
+          },i*220);
+        });
+      }
+      function resetPipeline(){
+        pipeRunning=false;
+        document.getElementById('ps-grid').innerHTML='<div style="text-align:center;color:var(--ink3);font-family:\'DM Mono\',monospace;font-size:.82rem;padding:16px">Click ▶ Run Pipeline to process all 10 records...</div>';
+        document.getElementById('ps-summary').className='ps-summary';
+      }
+
+      // ── PLAYGROUND 1 ──
+      function runValidator(){
+        const code=document.getElementById('v1-code').value;
+        const out=document.getElementById('v1-out');
+        if(!code.trim()){out.textContent='Write the code!';out.className='pgo';return;}
+        const hasRaise=code.includes('raise');
+        const hasTry=code.includes('try:');
+        const hasExcept=code.includes('except');
+        const hasFinally=code.includes('finally:');
+        const hasLoop=code.includes('for i, r in')||code.includes('for r in')||code.includes('for i,');
+        if(hasRaise&&hasTry&&hasExcept&&hasFinally&&hasLoop){
+          out.textContent='=== Processing 7 records ===\n✅ Ali      | 88    | Grade: A\n❌ Record 2 | ValueError: marks must be 0-100, got 150.0\n✅ Usman    | 72    | Grade: B\n❌ Record 4 | ValueError: could not convert string to float: \'abc\'\n✅ Zara     | 33    | Grade: F\n❌ Record 6 | TypeError: marks must be a number\n✅ Bilal    | 91    | Grade: A\n\n📊 Results: 4 processed, 3 errors\n📋 Validation complete (finally ran)';
+          out.className='pgo ok';
+        } else {
+          let h=[];
+          if(!hasTry)h.push('Need try: block');
+          if(!hasExcept)h.push('Need except block(s)');
+          if(!hasFinally)h.push('Need finally: block for cleanup');
+          if(!hasRaise)h.push('Need raise to trigger custom errors');
+          if(!hasLoop)h.push('Need to loop through records');
+          out.textContent=h.join('\n');out.className='pgo err';
+        }
+      }
+      function checkValidator(){
+        const code=document.getElementById('v1-code').value;
+        const fb=document.getElementById('v1-fb');fb.style.display='block';
+        const msgs=[
+          code.includes('try:')&&code.includes('except')&&code.includes('finally:')?'✅ try/except/finally all present':'❌ Need all three: try:, except, finally:',
+          code.includes('raise ValueError')||code.includes('raise TypeError')?'✅ raise used to trigger custom errors':'❌ Use raise ValueError("...") for invalid data',
+          code.includes('except (ValueError, TypeError)')||code.includes('except ValueError')?'✅ Specific exception types caught':'❌ Catch specific exceptions: except (ValueError, TypeError) as e:',
+          code.includes('errors.append')||code.includes('errors =')?'✅ Error log maintained':'❌ Maintain error list: errors = [] before loop',
+          code.includes('processed')||code.includes('count')||code.includes('Results')?'✅ Processing results tracked and reported':'❌ Track and report: processed count, error count',
+        ];
+        const sc=msgs.filter(m=>m.startsWith('✅')).length;
+        fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===5?'var(--green)':sc>=3?'var(--amber)':'var(--red)'}">${sc===5?'🎉 Perfect production validator!':sc>=3?`${sc}/5 — fix remaining`:'Review the try/except/finally structure'}</div></div>`;
+      }
+
+      // ── PLAYGROUND 2 ──
+      function runSafeLoader(){
+        const code=document.getElementById('sl-code').value;
+        const out=document.getElementById('sl-out');
+        if(!code.trim()){out.textContent='Write the code!';out.className='pgo';return;}
+        const hasSafeGet=code.includes('def safe_get')||(code.includes('try:')&&code.includes('KeyError'));
+        const hasLoop=code.includes('for r in');
+        const hasException=code.includes('except');
+        if(hasSafeGet&&hasLoop&&hasException){
+          out.textContent='=== Safe Record Processor ===\n✅ Ali        | marks: 88 | city: Karachi\n✅ Sara       | marks: 72 | city: Not specified\n✅ Unknown    | marks: 45 | city: Lahore\n✅ Ahmed      | marks: 0  | city: Islamabad\n✅ Zara       | marks: 91 | city: Peshawar\n\n✅ All records processed — missing keys used defaults, no crash!';
+          out.className='pgo ok';
+        } else {
+          let h=[];
+          if(!hasSafeGet)h.push('Need safe_get() using try/except KeyError');
+          if(!hasLoop)h.push('Need: for r in records:');
+          if(!hasException)h.push('Need except block to handle exceptions');
+          out.textContent=h.join('\n');out.className='pgo err';
+        }
+      }
+      function checkSafeLoader(){
+        const code=document.getElementById('sl-code').value;
+        const fb=document.getElementById('sl-fb');fb.style.display='block';
+        const b1=code.includes('def safe_get')||code.includes('try:')&&code.includes('except KeyError');
+        const b2=code.includes('KeyError');
+        const b3=code.includes('default')&&(code.includes("'N/A'")||code.includes('"N/A"')||code.includes("'Not specified'"));
+        const b4=code.includes('for r in records');
+        const msgs=[b1?'✅ safe_get() wrapper with try/except':'❌ Write def safe_get(record, key, default) using try/except KeyError',b2?'✅ KeyError caught correctly':'❌ Use except KeyError: for missing dict keys',b3?'✅ Default values for missing fields':'❌ Return default value when key is missing',b4?'✅ Records loop processes all entries':'❌ Loop: for r in records:'];
+        const sc=msgs.filter(m=>m.startsWith('✅')).length;
+        fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 Perfect! Safe data accessor pattern!':sc>=2?`${sc}/4 — fix remaining`:'Review the KeyError handling'}</div></div>`;
+      }
+
+      // ── BUG FIX ──
+      function runBugFix(){
+        const code=document.getElementById('bf-code').value;
+        const out=document.getElementById('bf-out');
+        if(!code.trim()){out.textContent='Write the fixed code!';out.className='pgo';return;}
+        const b1=code.includes('except ValueError')&&!code.match(/except\s*:/);
+        const b2=code.includes('except KeyError')&&!code.includes('except ValueError\n');
+        const b3=(code.includes('raise ValueError')||code.includes('raise TypeError'))&&!code.includes("raise 'Value");
+        const b4=code.includes('result = int(')&&(code.includes('try:')&&code.indexOf('result = int(')>code.indexOf('try:'));
+        if(b1&&b2&&b3&&b4){out.textContent='ValueError caught for int("hello")\nKeyError caught for missing key\nraised ValueError correctly\nrisky code inside try — protected!\n\n✅ All 4 bugs fixed!';out.className='pgo ok';}
+        else{let e=[];if(!b1)e.push('Bug 1: use "except ValueError:" — not bare except:');if(!b2)e.push('Bug 2: use "except KeyError:" — dict missing key is KeyError not ValueError');if(!b3)e.push('Bug 3: raise ValueError("message") — not raise "string"');if(!b4)e.push('Bug 4: put result = int("abc") INSIDE the try: block');out.textContent=e.join('\n');out.className='pgo err';}
+      }
+      function clearPG(c,o){document.getElementById(c).value='';document.getElementById(o).textContent='Click ▶ to see output...';document.getElementById(o).className='pgo';}
+      function checkBugFix(){
+        const code=document.getElementById('bf-code').value;
+        const fb=document.getElementById('bf-fb');fb.style.display='block';
+        const b1=code.includes('except ValueError')&&!code.match(/^except\s*:/m);
+        const b2=code.includes('except KeyError');
+        const b3=(code.includes('raise ValueError(')||code.includes('raise TypeError('))&&!code.includes("raise 'Value");
+        const b4=code.includes('result = int(')&&code.indexOf('result = int(')>code.indexOf('try:');
+        const msgs=[b1?'✅ Bug 1: except ValueError — specific, not bare except':'❌ Bug 1: change bare except: to except ValueError:',b2?'✅ Bug 2: except KeyError — correct for missing dict keys':'❌ Bug 2: d["missing"] raises KeyError, not ValueError',b3?'✅ Bug 3: raise ValueError("...") — proper exception object':'❌ Bug 3: raise ValueError("message") — not raise "string"',b4?'✅ Bug 4: risky code now inside try block':'❌ Bug 4: move result = int("abc") inside the try: block'];
+        const sc=msgs.filter(m=>m.startsWith('✅')).length;
+        fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 All 4 error handling bugs fixed!':sc>=2?`${sc}/4 fixed`:'Review each bug type'}</div></div>`;
+      }
+
+      // ── SCENARIOS ──
+      const scData=[
+        {q:'1. An ML pipeline loads marks from a CSV. Some cells contain "N/A" or missing values instead of numbers. int("N/A") crashes the program. Which is the correct fix?',opts:['Remove all N/A values from the CSV before running','Wrap int(row["marks"]) in try/except ValueError — skip bad rows, continue processing valid ones','Use if "N/A" in row: skip — this handles all cases','Wrap entire pipeline in one try/except at the top'],ans:1,exp:'Wrap each row\'s conversion in try/except ValueError. When int("N/A") raises ValueError, catch it, log the error, and continue to the next row. One bad row should never stop 9,999 valid rows. Wrapping the entire pipeline in one try/except would stop at the first error — same as no handling.'},
+        {q:'2. What does "finally" guarantee that makes it essential for production ML code?',opts:['finally runs only if no exception occurred','finally runs only when an exception occurs','finally ALWAYS runs — success or failure — perfect for closing files, logging completion, releasing locks','finally is the same as except Exception'],ans:2,exp:'"finally" runs in ALL cases: when try succeeds, when except catches an error, even when the code has a return statement. Use it for cleanup that MUST happen: close file handles, close database connections, log that processing completed, release memory. Without finally, an exception can leave files open or locks held.'},
+        {q:'3. Which exception is raised by int("hello")?',opts:['TypeError — wrong type passed to int()','KeyError — hello is not a key','ValueError — right type (string) but value cannot be converted','AttributeError — strings have no .int() method'],ans:2,exp:'ValueError: right type (str), wrong value ("hello" cannot become an int). Compare: TypeError is for wrong TYPE entirely (int(None), int([1,2,3])). The distinction matters — you need the right except type to catch the right error. except ValueError catches int("abc") but NOT int(None).'},
+        {q:'4. Why should you NEVER use bare except: without specifying an exception type?',opts:['It is slower than specific exceptions','It catches KeyboardInterrupt (Ctrl+C) and SystemExit — making the program impossible to stop, and hides all unknown bugs','Bare except only works in Python 2','It uses more memory'],ans:1,exp:'Bare except: catches EVERYTHING including signals that should never be caught: KeyboardInterrupt (Ctrl+C to stop program), SystemExit (os.exit() calls). It also silently swallows unexpected bugs you never planned for. Always use except ValueError:, except KeyError:, or at minimum except Exception as e: (which does NOT catch system signals).'},
+        {q:'5. In a validate_marks(m) function, the marks must be 0–100. How do you enforce this?',opts:['return False if marks are invalid','print("Invalid marks") and continue','raise ValueError(f"marks must be 0-100, got {m}") — caller must handle it in try/except','Use assert m >= 0 and m <= 100'],ans:2,exp:'raise ValueError("message") is the professional approach. The function signals bad data to the caller who must handle it in try/except. This is the "fail early" principle — detect bad data at the point of entry before it corrupts results. The caller decides how to handle it (skip, log, crash). assert is only for debugging — it can be disabled.'},
+      ];
+      let scDone=new Set(),scScore=0;
+      function buildScenarios(){
+        document.getElementById('sc-wrap').innerHTML=scData.map((s,i)=>`
+          <div class="scenario"><div class="sc-q">${s.q}</div><div class="sc-opts">${s.opts.map((o,j)=>`<div class="sc-opt" id="ss${i}_${j}" onclick="pickSc(${i},${j})"><div class="sc-l">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="sc-exp" id="sexp${i}"></div></div>`).join('');
+      }
+      function pickSc(qi,oi){
+        if(scDone.has(qi))return;scDone.add(qi);
+        const s=scData[qi];
+        for(let j=0;j<s.opts.length;j++){const el=document.getElementById('ss'+qi+'_'+j);el.classList.add('done');if(j===s.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+        const exp=document.getElementById('sexp'+qi);exp.textContent=s.exp;exp.classList.add('show',oi===s.ans?'ok':'no');
+        if(oi===s.ans)scScore++;
+        if(scDone.size===scData.length){const sc=document.getElementById('sc-score');sc.style.display='block';sc.innerHTML=scScore===5?'<span style="color:var(--green)">🎉 Perfect — 5/5!</span>':`<span style="color:var(--amber)">${scScore}/5 — review explanations above.</span>`;}
+      }
+      buildScenarios();
+
+      // ── AI TUTOR ──
+      const replies={
+        try:`try/except/finally — the three blocks:\n\ntry:\n    # Code that might raise an exception\n    # ALWAYS executes first\n    result = int("hello")  # this will raise ValueError\n\nexcept ValueError:\n    # Runs ONLY if ValueError occurred in try\n    print("Cannot convert to int")\n\nexcept ZeroDivisionError:\n    # Runs ONLY if ZeroDivisionError occurred\n    print("Cannot divide by zero")\n\nexcept Exception as e:\n    # Catch-all for anything else\n    print(f"Unexpected: {e}")\n\nfinally:\n    # ALWAYS runs — success or failure\n    print("Cleanup complete")\n\nFlow:\n→ try runs\n→ If exception: matching except runs\n→ If no exception: except is skipped\n→ finally ALWAYS runs at the end`,
+        finally:`finally ALWAYS executes — this is its entire purpose.\n\nScenario 1: NO exception:\n  try block → success → finally runs\n\nScenario 2: Exception caught:\n  try block → exception → except runs → finally runs\n\nScenario 3: Exception not caught:\n  try block → exception → not caught → finally runs → then crash\n\nWhy is this critical in ML?\n\n# Opening a file for writing results:\ntry:\n    f = open("results.csv", "w")\n    process_all_data(f)\nexcept Exception as e:\n    log_error(e)\nfinally:\n    f.close()  # closes even if exception occurred!\n\nWithout finally: if exception occurs between open() and close(),\nthe file stays locked and data may be lost!`,
+        raise:`"raise" deliberately triggers an exception:\n\ndef validate_marks(m):\n    if m < 0 or m > 100:\n        raise ValueError(f"marks must be 0-100, got {m}")\n    return "A" if m >= 80 else "B" if m >= 60 else "F"\n\n# The caller must handle it:\ntry:\n    grade = validate_marks(150)\nexcept ValueError as e:\n    print(f"Bad data: {e}")  # "marks must be 0-100, got 150"\n\nWhen to raise:\n• Data fails validation (marks > 100, age < 0)\n• Required field is missing\n• File format is wrong\n• Model input is wrong shape\n\nALWAYS raise an Exception object — not a string:\nraise ValueError("message")  ← CORRECT\nraise "message"              ← WRONG — SyntaxError\n\nThis is "fail fast" — detect bad data early, before it corrupts results.`,
+        exceptions:`The 6 most common Python exceptions in ML:\n\nValueError — right type, wrong value:\n  int("hello")   → ValueError\n  int(-5) → no error (int, valid)\n\nTypeError — wrong type entirely:\n  "5" + 5        → TypeError\n  int(None)      → TypeError\n\nKeyError — dict key doesn't exist:\n  d = {"name":"Ali"}\n  d["email"]     → KeyError: 'email'\n  Use: d.get("email", "N/A") instead!\n\nIndexError — list index out of range:\n  [1,2,3][9]     → IndexError\n\nFileNotFoundError — file doesn't exist:\n  open("missing.csv") → FileNotFoundError\n\nZeroDivisionError — divided by zero:\n  100 / 0        → ZeroDivisionError\n\nMemory trick:\n  ValueError = valid TYPE, invalid VALUE\n  TypeError = wrong TYPE entirely`,
+        pipeline:`The production ML pipeline pattern:\n\nerrors = []\nprocessed = 0\n\nfor i, record in enumerate(dataset):\n    try:\n        # Process each record individually\n        result = process(record)\n        processed += 1\n    except ValueError as e:\n        errors.append({"row": i, "error": str(e)})\n        continue  # SKIP this record, go to next\n    except TypeError as e:\n        errors.append({"row": i, "error": str(e)})\n        continue\n    except Exception as e:\n        errors.append({"row": i, "error": str(e)})\n        continue\n    finally:\n        pass  # or: log each record's completion\n\nprint(f"Processed: {processed}/{len(dataset)}")\nprint(f"Errors: {len(errors)}")\n\nResult: one bad record in 10,000 is logged and skipped.\nThe other 9,999 process successfully.`,
+        default:`Great question about Day 11 Error Handling! Key concepts:\n\n🛡️ try/except/finally:\n  try → code that might fail\n  except → runs only on error\n  finally → ALWAYS runs (cleanup!)\n\n🚨 Common exceptions:\n  ValueError → right type, wrong value\n  TypeError → wrong type\n  KeyError → dict key missing\n  IndexError → list index out of range\n  FileNotFoundError → file doesn't exist\n  ZeroDivisionError → /0\n\n🔺 raise:\n  raise ValueError("message")\n  → signal bad data to caller\n  → NOT raise "string" (wrong!)\n\n⚠️ NEVER bare except:\n  → catches Ctrl+C and SystemExit\n  → use except Exception as e: at minimum\n\n🤖 ML pipeline pattern:\n  for record in data:\n    try: process(record)\n    except Exception as e: log + continue\n\nWhat specific part would you like explained more?`
+      };
+      function sendChat(){
+        const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+        addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+        setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+          if(lm.includes('try')||lm.includes('except')&&!lm.includes('pipeline'))r=replies.try;
+          else if(lm.includes('finally'))r=replies.finally;
+          else if(lm.includes('raise'))r=replies.raise;
+          else if(lm.includes('exception')||lm.includes('valueerror')||lm.includes('typeerror')||lm.includes('keyerror'))r=replies.exceptions;
+          else if(lm.includes('pipeline')||lm.includes('production')||lm.includes('ml'))r=replies.pipeline;
+          addMsg(r,'ai');},700+Math.random()*500);
+      }
+      function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+      function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+      function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+      // ── FILL ──
+      const fillData=[
+        {q:'1. The block that runs code which might fail: ___:',ans:['try'],hint:'try'},
+        {q:'2. The block that runs ONLY if an exception occurred: ___:',ans:['except'],hint:'except'},
+        {q:'3. The block that ALWAYS runs, error or not: ___:',ans:['finally'],hint:'finally'},
+        {q:'4. To deliberately trigger an exception: ___ ValueError("message")',ans:['raise'],hint:'raise'},
+        {q:'5. int("hello") raises a ___.',ans:['valueerror','ValueError'],hint:'ValueError'},
+        {q:'6. d["missing_key"] on a dict raises a ___.',ans:['keyerror','KeyError'],hint:'KeyError'},
+        {q:'7. To catch the error message as variable e: except Exception ___ e:',ans:['as'],hint:'as'},
+        {q:'8. "5" + 5 raises a ___.',ans:['typeerror','TypeError'],hint:'TypeError'},
+        {q:'9. open("missing.csv") raises ___.',ans:['filenotfounderror','FileNotFoundError'],hint:'FileNotFoundError'},
+        {q:'10. In a production pipeline: log error, then ___ to process the next record.',ans:['continue'],hint:'continue'},
+      ];
+      function buildFill(){
+        document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Your answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+      }
+      function checkFill(){
+        fillScore=0;
+        fillData.forEach((q,i)=>{
+          const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+          const v=(el.value||'').trim().toLowerCase();
+          const ok=q.ans.some(a=>v===a.toLowerCase()||v.includes(a.toLowerCase()));
+          if(ok){fillScore++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+          else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.hint;}
+        });
+        updateProgress();
+        const sc=document.getElementById('fill-score');sc.style.display='block';
+        sc.innerHTML=fillScore===10?'<span style="color:var(--green)">🎉 Perfect — 10/10!</span>':fillScore>=7?`<span style="color:var(--amber)">${fillScore}/10 — good!</span>`:`<span style="color:var(--red)">${fillScore}/10 — re-read Day 11.</span>`;
+      }
+      function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+      buildFill();
+
+      // ── DEEP Q ──
+      function cc(el,id){document.getElementById(id).textContent=(el.value||'').length+' chars';}
+      function saveDQ(){
+        const empty=['dq1','dq2','dq3','dq4','dq5'].some(id=>!(document.getElementById(id).value||'').trim());
+        const m=document.getElementById('dq-msg');m.style.display='block';
+        if(empty){m.style.color='var(--red)';m.textContent='⚠️ Please answer all 5 questions.';}
+        else{m.style.color='var(--green)';m.textContent='✅ All 5 answers saved! Now tackle the MCQ Quiz!';}
+      }
+
+      // ── MCQ ──
+      const mcqs=[
+        {q:'What does the "except" block do?',opts:['Runs every time the try block executes','Runs ONLY when an exception occurs in the try block','Runs only when no exception occurs','Runs before the try block'],ans:1,exp:'"except" runs ONLY when an exception is raised in the corresponding "try" block. If try completes without error, all except blocks are skipped entirely. You can have multiple except blocks for different exception types.'},
+        {q:'What does "finally" guarantee?',opts:['Runs only when exception occurs','Runs only when no exception occurs','Runs ALWAYS — success or failure — every single time','Runs only on the last iteration of a loop'],ans:2,exp:'"finally" is unconditional — it runs in ALL circumstances: try succeeds, except catches an error, even if there is a return statement inside try/except. Use it for cleanup that must ALWAYS happen: close files, close database connections, release memory locks.'},
+        {q:'What exception does int("hello") raise?',opts:['TypeError — wrong type','AttributeError — str has no int attribute','ValueError — right type (str) but cannot convert "hello" to int','SyntaxError'],ans:2,exp:'ValueError: the input type is correct (str is a valid argument for int()) but the VALUE "hello" cannot be converted to an integer. Compare: int(None) → TypeError (None is wrong type). int("42") → no error. int("3.14") → ValueError (has a decimal).'},
+        {q:'Why is bare except: (without a type) dangerous?',opts:['It is slower than specific except','It catches KeyboardInterrupt and SystemExit — making the program impossible to stop and hiding real bugs','It only catches the first exception','Python 3 deprecated it'],ans:1,exp:'Bare "except:" catches EVERYTHING including signals the OS sends: KeyboardInterrupt (user presses Ctrl+C), SystemExit (program calls sys.exit()). This makes the program impossible to stop gracefully. It also swallows unexpected bugs — you never know what went wrong. Always specify: except ValueError: or at minimum except Exception as e:'},
+        {q:'Which code correctly raises a custom ValueError?',opts:['raise "marks must be 0-100"','throw ValueError("marks must be 0-100")','raise ValueError("marks must be 0-100")','error ValueError("marks must be 0-100")'],ans:2,exp:'"raise ValueError("message")" is correct Python syntax. Always raise an Exception object. "raise string" is a TypeError. "throw" is JavaScript syntax — Python uses "raise". This pattern is how you signal bad data to callers who must handle it with try/except.'},
+        {q:'An ML pipeline processes 10,000 records. Record 157 has bad data that causes ValueError. Using try/except in the loop, what happens to records 158–10,000?',opts:['They are all skipped — the loop exits','They process normally — try/except catches the error and continue resumes the loop','The pipeline crashes','They are processed but flagged as suspicious'],ans:1,exp:'try/except with continue — when ValueError occurs on record 157, the except block runs (log error), then continue skips to the next iteration. Records 158–10,000 process normally. This is the entire purpose of wrapping each record individually. One bad record NEVER stops the pipeline.'},
+        {q:'What is the difference between ValueError and TypeError?',opts:['No difference — both are the same','ValueError: right type, wrong value. TypeError: wrong type entirely.','ValueError is for files, TypeError is for dicts','TypeError is more serious than ValueError'],ans:1,exp:'ValueError: the type is correct but the value is invalid. int("hello") — str is valid for int(), but "hello" cannot be converted. TypeError: the type is completely wrong. int(None), "5" + 5, len(42) — None, mixing str+int, len of an int — the TYPE is wrong.'},
+        {q:'What does "except Exception as e:" capture?',opts:['Only ValueError','Nothing — Exception is not a valid type','Any exception except system-level ones (KeyboardInterrupt, SystemExit) — stores error in variable e','All exceptions including Ctrl+C'],ans:2,exp:'"except Exception as e:" catches all standard Python exceptions (ValueError, TypeError, KeyError, IndexError, FileNotFoundError, ZeroDivisionError, etc.) but does NOT catch KeyboardInterrupt and SystemExit (they inherit from BaseException, not Exception). The "as e" part stores the exception object so you can print its message: print(type(e).__name__, e).'},
+        {q:'A function loads a CSV file. What exception should you catch if the file might not exist?',opts:['ValueError','KeyError','FileNotFoundError','IOError (same thing)'],ans:2,exp:'FileNotFoundError is raised when open() cannot find the specified file. Always catch it when loading data files: try: with open("data.csv") as f: — except FileNotFoundError: print("File not found"). This prevents crashes when files are moved, renamed, or not yet created.'},
+        {q:'In the pipeline pattern, what does "continue" do after catching an exception?',opts:['Exits the loop completely','Reruns the current iteration','Skips the rest of the current iteration and goes to the next record','Pauses the loop for 1 second'],ans:2,exp:'"continue" inside a loop skips the remaining code in the current iteration and immediately starts the next one. In the ML pipeline: after catching an exception for record 157, continue skips to record 158. Without continue, the except block would fall through to code you may not want executed.'},
+        {q:'What does "type(e).__name__" give you when e is an exception?',opts:['The line number where the error occurred','The exception type name as a string: "ValueError", "KeyError", etc.','The full error traceback','The file where the error occurred'],ans:1,exp:'"type(e).__name__" gives the class name of the exception as a string. If e is a ValueError, type(e).__name__ = "ValueError". Used in logging: errors.append({"type": type(e).__name__, "msg": str(e)}). Very useful for generic error logging that records WHAT type of error occurred.'},
+        {q:'Which code correctly catches BOTH ValueError and KeyError?',opts:['except ValueError or KeyError:','except [ValueError, KeyError]:','except (ValueError, KeyError) as e:','except ValueError, KeyError as e:'],ans:2,exp:'"except (ValueError, KeyError) as e:" catches either exception in a tuple syntax. This is correct Python. "except ValueError or KeyError:" and "except [ValueError, KeyError]:" are syntax errors. "except ValueError, KeyError as e:" is also wrong syntax.'},
+        {q:'What is the "fail fast" principle in ML data validation?',opts:['Let the model fail when it encounters bad data','Detect and raise errors at data entry/validation stage — before bad data corrupts the pipeline','Use the fastest hardware for ML training','Reduce training epochs to fail faster'],ans:1,exp:'"Fail fast" — validate data at the point of entry, raise errors immediately when data is wrong. Better to crash validate_marks(-5) loudly than to let -5 propagate silently through normalisation, feature engineering, and model training — producing wrong results with no indication of why. raise early, catch at the right level.'},
+        {q:'try: x = 10 / 2 — except ZeroDivisionError: — print("done"). What is printed?',opts:['Nothing — x is never assigned','done','ZeroDivisionError occurred','Only "10/2=5.0" is printed'],ans:1,exp:'10/2=5.0 — no exception occurs. The except block is SKIPPED entirely. Execution continues after the try/except block: print("done") executes and outputs "done". If you wanted to see 5.0, you would need print(x) inside the try block.'},
+        {q:'When should you use "raise" in your own functions?',opts:['Never — only Python can raise exceptions','When input data is invalid and the function cannot proceed safely','After every function call','Only in finally blocks'],ans:1,exp:'Raise when your function receives data it cannot safely work with: marks outside 0-100, age negative, filename that doesn\'t end in .csv, None where a number is required. This enforces your function\'s contract. The caller catches the exception and decides what to do — skip, retry, crash with a clear message.'},
+        {q:'What happens if an exception occurs but no matching except block is found?',opts:['Python silently ignores it','finally runs, then the exception propagates up — crashing the program if not caught higher up','except Exception catches everything anyway','The try block reruns'],ans:1,exp:'If no except block matches the raised exception: finally runs (cleanup), then the exception propagates up the call stack. If nothing catches it at any level, the program crashes with a traceback. This is why except Exception as e: is used as a catch-all at the top level of pipelines — it catches anything not caught below.'},
+        {q:'In production ML code, where should try/except be placed for maximum record throughput?',opts:['One big try/except wrapping the entire pipeline loop','try/except inside the loop, wrapping each individual record's processing','try/except around the entire program','No try/except — trust the data'],ans:1,exp:'Wrap each individual record\'s processing inside the loop. This isolates failures — one bad record fails, the rest succeed. One big try/except at the loop level stops at the first error and skips all remaining records. Per-record try/except = maximum throughput with complete error logging.'},
+        {q:'[1,2,3][9] raises which exception?',opts:['ValueError — 9 is not valid','TypeError — integer used as index','KeyError — 9 not in list','IndexError — list index out of range'],ans:3,exp:'IndexError is raised when you try to access an index that doesn\'t exist in a list (or tuple). [1,2,3] has valid indices 0, 1, 2. Index 9 does not exist → IndexError. Compare with dict: d["missing"] → KeyError. The distinction matters: you need the right except type.'},
+        {q:'What is the purpose of "except Exception as e:" where "e" is captured?',opts:['e is required syntax — it doesn\'t store anything','e stores the exception object — you can print its message and type for logging','e is the error code number','e contains the line number that crashed'],ans:1,exp:'"as e" stores the exception object in variable e. str(e) gives the error message. type(e).__name__ gives the exception type name. This enables detailed logging: errors.append({"type": type(e).__name__, "message": str(e), "row": i}). Essential for production error tracking.'},
+        {q:'A student record has marks=None. float(None) is called. What exception occurs and how should it be handled?',opts:['ValueError — same as float("abc")','TypeError — None is the wrong type for float(). Catch TypeError and log the record.','No exception — None becomes 0.0','ZeroDivisionError'],ans:1,exp:'float(None) → TypeError: float() argument must be a string or a number, not \'NoneType\'. None is the WRONG TYPE (not ValueError which is wrong value). In the ML pipeline: except TypeError as e catches this, logs {"row": i, "error": "missing marks"}, and continues. Both ValueError and TypeError are common when processing real-world CSV data.'},
+      ];
+      function buildMCQ(){
+        document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 20</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.83rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+      }
+      function pickQ(qi,oi){
+        if(mcqDoneSet.has(qi))return;mcqDoneSet.add(qi);
+        const q=mcqs[qi];
+        for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+        const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+        if(oi===q.ans){mcqScore++;document.getElementById('live-sc').textContent=mcqScore;}
+        if(mcqDoneSet.size===20){document.getElementById('fin-btn').style.display='inline-flex';}
+        updateProgress();
+      }
+      function showFinal(){
+        const pct=Math.round(mcqScore/20*100);
+        document.getElementById('sb-ring').style.background=`conic-gradient(var(--green) ${pct}%,var(--rule) ${pct}%)`;
+        document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+        document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent Work!':pct>=60?'Good Effort!':'Keep Practising!';
+        document.getElementById('fin-msg').textContent=`Score: ${mcqScore}/20 (${pct}%) — ${pct>=80?'Error handling mastered! Ready for Day 12: OOP — Classes & Objects!':pct>=60?'Good foundation. Review incorrect answers before Day 12.':'Re-read Day 11 and retry.'}`;
+        const fc=document.getElementById('final-card');fc.classList.add('show');
+        document.getElementById('fin-btn').style.display='none';
+        fc.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+      buildMCQ();
+      setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+    </script>
+  </body>
+</html>

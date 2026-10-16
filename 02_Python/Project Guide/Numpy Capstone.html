@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NumPy for AI/ML — The Big Task Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F8FAFC;--surface:#FFFFFF;--border:#E2E8F0;--accent:#0891B2;--accent2:#0E7490;
+    --green:#059669;--text:#0F172A;--muted:#64748B;--tag-bg:#F1F5F9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;padding-bottom:60px;}
+  .hero{background:linear-gradient(135deg,#ECFEFF 0%,#CFFAFE 100%);padding:48px 24px 36px;text-align:center;border-bottom:2px solid var(--border);}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(24px,5vw,38px);font-weight:800;margin-bottom:10px;color:#0F172A;}
+  .hero h1 span{color:var(--accent);}
+  .hero p{color:var(--muted);max-width:600px;margin:0 auto 20px;font-size:14px;}
+  .stats-bar{max-width:700px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.04);}
+  .stat{text-align:center;}
+  .stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);}
+  .stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .progress-wrap{flex:1;min-width:180px;}
+  .progress-track{height:10px;background:var(--tag-bg);border-radius:99px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:99px;width:0%;transition:width .3s;}
+  .progress-label{font-size:11px;color:var(--muted);margin-top:6px;text-align:center;}
+  .container{max-width:880px;margin:0 auto;padding:30px 20px;}
+  .day-block{margin-bottom:36px;}
+  .day-title{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--accent2);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+  .day-sub{color:var(--muted);font-size:13px;margin-bottom:16px;}
+  .cat{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.03);}
+  .cat-head{padding:12px 18px;background:var(--tag-bg);display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .cat-head h3{font-size:14.5px;font-weight:700;color:#0F172A;}
+  .cat-count{font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--border);padding:2px 9px;border-radius:99px;}
+  .cat-body{padding:6px 10px;}
+  .task-wrap{border-radius:8px;margin-bottom:2px;}
+  .task{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:8px;transition:background .15s;}
+  .task:hover{background:var(--tag-bg);}
+  .task input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+  .task label{font-size:13.5px;cursor:pointer;color:var(--text);flex:1;}
+  .task-wrap.done label{color:var(--muted);text-decoration:line-through;}
+  .hint-btn{font-size:11px;font-weight:600;color:var(--accent2);background:#ECFEFF;border:1px solid #A5F3FC;padding:3px 9px;border-radius:99px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+  .hint-btn:hover{background:#CFFAFE;}
+  .hint-code{margin:2px 12px 10px 38px;background:#0F172A;border-radius:8px;overflow-x:auto;}
+  .hint-code pre{padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#A5F3FC;white-space:pre;line-height:1.6;}
+  .ml-tag{display:inline-block;font-size:10px;background:#CFFAFE;color:var(--accent2);padding:1px 7px;border-radius:99px;margin-left:6px;font-weight:600;vertical-align:middle;}
+  .footer-bar{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--border);padding:14px 20px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;}
+  .btn{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-outline{background:#fff;color:var(--muted);border:1.5px solid var(--border);}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+  .chevron{transition:transform .2s;color:var(--muted);}
+  .chevron.collapsed{transform:rotate(-90deg);}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>NumPy for <span>AI / ML</span> — The Big Task Tracker</h1>
+  <p>Every NumPy skill that actually shows up in real machine learning work — array math, broadcasting, linear algebra, data prep — organized into 3 progressive days. Check off tasks as you complete them; your progress saves automatically.</p>
+  <div class="stats-bar">
+    <div class="stat"><div class="num" id="done-count">0</div><div class="lbl">Completed</div></div>
+    <div class="stat"><div class="num" id="total-count">0</div><div class="lbl">Total Tasks</div></div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-label" id="progress-label">0% complete</div>
+    </div>
+  </div>
+</div>
+
+<div class="container" id="content"></div>
+
+<div class="footer-bar">
+  <button class="btn btn-outline" onclick="expandAll()">Expand All</button>
+  <button class="btn btn-outline" onclick="collapseAll()">Collapse All</button>
+  <button class="btn btn-outline" onclick="resetProgress()">Reset Progress</button>
+</div>
+
+<script>
+const data = [
+{
+  day: "Day 1 — Array Fundamentals for ML Data", sub: "Every ML pipeline starts here: getting your data into arrays and shaping it correctly.",
+  cats: [
+    { name: "Creating & Inspecting Arrays", tasks: [
+      ["You collected 8 house prices (in $1000s). Store them as a NumPy array.", "prices = np.array([250, 310, 190, 405, 275, 330, 220, 500])"],
+      ["You have a mini housing dataset: 5 houses, each with [sqft, bedrooms, age]. Store it as a 2D array (rows=houses).", "houses = np.array([[1400,3,10],[1600,3,15],[1100,2,5],[2200,4,20],[1800,3,8]])"],
+      ["Before feeding your housing array into a model, check its shape, data type, and number of dimensions.", "print(houses.shape, houses.dtype, houses.ndim)"],
+      ["You're about to initialize a neural network layer's weights — first create a zeros array of shape (3,1) as a placeholder.", "weights = np.zeros((3, 1))"],
+      ["Create a ones array of shape (5,1) to use as an initial 'bias' column you'll stack onto your dataset.", "bias_col = np.ones((5, 1))"],
+      ["Linear algebra textbooks use the identity matrix constantly — create a 4x4 identity matrix to test a matrix inversion function.", "I = np.eye(4)"],
+      ["You need 50 evenly spaced x-values between 0 and 10 to plot a model's decision boundary.", "x_vals = np.linspace(0, 10, 50)"],
+      ["Generate index numbers 0 through 19 to label 20 training samples.", "sample_ids = np.arange(20)"],
+    ]},
+    { name: "Indexing & Slicing (Selecting Your Data)", tasks: [
+      ["Pull out just the 3rd house (index 2) from your housing dataset to inspect one sample.", "print(houses[2])"],
+      ["Pull out just the 'sqft' column (column 0) from your housing dataset.", "sqft = houses[:, 0]"],
+      ["Grab the first 3 houses to use as a tiny training batch.", "batch = houses[:3]"],
+      ["Filter your dataset to only houses with more than 3 bedrooms — a common feature-based filter in EDA.", "big_houses = houses[houses[:, 1] > 3]"],
+      ["You want samples at positions 0, 2, and 4 specifically (e.g. a hand-picked validation set) — select them with fancy indexing.", "val_samples = houses[[0, 2, 4]]"],
+      ["Reverse your dataset's row order (e.g. to check if a model is order-sensitive).", "reversed_houses = houses[::-1]"],
+    ]},
+    { name: "Reshaping (Getting Data Model-Ready)", tasks: [
+      ["You flattened 100 pixel values from a 10x10 grayscale image — reshape them back into a 10x10 image array.", "image = pixels.reshape(10, 10)"],
+      ["Your CNN output is a 2D feature map — flatten it into 1D before passing it into a Dense layer.", "flat = feature_map.flatten()"],
+      ["scikit-learn's .fit() wants y as a column — reshape your 1D price array into a column vector.", "prices_col = prices.reshape(-1, 1)"],
+      ["You built a weight matrix but need its transpose to match dimensions for multiplication in a forward pass.", "weights_T = weights.T"],
+      ["You collected training data in two separate batches — stack them into one combined dataset (rows).", "full_data = np.vstack([batch1, batch2])"],
+      ["You have 'sqft' and 'age' as two separate 1D arrays — combine them side by side into one feature matrix.", "features = np.hstack([sqft.reshape(-1,1), age.reshape(-1,1)])"],
+    ]},
+    { name: "Random Data for ML Experiments", tasks: [
+      ["Initialize a small neural network's weight matrix (3x1) with random values between 0 and 1.", "weights = np.random.rand(3, 1)"],
+      ["Use the standard 'He/Xavier-style' initialization — random weights from a normal distribution.", "weights = np.random.randn(3, 1) * 0.01"],
+      ["Your teammate can't reproduce your random results — fix that by setting a seed before generating data.", "np.random.seed(42)"],
+      ["Before splitting into train/test, shuffle your dataset's rows so classes aren't ordered.", "np.random.shuffle(houses)"],
+      ["Randomly select 3 houses out of your 5 to simulate pulling a mini-batch for training.", "batch_idx = np.random.choice(5, 3, replace=False)\nbatch = houses[batch_idx]"],
+    ]},
+  ]
+},
+{
+  day: "Day 2 — Math Operations Behind ML Algorithms", sub: "The actual computations happening inside every model: vectorized math, broadcasting, and stats.",
+  cats: [
+    { name: "Vectorized Math (No Loops!)", tasks: [
+      ["Add a bias array to a layer's raw output — element-wise, no loop.", "output = raw_output + bias"],
+      ["Convert house prices from thousands to actual dollars by multiplying every value by 1000.", "prices_usd = prices * 1000"],
+      ["Compute squared errors between predictions and true prices — the core of MSE loss.", "squared_errors = (predictions - true_prices) ** 2"],
+      ["Apply exp() to a layer's raw scores as the first step of computing softmax probabilities.", "exp_scores = np.exp(scores)"],
+      ["Compute the RMSE of your model by taking the square root of the mean squared error.", "rmse = np.sqrt(np.mean(squared_errors))"],
+      ["Check which predictions were 'correct' by comparing predicted labels to true labels element-wise.", "correct = predictions == true_labels"],
+      ["Prove vectorization matters: time squaring 1 million numbers with a for-loop vs with NumPy.", "import time\nt0=time.time(); arr**2; print(time.time()-t0)"],
+    ]},
+    { name: "Broadcasting (Combining Different Shapes)", tasks: [
+      ["Center your housing features by subtracting the per-column mean from every row — this IS mean normalization.", "centered = houses - houses.mean(axis=0)"],
+      ["Scale each feature column by its own std dev, dividing all rows at once — this IS standardization.", "scaled = centered / houses.std(axis=0)"],
+      ["Add a single bias value to every sample's output in one line, no loop over samples.", "output = layer_out + bias_value"],
+      ["Write one sentence explaining why broadcasting replaces a 'for each row: subtract mean' loop.", "# no code — broadcasting expands the (n,) mean to match (m,n) automatically"],
+    ]},
+    { name: "Aggregations & Statistics (Understanding Your Data)", tasks: [
+      ["Calculate the average price across your entire housing dataset.", "avg_price = prices.mean()"],
+      ["Get the average value of EACH feature column (sqft, bedrooms, age) separately — a standard EDA first step.", "col_means = houses.mean(axis=0)"],
+      ["Get the spread (std dev) of each feature — needed before deciding if scaling is required.", "col_stds = houses.std(axis=0)"],
+      ["Find the min and max sqft in your dataset to check for outliers.", "print(houses[:,0].min(), houses[:,0].max())"],
+      ["Sum up a sample's activations across a layer (row-wise sum) — common in pooling operations.", "row_sums = layer_output.sum(axis=1)"],
+      ["Fully standardize your housing dataset (mean 0, std 1) in one line — classic ML preprocessing.", "standardized = (houses - houses.mean(axis=0)) / houses.std(axis=0)"],
+      ["Your model output 3 class scores per sample — get the PREDICTED CLASS index for each sample.", "predicted_class = np.argmax(scores, axis=1)"],
+      ["Find which sample has the LOWEST predicted price — useful for spotting a weird model output.", "cheapest_idx = np.argmin(predictions)"],
+    ]},
+    { name: "Working with Missing or Bad Data", tasks: [
+      ["A real dataset arrived with some missing sensor readings — simulate that with NaN values.", "data = np.array([1.2, np.nan, 3.4, np.nan, 5.1])"],
+      ["Before cleaning, count exactly how many missing values you're dealing with.", "missing_count = np.isnan(data).sum()"],
+      ["Calculate the true average of a column that has missing values, ignoring the NaNs.", "clean_mean = np.nanmean(data)"],
+      ["Impute the missing values in a feature column with that column's mean — a common quick-fix strategy.", "data[np.isnan(data)] = np.nanmean(data)"],
+      ["Remove outlier houses where price is more than 3 std devs from the mean, before training.", "mask = np.abs(prices - prices.mean()) <= 3*prices.std()\nclean_prices = prices[mask]"],
+    ]},
+  ]
+},
+{
+  day: "Day 3 — Linear Algebra & ML-Specific Patterns", sub: "The exact operations powering linear regression, neural network layers, and PCA.",
+  cats: [
+    { name: "Matrix Operations (Neural Network Core)", tasks: [
+      ["Compute the output of a Dense layer: multiply your input batch by the weight matrix.", "layer_output = X @ weights"],
+      ["Calculate cosine-similarity-style dot product between two embedding vectors (e.g. two product embeddings).", "similarity = np.dot(vec_a, vec_b)"],
+      ["You need weights^T to make matrix shapes line up for backpropagation — transpose it.", "weights_T = weights.T"],
+      ["Run one full forward pass: multiply your housing feature matrix by a random weight vector.", "raw_pred = houses @ weights"],
+      ["Complete the forward pass by adding the bias term after the matrix multiply.", "raw_pred = houses @ weights + bias"],
+    ]},
+    { name: "Solving & Decomposing (Under the Hood of ML Models)", tasks: [
+      ["You need to manually invert a small covariance matrix as part of a Gaussian model.", "cov_inv = np.linalg.inv(cov_matrix)"],
+      ["Solve for linear regression coefficients directly using the normal equation, instead of gradient descent.", "coeffs = np.linalg.solve(X.T @ X, X.T @ y)"],
+      ["Check if your feature matrix is invertible (non-singular) before running the equation above.", "det = np.linalg.det(X.T @ X)"],
+      ["Run PCA's core step: get the eigenvalues/eigenvectors of your housing dataset's covariance matrix.", "eigvals, eigvecs = np.linalg.eig(np.cov(houses.T))"],
+      ["Reduce your dataset's dimensions using SVD, keeping only the top 2 components.", "U, S, Vt = np.linalg.svd(houses - houses.mean(axis=0))\nreduced = U[:, :2] * S[:2]"],
+    ]},
+    { name: "Building a Tiny ML Algorithm From Scratch", tasks: [
+      ["Implement the sigmoid function so you can build a logistic regression classifier from scratch.", "def sigmoid(z): return 1 / (1 + np.exp(-z))"],
+      ["Implement softmax so a 3-class classifier's raw scores become probabilities.", "def softmax(z): e = np.exp(z - z.max()); return e / e.sum()"],
+      ["Implement MSE loss to score how good your regression model's predictions are.", "def mse(y_true, y_pred): return np.mean((y_true - y_pred) ** 2)"],
+      ["Implement a full forward pass for linear regression: y = Xw + b.", "def forward(X, w, b): return X @ w + b"],
+      ["Implement one gradient descent update step for your weights.", "w = w - learning_rate * gradient"],
+      ["Implement KNN's core step: compute distance from one new house to every house in your dataset.", "distances = np.sqrt(np.sum((houses - new_house)**2, axis=1))"],
+    ]},
+    { name: "Real Dataset Prep Pipeline (Putting It All Together)", tasks: [
+      ["You exported a CSV of housing data — load it straight into a NumPy array.", "data = np.genfromtxt('houses.csv', delimiter=',', skip_header=1)"],
+      ["Split your loaded dataset into features (X) and target price (y).", "X = data[:, :-1]\ny = data[:, -1]"],
+      ["Shuffle and split your data into 80% train / 20% test sets.", "idx = np.random.permutation(len(X))\nsplit = int(0.8*len(X))\nX_train, X_test = X[idx[:split]], X[idx[split:]]"],
+      ["Normalize your TRAINING features using their own mean/std.", "mean, std = X_train.mean(axis=0), X_train.std(axis=0)\nX_train_norm = (X_train - mean) / std"],
+      ["Apply the SAME train-set mean/std to normalize your test set — never recompute stats on test data.", "X_test_norm = (X_test - mean) / std"],
+      ["Convert 3 house categories ('small','medium','large') into one-hot encoded arrays for a model.", "labels = np.array([0,2,1,0])\none_hot = np.eye(3)[labels]"],
+      ["Calculate your model's accuracy by comparing predictions to true labels.", "accuracy = np.mean(predictions == y_test)"],
+    ]},
+  ]
+},
+];
+
+let taskId = 0;
+function render(){
+  const container = document.getElementById('content');
+  container.innerHTML = '';
+  data.forEach((day, di) => {
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'day-block';
+    dayDiv.innerHTML = `<div class="day-title">📘 ${day.day}</div><div class="day-sub">${day.sub}</div>`;
+    day.cats.forEach((cat, ci) => {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'cat';
+      const bodyId = `cat-${di}-${ci}`;
+      catDiv.innerHTML = `
+        <div class="cat-head" onclick="toggleCat('${bodyId}')">
+          <h3>${cat.name}</h3>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="cat-count" id="count-${bodyId}"></span>
+            <span class="chevron" id="chev-${bodyId}">▼</span>
+          </div>
+        </div>
+        <div class="cat-body" id="${bodyId}"></div>`;
+      dayDiv.appendChild(catDiv);
+      const body = catDiv.querySelector(`#${bodyId}`);
+      cat.tasks.forEach(([taskText, hintCode]) => {
+        const id = `task-${taskId++}`;
+        const taskDiv = document.createElement('div');
+        taskDiv.className = 'task-wrap';
+        taskDiv.id = `row-${id}`;
+        taskDiv.innerHTML = `
+          <div class="task">
+            <input type="checkbox" id="${id}" onchange="toggleTask('${id}')">
+            <label for="${id}">${taskText}</label>
+            <button class="hint-btn" onclick="toggleHint('${id}')">💡 Hint</button>
+          </div>
+          <div class="hint-code" id="hint-${id}" style="display:none;"><pre>${hintCode.replace(/</g,'&lt;')}</pre></div>`;
+        body.appendChild(taskDiv);
+      });
+    });
+    container.appendChild(dayDiv);
+  });
+  updateAllCounts();
+  loadProgress();
+  updateStats();
+}
+
+function toggleCat(id){
+  const body = document.getElementById(id);
+  const chev = document.getElementById(`chev-${id}`);
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? 'block' : 'none';
+  chev.classList.toggle('collapsed', !isHidden);
+}
+function expandAll(){ document.querySelectorAll('.cat-body').forEach(b=>b.style.display='block'); document.querySelectorAll('.chevron').forEach(c=>c.classList.remove('collapsed')); }
+function collapseAll(){ document.querySelectorAll('.cat-body').forEach(b=>b.style.display='none'); document.querySelectorAll('.chevron').forEach(c=>c.classList.add('collapsed')); }
+
+function toggleTask(id){
+  const cb = document.getElementById(id);
+  const row = document.getElementById(`row-${id}`);
+  row.classList.toggle('done', cb.checked);
+  saveProgress();
+  updateStats();
+  updateAllCounts();
+}
+
+function toggleHint(id){
+  const hint = document.getElementById(`hint-${id}`);
+  hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+}
+
+function updateAllCounts(){
+  document.querySelectorAll('.cat').forEach(cat => {
+    const body = cat.querySelector('.cat-body');
+    const boxes = body.querySelectorAll('input[type=checkbox]');
+    const done = body.querySelectorAll('input[type=checkbox]:checked').length;
+    const countEl = cat.querySelector('.cat-count');
+    if(countEl) countEl.textContent = `${done}/${boxes.length}`;
+  });
+}
+
+function updateStats(){
+  const all = document.querySelectorAll('input[type=checkbox]');
+  const done = document.querySelectorAll('input[type=checkbox]:checked');
+  document.getElementById('done-count').textContent = done.length;
+  document.getElementById('total-count').textContent = all.length;
+  const pct = all.length ? Math.round((done.length/all.length)*100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${pct}% complete`;
+}
+
+function saveProgress(){
+  const state = {};
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => state[cb.id] = cb.checked);
+  try{ localStorage.setItem('numpy_ml_tracker', JSON.stringify(state)); }catch(e){}
+}
+function loadProgress(){
+  try{
+    const state = JSON.parse(localStorage.getItem('numpy_ml_tracker') || '{}');
+    Object.keys(state).forEach(id => {
+      const cb = document.getElementById(id);
+      if(cb && state[id]){ cb.checked = true; document.getElementById(`row-${id}`).classList.add('done'); }
+    });
+  }catch(e){}
+}
+function resetProgress(){
+  if(!confirm('Reset all progress? This cannot be undone.')) return;
+  try{ localStorage.removeItem('numpy_ml_tracker'); }catch(e){}
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = false; document.getElementById(`row-${cb.id}`).classList.remove('done'); });
+  updateStats();
+  updateAllCounts();
+}
+
+render();
+</script>
+</body>
+</html>

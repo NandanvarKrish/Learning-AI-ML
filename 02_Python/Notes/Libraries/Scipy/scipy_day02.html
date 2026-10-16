@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SciPy – Day 2 | Hypothesis Testing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FEF2F2;--surface:#FFFFFF;--border:#FECACA;--accent:#B91C1C;--accent2:#7F1D1D;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;
+    --text:#450A0A;--muted:#B91C1C;--code-bg:#1C0505;--code-text:#FECACA;--tag-bg:#FEE2E2;--tag-text:#7F1D1D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(185,28,28,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#B91C1C 0%,#7F1D1D 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#FECACA;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#F87171;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FCA5A5;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FDE68A;} .cm{color:#7F1D1D;font-style:italic;} .op{color:#FECACA;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.green .callout-title{color:var(--green);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#7F1D1D,#B91C1C);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .decision-tree{border:1px solid var(--border);border-radius:10px;padding:18px;background:var(--bg);margin:14px 0;}
+  .dt-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13.5px;}
+  .dt-q{font-weight:600;color:var(--accent2);min-width:200px;}
+  .dt-a{background:var(--tag-bg);color:var(--tag-text);padding:3px 10px;border-radius:6px;font-size:12.5px;font-family:'JetBrains Mono',monospace;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B91C1C,#7F1D1D);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#B91C1C,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔬 SciPy</div><span class="sep">|</span><span class="day-label">Day 2 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">40%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:40%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">SciPy Full Course · Day 2</div>
+  <h1>Hypothesis <span>Testing</span></h1>
+  <p>The statistical inference toolkit — t-tests, ANOVA, chi-squared, and non-parametric alternatives to rigorously answer "is this difference real?"</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🧪 Hypothesis Testing Framework</span>
+    <span class="hero-pill">📊 T-Tests</span>
+    <span class="hero-pill">📈 ANOVA</span>
+    <span class="hero-pill">🔲 Chi-Squared Tests</span>
+    <span class="hero-pill">🔀 Non-Parametric Tests</span>
+    <span class="hero-pill">🔗 Correlation Tests</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🧪</div>
+    <div><h2>The Hypothesis Testing Framework</h2><p>The logic behind every statistical test you'll ever run</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Every hypothesis test follows the SAME logical structure, regardless of which specific test you use.</p>
+
+    <div class="fbox">
+      <div class="ft">🧪 The Universal Framework</div>
+      <div class="fm">H₀ (Null Hypothesis)     → "There is NO real difference/effect" (the default assumption)</div>
+      <div class="fm">H₁ (Alternative)         → "There IS a real difference/effect"</div>
+      <div class="fm">p-value                  → P(seeing data this extreme or more) IF H₀ were actually true</div>
+      <div class="fm">α (alpha, usually 0.05)  → the threshold below which we "reject" H₀</div>
+      <div class="fnote">Decision rule: if p-value < α, reject H₀ (result is "statistically significant"). Otherwise, fail to reject H₀ (not enough evidence).</div>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 What a p-value Does NOT Mean</div>
+      A p-value is NOT "the probability H₀ is true." It's the probability of observing data this extreme (or more) ASSUMING H₀ is true. A small p-value means "this data would be unusual if there were truly no effect" — evidence AGAINST H₀, not proof of H₁.
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># Every SciPy hypothesis test returns the SAME pattern: a statistic and a p-value</span>
+statistic, p_value = stats.<span class="fn">ttest_ind</span>(group_a, group_b)
+
+<span class="kw">if</span> p_value < <span class="nm">0.05</span>:
+    <span class="fn">print</span>(<span class="st">"Statistically significant — reject H0"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"Not statistically significant — fail to reject H0"</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>T-Tests — Comparing Means</h2><p>One-sample, two-sample independent, and paired variants</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># ── ONE-SAMPLE t-test: is the sample mean different from a KNOWN value? ──</span>
+sample = <span class="op">np</span>.array([<span class="nm">98.2</span>,<span class="nm">98.6</span>,<span class="nm">99.1</span>,<span class="nm">98.4</span>,<span class="nm">98.9</span>,<span class="nm">98.3</span>,<span class="nm">99.0</span>])
+t_stat, p_val = stats.<span class="fn">ttest_1samp</span>(sample, popmean=<span class="nm">98.6</span>)   <span class="cm"># H0: mean == 98.6 (normal body temp)</span>
+
+<span class="cm"># ── TWO-SAMPLE INDEPENDENT t-test: are TWO separate groups' means different? ──</span>
+group_a = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">50</span>, <span class="nm">10</span>, <span class="nm">40</span>)   <span class="cm"># e.g., Control group scores</span>
+group_b = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">55</span>, <span class="nm">10</span>, <span class="nm">40</span>)   <span class="cm"># e.g., Treatment group scores</span>
+
+t_stat, p_val = stats.<span class="fn">ttest_ind</span>(group_a, group_b)                     <span class="cm"># assumes EQUAL variances (default)</span>
+t_stat, p_val = stats.<span class="fn">ttest_ind</span>(group_a, group_b, equal_var=<span class="kw">False</span>)   <span class="cm"># Welch's t-test — safer, doesn't assume equal variance</span>
+
+<span class="cm"># ── PAIRED t-test: SAME subjects measured twice (before/after) ──</span>
+before = <span class="op">np</span>.array([<span class="nm">72</span>,<span class="nm">68</span>,<span class="nm">75</span>,<span class="nm">70</span>,<span class="nm">74</span>])
+after  = <span class="op">np</span>.array([<span class="nm">68</span>,<span class="nm">65</span>,<span class="nm">70</span>,<span class="nm">66</span>,<span class="nm">70</span>])
+t_stat, p_val = stats.<span class="fn">ttest_rel</span>(before, after)   <span class="cm"># "related"/paired samples</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Test</th><th>When to Use</th></tr>
+        <tr><td><code>ttest_1samp</code></td><td>Compare ONE sample's mean to a known/hypothesized value</td></tr>
+        <tr><td><code>ttest_ind</code></td><td>Compare means of TWO INDEPENDENT/separate groups</td></tr>
+        <tr><td><code>ttest_rel</code></td><td>Compare means of the SAME subjects measured twice (before/after, paired)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Default to Welch's t-test (equal_var=False)</div>
+      Standard Student's t-test (equal_var=True, the SciPy default) assumes both groups have equal variance — an assumption often violated in practice. Welch's t-test (equal_var=False) doesn't require this assumption and performs nearly as well when variances ARE equal, making it the generally SAFER default choice.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">📈</div>
+    <div><h2>ANOVA — Comparing 3+ Group Means</h2><p>One test instead of many pairwise t-tests</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>ANOVA</strong> (Analysis of Variance) tests whether AT LEAST ONE group's mean differs from the others, across 3 or more groups — without inflating false-positive risk from running many separate t-tests.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># One-way ANOVA: comparing 3+ independent groups</span>
+method_a = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">75</span>, <span class="nm">8</span>, <span class="nm">30</span>)    <span class="cm"># Teaching Method A scores</span>
+method_b = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">78</span>, <span class="nm">8</span>, <span class="nm">30</span>)    <span class="cm"># Teaching Method B scores</span>
+method_c = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">82</span>, <span class="nm">8</span>, <span class="nm">30</span>)    <span class="cm"># Teaching Method C scores</span>
+
+f_stat, p_val = stats.<span class="fn">f_oneway</span>(method_a, method_b, method_c)
+
+<span class="kw">if</span> p_val < <span class="nm">0.05</span>:
+    <span class="fn">print</span>(<span class="st">"At least one method differs significantly — but WHICH ones?"</span>)
+    <span class="cm"># ANOVA tells you THAT a difference exists, but not WHICH pairs differ —
+    # for that, you need a POST-HOC test (e.g., Tukey's HSD, available in statsmodels)</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Why Not Just Run Many t-tests Instead?</div>
+      Running separate t-tests for every pair (A vs B, A vs C, B vs C) inflates the overall false-positive rate — with enough comparisons, you're increasingly likely to find a "significant" result purely by chance. ANOVA tests all groups simultaneously with proper error control, answering "is there ANY difference among these groups?" in one test.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🔲</div>
+    <div><h2>Chi-Squared Tests — Categorical Data</h2><p>Testing relationships and goodness-of-fit for counts/categories</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># ── Chi-squared TEST OF INDEPENDENCE: are 2 categorical variables related? ──</span>
+<span class="cm"># Example: is there a relationship between Department and Promotion status?</span>
+<span class="cm">#                Promoted   NotPromoted</span>
+<span class="cm"># Engineering      45           105</span>
+<span class="cm"># Sales            38            82</span>
+<span class="cm"># Marketing        20            60</span>
+observed = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">45</span>,<span class="nm">105</span>], [<span class="nm">38</span>,<span class="nm">82</span>], [<span class="nm">20</span>,<span class="nm">60</span>]])
+
+chi2_stat, p_val, dof, expected = stats.<span class="fn">chi2_contingency</span>(observed)
+<span class="fn">print</span>(<span class="st">f"p-value: {p_val:.4f}"</span>)
+<span class="fn">print</span>(<span class="st">"Expected counts under independence:"</span>, expected)
+<span class="cm"># p < 0.05 → department and promotion status are likely NOT independent (some relationship exists)</span>
+
+<span class="cm"># ── Chi-squared GOODNESS OF FIT: does observed data match an EXPECTED distribution? ──</span>
+<span class="cm"># Example: is a die fair? Rolled 60 times, expect 10 of each face</span>
+observed_rolls = [<span class="nm">8</span>, <span class="nm">12</span>, <span class="nm">9</span>, <span class="nm">11</span>, <span class="nm">7</span>, <span class="nm">13</span>]
+expected_rolls = [<span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">10</span>]
+
+chi2_stat, p_val = stats.<span class="fn">chisquare</span>(observed_rolls, f_exp=expected_rolls)
+<span class="cm"># p < 0.05 → the die's roll pattern deviates significantly from fair/uniform expectations</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Function</th><th>Question Answered</th></tr>
+        <tr><td><code>chi2_contingency</code></td><td>Are TWO categorical variables related/associated? (independence test)</td></tr>
+        <tr><td><code>chisquare</code></td><td>Does observed count data match an EXPECTED theoretical distribution? (goodness-of-fit)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🔀</div>
+    <div><h2>Non-Parametric Tests</h2><p>When your data doesn't meet normality assumptions</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>Non-parametric tests</strong> don't assume the data follows any specific distribution (like normal) — safer choices when data is skewed, has outliers, or is ordinal rather than truly numeric.</p>
+
+    <div class="decision-tree">
+      <div class="dt-row"><span class="dt-q">Comparing 2 independent groups, non-normal data?</span><span class="dt-a">stats.mannwhitneyu()</span></div>
+      <div class="dt-row"><span class="dt-q">Comparing paired/before-after, non-normal data?</span><span class="dt-a">stats.wilcoxon()</span></div>
+      <div class="dt-row"><span class="dt-q">Comparing 3+ independent groups, non-normal data?</span><span class="dt-a">stats.kruskal()</span></div>
+      <div class="dt-row"><span class="dt-q">Checking if a sample IS normally distributed?</span><span class="dt-a">stats.shapiro()</span></div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Mann-Whitney U — non-parametric alternative to ttest_ind</span>
+stat, p_val = stats.<span class="fn">mannwhitneyu</span>(group_a, group_b)
+
+<span class="cm"># Wilcoxon signed-rank — non-parametric alternative to ttest_rel</span>
+stat, p_val = stats.<span class="fn">wilcoxon</span>(before, after)
+
+<span class="cm"># Kruskal-Wallis — non-parametric alternative to one-way ANOVA</span>
+stat, p_val = stats.<span class="fn">kruskal</span>(method_a, method_b, method_c)
+
+<span class="cm"># ALWAYS check normality FIRST to decide which family of test to use</span>
+stat, p_val = stats.<span class="fn">shapiro</span>(sample_data)
+<span class="kw">if</span> p_val > <span class="nm">0.05</span>:
+    <span class="fn">print</span>(<span class="st">"Consistent with normal — use t-test/ANOVA"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"NOT consistent with normal — use Mann-Whitney/Kruskal instead"</span>)</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Parametric vs Non-Parametric — The Decision Path</div>
+      Check normality (Shapiro-Wilk or Q-Q plot) first. If data looks normal AND sample sizes are reasonable, parametric tests (t-test, ANOVA) have more statistical power. If data is skewed, has outliers, is ordinal, or sample sizes are small, non-parametric tests are the SAFER, more robust choice.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔗</div>
+    <div><h2>Correlation Tests</h2><p>Pearson vs Spearman — testing relationships between numeric variables</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Pearson correlation — measures LINEAR relationship strength, assumes roughly normal data</span>
+r, p_val = stats.<span class="fn">pearsonr</span>(hours_studied, exam_scores)
+<span class="fn">print</span>(<span class="st">f"Pearson r={r:.3f}, p={p_val:.4f}"</span>)
+
+<span class="cm"># Spearman correlation — measures MONOTONIC relationship (not necessarily linear),
+# uses RANKS instead of raw values — robust to outliers and non-linear (but monotonic) trends</span>
+rho, p_val = stats.<span class="fn">spearmanr</span>(hours_studied, exam_scores)
+<span class="fn">print</span>(<span class="st">f"Spearman rho={rho:.3f}, p={p_val:.4f}"</span>)
+
+<span class="cm"># Kendall's Tau — another rank-based correlation, more robust for small samples with many ties</span>
+tau, p_val = stats.<span class="fn">kendalltau</span>(hours_studied, exam_scores)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Method</th><th>Detects</th><th>Sensitive to Outliers?</th></tr>
+        <tr><td>Pearson (r)</td><td>Linear relationships only</td><td>Yes — uses raw values</td></tr>
+        <tr><td>Spearman (ρ)</td><td>Any monotonic relationship (linear or curved)</td><td>No — uses ranks</td></tr>
+        <tr><td>Kendall (τ)</td><td>Monotonic, better for small/tied data</td><td>No — uses ranks</td></tr>
+      </table>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Correlation ≠ Causation, and p-value ≠ Effect Size</div>
+      A tiny p-value with a huge sample size can arise from a correlation coefficient (r) that's statistically significant but PRACTICALLY tiny (e.g., r=0.05). Always report and interpret both the correlation COEFFICIENT (strength/direction) and the p-value (statistical confidence) together — never one alone.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">stats.ttest_ind()</div><div class="mc-desc">Compare 2 independent group means</div><div class="mc-ex">equal_var=False</div></div>
+      <div class="mini-card"><div class="mc-name">stats.f_oneway()</div><div class="mc-desc">Compare 3+ group means</div><div class="mc-ex">ANOVA F-test</div></div>
+      <div class="mini-card"><div class="mc-name">stats.chi2_contingency()</div><div class="mc-desc">Categorical variable relationship</div><div class="mc-ex">returns chi2,p,dof,expected</div></div>
+      <div class="mini-card"><div class="mc-name">stats.mannwhitneyu()</div><div class="mc-desc">Non-parametric 2-group test</div><div class="mc-ex">alt to ttest_ind</div></div>
+      <div class="mini-card"><div class="mc-name">stats.pearsonr()</div><div class="mc-desc">Linear correlation + p-value</div><div class="mc-ex">returns (r, p)</div></div>
+      <div class="mini-card"><div class="mc-name">stats.shapiro()</div><div class="mc-desc">Normality test</div><div class="mc-ex">p>0.05 = normal-consistent</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>T-tests, ANOVA, chi-squared, non-parametric, correlation. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#B91C1C">🏆</div>
+    <div><h2>Real-World Task — A/B Test &amp; Clinical Trial Analysis</h2><p>Estimated time: 85–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Data Scientist</strong> at a healthtech company. Analyze a website A/B test AND a clinical trial dataset using the full range of hypothesis testing tools.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#B91C1C">1</div><h4>Phase 1 — A/B Test: Conversion Rate Comparison</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Analyze Conversion Data with Chi-Squared</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="cm"># A/B test: Control (old design) vs Treatment (new design)</span>
+<span class="cm">#              Converted   NotConverted</span>
+<span class="cm"># Control         180          1820</span>
+<span class="cm"># Treatment       225          1775</span>
+conversion_table = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">180</span>,<span class="nm">1820</span>], [<span class="nm">225</span>,<span class="nm">1775</span>]])
+
+chi2_stat, p_val, dof, expected = stats.<span class="fn">chi2_contingency</span>(conversion_table)
+<span class="fn">print</span>(<span class="st">f"Chi2 p-value: {p_val:.4f}"</span>)
+<span class="fn">print</span>(<span class="st">f"Control rate: {180/2000:.1%}, Treatment rate: {225/2000:.1%}"</span>)</pre></div>
+          <p>Interpret the result: is the conversion rate improvement statistically significant at α=0.05?</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Clinical Trial: Treatment Effect Analysis</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Generate Trial Data and Check Normality</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">15</span>)
+<span class="cm"># Blood pressure reduction (mmHg) after 8 weeks</span>
+placebo_group   = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">3</span>, <span class="nm">6</span>, <span class="nm">45</span>)
+treatment_group = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">9</span>, <span class="nm">6</span>, <span class="nm">45</span>)
+
+<span class="cm"># Step 1: check normality of BOTH groups first</span>
+<span class="fn">print</span>(<span class="st">"Placebo Shapiro p:"</span>, stats.<span class="fn">shapiro</span>(placebo_group).pvalue)
+<span class="fn">print</span>(<span class="st">"Treatment Shapiro p:"</span>, stats.<span class="fn">shapiro</span>(treatment_group).pvalue)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Run the Appropriate Test</h5>
+          <p>Based on the normality check, run either an independent t-test (Welch's, equal_var=False) OR Mann-Whitney U to compare placebo vs treatment blood pressure reduction. Report the test statistic, p-value, and mean difference.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Extend to 3 Groups with ANOVA</h5>
+          <p>Add a third group (high_dose_group = np.random.normal(12, 6, 45)) and run a one-way ANOVA across all 3 groups (placebo, standard treatment, high dose) to test if AT LEAST ONE differs.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Correlation: Dosage vs Response</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Test Dose-Response Relationship</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>dosage_mg = <span class="op">np</span>.array([<span class="nm">50</span>,<span class="nm">100</span>,<span class="nm">150</span>,<span class="nm">200</span>,<span class="nm">250</span>,<span class="nm">300</span>]*<span class="nm">10</span>)
+<span class="op">np</span>.random.<span class="fn">shuffle</span>(dosage_mg)
+response = dosage_mg * <span class="nm">0.04</span> + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">3</span>, <span class="fn">len</span>(dosage_mg))
+
+r, p_val = stats.<span class="fn">pearsonr</span>(dosage_mg, response)
+rho, p_val_s = stats.<span class="fn">spearmanr</span>(dosage_mg, response)
+<span class="fn">print</span>(<span class="st">f"Pearson r={r:.3f} (p={p_val:.4f}), Spearman rho={rho:.3f} (p={p_val_s:.4f})"</span>)</pre></div>
+          <p>Compare Pearson and Spearman results — are they similar? What would it mean if they differed substantially?</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Ran chi-squared test on A/B test conversion table</li>
+        <li>Correctly interpreted statistical significance of the conversion improvement</li>
+        <li>Checked normality of both clinical trial groups with Shapiro-Wilk</li>
+        <li>Selected and ran the appropriate test (t-test or Mann-Whitney) based on normality</li>
+        <li>Extended analysis to 3 groups using one-way ANOVA</li>
+        <li>Ran both Pearson and Spearman correlation on dosage vs response</li>
+        <li>Interpreted and compared the two correlation methods</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 15 min)</div>
+      Re-run the clinical trial comparison using the non-parametric Kruskal-Wallis test across all 3 groups, and compare its p-value against the ANOVA result. Are the conclusions consistent?
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">SciPy Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Intro &amp; Distributions</span>
+    <span class="day-pill done active">Day 2 · Hypothesis Testing</span>
+    <span class="day-pill">Day 3 · Optimization &amp; Interpolation</span>
+    <span class="day-pill">Day 4 · Linear Algebra &amp; Signal Processing</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What does the Null Hypothesis (H₀) represent in a hypothesis test?",opts:["The hypothesis we hope to prove","The DEFAULT assumption that there is NO real effect or difference — the test seeks evidence to potentially REJECT this default assumption", "The alternative outcome we're testing for","A hypothesis that is always true"],ans:1,explain:"H₀ (null hypothesis) represents the default, 'nothing interesting is happening' assumption (e.g., 'these two groups have the same mean'). The entire test procedure is designed to assess whether the observed data provides strong enough evidence to reject this default assumption in favor of the alternative (H₁)."},
+  {q:"What does a p-value actually represent?",opts:["The probability that the null hypothesis is true","The probability of observing data AS EXTREME OR MORE EXTREME than what was actually observed, ASSUMING the null hypothesis is true", "The probability that the alternative hypothesis is true","The effect size of the difference"],ans:1,explain:"This is one of the most commonly misunderstood concepts in statistics. The p-value is NOT 'probability H0 is true' — it's calculated UNDER THE ASSUMPTION that H0 is true, and represents how surprising/extreme the observed data would be if that assumption held. A small p-value means the data would be quite unusual if H0 were true, providing evidence against it."},
+  {code:"stats.ttest_ind(group_a, group_b, equal_var=False)",q:"What does equal_var=False specify, and why might this be a safer default choice?",opts:["It ignores group_b entirely","This runs Welch's t-test, which does NOT assume the two groups have equal variances — safer than the standard Student's t-test (equal_var=True) since the equal-variance assumption is often violated in real data, and Welch's performs nearly as well even when variances ARE equal", "It removes outliers automatically","It converts the test to a paired test"],ans:1,explain:"The standard/default Student's t-test assumes both groups have the same variance — an assumption frequently violated in real-world data (e.g., a new treatment might both change the mean AND increase/decrease variability). Welch's t-test (equal_var=False) relaxes this assumption, making it a generally safer default that still works fine even when variances happen to be equal."},
+  {q:"When should you use ttest_rel() instead of ttest_ind()?",opts:["Whenever you have exactly 2 groups regardless of design","When you have PAIRED/related measurements — the SAME subjects measured twice (like before/after a treatment), rather than two entirely separate/independent groups of subjects", "ttest_rel() and ttest_ind() are interchangeable","When sample sizes are unequal"],ans:1,explain:"ttest_rel() (related/paired samples) is specifically designed for when the SAME subjects are measured under two conditions (e.g., blood pressure before and after treatment for each person). This differs fundamentally from ttest_ind(), which assumes two completely INDEPENDENT groups of different subjects."},
+  {q:"Why is running a single one-way ANOVA across 3+ groups preferred over running multiple separate pairwise t-tests (A vs B, A vs C, B vs C)?",opts:["ANOVA is always faster to compute","Running many separate t-tests inflates the overall FALSE POSITIVE rate — with enough comparisons, you become increasingly likely to find a 'significant' difference purely by chance; ANOVA tests all groups simultaneously with proper statistical error control", "t-tests cannot technically be run more than once","ANOVA requires fewer data points"],ans:1,explain:"This is the 'multiple comparisons problem.' Each individual t-test carries some false-positive risk (typically 5%). Running many such tests compounds this risk — with enough pairwise comparisons, finding at least one 'significant' result purely by chance becomes likely even if NO real differences exist. ANOVA addresses this by testing all groups at once with appropriately controlled error rates."},
+  {code:"f_stat, p_val = stats.f_oneway(method_a, method_b, method_c)",q:"If p_val < 0.05, what can you conclude, and what CAN'T you conclude yet?",opts:["You can conclude method_a specifically differs from method_b","You can conclude that AT LEAST ONE of the three groups differs significantly from the others, but ANOVA alone does NOT tell you WHICH specific pair(s) differ — that requires an additional POST-HOC test", "You can conclude all three groups are different from each other","You can conclude nothing useful from this result"],ans:1,explain:"A significant ANOVA result only tells you that SOME difference exists somewhere among the groups — it doesn't pinpoint WHICH specific group(s) differ from which others. To identify the specific pairwise differences, you need a follow-up post-hoc test (like Tukey's HSD, commonly available in the statsmodels library) after a significant ANOVA result."},
+  {code:"chi2_stat, p_val, dof, expected = stats.chi2_contingency(observed_table)",q:"What question does chi2_contingency() specifically answer?",opts:["Whether the sample mean equals a specific value","Whether TWO CATEGORICAL variables are statistically INDEPENDENT of each other or show some relationship/association — e.g., is Department related to Promotion status", "Whether the data follows a normal distribution","Whether variance is equal across groups"],ans:1,explain:"chi2_contingency() performs a chi-squared test of independence on a contingency table (cross-tabulation of two categorical variables), testing whether the observed joint distribution differs significantly from what would be expected if the two variables were completely independent — revealing whether they're actually related/associated."},
+  {q:"What is the key difference between chi2_contingency() and chisquare()?",opts:["They are identical functions","chi2_contingency() tests whether TWO categorical variables are related (independence test, using a full contingency table); chisquare() tests whether ONE variable's observed frequencies match an EXPECTED theoretical distribution (goodness-of-fit test)", "chisquare() only works with continuous data","chi2_contingency() cannot handle more than 2 categories"],ans:1,explain:"chi2_contingency() answers 'are these two categorical variables related?' using a full contingency (cross-tab) table. chisquare() (goodness-of-fit) answers a different question: 'does this ONE variable's observed distribution match some expected/theoretical distribution?' (e.g., testing if a die is fair by comparing observed roll counts to the expected uniform distribution)."},
+  {q:"When should you consider using a NON-PARAMETRIC test (like Mann-Whitney U) instead of a parametric test (like an independent t-test)?",opts:["Non-parametric tests should always be preferred regardless of data", "When the data is heavily skewed, contains significant outliers, is ordinal rather than truly continuous, or clearly fails a normality check (e.g., via Shapiro-Wilk) — non-parametric tests make fewer distributional assumptions and are more robust in these situations", "Only when sample sizes exceed 1000","Non-parametric tests only work with categorical data"],ans:1,explain:"Parametric tests (t-test, ANOVA) assume the underlying data follows a specific distribution (typically normal) and can lose validity/power when that assumption is badly violated (e.g., strong skew, heavy outliers, ordinal data). Non-parametric tests (Mann-Whitney, Kruskal-Wallis, Wilcoxon) avoid this distributional assumption, trading some statistical power (when data IS normal) for robustness when it isn't."},
+  {q:"What is stats.mannwhitneyu() the non-parametric equivalent/alternative to?",opts:["stats.f_oneway() (ANOVA)","stats.ttest_ind() — the independent two-sample t-test; Mann-Whitney U compares two independent groups without assuming normality, using rank-based methods instead", "stats.chi2_contingency()","stats.pearsonr()"],ans:1,explain:"Mann-Whitney U test serves the same basic purpose as ttest_ind() (comparing two independent groups) but doesn't assume the underlying data is normally distributed. It works by comparing RANKS of the combined data rather than raw values, making it robust to skewness and outliers."},
+  {q:"What is stats.kruskal() (Kruskal-Wallis test) the non-parametric equivalent of?",opts:["stats.ttest_rel() (paired t-test)","stats.f_oneway() — one-way ANOVA; Kruskal-Wallis compares 3+ independent groups without assuming normality, extending the rank-based approach of Mann-Whitney to more than two groups", "stats.chisquare()","stats.shapiro()"],ans:1,explain:"Kruskal-Wallis extends the same non-parametric, rank-based logic as Mann-Whitney U to MORE than two groups — serving as the non-parametric alternative to one-way ANOVA when the normality assumption underlying ANOVA is questionable or violated."},
+  {code:"stat, p_val = stats.shapiro(sample_data)",q:"If p_val = 0.02 from this Shapiro-Wilk test, what should you conclude?",opts:["The data IS definitely normally distributed","The data shows STATISTICALLY SIGNIFICANT DEVIATION from normality (since p < 0.05) — this suggests you should consider using non-parametric tests rather than assuming normality for subsequent analysis", "The sample size is too small to matter","p=0.02 has no relevant interpretation"],ans:1,explain:"Shapiro-Wilk's null hypothesis is 'the data comes from a normal distribution.' A small p-value (like 0.02, below the typical 0.05 threshold) indicates the data significantly deviates from normality, providing evidence AGAINST the normality assumption — suggesting you should favor non-parametric alternatives for subsequent hypothesis tests rather than parametric ones like t-tests/ANOVA."},
+  {q:"What is the key methodological difference between Pearson correlation and Spearman correlation?",opts:["They measure completely unrelated concepts","Pearson measures the strength of a LINEAR relationship using raw values (sensitive to outliers); Spearman measures MONOTONIC relationships (not necessarily linear) using RANKS instead of raw values, making it more robust to outliers and non-linear (but still monotonic) patterns", "Spearman only works with categorical data","Pearson always gives a higher correlation value"],ans:1,explain:"Pearson's r specifically captures LINEAR association and uses the actual raw data values (making it sensitive to outliers that could distort a linear relationship measure). Spearman's rho instead converts data to RANKS first, capturing any MONOTONIC relationship (consistently increasing or decreasing, even if curved) and being more robust to outliers since extreme values only affect their rank position, not the magnitude."},
+  {code:"r, p_val = stats.pearsonr(hours_studied, exam_scores)\n# r = 0.85, p_val = 0.0001",q:"What do these two numbers TOGETHER tell you, that neither would alone?",opts:["Only the p-value matters for interpretation","r=0.85 tells you the relationship is STRONG and positive (correlation coefficient/effect size), while p_val=0.0001 tells you this correlation is highly unlikely to have occurred by chance alone (statistical significance) — together, they indicate a robust, meaningful, and statistically confident relationship", "Only the r-value matters for interpretation","These two values are redundant and always convey identical information"],ans:1,explain:"The correlation coefficient (r) quantifies the STRENGTH and direction of the relationship (an effect size), while the p-value quantifies STATISTICAL CONFIDENCE that this correlation isn't just due to random chance. A strong r with a very small p-value (like this example) indicates both a MEANINGFUL and a STATISTICALLY RELIABLE relationship — you generally want to consider and report both together, since a tiny p-value with a near-zero r would indicate a statistically 'real' but practically negligible relationship."},
+  {q:"Why could a correlation be 'statistically significant' (very small p-value) yet have a very small correlation coefficient (like r=0.05)?",opts:["This combination is mathematically impossible","With a VERY LARGE sample size, even tiny, practically negligible relationships can produce very small p-values, since large samples give the test enormous statistical power to detect even minuscule true effects — highlighting why effect size (r) and statistical significance (p-value) must be considered TOGETHER, not p-value alone", "Small r values always mean errors in the code","p-values only apply to large correlation coefficients"],ans:1,explain:"Statistical significance (small p-value) reflects confidence that an effect ISN'T purely due to chance — it does NOT reflect the SIZE or practical importance of that effect. With enough data (large sample size), even a genuinely tiny, practically unimportant relationship (r=0.05) can achieve a very small p-value, which is why reporting effect size alongside significance is essential for meaningful interpretation."},
+  {q:"In the A/B testing context, why is chi2_contingency() (rather than a t-test) the appropriate tool for comparing CONVERSION RATES (Converted vs Not Converted) between Control and Treatment groups?",opts:["chi2_contingency() is simply an arbitrary alternative with no specific reason","Conversion status (Converted/Not Converted) is CATEGORICAL data, and chi2_contingency() is specifically designed to test relationships/independence between categorical variables (like Group × Conversion Status) — a t-test is designed for comparing MEANS of continuous numeric data, which conversion counts are not", "t-tests cannot handle any binary data ever","chi2_contingency() only works with exactly 2 categories"],ans:1,explain:"T-tests compare means of CONTINUOUS numeric variables (like average revenue, average time-on-page). But 'conversion' here is a CATEGORICAL outcome (converted or not) counted per group — this calls for a chi-squared test of independence, which is specifically built to analyze relationships between categorical variables represented as counts in a contingency table."},
+  {q:"If both Pearson and Spearman correlation give very similar coefficient values for the same dataset, what does this suggest about the underlying relationship?",opts:["The data must contain errors","The relationship between the variables is likely fairly LINEAR (or close to it) — since Pearson specifically measures linear association while Spearman measures any monotonic relationship, similar values from both suggest the relationship doesn't deviate much from a straight line", "Correlation cannot be computed correctly in this case","This always indicates no real relationship exists"],ans:1,explain:"If a relationship is monotonic but strongly NON-linear (e.g., exponential or logarithmic curve), Spearman (which only cares about consistent ranking) would typically show a stronger correlation than Pearson (which specifically measures LINEAR fit). Similar Pearson and Spearman values suggest the relationship is close to linear, since both methods are 'agreeing' despite measuring somewhat different things."},
+  {q:"What would it mean if Pearson correlation showed r=0.3 (weak) but Spearman showed rho=0.85 (strong) for the same two variables?",opts:["This is a calculation error and should be ignored","This pattern suggests a STRONG but NON-LINEAR (though still monotonic) relationship — Spearman's rank-based approach detects the strong consistent trend, while Pearson's linear-only measure is 'fooled' by the curved (non-straight-line) shape of the relationship, substantially underestimating the association's true strength", "It means the variables are completely unrelated","Pearson is always more accurate than Spearman regardless of context"],ans:1,explain:"This discrepancy is a classic signal of a strong but CURVED (non-linear) monotonic relationship — for example, an exponential growth pattern. Spearman, using ranks, correctly detects that as X increases, Y consistently increases too (strong monotonic trend), while Pearson's specifically LINEAR measure underestimates the relationship because the data doesn't fall along a straight line, even though a strong, real, and predictable pattern exists."},
+  {q:"In a clinical trial, why is it good practice to run stats.shapiro() on each group's data BEFORE deciding whether to use a t-test or Mann-Whitney U test?",opts:["Shapiro-Wilk is not actually necessary and is just extra work","Checking normality FIRST guides the appropriate test choice — if data appears reasonably normal (Shapiro p > 0.05), a t-test can be used with its higher statistical power; if data significantly deviates from normality (Shapiro p < 0.05), a non-parametric alternative (Mann-Whitney U) provides more robust and valid results", "Shapiro-Wilk automatically fixes non-normal data", "This check only matters for sample sizes over 10,000"],ans:1,explain:"This reflects the proper statistical WORKFLOW taught throughout this lesson: check assumptions (normality) FIRST using an appropriate diagnostic (Shapiro-Wilk or Q-Q plot), THEN select the test family (parametric vs non-parametric) that matches what the data can actually support — rather than blindly defaulting to one test type regardless of whether its underlying assumptions are actually met."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review the hypothesis testing framework and t-tests, then try again! 📚"],[50,75,"Good progress! Focus on non-parametric tests and correlation methods. 💪"],[75,90,"Strong Day 2! Hypothesis testing skills are solid. 🎉"],[90,101,"Excellent! Day 2 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

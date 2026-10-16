@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 40 — *args & **kwargs</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+.milestone{background:var(--ink); color:var(--paper); border-radius:8px; padding:26px; text-align:center; margin:24px 0;}
+.milestone .big{font-size:24px; font-family:var(--font-display); color:var(--accent-soft);}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:220px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 40 of 210 · Phase 2: Python & Core AI Foundation</span>
+    <h1>*args & **kwargs</h1>
+    <div class="subtitle">~2 hours · Functions that accept a flexible number of arguments</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>You've actually already used a function with flexible arguments — <code>print()</code> itself accepts any number of values: <code>print(1, 2, 3)</code> works just as well as <code>print("hi")</code>. Many real ML library functions (which you'll meet soon in scikit-learn and beyond) accept optional, flexible settings the exact same way. Today you learn how that's built.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> *args — flexible positional arguments</h2>
+  <div class="code">def add_all(*numbers):
+    total = 0
+    for i in range(len(numbers)):
+        total = total + numbers[i]
+    return total
+
+print(add_all(1, 2, 3))         # 6
+print(add_all(10, 20, 30, 40))  # 100
+print(add_all(5))                # 5</div>
+  <p><code>*numbers</code> collects <strong>any number</strong> of positional arguments into a single tuple named <code>numbers</code> inside the function. The name after the asterisk is up to you (<code>args</code> is just a common convention) — the asterisk itself is what matters.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> **kwargs — flexible keyword arguments</h2>
+  <div class="code">def show_profile(**details):
+    for key in details:
+        print(key + ": " + str(details[key]))
+
+show_profile(name="Asha", age=28, city="Surat")
+# name: Asha
+# age: 28
+# city: Surat</div>
+  <p><code>**details</code> collects any number of <strong>named (keyword) arguments</strong> into a dictionary. This is genuinely useful when you don't know in advance which fields will be provided — the function adapts to however many named values it's given.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Combining regular parameters with *args and **kwargs</h2>
+  <div class="code">def describe_product(name, *features, **details):
+    print("Product: " + name)
+    print("Features: " + str(features))
+    print("Details: " + str(details))
+
+describe_product("Laptop", "fast", "lightweight", price=55000, brand="TechCo")</div>
+  <p><strong>Order matters:</strong> regular parameters first, then <code>*args</code>, then <code>**kwargs</code> — always in that sequence. Python enforces this ordering; writing them in the wrong order causes a syntax error.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (flexible cart total)</h2>
+  <div class="panel">
+    <p class="example-tag">A genuinely useful pattern — no predetermined cart size</p>
+    <div class="code">def cart_total(*prices):
+    total = 0
+    for i in range(len(prices)):
+        total = total + prices[i]
+    return total
+
+print(cart_total(500, 1200))              # works for a 2-item cart
+print(cart_total(500, 1200, 300, 900))    # works for a 4-item cart, same function</div>
+    <p>Without <code>*args</code>, you'd need to know the exact number of items in advance, or pass a list explicitly every time. This lets the SAME function handle a cart of any size, called naturally.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (flexible customer record)</h2>
+  <div class="panel">
+    <p class="example-tag">Reconnects to Day 37's dictionaries</p>
+    <div class="code">def create_customer(**fields):
+    return fields
+
+customer_a = create_customer(name="Rohan", age=28)
+customer_b = create_customer(name="Priya", age=25, city="Mumbai", is_premium=True)
+
+print(customer_a)   # {'name': 'Rohan', 'age': 28}
+print(customer_b)   # {'name': 'Priya', 'age': 25, 'city': 'Mumbai', 'is_premium': True}</div>
+    <p>Some customers have more fields recorded than others — <code>**kwargs</code> lets one function handle any of these variations without needing a separate function signature for every possible combination of fields.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Wrong parameter order.</strong> Regular parameters, then <code>*args</code>, then <code>**kwargs</code> — any other order is a syntax error.</p>
+    <p><strong>Mistake 2 — Forgetting *args is a tuple internally.</strong> Since it's a tuple, you index it and loop through it exactly like Day 34's tuples — but you cannot modify it (tuples are immutable).</p>
+    <p><strong>Mistake 3 — Forgetting **kwargs is a dictionary internally.</strong> Access its contents the same way you learned on Day 37 — looping over keys, using <code>.get()</code>, etc.</p>
+    <p><strong>Mistake 4 — Overusing *args/**kwargs when regular parameters would be clearer.</strong> If a function always needs exactly 2 or 3 specific values, plain named parameters are more readable and catch mistakes earlier — reach for *args/**kwargs specifically when the number of inputs genuinely varies.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now supports *args and **kwargs)</h2>
+  <div class="solver">
+    <h3>Try calling with different numbers of arguments</h3>
+    <textarea id="codeInput">def cart_total(*prices):
+    total = 0
+    for i in range(len(prices)):
+        total = total + prices[i]
+    return total
+
+print(cart_total(500, 1200))
+print(cart_total(500, 1200, 300, 900))
+
+def create_customer(**fields):
+    return fields
+
+customer = create_customer(name="Priya", age=25, city="Mumbai")
+print(customer)</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="milestone">
+  <div class="big">Python Fundamentals: functions and core syntax complete 🎉</div>
+  <p style="color:#cfc8b8; margin-top:8px;">Day 41: Mini projects — a number guessing game and a console to-do list, putting everything from Days 26–40 together.</p>
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 40 of 210 · AI & ML Study Plan · Phase 2: Python & Core AI Foundation</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Write a function 'multiply_all' using *args that returns the product of all numbers passed in.", steps: "def multiply_all(*numbers):\n    result = 1\n    for i in range(len(numbers)):\n        result = result * numbers[i]\n    return result" },
+  { q: "Using the function above, what does multiply_all(2, 3, 4) return?", steps: "24 (2*3*4)" },
+  { q: "def show(**info): print(info). What does show(a=1, b=2) print?", steps: "{'a': 1, 'b': 2}" },
+  { q: "Is 'def f(*args, x):' (regular param AFTER *args) valid Python?", steps: "No — regular (non-default) parameters must come before *args, not after. This causes a syntax error." },
+  { q: "def f(name, *tags): print(name, tags). What does f('Book', 'sale', 'new') print?", steps: "Book ('sale', 'new') — 'name' captures 'Book', *tags captures the rest as a tuple" },
+  { q: "Inside a function using *args, what data type is args?", steps: "A tuple" },
+  { q: "Inside a function using **kwargs, what data type is kwargs?", steps: "A dictionary" },
+  { q: "Why is *args useful for a function like cart_total, compared to requiring a fixed number of price parameters?", steps: "It lets the same function handle a cart with any number of items — 1, 2, 10 — without needing separate function versions or predicting the count in advance." },
+  { q: "print(1, 2, 3) works with any number of values. What Python feature makes this possible?", steps: "print() itself is built using something like *args internally, allowing it to accept a flexible number of positional arguments." },
+  { q: "Why might using specific named parameters be better than *args/**kwargs for a function that ALWAYS needs exactly 'price' and 'tax_rate'?", steps: "Named parameters are clearer to read, self-documenting, and let Python catch missing/misspelled arguments immediately — *args/**kwargs are best reserved for genuinely variable input counts." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with *args / **kwargs support ---
+let funcs = {};
+
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val instanceof Map){
+    const parts = [...val.entries()].map(([k,v]) => `${typeof k==='string'?`'${k}'`:pyRepr(k)}: ${typeof v==='string'?`'${v}'`:pyRepr(v)}`);
+    return '{' + parts.join(', ') + '}';
+  }
+  if(val instanceof Set){
+    if(val.size === 0) return 'set()';
+    return '{' + [...val].map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v)).join(', ') + '}';
+  }
+  if(Array.isArray(val)){
+    const items = val.map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v));
+    if(val.__isTuple){ if(val.length===1) return '('+items[0]+',)'; return '('+items.join(', ')+')'; }
+    return '[' + items.join(', ') + ']';
+  }
+  return String(val);
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))){
+    return value.slice(1,-1);
+  }
+  if(!isNaN(parseFloat(value)) && isFinite(value)){
+    return value.includes('.') ? parseFloat(value) : parseInt(value);
+  }
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pyIndex(arr, idx){
+  let i = idx;
+  if(i < 0) i = arr.length + i;
+  if(i < 0 || i >= arr.length) throw new Error('IndexError');
+  return arr[i];
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || v instanceof Set || v instanceof Map) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/\bstr\(/g, 'String(').replace(/\bint\(/g, 'Math.trunc(').replace(/\bfloat\(/g, 'Number(');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+  const callMatch = arg.match(/^(\w+)\((.*)\)$/);
+  if(callMatch && funcs[callMatch[1]]){
+    return callFunction(callMatch[1], callMatch[2], vars);
+  }
+  const idxMatch = arg.match(/^(\w+)\[(.*)\]$/);
+  if(idxMatch && (vars[idxMatch[1]] instanceof Map || Array.isArray(vars[idxMatch[1]]))){
+    const container = vars[idxMatch[1]];
+    if(container instanceof Map){
+      const key = resolveSimple(idxMatch[2], vars);
+      if(!container.has(key)) throw new Error('KeyError');
+      return container.get(key);
+    }
+    return pyIndex(container, evalGeneral(idxMatch[2], vars));
+  }
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p=>resolveSimple(p, vars));
+  }
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch){ const v = vars[lenMatch[1]]; return (v instanceof Map || v instanceof Set) ? v.size : v.length; }
+  return evalGeneral(arg, vars);
+}
+
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+
+function execLine(line, vars, output){
+  if(line.match(/^return(\s|$)/)){
+    const exprPart = line.replace(/^return\s*/, '').trim();
+    const val = exprPart === '' ? null : evalComplex(exprPart, vars);
+    const sig = new Error('__return__');
+    sig.__return = true;
+    sig.value = val;
+    throw sig;
+  }
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  const bareCall = line.match(/^(\w+)\((.*)\)$/);
+
+  if(printMatch){
+    const partsAtTop = splitTopLevel(printMatch[1], ',');
+    const rendered = partsAtTop.map(p => pyRepr(evalComplex(p, vars)));
+    output.push(rendered.join(' '));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars);
+  } else if(bareCall && funcs[bareCall[1]]){
+    callFunction(bareCall[1], bareCall[2], vars);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+
+function callFunction(fname, argsStr, callerVars){
+  const fn = funcs[fname];
+  const argExprs = splitTopLevel(argsStr, ',').filter(s=>s.trim()!=='');
+
+  const positional = [];
+  const keyword = {};
+  argExprs.forEach(a => {
+    const kw = a.trim().match(/^(\w+)\s*=\s*(?!=)(.+)$/);
+    if(kw){ keyword[kw[1]] = evalComplex(kw[2], callerVars); }
+    else positional.push(evalComplex(a, callerVars));
+  });
+
+  const localVars = Object.assign({}, callerVars);
+  let posIdx = 0;
+  const namedParams = fn.params.filter(p => !p.isArgs && !p.isKwargs);
+  const argsParam = fn.params.find(p => p.isArgs);
+  const kwargsParam = fn.params.find(p => p.isKwargs);
+  const usedKeywords = new Set();
+
+  namedParams.forEach(p => {
+    if(keyword.hasOwnProperty(p.name)){
+      localVars[p.name] = keyword[p.name];
+      usedKeywords.add(p.name);
+    } else if(posIdx < positional.length){
+      localVars[p.name] = positional[posIdx];
+      posIdx++;
+    } else if(p.hasDefault){
+      localVars[p.name] = resolveSimple(p.defaultExpr, callerVars);
+    } else {
+      throw new Error(`TypeError: ${fname}() missing required argument: '${p.name}'`);
+    }
+  });
+
+  if(argsParam){
+    const extra = positional.slice(posIdx);
+    extra.__isTuple = true;
+    localVars[argsParam.name] = extra;
+  }
+  if(kwargsParam){
+    const kMap = new Map();
+    Object.keys(keyword).forEach(k => { if(!usedKeywords.has(k)) kMap.set(k, keyword[k]); });
+    localVars[kwargsParam.name] = kMap;
+  }
+
+  const output = [];
+  let returnValue = null;
+  try{
+    execBlock(fn.lines, fn.bStart, fn.bodyIndent, localVars, output, {count:0});
+  } catch(sig){
+    if(sig && sig.__return){ returnValue = sig.value; }
+    else throw sig;
+  }
+  return returnValue;
+}
+
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+
+    const defMatch = trimmed.match(/^def (\w+)\((.*)\):$/);
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+
+    if(defMatch){
+      const fname = defMatch[1];
+      const paramStrs = splitTopLevel(defMatch[2], ',').map(s=>s.trim()).filter(s=>s!=='');
+      const params = paramStrs.map(p => {
+        if(p.startsWith('**')) return {name: p.slice(2), isKwargs:true};
+        if(p.startsWith('*')) return {name: p.slice(1), isArgs:true};
+        if(p.includes('=')){
+          const [name, def] = p.split('=');
+          return {name: name.trim(), hasDefault: true, defaultExpr: def.trim()};
+        }
+        return {name: p, hasDefault:false};
+      });
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      funcs[fname] = {params, bStart, bEnd, bodyIndent: baseIndent+4, lines};
+      i = bEnd;
+      continue;
+    } else if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else {
+      try{ execLine(trimmed, vars, output); }
+      catch(err){
+        if(err && err.__return) throw err;
+        output.push(`<span class="error">${escapeHtml(err.message || 'Error')}</span>`);
+      }
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  funcs = {};
+  const output = [];
+  try{
+    execBlock(lines, 0, 0, vars, output, {count:0});
+  } catch(err){
+    if(!(err && err.__return)) output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "*args collects extra positional arguments into a:", opts: ["List","Tuple","Dictionary","Set"], correct: 1, explain: "*args is always a tuple inside the function." },
+  { q: "**kwargs collects extra named arguments into a:", opts: ["Tuple","List","Dictionary","Set"], correct: 2, explain: "**kwargs is always a dictionary inside the function." },
+  { q: "def f(*nums): return len(nums). What does f(3,7,9,1) return?", opts: ["3","4","19","1"], correct: 1, explain: "4 arguments were passed, so len(nums) = 4." },
+  { q: "What is the required parameter order when combining all types?", opts: [
+      "**kwargs, *args, regular params",
+      "Regular params, then *args, then **kwargs",
+      "Any order works",
+      "*args, regular params, **kwargs"
+    ], correct: 1, explain: "Python requires this specific order — regular parameters first, then *args, then **kwargs." },
+  { q: "def show(**info): print(len(info)). What does show(a=1,b=2,c=3) print?", opts: ["1","2","3","0"], correct: 2, explain: "3 keyword arguments were passed, captured in the info dictionary." },
+  { q: "Why can print(1,2,3,4,5) accept any number of values?", opts: [
+      "It's a special exception with no explanation",
+      "print() is implemented using something like *args internally",
+      "Python limits it to exactly 5 values",
+      "It converts everything to a single string first, unrelated to *args"
+    ], correct: 1, explain: "This is exactly the *args pattern you learned today, used in a function you've been calling since Day 26." },
+  { q: "Why might *args be preferred over requiring a list argument for a 'sum all values' function?", opts: [
+      "There's no real difference",
+      "It allows a more natural calling style: sum_all(1,2,3) instead of sum_all([1,2,3])",
+      "*args is always faster to execute",
+      "Lists can't be summed at all"
+    ], correct: 1, explain: "*args lets the caller pass values directly and naturally, without wrapping them in a list first." },
+  { q: "When should you prefer regular named parameters over *args/**kwargs?", opts: [
+      "Never, always use *args/**kwargs",
+      "When the function always needs a specific, known set of inputs — named parameters are clearer and safer",
+      "Only for functions with no parameters",
+      "Named parameters cannot have default values"
+    ], correct: 1, explain: "Explicit named parameters are more readable and let Python catch missing/misspelled arguments early." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

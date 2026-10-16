@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NumPy – Day 4 | Linear Algebra</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+
+  :root {
+    --bg:        #F0F4FF;
+    --surface:   #FFFFFF;
+    --border:    #C7D2FE;
+    --accent:    #4F46E5;
+    --accent2:   #312E81;
+    --green:     #059669;
+    --red:       #EF233C;
+    --yellow:    #F59E0B;
+    --teal:      #0891B2;
+    --pink:      #DB2777;
+    --text:      #0F0E2A;
+    --muted:     #6366F1;
+    --code-bg:   #0D0B1E;
+    --code-text: #C7D2FE;
+    --tag-bg:    #EEF2FF;
+    --tag-text:  #3730A3;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+
+  /* NAV */
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(79,70,229,.08);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;}
+  .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;}
+  .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+
+  /* HERO */
+  .hero{background:linear-gradient(135deg,#4F46E5 0%,#312E81 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#A5B4FC;}
+  .hero p{max-width:640px;margin:0 auto 28px;opacity:.88;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+
+  /* SECTION */
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;}
+  .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);}
+  h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;}
+  ul,ol{padding-left:22px;margin-bottom:10px;}
+  li{margin-bottom:5px;}
+  strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+
+  /* CODE */
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#6366F1;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#F9A8D4;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#3B3663;font-style:italic;} .op{color:#C7D2FE;} .hl{color:#FFFFFF;font-weight:600;}
+
+  /* CALLOUT */
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.pink{border-color:var(--pink);background:#FDF2F8;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout       .callout-title{color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);}
+  .callout.yellow .callout-title{color:#92400E;}
+  .callout.red   .callout-title{color:var(--red);}
+  .callout.teal  .callout-title{color:var(--teal);}
+  .callout.pink  .callout-title{color:var(--pink);}
+
+  /* TABLE */
+  .tbl-wrap{overflow-x:auto;margin:14px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:var(--bg);}
+
+  /* MATRIX VISUAL */
+  .mat-wrap{display:inline-flex;align-items:center;gap:8px;margin:8px 0;}
+  .mat-bracket{font-size:48px;color:var(--accent);font-weight:300;line-height:1;}
+  .mat-grid{display:grid;gap:4px;}
+  .mat-cell{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;border-radius:5px;}
+  .mc-a{background:#EEF2FF;color:#3730A3;}
+  .mc-b{background:#ECFDF5;color:#065F46;}
+  .mc-r{background:#1e1b4b;color:#A5B4FC;}
+  .mc-hi{background:#4F46E5;color:#fff;}
+  .mat-op{font-size:22px;color:var(--accent);font-weight:700;padding:0 6px;}
+  .mat-eq{font-size:20px;color:var(--muted);padding:0 6px;}
+
+  /* FORMULA BOX */
+  .fbox{background:linear-gradient(135deg,#312E81,#4F46E5);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:500;line-height:2;}
+  .fbox .fn-note{font-size:12px;opacity:.7;margin-top:6px;}
+
+  /* CARD GRID */
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+
+  /* QUIZ */
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);}
+  .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);}
+  .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;}
+  .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;}
+  .opt.correct-ans .opt-letter{background:var(--green);color:#fff;}
+  .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
+  .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;}
+  .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);}
+  .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#4F46E5,#312E81);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;}
+  .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;}
+  .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;}
+  .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+
+  /* TASK */
+  .task-hero{background:linear-gradient(135deg,#4F46E5,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;}
+  .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;}
+  .task-hero p{margin:0;opacity:.9;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;}
+  .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;}
+  .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;}
+  .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;}
+  .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;}
+  .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+
+  /* FOOTER */
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+
+  @media(max-width:600px){
+    .topnav{padding:0 16px;}
+    .hero{padding:44px 20px 40px;}
+    .section-body{padding:18px;}
+    .mat-wrap{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🔢 NumPy</div>
+  <span class="sep">|</span>
+  <span class="day-label">Day 4 of 5</span>
+  <div class="spacer"></div>
+  <span class="progress-label" style="margin-right:8px">80%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:80%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">NumPy Full Course · Day 4</div>
+  <h1>Linear <span>Algebra</span></h1>
+  <p>The mathematics behind machine learning, data science, and computer graphics. Master vectors, matrix operations, decompositions, eigenvalues, and solving real-world linear systems.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📐 Vectors & Dot Products</span>
+    <span class="hero-pill">✖️ Matrix Multiplication</span>
+    <span class="hero-pill">🔄 Inverse & Determinant</span>
+    <span class="hero-pill">🧮 Solving Linear Systems</span>
+    <span class="hero-pill">🌀 Eigenvalues & Vectors</span>
+    <span class="hero-pill">🔬 SVD & Decompositions</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════
+     SECTION 1 — VECTORS & DOT PRODUCTS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📐</div>
+    <div>
+      <h2>Vectors, Norms &amp; Dot Products</h2>
+      <p>The building blocks — direction, magnitude, and projection</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>A <strong>vector</strong> is a 1D array with both <em>magnitude</em> (length) and <em>direction</em>. In machine learning, each data sample is a vector and each feature is a component.</p>
+
+    <h3>Creating &amp; Inspecting Vectors</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+u = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">3</span>, <span class="nm">4</span>])      <span class="cm"># 2D vector</span>
+v = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>]) <span class="cm"># 4D vector</span>
+
+<span class="cm"># ── NORMS (measures of vector length / magnitude) ──</span>
+<span class="cm"># L1 norm — sum of absolute values (Manhattan distance)</span>
+l1 = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(u, ord=<span class="nm">1</span>)
+<span class="fn">print</span>(<span class="st">f"L1 norm: {l1}"</span>)   <span class="cm"># 7  (|3|+|4|)</span>
+
+<span class="cm"># L2 norm — Euclidean length (most common)</span>
+l2 = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(u)
+<span class="fn">print</span>(<span class="st">f"L2 norm: {l2}"</span>)   <span class="cm"># 5.0  (√(3²+4²))</span>
+
+<span class="cm"># L∞ norm — max absolute value</span>
+linf = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(u, ord=<span class="op">np</span>.inf)
+<span class="fn">print</span>(<span class="st">f"L∞ norm: {linf}"</span>)  <span class="cm"># 4</span>
+
+<span class="cm"># Unit vector — normalise to length 1</span>
+unit_u = u / <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(u)
+<span class="fn">print</span>(<span class="st">f"Unit vector: {unit_u}"</span>)      <span class="cm"># [0.6 0.8]</span>
+<span class="fn">print</span>(<span class="st">f"Verify length=1: {np.linalg.norm(unit_u):.4f}"</span>)  <span class="cm"># 1.0000</span></pre>
+    </div>
+
+    <h3>Dot Product — The Most Important Vector Operation</h3>
+    <div class="fbox">
+      <div class="ft">📐 Dot Product Formula</div>
+      <div class="fm">a · b  =  Σ(aᵢ × bᵢ)  =  |a| × |b| × cos(θ)</div>
+      <div class="fn-note">Result is a SCALAR. Measures how much two vectors "point in the same direction". Used everywhere in ML — similarity, neural networks, projections.</div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>a = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">4</span>, <span class="nm">5</span>, <span class="nm">6</span>])
+
+<span class="cm"># Three equivalent ways to compute dot product</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">dot</span>(a, b))     <span class="cm"># 32  (1×4 + 2×5 + 3×6)</span>
+<span class="fn">print</span>(a @ b)           <span class="cm"># 32  ← @ operator (Python 3.5+)</span>
+<span class="fn">print</span>((a * b).<span class="fn">sum</span>())   <span class="cm"># 32  ← element-wise × then sum</span>
+
+<span class="cm"># Cosine similarity — how similar are two vectors?</span>
+<span class="kw">def</span> <span class="fn">cosine_similarity</span>(x, y):
+    <span class="kw">return</span> <span class="op">np</span>.<span class="fn">dot</span>(x, y) / (<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(x) * <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(y))
+
+<span class="cm"># Text/document similarity example</span>
+doc1 = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">1</span>])  <span class="cm"># word frequencies</span>
+doc2 = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">1</span>, <span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">0</span>])
+doc3 = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">0</span>, <span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">1</span>])  <span class="cm"># completely different topic</span>
+
+<span class="fn">print</span>(<span class="st">f"doc1 vs doc2: {cosine_similarity(doc1,doc2):.3f}"</span>)  <span class="cm"># 0.577 (similar)</span>
+<span class="fn">print</span>(<span class="st">f"doc1 vs doc3: {cosine_similarity(doc1,doc3):.3f}"</span>)  <span class="cm"># 0.408 (less similar)</span>
+
+<span class="cm"># Angle between vectors (degrees)</span>
+cos_theta = <span class="op">np</span>.<span class="fn">dot</span>(a, b) / (<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(a) * <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(b))
+angle = <span class="op">np</span>.<span class="fn">rad2deg</span>(<span class="op">np</span>.<span class="fn">arccos</span>(cos_theta))
+<span class="fn">print</span>(<span class="st">f"Angle between a and b: {angle:.2f}°"</span>)  <span class="cm"># 12.93°</span>
+
+<span class="cm"># Cross product (3D only) — perpendicular vector</span>
+cross = <span class="op">np</span>.<span class="fn">cross</span>(a, b)
+<span class="fn">print</span>(<span class="st">f"Cross product: {cross}"</span>)  <span class="cm"># [-3  6 -3]</span>
+<span class="fn">print</span>(<span class="st">f"Perpendicular check: {np.dot(cross, a)}"</span>)  <span class="cm"># 0 ← always 0!</span></pre>
+    </div>
+
+    <div class="callout blue" style="border-color:#3B82F6;background:#EFF6FF;">
+      <div class="callout-title" style="color:#1D4ED8;">💡 Dot Product Interpretations</div>
+      <ul>
+        <li><strong>cos(θ) = 1</strong> → vectors point same direction (parallel)</li>
+        <li><strong>cos(θ) = 0</strong> → vectors are perpendicular (orthogonal)</li>
+        <li><strong>cos(θ) = -1</strong> → vectors point opposite directions</li>
+        <li>In ML: dot product = weighted sum = neuron activation formula</li>
+      </ul>
+    </div>
+
+    <h3>Outer Product</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>a = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">4</span>, <span class="nm">5</span>])
+
+<span class="cm"># Outer product: every element of a × every element of b</span>
+<span class="cm"># Result shape: (len(a), len(b)) = (3, 2)</span>
+outer = <span class="op">np</span>.<span class="fn">outer</span>(a, b)
+<span class="fn">print</span>(outer)
+<span class="cm"># [[ 4  5]   ← 1×4, 1×5
+#  [ 8 10]   ← 2×4, 2×5
+#  [12 15]]  ← 3×4, 3×5</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 2 — MATRIX MULTIPLICATION
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">✖️</div>
+    <div>
+      <h2>Matrix Multiplication &amp; Properties</h2>
+      <p>The engine of transformations — neural networks, graphics, ML models</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>Matrix multiplication is <strong>NOT</strong> element-wise. It combines rows of the first matrix with columns of the second. Shape rule: <code>(m×k) @ (k×n) → (m×n)</code>. The inner dimensions <strong>must match</strong>.</p>
+
+    <div class="fbox">
+      <div class="ft">✖️ Matrix Multiplication Rule</div>
+      <div class="fm">C[i,j] = Σₖ A[i,k] × B[k,j]</div>
+      <div class="fn-note">Shape: (m,k) @ (k,n) → (m,n).  Inner dimensions k must match.  NOT commutative: A@B ≠ B@A generally.</div>
+    </div>
+
+    <!-- Matrix visual -->
+    <div style="overflow-x:auto;margin:14px 0;">
+      <div class="mat-wrap">
+        <div class="mat-bracket">[</div>
+        <div class="mat-grid" style="grid-template-columns:repeat(2,34px)">
+          <div class="mat-cell mc-a">1</div><div class="mat-cell mc-a">2</div>
+          <div class="mat-cell mc-a">3</div><div class="mat-cell mc-a">4</div>
+        </div>
+        <div class="mat-bracket">]</div>
+        <div class="mat-op">@</div>
+        <div class="mat-bracket">[</div>
+        <div class="mat-grid" style="grid-template-columns:repeat(2,34px)">
+          <div class="mat-cell mc-b">5</div><div class="mat-cell mc-b">6</div>
+          <div class="mat-cell mc-b">7</div><div class="mat-cell mc-b">8</div>
+        </div>
+        <div class="mat-bracket">]</div>
+        <div class="mat-eq">=</div>
+        <div class="mat-bracket">[</div>
+        <div class="mat-grid" style="grid-template-columns:repeat(2,34px)">
+          <div class="mat-cell mc-r">19</div><div class="mat-cell mc-r">22</div>
+          <div class="mat-cell mc-r">43</div><div class="mat-cell mc-r">50</div>
+        </div>
+        <div class="mat-bracket">]</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">C[0,0]=1×5+2×7=19 &nbsp;|&nbsp; C[0,1]=1×6+2×8=22 &nbsp;|&nbsp; C[1,0]=3×5+4×7=43 &nbsp;|&nbsp; C[1,1]=3×6+4×8=50</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>, <span class="nm">2</span>],
+              [<span class="nm">3</span>, <span class="nm">4</span>]])  <span class="cm"># (2,2)</span>
+
+B = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">5</span>, <span class="nm">6</span>],
+              [<span class="nm">7</span>, <span class="nm">8</span>]])  <span class="cm"># (2,2)</span>
+
+<span class="cm"># Matrix multiplication — 3 equivalent ways</span>
+<span class="fn">print</span>(A @ B)             <span class="cm"># [[19 22] [43 50]]  ← PREFERRED</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">dot</span>(A, B))      <span class="cm"># same</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">matmul</span>(A, B))   <span class="cm"># same</span>
+
+<span class="cm"># NOT commutative!</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">array_equal</span>(A @ B, B @ A))   <span class="cm"># False</span>
+
+<span class="cm"># Element-wise vs matrix multiply</span>
+<span class="fn">print</span>(A * B)   <span class="cm"># [[ 5 12] [21 32]] ← element-wise (Hadamard)</span>
+<span class="fn">print</span>(A @ B)   <span class="cm"># [[19 22] [43 50]] ← matrix multiply</span>
+
+<span class="cm"># Non-square matrix multiplication</span>
+X = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">100</span>, <span class="nm">5</span>)   <span class="cm"># 100 samples, 5 features</span>
+W = <span class="op">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">5</span>, <span class="nm">3</span>)    <span class="cm"># 5 inputs, 3 outputs (layer weights)</span>
+Z = X @ W                    <span class="cm"># (100,5)@(5,3)→(100,3) neural net layer!</span>
+<span class="fn">print</span>(<span class="st">f"Z shape: {Z.shape}"</span>)  <span class="cm"># (100, 3)</span></pre>
+    </div>
+
+    <h3>Matrix Properties</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],
+              [<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>],
+              [<span class="nm">7</span>,<span class="nm">8</span>,<span class="nm">9</span>]])
+
+<span class="cm"># Transpose — flip rows and columns</span>
+<span class="fn">print</span>(A.T)            <span class="cm"># [[1 4 7] [2 5 8] [3 6 9]]</span>
+<span class="fn">print</span>(A.T.shape)      <span class="cm"># (3, 3) — same for square, different for rect</span>
+
+<span class="cm"># Trace — sum of main diagonal</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">trace</span>(A))    <span class="cm"># 15  (1+5+9)</span>
+
+<span class="cm"># Diagonal elements</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">diag</span>(A))     <span class="cm"># [1 5 9]  ← extract diagonal</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">diag</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>]))  <span class="cm"># [[1 0 0] [0 2 0] [0 0 3]] ← create diagonal matrix</span>
+
+<span class="cm"># Rank — number of linearly independent rows/columns</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">matrix_rank</span>(A))   <span class="cm"># 2 (row 3 = row 2 - row 1, rank deficient!)</span>
+B = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">0</span>],[<span class="nm">0</span>,<span class="nm">1</span>]])
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">matrix_rank</span>(B))   <span class="cm"># 2 (full rank)</span></pre>
+    </div>
+
+    <h3>Special Matrices</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Matrix Type</th><th>Property</th><th>NumPy</th></tr>
+        <tr><td><strong>Identity (I)</strong></td><td>A @ I = A. Diagonal 1s, rest 0s</td><td><code>np.eye(n)</code></td></tr>
+        <tr><td><strong>Diagonal</strong></td><td>Non-zero only on diagonal</td><td><code>np.diag([a,b,c])</code></td></tr>
+        <tr><td><strong>Symmetric</strong></td><td>A = Aᵀ</td><td><code>A == A.T</code></td></tr>
+        <tr><td><strong>Orthogonal</strong></td><td>Aᵀ @ A = I (columns are unit vectors)</td><td><code>np.allclose(A.T@A, np.eye(n))</code></td></tr>
+        <tr><td><strong>Upper Triangular</strong></td><td>Zeros below diagonal</td><td><code>np.triu(A)</code></td></tr>
+        <tr><td><strong>Lower Triangular</strong></td><td>Zeros above diagonal</td><td><code>np.tril(A)</code></td></tr>
+        <tr><td><strong>Positive Definite</strong></td><td>All eigenvalues &gt; 0</td><td>Check via Cholesky</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 3 — INVERSE & DETERMINANT
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">🔄</div>
+    <div>
+      <h2>Determinant, Inverse &amp; Matrix Power</h2>
+      <p>Key scalar properties and how to undo matrix transformations</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>Determinant</h3>
+    <p>The determinant is a <strong>scalar value</strong> that encodes how a matrix scales area/volume. A zero determinant means the matrix is <strong>singular</strong> (cannot be inverted).</p>
+
+    <div class="fbox">
+      <div class="ft">📐 2×2 Determinant</div>
+      <div class="fm">det([[a,b],[c,d]]) = a×d − b×c</div>
+      <div class="fn-note">If det(A)=0 → A is singular (no inverse). If det(A)≠0 → A is invertible (non-singular).</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>, <span class="nm">2</span>],
+              [<span class="nm">3</span>, <span class="nm">4</span>]])
+
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">det</span>(A))   <span class="cm"># -2.0  (1×4 - 2×3 = -2)</span>
+
+<span class="cm"># Singular matrix — det = 0</span>
+S = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>, <span class="nm">2</span>],
+              [<span class="nm">2</span>, <span class="nm">4</span>]])   <span class="cm"># row 2 = 2 × row 1</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">det</span>(S))   <span class="cm"># 0.0  ← singular!</span>
+
+<span class="cm"># Geometric interpretation:
+# |det(A)| = area scaling factor of the transformation A
+# det = -2 means the transformation flips orientation AND scales area by 2</span>
+
+B = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">2</span>, <span class="nm">0</span>],
+              [<span class="nm">0</span>, <span class="nm">3</span>]])   <span class="cm"># stretch x by 2, y by 3</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">det</span>(B))   <span class="cm"># 6  (area scaled by 6)</span></pre>
+    </div>
+
+    <h3>Matrix Inverse</h3>
+    <p>The inverse A⁻¹ satisfies <code>A @ A⁻¹ = I</code>. Only square, non-singular matrices have inverses.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>, <span class="nm">2</span>],
+              [<span class="nm">3</span>, <span class="nm">4</span>]])
+
+A_inv = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">inv</span>(A)
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(A_inv, <span class="nm">4</span>))
+<span class="cm"># [[-2.   1. ]
+#  [ 1.5 -0.5]]</span>
+
+<span class="cm"># Verify: A @ A_inv = I</span>
+I = A @ A_inv
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(I, <span class="nm">10</span>))   <span class="cm"># [[1. 0.] [0. 1.]]  ← Identity ✅</span>
+
+<span class="cm"># np.allclose handles floating-point rounding</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(A @ A_inv, <span class="op">np</span>.<span class="fn">eye</span>(<span class="nm">2</span>)))   <span class="cm"># True</span>
+
+<span class="cm"># Pseudo-inverse (Moore-Penrose) — works even for non-square/singular matrices</span>
+C = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>]])  <span class="cm"># (2,3) — not square</span>
+C_pinv = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">pinv</span>(C)
+<span class="fn">print</span>(C_pinv.shape)   <span class="cm"># (3, 2)  ← transposed shape</span>
+
+<span class="cm"># Matrix power
+# A² = A @ A,  A³ = A @ A @ A, etc.</span>
+<span class="kw">from</span> numpy.<span class="fn">linalg</span> <span class="kw">import</span> matrix_power
+<span class="fn">print</span>(<span class="fn">matrix_power</span>(A, <span class="nm">3</span>))   <span class="cm"># A @ A @ A</span>
+<span class="fn">print</span>(<span class="fn">matrix_power</span>(A, -<span class="nm">1</span>))  <span class="cm"># Same as inv(A)</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Never Invert to Solve Systems!</div>
+      Computing A⁻¹ then multiplying is numerically <strong>unstable and slow</strong>. For <code>Ax = b</code>, ALWAYS use <code>np.linalg.solve(A, b)</code> — it's faster and more accurate.
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 4 — SOLVING LINEAR SYSTEMS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🧮</div>
+    <div>
+      <h2>Solving Linear Systems — Ax = b</h2>
+      <p>Find unknowns given equations — the core of scientific computing</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>A system of <strong>n linear equations with n unknowns</strong> can be written as <code>Ax = b</code>. NumPy solves this using LU decomposition internally — fast and stable.</p>
+
+    <div class="fbox">
+      <div class="ft">🧮 Linear System Example</div>
+      <div class="fm">2x + 3y = 8      →  A = [[2,3],[5,1]]</div>
+      <div class="fm">5x +  y = 6      →  b = [8, 6]</div>
+      <div class="fn-note">Solution: x = [x, y] such that A @ x = b</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># System:  2x + 3y = 8
+#          5x +  y = 6</span>
+A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">2</span>, <span class="nm">3</span>],
+              [<span class="nm">5</span>, <span class="nm">1</span>]])
+b = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">8</span>, <span class="nm">6</span>])
+
+<span class="cm"># SOLVE — always use this, not inv(A) @ b</span>
+x = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">solve</span>(A, b)
+<span class="fn">print</span>(x)   <span class="cm"># [1. 2.]  → x=1, y=2</span>
+
+<span class="cm"># Verify: Ax should equal b</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(A @ x, b))   <span class="cm"># True ✅</span>
+
+<span class="cm"># ── REAL-WORLD: Traffic flow problem ──
+# 4 roads meeting at 3 intersections.
+# Flow in = Flow out at each intersection.</span>
+<span class="cm"># x1 + x2 = 1000    (intersection A)
+# x2 + x3 = 1200    (intersection B)
+# x1 + x3 = 900     (intersection C)</span>
+A_traffic = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>, <span class="nm">1</span>, <span class="nm">0</span>],
+                       [<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">1</span>],
+                       [<span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">1</span>]])
+b_traffic = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">1000</span>, <span class="nm">1200</span>, <span class="nm">900</span>])
+flows = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">solve</span>(A_traffic, b_traffic)
+<span class="fn">print</span>(<span class="st">f"Road flows: {flows}"</span>)   <span class="cm"># [350. 650. 550.]</span>
+
+<span class="cm"># ── Least-squares for overdetermined systems ──
+# More equations than unknowns → no exact solution
+# lstsq finds best-fit (minimises ||Ax-b||²)</span>
+X_data = <span class="op">np</span>.<span class="fn">column_stack</span>([<span class="op">np</span>.<span class="fn">ones</span>(<span class="nm">5</span>), [<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>,<span class="nm">5</span>]])  <span class="cm"># [1, x]</span>
+y_data  = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">2.1</span>, <span class="nm">3.9</span>, <span class="nm">6.2</span>, <span class="nm">7.8</span>, <span class="nm">10.1</span>])       <span class="cm"># observed y</span>
+coeffs, residuals, rank, sv = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">lstsq</span>(X_data, y_data, rcond=<span class="kw">None</span>)
+<span class="fn">print</span>(<span class="st">f"Intercept: {coeffs[0]:.3f}, Slope: {coeffs[1]:.3f}"</span>)  <span class="cm"># Linear regression!</span>
+<span class="cm"># Intercept: 0.100, Slope: 2.010  → y ≈ 0.1 + 2.01x</span></pre>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">✅ lstsq = Linear Regression from Scratch!</div>
+      <code>np.linalg.lstsq(X, y)</code> is exactly what linear regression does — it finds the coefficient vector that minimises the sum of squared errors. This is the mathematical foundation of scikit-learn's LinearRegression!
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 5 — EIGENVALUES & EIGENVECTORS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DB2777">🌀</div>
+    <div>
+      <h2>Eigenvalues &amp; Eigenvectors</h2>
+      <p>The "principal directions" of a matrix — foundation of PCA and graph algorithms</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>An <strong>eigenvector</strong> is a vector that only gets <em>scaled</em> (not rotated) when a matrix is applied to it. The scale factor is the <strong>eigenvalue</strong>.</p>
+
+    <div class="fbox">
+      <div class="ft">🌀 Eigenvalue Equation</div>
+      <div class="fm">A × v  =  λ × v</div>
+      <div class="fn-note">A = square matrix, v = eigenvector (direction), λ = eigenvalue (how much it stretches). Every n×n matrix has exactly n eigenvalues (counting complex and repeated).</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">4</span>, <span class="nm">2</span>],
+              [<span class="nm">1</span>, <span class="nm">3</span>]])
+
+<span class="cm"># eigenvalues and right eigenvectors</span>
+eigenvalues, eigenvectors = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">eig</span>(A)
+
+<span class="fn">print</span>(<span class="st">"Eigenvalues:"</span>, eigenvalues)
+<span class="cm"># Eigenvalues: [5. 2.]</span>
+
+<span class="fn">print</span>(<span class="st">"Eigenvectors (columns):\n"</span>, eigenvectors)
+<span class="cm"># [[ 0.894  -0.707]
+#  [ 0.447   0.707]]
+# Column 0 is eigenvector for λ=5
+# Column 1 is eigenvector for λ=2</span>
+
+<span class="cm"># Verify: A @ v = λ × v for each eigenpair</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(eigenvalues)):
+    lam = eigenvalues[i]
+    v   = eigenvectors[:, i]
+    Av  = A @ v
+    lv  = lam * v
+    <span class="fn">print</span>(<span class="st">f"λ={lam}: A@v={np.round(Av,3)}, λv={np.round(lv,3)}, match={np.allclose(Av,lv)}"</span>)
+<span class="cm"># λ=5.0: A@v=[4.472 2.236], λv=[4.472 2.236], match=True
+# λ=2.0: A@v=[-1.414 1.414], λv=[-1.414 1.414], match=True</span>
+
+<span class="cm"># For symmetric matrices use eigh — faster &amp; always real eigenvalues</span>
+S = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">3</span>, <span class="nm">1</span>],
+              [<span class="nm">1</span>, <span class="nm">3</span>]])
+evals, evecs = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">eigh</span>(S)   <span class="cm"># for symmetric/Hermitian matrices</span>
+<span class="fn">print</span>(evals)   <span class="cm"># [2. 4.]  ← always real, always sorted</span></pre>
+    </div>
+
+    <h3>Spectral Decomposition — Reconstruct a Matrix from Eigenvalues</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># A = Q @ diag(λ) @ Q⁻¹  (eigendecomposition)</span>
+A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">4</span>,<span class="nm">2</span>],[<span class="nm">1</span>,<span class="nm">3</span>]])
+evals, evecs = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">eig</span>(A)
+
+A_reconstructed = evecs @ <span class="op">np</span>.<span class="fn">diag</span>(evals) @ <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">inv</span>(evecs)
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">round</span>(A_reconstructed))   <span class="cm"># [[4. 2.] [1. 3.]]  ← perfect reconstruction!</span>
+
+<span class="cm"># Sum of all eigenvalues = trace(A)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">sum</span>(evals))          <span class="cm"># 7.0</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">trace</span>(A))            <span class="cm"># 7    ← same ✅</span>
+
+<span class="cm"># Product of eigenvalues = det(A)</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">prod</span>(evals))          <span class="cm"># 10.0</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">det</span>(A))       <span class="cm"># 10.0 ← same ✅</span></pre>
+    </div>
+
+    <h3>Real-World Use: PCA from Scratch (Concept)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Principal Component Analysis (PCA) — dimensionality reduction
+# 1. Centre the data (subtract mean)
+# 2. Compute covariance matrix
+# 3. Find eigenvectors (principal components)
+# 4. Project data onto top k eigenvectors</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(<span class="nm">42</span>)
+X = rng.<span class="fn">normal</span>(size=(<span class="nm">100</span>, <span class="nm">5</span>))   <span class="cm"># 100 samples, 5 features</span>
+
+<span class="cm"># Step 1: Centre</span>
+X_centred = X - X.<span class="fn">mean</span>(axis=<span class="nm">0</span>)
+
+<span class="cm"># Step 2: Covariance matrix (5×5)</span>
+cov = <span class="op">np</span>.<span class="fn">cov</span>(X_centred.T)
+
+<span class="cm"># Step 3: Eigendecomposition of covariance</span>
+evals, evecs = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">eigh</span>(cov)   <span class="cm"># symmetric → eigh</span>
+
+<span class="cm"># Sort by largest eigenvalue first</span>
+order = <span class="op">np</span>.<span class="fn">argsort</span>(evals)[::-<span class="nm">1</span>]
+evals = evals[order]
+evecs = evecs[:, order]
+
+<span class="cm"># Explained variance ratio</span>
+explained = evals / evals.<span class="fn">sum</span>()
+<span class="fn">print</span>(<span class="st">"Explained variance:"</span>, <span class="op">np</span>.<span class="fn">round</span>(explained * <span class="nm">100</span>, <span class="nm">1</span>))
+
+<span class="cm"># Step 4: Project onto top 2 components (5D → 2D)</span>
+X_pca = X_centred @ evecs[:, :<span class="nm">2</span>]   <span class="cm"># (100,5) @ (5,2) → (100,2)</span>
+<span class="fn">print</span>(<span class="st">f"Reduced shape: {X_pca.shape}"</span>)  <span class="cm"># (100, 2)</span></pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 6 — DECOMPOSITIONS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🔬</div>
+    <div>
+      <h2>Matrix Decompositions</h2>
+      <p>SVD, QR, LU, Cholesky — factoring matrices into simpler components</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>SVD — Singular Value Decomposition</h3>
+    <p>SVD is the most important decomposition in data science. It factors <em>any</em> matrix (not just square) into three matrices: <code>A = U @ Σ @ Vᵀ</code>. Used in recommendation systems, image compression, NLP (LSA), and PCA.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># A = U  ×  Σ  ×  Vᵀ
+# U: left singular vectors  (m×m orthogonal)
+# Σ: singular values         (diagonal, descending)
+# Vᵀ: right singular vectors (n×n orthogonal)</span>
+
+A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],
+              [<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>]])   <span class="cm"># (2, 3)</span>
+
+U, s, Vt = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">svd</span>(A)
+<span class="fn">print</span>(<span class="st">f"U:  {U.shape}"</span>)    <span class="cm"># (2, 2)</span>
+<span class="fn">print</span>(<span class="st">f"s:  {s.shape}"</span>)    <span class="cm"># (2,)  ← singular values [9.508, 0.773]</span>
+<span class="fn">print</span>(<span class="st">f"Vt: {Vt.shape}"</span>)   <span class="cm"># (3, 3)</span>
+
+<span class="cm"># Reconstruct A from SVD</span>
+Sigma = <span class="op">np</span>.<span class="fn">zeros</span>((<span class="nm">2</span>, <span class="nm">3</span>))
+Sigma[:<span class="nm">2</span>, :<span class="nm">2</span>] = <span class="op">np</span>.<span class="fn">diag</span>(s)
+A_reconstructed = U @ Sigma @ Vt
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(A, A_reconstructed))   <span class="cm"># True ✅</span>
+
+<span class="cm"># Low-rank approximation (image compression concept)
+# Keep only top k singular values — approximate with less data</span>
+A_large = rng.<span class="fn">random</span>((<span class="nm">100</span>, <span class="nm">100</span>))   <span class="cm"># 100×100 "image"</span>
+U, s, Vt = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">svd</span>(A_large)
+
+<span class="kw">for</span> k <span class="kw">in</span> [<span class="nm">1</span>, <span class="nm">5</span>, <span class="nm">10</span>, <span class="nm">50</span>]:
+    A_approx = U[:, :k] @ <span class="op">np</span>.<span class="fn">diag</span>(s[:k]) @ Vt[:k, :]
+    error = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(A_large - A_approx, <span class="st">'fro'</span>)
+    explained = (s[:k]**<span class="nm">2</span>).<span class="fn">sum</span>() / (s**<span class="nm">2</span>).<span class="fn">sum</span>() * <span class="nm">100</span>
+    <span class="fn">print</span>(<span class="st">f"k={k:2d}: Error={error:.2f}, Variance explained={explained:.1f}%"</span>)
+<span class="cm"># k= 1: Error=9.95, Variance explained=10.0%
+# k= 5: Error=9.39, Variance explained=14.6%
+# k=10: Error=8.86, Variance explained=19.1%
+# k=50: Error=5.64, Variance explained=50.0%</span></pre>
+    </div>
+
+    <h3>QR Decomposition</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># A = Q × R
+# Q: orthogonal (columns are unit vectors, Qᵀ@Q = I)
+# R: upper triangular
+# Used in: solving linear systems, linear regression, numerical stability</span>
+
+A = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>],[<span class="nm">3</span>,<span class="nm">4</span>],[<span class="nm">5</span>,<span class="nm">6</span>]])   <span class="cm"># (3, 2)</span>
+Q, R = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">qr</span>(A)
+<span class="fn">print</span>(<span class="st">f"Q: {Q.shape}"</span>)   <span class="cm"># (3, 2)</span>
+<span class="fn">print</span>(<span class="st">f"R: {R.shape}"</span>)   <span class="cm"># (2, 2)  ← upper triangular</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(A, Q @ R))   <span class="cm"># True ✅</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(Q.T @ Q, <span class="op">np</span>.<span class="fn">eye</span>(<span class="nm">2</span>)))  <span class="cm"># True — Q is orthogonal</span></pre>
+    </div>
+
+    <h3>Cholesky Decomposition</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># A = L × Lᵀ  where L is lower triangular
+# Works ONLY for symmetric positive definite matrices (like covariance matrices!)
+# 2× faster than LU. Used in: multivariate statistics, Kalman filters</span>
+
+S = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">4</span>, <span class="nm">2</span>],
+              [<span class="nm">2</span>, <span class="nm">3</span>]])  <span class="cm"># symmetric positive definite</span>
+L = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">cholesky</span>(S)
+<span class="fn">print</span>(L)
+<span class="cm"># [[2.    0.   ]
+#  [1.    1.414]]</span>
+<span class="fn">print</span>(<span class="op">np</span>.<span class="fn">allclose</span>(S, L @ L.T))   <span class="cm"># True ✅</span>
+
+<span class="cm"># Simulate multivariate normal using Cholesky
+# X ~ N(μ, Σ) ← samples with given covariance structure</span>
+mean = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">0</span>, <span class="nm">0</span>])
+cov  = <span class="op">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">0.8</span>],[<span class="nm">0.8</span>,<span class="nm">1</span>]])   <span class="cm"># correlated variables</span>
+L    = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">cholesky</span>(cov)
+Z    = rng.<span class="fn">normal</span>(size=(<span class="nm">1000</span>, <span class="nm">2</span>))
+X    = mean + Z @ L.T                  <span class="cm"># correlated samples</span>
+<span class="fn">print</span>(<span class="st">f"Empirical correlation: {np.corrcoef(X.T)[0,1]:.3f}"</span>)  <span class="cm"># ~0.80</span></pre>
+    </div>
+
+    <h3>Decomposition Quick Reference</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Decomposition</th><th>Formula</th><th>Use Case</th><th>NumPy</th></tr>
+        <tr><td><strong>SVD</strong></td><td>A = U Σ Vᵀ</td><td>PCA, compression, LSA, pseudo-inverse</td><td><code>np.linalg.svd(A)</code></td></tr>
+        <tr><td><strong>QR</strong></td><td>A = Q R</td><td>Least squares, eigenvalue methods</td><td><code>np.linalg.qr(A)</code></td></tr>
+        <tr><td><strong>Cholesky</strong></td><td>A = L Lᵀ</td><td>Covariance matrices, sampling</td><td><code>np.linalg.cholesky(A)</code></td></tr>
+        <tr><td><strong>Eigen</strong></td><td>A v = λ v</td><td>PCA, graph analysis, dynamics</td><td><code>np.linalg.eig(A)</code></td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 7 — QUIZ
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div>
+      <h2>Practice MCQs — 20 Questions</h2>
+      <p>Vectors, matrix ops, eigenvalues, decompositions. Need 16/20 to pass.</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div>
+      <div class="score-msg" id="score-msg"></div>
+      <div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECTION 8 — REAL WORLD TASK
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#4F46E5">🏆</div>
+    <div>
+      <h2>Real-World Task — Recommendation Engine &amp; PCA</h2>
+      <p>Estimated time: 90–110 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Machine Learning Engineer</strong> at <em>StreamMatrix</em>, a movie streaming platform. Build a <strong>complete recommendation system</strong> using only NumPy linear algebra — no scikit-learn, no pandas. You'll implement collaborative filtering via SVD, PCA for dimensionality reduction, solve a pricing optimisation system, and compute user similarity scores.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#4F46E5">1</div>
+        <h4>Phase 1 — Build the User-Movie Rating Matrix</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Create the Rating Matrix</h5>
+            <p>Simulate ratings (1–5) for 50 users and 20 movies. Use <code>rng.integers(1, 6)</code> but introduce sparsity — set 40% of ratings to 0 (meaning "not watched").</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(<span class="nm">2024</span>)
+
+n_users, n_movies = <span class="nm">50</span>, <span class="nm">20</span>
+movies = [<span class="st">'Inception'</span>,<span class="st">'Interstellar'</span>,<span class="st">'The Matrix'</span>,<span class="st">'Avatar'</span>,<span class="st">'Dune'</span>,
+          <span class="st">'Oppenheimer'</span>,<span class="st">'Barbie'</span>,<span class="st">'Parasite'</span>,<span class="st">'1917'</span>,<span class="st">'Joker'</span>,
+          <span class="st">'Tenet'</span>,<span class="st">'Knives Out'</span>,<span class="st">'Get Out'</span>,<span class="st">'Mad Max'</span>,<span class="st">'Blade Runner'</span>,
+          <span class="st">'Everything Everywhere'</span>,<span class="st">'Top Gun'</span>,<span class="st">'Spider-Man'</span>,<span class="st">'Dr Strange'</span>,<span class="st">'Dune 2'</span>]
+
+<span class="cm"># Raw ratings 1–5</span>
+raw = rng.<span class="fn">integers</span>(<span class="nm">1</span>, <span class="nm">6</span>, size=(n_users, n_movies))
+
+<span class="cm"># 40% of entries are 0 (not watched)</span>
+mask = rng.<span class="fn">random</span>((n_users, n_movies)) > <span class="nm">0.4</span>
+R = raw * mask           <span class="cm"># R[i,j]=0 means user i didn't watch movie j</span>
+
+<span class="fn">print</span>(<span class="st">f"Shape: {R.shape}"</span>)
+<span class="fn">print</span>(<span class="st">f"Sparsity: {(R==0).mean():.1%} zeros"</span>)
+<span class="fn">print</span>(<span class="st">f"First user ratings: {R[0]}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Basic Exploration</h5>
+            <p>Find the most popular movie (highest average rating among non-zero entries). Find the most active user (most movies watched). Use <code>np.where</code> to handle zeros.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Average rating per movie (excluding zeros)</span>
+movie_sums   = R.<span class="fn">sum</span>(axis=<span class="nm">0</span>)
+movie_counts = (R > <span class="nm">0</span>).<span class="fn">sum</span>(axis=<span class="nm">0</span>)
+movie_avgs   = <span class="op">np</span>.<span class="fn">where</span>(movie_counts > <span class="nm">0</span>, movie_sums / movie_counts, <span class="nm">0</span>)
+best_movie   = movies[<span class="op">np</span>.<span class="fn">argmax</span>(movie_avgs)]
+<span class="fn">print</span>(<span class="st">f"Most popular movie: {best_movie} ({movie_avgs.max():.2f}★)"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div>
+        <h4>Phase 2 — SVD-Based Recommendation (Collaborative Filtering)</h4>
+        <span class="phase-time">~25 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Mean-Centre the Rating Matrix</h5>
+            <p>Replace zeros with NaN, compute each user's average rating (ignoring NaN with <code>np.nanmean</code>), then subtract it from that user's ratings. Fill NaN back with 0 for the matrix.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>R_float = R.<span class="fn">astype</span>(<span class="fn">float</span>)
+R_float[R_float == <span class="nm">0</span>] = <span class="op">np</span>.nan
+
+user_means = <span class="op">np</span>.<span class="fn">nanmean</span>(R_float, axis=<span class="nm">1</span>, keepdims=<span class="kw">True</span>)  <span class="cm"># (50,1)</span>
+R_centred  = R_float - user_means
+R_centred  = <span class="op">np</span>.<span class="fn">nan_to_num</span>(R_centred, nan=<span class="nm">0.0</span>)           <span class="cm"># fill NaN→0</span></pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Apply SVD — Extract Latent Factors</h5>
+            <p>Apply SVD to the centred matrix. Keep only the top <strong>k=5 latent factors</strong> (genres: action, sci-fi, drama…). Reconstruct the low-rank approximation.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>U, s, Vt = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">svd</span>(R_centred, full_matrices=<span class="kw">False</span>)
+
+k = <span class="nm">5</span>   <span class="cm"># number of latent factors</span>
+R_approx = U[:, :k] @ <span class="op">np</span>.<span class="fn">diag</span>(s[:k]) @ Vt[:k, :]
+
+<span class="cm"># Add user means back</span>
+R_predicted = R_approx + user_means
+
+<span class="cm"># Clip to valid rating range 1–5</span>
+R_predicted = <span class="op">np</span>.<span class="fn">clip</span>(R_predicted, <span class="nm">1</span>, <span class="nm">5</span>)
+
+explained = (s[:k]**<span class="nm">2</span>).<span class="fn">sum</span>() / (s**<span class="nm">2</span>).<span class="fn">sum</span>()
+<span class="fn">print</span>(<span class="st">f"Variance explained by k={k} factors: {explained:.1%}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <h5>Generate Recommendations for a User</h5>
+            <p>For user 0, find movies they haven't watched (rating = 0 in original R) and rank them by predicted rating. Print the top 5 recommended movies.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>user_id = <span class="nm">0</span>
+unwatched = R[user_id] == <span class="nm">0</span>    <span class="cm"># movies not yet watched</span>
+pred_scores = R_predicted[user_id].copy()
+pred_scores[~unwatched] = -<span class="op">np</span>.inf  <span class="cm"># ignore already-watched</span>
+top5 = <span class="op">np</span>.<span class="fn">argsort</span>(pred_scores)[-<span class="nm">5</span>:][::-<span class="nm">1</span>]
+<span class="fn">print</span>(<span class="st">f"\nTop 5 recommendations for User {user_id}:"</span>)
+<span class="kw">for</span> rank, idx <span class="kw">in</span> <span class="fn">enumerate</span>(top5, <span class="nm">1</span>):
+    <span class="fn">print</span>(<span class="st">f"  {rank}. {movies[idx]} → Predicted: {pred_scores[idx]:.2f}★"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">3</div>
+        <h4>Phase 3 — User Similarity (Cosine &amp; PCA)</h4>
+        <span class="phase-time">~25 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Compute Full User–User Cosine Similarity Matrix</h5>
+            <p>Compute the (50×50) cosine similarity matrix for all user pairs using matrix operations only. No loops. Normalise each user vector by its L2 norm, then multiply with its transpose.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Normalise rows (each user's rating vector)</span>
+norms = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">norm</span>(R_centred, axis=<span class="nm">1</span>, keepdims=<span class="kw">True</span>)
+norms = <span class="op">np</span>.<span class="fn">where</span>(norms == <span class="nm">0</span>, <span class="nm">1</span>, norms)   <span class="cm"># avoid division by zero</span>
+R_norm = R_centred / norms                   <span class="cm"># (50, 20)</span>
+
+<span class="cm"># Full similarity matrix — ONE matrix multiply!</span>
+sim_matrix = R_norm @ R_norm.T               <span class="cm"># (50, 50)</span>
+<span class="fn">print</span>(<span class="st">f"Similarity matrix shape: {sim_matrix.shape}"</span>)
+
+<span class="cm"># Find the 3 most similar users to user 0</span>
+sim_to_user0 = sim_matrix[<span class="nm">0</span>].copy()
+sim_to_user0[<span class="nm">0</span>] = -<span class="nm">1</span>               <span class="cm"># exclude self</span>
+similar_users = <span class="op">np</span>.<span class="fn">argsort</span>(sim_to_user0)[-<span class="nm">3</span>:][::-<span class="nm">1</span>]
+<span class="fn">print</span>(<span class="st">f"Users most similar to User 0: {similar_users}"</span>)
+<span class="fn">print</span>(<span class="st">f"Similarity scores: {sim_to_user0[similar_users].round(3)}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>PCA — Visualise Users in 2D Space</h5>
+            <p>Apply PCA to the (50×20) centred rating matrix to reduce it to (50×2). Use the eigendecomposition of the covariance matrix. Print which 2 principal components explain the most variance.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># PCA on users (50 users, each with 20-dim rating vector)</span>
+cov = <span class="op">np</span>.<span class="fn">cov</span>(R_centred)              <span class="cm"># (50, 50) covariance</span>
+evals, evecs = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">eigh</span>(cov)  <span class="cm"># symmetric → eigh</span>
+order = <span class="op">np</span>.<span class="fn">argsort</span>(evals)[::-<span class="nm">1</span>]
+evals = evals[order]; evecs = evecs[:, order]
+
+<span class="cm"># Project all users onto top 2 components</span>
+users_2d = R_centred @ evecs[:, :<span class="nm">2</span>]   <span class="cm"># (50, 2)</span>
+explained_var = evals[:<span class="nm">2</span>] / evals[evals > <span class="nm">0</span>].<span class="fn">sum</span>() * <span class="nm">100</span>
+<span class="fn">print</span>(<span class="st">f"PC1 explains: {explained_var[0]:.1f}%"</span>)
+<span class="fn">print</span>(<span class="st">f"PC2 explains: {explained_var[1]:.1f}%"</span>)
+<span class="fn">print</span>(<span class="st">f"2D user positions (first 5):\n{np.round(users_2d[:5],2)}"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">4</div>
+        <h4>Phase 4 — Pricing Optimisation (Linear System)</h4>
+        <span class="phase-time">~20 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Set Up &amp; Solve the Pricing System</h5>
+            <p>StreamMatrix has 4 subscription tiers. Market research gave 4 equations relating tier prices to user segment preferences. Solve this system using <code>np.linalg.solve</code>.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Pricing equation system (based on elasticity research):
+# x1 + x2 + x3 + x4 = 100     (total market budget)
+# 2x1 - x2 + x3 - x4 = 20     (premium preference)
+# x1 + 3x2 - x3 + x4 = 60     (family preference)
+# x1 - x2 + 2x3 + 3x4 = 50    (student preference)</span>
+
+A_price = <span class="op">np</span>.<span class="fn">array</span>([
+    [<span class="nm">1</span>,  <span class="nm">1</span>,  <span class="nm">1</span>,  <span class="nm">1</span>],
+    [<span class="nm">2</span>, -<span class="nm">1</span>,  <span class="nm">1</span>, -<span class="nm">1</span>],
+    [<span class="nm">1</span>,  <span class="nm">3</span>, -<span class="nm">1</span>,  <span class="nm">1</span>],
+    [<span class="nm">1</span>, -<span class="nm">1</span>,  <span class="nm">2</span>,  <span class="nm">3</span>]
+], dtype=<span class="fn">float</span>)
+
+b_price = <span class="op">np</span>.<span class="fn">array</span>([<span class="nm">100</span>, <span class="nm">20</span>, <span class="nm">60</span>, <span class="nm">50</span>], dtype=<span class="fn">float</span>)
+
+<span class="cm"># Check if solvable</span>
+<span class="fn">print</span>(<span class="st">f"det = {np.linalg.det(A_price):.2f}"</span>)   <span class="cm"># non-zero → solvable</span>
+<span class="fn">print</span>(<span class="st">f"rank = {np.linalg.matrix_rank(A_price)}"</span>)   <span class="cm"># = 4 = full rank</span>
+
+prices = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">solve</span>(A_price, b_price)
+tier_names = [<span class="st">'Basic'</span>, <span class="st">'Standard'</span>, <span class="st">'Premium'</span>, <span class="st">'Family'</span>]
+<span class="fn">print</span>(<span class="st">"\nOptimal Subscription Prices:"</span>)
+<span class="kw">for</span> name, price <span class="kw">in</span> <span class="fn">zip</span>(tier_names, prices):
+    <span class="fn">print</span>(<span class="st">f"  {name}: ₹{price:.2f}/month"</span>)
+
+<span class="cm"># Verify</span>
+<span class="fn">print</span>(<span class="st">f"Verify: {np.allclose(A_price @ prices, b_price)}"</span>)</pre></div>
+          </div>
+        </div>
+        <div class="task-step">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <h5>Condition Number Analysis</h5>
+            <p>The condition number measures how sensitive the solution is to small errors. A high condition number (>1000) means the system is ill-conditioned. Compute it.</p>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span></div>
+<pre>cond = <span class="op">np</span>.<span class="fn">linalg</span>.<span class="fn">cond</span>(A_price)
+<span class="fn">print</span>(<span class="st">f"Condition number: {cond:.2f}"</span>)
+<span class="kw">if</span> cond > <span class="nm">100</span>:
+    <span class="fn">print</span>(<span class="st">"⚠️ Warning: system may be ill-conditioned"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"✅ Well-conditioned system — reliable solution"</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">5</div>
+        <h4>Phase 5 — Final Analytics Report</h4>
+        <span class="phase-time">~15 min</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <h5>Print the Full StreamMatrix Report</h5>
+            <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED OUTPUT FORMAT</span></div>
+<pre>══════════════════════════════════════════
+    STREAMMATRIX — ANALYTICS REPORT
+══════════════════════════════════════════
+RATING MATRIX
+  Users × Movies : 50 × 20
+  Sparsity       : ~40%
+  Overall Avg    : ???★
+
+TOP CONTENT
+  Most Popular Movie : ??? (???★)
+  Least Popular Movie: ??? (???★)
+
+RECOMMENDATION ENGINE (SVD k=5)
+  Latent Factors     : 5
+  Variance Explained : ???%
+  Top picks for User 0:
+    1. ???  → ???★ predicted
+    2. ???  → ???★ predicted
+    3. ???  → ???★ predicted
+
+USER SIMILARITY
+  Most similar user to User 0: User ??? (sim=???)
+  Similarity matrix: (50×50)
+
+DIMENSIONALITY REDUCTION (PCA)
+  Original dims  : 20
+  Reduced dims   : 2
+  PC1 variance   : ???%
+  PC2 variance   : ???%
+  Total explained: ???%
+
+PRICING OPTIMISATION
+  Basic    : ₹??.??/month
+  Standard : ₹??.??/month
+  Premium  : ₹??.??/month
+  Family   : ₹??.??/month
+  System condition number: ???
+══════════════════════════════════════════</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Created 50×20 sparse rating matrix with 40% zeros</li>
+        <li>Found most popular movie using non-zero mean with np.where</li>
+        <li>Mean-centred ratings per user using nanmean + keepdims</li>
+        <li>Applied SVD and kept top k=5 singular values/vectors</li>
+        <li>Reconstructed predicted rating matrix and clipped to [1,5]</li>
+        <li>Generated top-5 unwatched recommendations for User 0</li>
+        <li>Built 50×50 cosine similarity matrix using normalised row dot product</li>
+        <li>Found 3 most similar users to User 0</li>
+        <li>Applied PCA via eigendecomposition of covariance matrix</li>
+        <li>Projected users to 2D and reported explained variance per component</li>
+        <li>Set up and solved 4-equation pricing linear system</li>
+        <li>Verified solution with np.allclose and computed condition number</li>
+        <li>Printed complete formatted analytics report</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 30 min)</div>
+      Implement <strong>item-based collaborative filtering</strong>: instead of user-user similarity, compute the (20×20) movie-movie similarity matrix. For a given movie a user liked, find the top 3 most similar movies they haven't watched yet. Compare results with the SVD approach.
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="day-footer">
+  <div class="series">NumPy Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Arrays</span>
+    <span class="day-pill done">Day 2 · Math &amp; Stats</span>
+    <span class="day-pill done">Day 3 · Broadcasting</span>
+    <span class="day-pill done active">Day 4 · Linear Algebra</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const rng_seed = 42;
+const questions = [
+  {q:"What does `np.linalg.norm(v)` compute by default?",opts:["L1 norm (sum of absolute values)","L2 norm (Euclidean length √(Σxᵢ²))","L∞ norm (max absolute value)","The sum of all elements"],ans:1,explain:"By default (ord=None), np.linalg.norm computes the L2/Frobenius norm — the Euclidean length √(x₁²+x₂²+…). Use ord=1 for L1, ord=np.inf for L∞."},
+  {q:"What is the shape rule for matrix multiplication (m×k) @ (k×n)?",opts:["Result is (m×n) — inner dims k must match","Result is (k×k) — only inner dims","Result is (m×k×n)","Any shapes are compatible"],ans:0,explain:"Matrix multiplication requires the inner dimensions to match: (m×k)@(k×n)→(m×n). The k's cancel, leaving outer dims m and n."},
+  {code:"A = np.array([[1,2],[3,4]])\nprint(A * np.array([[5,6],[7,8]]))",q:"This computes:",opts:["Matrix multiplication — [[19,22],[43,50]]","Element-wise multiplication — [[5,12],[21,32]]","Dot product — a scalar","Cross product"],ans:1,explain:"The * operator performs element-wise (Hadamard) multiplication: 1×5=5, 2×6=12, 3×7=21, 4×8=32. For matrix multiplication use @ or np.matmul()."},
+  {q:"What does a zero determinant tell you about a matrix?",opts:["The matrix is the identity","The matrix is singular — it cannot be inverted","The matrix is orthogonal","The matrix is symmetric"],ans:1,explain:"det(A)=0 means the matrix is singular (rank-deficient). Rows/columns are linearly dependent, the transformation collapses space, and no inverse exists."},
+  {q:"Which is the CORRECT way to solve Ax=b for x?",opts:["x = np.linalg.inv(A) @ b","x = np.linalg.solve(A, b)","x = b / A","x = np.dot(b, A)"],ans:1,explain:"Always use np.linalg.solve(A, b). It's faster, more numerically stable, and avoids explicitly computing the inverse. Computing inv(A) then multiplying introduces unnecessary floating-point error."},
+  {code:"evals, evecs = np.linalg.eig(A)\nprint(evecs.shape)",q:"For a 4×4 matrix A, what is printed?",opts:["(4,)","(4,4)","(4,1)","(16,)"],ans:1,explain:"np.linalg.eig returns eigenvectors as COLUMNS of a matrix. For n×n A, there are n eigenvectors each of length n → shape (n,n) = (4,4)."},
+  {q:"In the eigenvalue equation Av = λv, what is v?",opts:["A scalar that scales the matrix","A vector that only gets scaled (not rotated) by A","The determinant of A","A row of the matrix"],ans:1,explain:"v is the eigenvector — a special direction where applying matrix A only stretches or flips the vector (by factor λ) without rotating it. λ is the eigenvalue (scale factor)."},
+  {q:"What relationship holds between eigenvalues and the trace of A?",opts:["Sum of eigenvalues = det(A)","Sum of eigenvalues = trace(A)","Product of eigenvalues = trace(A)","No mathematical relationship"],ans:1,explain:"Two key relationships: sum(eigenvalues) = trace(A) and product(eigenvalues) = det(A). These are useful for quick checks of eigenvalue computations."},
+  {q:"In SVD A = U Σ Vᵀ, what are the singular values?",opts:["The elements of U","The diagonal values of Σ, always non-negative and descending","The columns of Vᵀ","The eigenvalues of A"],ans:1,explain:"Singular values are the diagonal entries of Σ. They are always real, non-negative, and sorted in descending order. They measure the 'importance' of each dimension."},
+  {q:"What does `np.linalg.lstsq(X, y)` compute?",opts:["The exact solution to Xy=b","The least-squares best-fit — minimises ||Xy-b||²","The LU decomposition","The eigendecomposition of X"],ans:1,explain:"lstsq finds the coefficients that minimise the sum of squared residuals. It works even for overdetermined systems (more equations than unknowns) — this is exactly linear regression!"},
+  {code:"A = np.array([[1,2],[3,4]])\nprint(np.linalg.det(A))",q:"What is printed?",opts:["10.0","-2.0","2.0","-10.0"],ans:1,explain:"det([[a,b],[c,d]]) = a×d - b×c = 1×4 - 2×3 = 4-6 = -2.0"},
+  {q:"For which type of matrix should you use `np.linalg.eigh` instead of `np.linalg.eig`?",opts:["Triangular matrices","Symmetric (or Hermitian) matrices","Square matrices only","Singular matrices"],ans:1,explain:"eigh is optimised for symmetric/Hermitian matrices. It's faster, always returns REAL eigenvalues (no spurious imaginary parts), and returns them sorted. Always prefer eigh for covariance matrices."},
+  {q:"What does `np.linalg.pinv(A)` compute?",opts:["The regular inverse — same as inv(A)","The Moore-Penrose pseudo-inverse — works even for non-square/singular matrices","The transpose of A","The Cholesky factor"],ans:1,explain:"The pseudo-inverse works for any matrix shape and even for singular matrices. For square non-singular A, pinv(A) = inv(A). Essential for least-squares solutions: x = pinv(A) @ b."},
+  {q:"What is the cosine similarity between two perpendicular (orthogonal) vectors?",opts:["1","0","-1","Undefined"],ans:1,explain:"Cosine similarity = cos(θ). For perpendicular vectors θ=90°, cos(90°)=0. This means no linear relationship — the vectors share no common direction."},
+  {q:"In SVD-based recommendation, what do the top k singular values represent?",opts:["The k most active users","The k most popular movies","The k strongest latent factors (genre-like patterns)","The k largest rating values"],ans:2,explain:"In recommendation systems, SVD discovers latent factors — hidden patterns like genre, mood, or style. The top k singular values capture the most variance and typically correspond to dominant taste patterns."},
+  {code:"A = np.array([[4,2],[2,3]])\nL = np.linalg.cholesky(A)\nprint(np.allclose(A, L @ L.T))",q:"What is printed?",opts:["False — Cholesky gives L @ L not L @ L.T","True","Error — A is not positive definite","False — shapes don't match"],ans:1,explain:"Cholesky decomposes a symmetric positive definite matrix as A = L @ L.T. [[4,2],[2,3]] is SPD (all eigenvalues > 0), so the decomposition succeeds and reconstruction is exact."},
+  {q:"What does `np.linalg.matrix_rank(A)` measure?",opts:["The size of the matrix","The number of linearly independent rows/columns","The determinant","The number of non-zero elements"],ans:1,explain:"Rank = number of linearly independent rows (= number of linearly independent columns). A full-rank n×n matrix has rank n. A singular matrix has rank < n."},
+  {q:"Which decomposition A = Q @ R requires Q to be orthogonal?",opts:["LU decomposition","SVD","QR decomposition","Eigendecomposition"],ans:2,explain:"In QR decomposition, Q is an orthogonal matrix (Q.T @ Q = I, columns are unit orthogonal vectors) and R is upper triangular. Used for numerically stable least-squares solving."},
+  {q:"What does a high condition number (e.g., 10⁸) mean for a linear system Ax=b?",opts:["The system is very easy to solve","Small errors in b cause large errors in x — the system is ill-conditioned","The matrix has high rank","The system has no solution"],ans:1,explain:"The condition number measures sensitivity to perturbations. A high condition number means the system is ill-conditioned — tiny measurement errors in b can produce wildly wrong solutions for x."},
+  {code:"U, s, Vt = np.linalg.svd(A, full_matrices=False)\n# A is (100, 20)\nprint(s.shape)",q:"What is the shape of s?",opts:["(100,)","(20,)","(100,20)","(20,100)"],ans:1,explain:"With full_matrices=False (economy SVD), s contains min(m,n) singular values. For (100,20) matrix, min=20, so s.shape=(20,). The singular values are sorted descending."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Linear algebra takes time — revisit the formulas and try again! 📚"],[50,75,"Good effort! Focus on SVD, eigenvalues, and solve vs inv. 💪"],[75,90,"Strong! You've got the core linear algebra concepts. 🎉"],[90,101,"Exceptional! Day 4 completely mastered. Ready for the Capstone! 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+
+buildQuiz();
+</script>
+</body>
+</html>

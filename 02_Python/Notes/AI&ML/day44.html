@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 44 — Exception Handling</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+.exc-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; font-family:var(--font-mono); font-size:13px;}
+.exc-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:10px 12px;}
+.exc-box .e{color:var(--accent); font-weight:bold;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:220px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 44 of 210 · Phase 2: Python & Core AI Foundation</span>
+    <h1>Exception Handling</h1>
+    <div class="subtitle">~2 hours · try/except — handling errors gracefully instead of crashing</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Real data is messy — missing files, malformed numbers, unexpected blank fields. A robust data pipeline can't just crash the moment it hits one bad row out of a million; it needs to handle the problem gracefully and keep going. <code>try</code>/<code>except</code> is exactly how you build that resilience.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Basic try/except</h2>
+  <div class="code">try:
+    result = 10 / 0
+    print(result)
+except ZeroDivisionError:
+    print("Can't divide by zero!")</div>
+  <p>Python attempts everything inside <code>try:</code>. If an error occurs, it immediately jumps to the matching <code>except</code> block instead of crashing the whole program — the rest of the <code>try</code> block is skipped, and execution continues after the except block.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Common exception types</h2>
+  <div class="exc-grid">
+    <div class="exc-box"><span class="e">ValueError</span><br>Wrong value for a conversion, e.g. int("abc")</div>
+    <div class="exc-box"><span class="e">TypeError</span><br>Wrong type used in an operation</div>
+    <div class="exc-box"><span class="e">IndexError</span><br>List index out of range</div>
+    <div class="exc-box"><span class="e">KeyError</span><br>Dictionary key doesn't exist</div>
+    <div class="exc-box"><span class="e">ZeroDivisionError</span><br>Dividing by zero</div>
+    <div class="exc-box"><span class="e">FileNotFoundError</span><br>File doesn't exist (Day 43)</div>
+  </div>
+  <p><strong>Catch the specific exception type you expect</strong> — this is why yesterday's IndexError, Day 37's KeyError, and Day 43's FileNotFoundError all matter by name, not just as generic "errors."</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> else and finally</h2>
+  <div class="code">try:
+    age = int("25")
+except ValueError:
+    print("Invalid number")
+else:
+    print("Conversion succeeded: " + str(age))
+finally:
+    print("This always runs, error or not")</div>
+  <p><code>else</code> runs ONLY if no exception occurred. <code>finally</code> runs ALWAYS — whether there was an error or not — commonly used for cleanup work (like closing a file) that must happen regardless of what went wrong.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (safely reading a file)</h2>
+  <div class="panel">
+    <p class="example-tag">Directly resolves yesterday's FileNotFoundError</p>
+    <div class="code">try:
+    with open("sales_data.txt", "r") as file:
+        content = file.read()
+        print(content)
+except FileNotFoundError:
+    print("File not found — using default empty dataset instead")
+    content = ""</div>
+    <p>Instead of the whole program crashing the moment a file is missing, it now handles the situation gracefully and can fall back to a sensible default — exactly what a real, production-quality data pipeline needs to do.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (safely parsing messy data)</h2>
+  <div class="panel">
+    <p class="example-tag">Skipping bad rows instead of crashing the whole pipeline</p>
+    <div class="code">raw_scores = ["85", "92", "N/A", "78", "corrupted", "95"]
+valid_scores = []
+
+for i in range(len(raw_scores)):
+    try:
+        score = int(raw_scores[i])
+        valid_scores.append(score)
+    except ValueError:
+        print("Skipping invalid entry: " + raw_scores[i])
+
+print(valid_scores)   # [85, 92, 78, 95]</div>
+    <p>Without try/except, hitting <code>"N/A"</code> would crash the ENTIRE loop, losing every score that came after it too. With it, one bad entry is skipped and processing continues — genuinely essential behavior for real, messy datasets.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Using a bare `except:` that catches everything.</strong> This silently swallows ALL errors, including genuine bugs in your own code (typos, logic mistakes) — making them very hard to notice or debug. Always catch the SPECIFIC exception type you expect.</p>
+    <p><strong>Mistake 2 — Catching too broadly "just to be safe."</strong> If you catch <code>Exception</code> generically when you only expected a <code>ValueError</code>, you might accidentally hide a completely unrelated bug that should have crashed loudly and been fixed.</p>
+    <p><strong>Mistake 3 — Using try/except for normal control flow.</strong> Exceptions are for genuinely exceptional, unexpected situations — using them as a substitute for a simple <code>if</code> check (when you easily could have checked in advance) makes code harder to follow.</p>
+    <p><strong>Mistake 4 — Forgetting that code after the error point in the try block never runs.</strong> The moment an exception occurs, Python jumps straight to except — any remaining lines in that try block are skipped entirely for that pass.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now supports try/except)</h2>
+  <div class="solver">
+    <h3>Try the messy-data-cleaning example, or break things on purpose</h3>
+    <textarea id="codeInput">raw_scores = ["85", "92", "N/A", "78", "corrupted", "95"]
+valid_scores = []
+
+for i in range(len(raw_scores)):
+    try:
+        score = int(raw_scores[i])
+        valid_scores.append(score)
+    except ValueError:
+        print("Skipping invalid entry: " + raw_scores[i])
+
+print(valid_scores)
+
+try:
+    x = 10 / 0
+except ZeroDivisionError:
+    print("Caught the division error!")</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 45 begins Object-Oriented Programming — classes and objects, the last major Python concept before you move into NumPy and Pandas for real data work.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 44 of 210 · AI & ML Study Plan · Phase 2: Python & Core AI Foundation</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Write try/except code that attempts int('abc') and prints 'Invalid number' if it fails.", steps: "try:\n    x = int('abc')\nexcept ValueError:\n    print('Invalid number')" },
+  { q: "Write try/except code that attempts 5/0 and catches the specific error with a message.", steps: "try:\n    x = 5/0\nexcept ZeroDivisionError:\n    print('Cannot divide by zero')" },
+  { q: "nums=[1,2,3]. Write try/except around accessing nums[10] that prints 'Index not found'.", steps: "try:\n    x = nums[10]\nexcept IndexError:\n    print('Index not found')" },
+  { q: "What runs in a try/except/finally block if NO error occurs?", steps: "The full try block runs, then the finally block runs (except is skipped since there was no error)." },
+  { q: "What runs if an error DOES occur, in a try/except/else/finally block?", steps: "The try block runs until the error point, then the matching except block runs, then finally runs. The else block is SKIPPED since it only runs when there's no error." },
+  { q: "Why is a bare 'except:' (with no exception type specified) considered risky?", steps: "It catches ALL errors indiscriminately, including genuine bugs/typos in your own code, which can hide real problems and make debugging much harder." },
+  { q: "scores=['80','N/A','90']. Write a loop using try/except to build a list of only the valid integer scores.", steps: "valid=[]\nfor i in range(len(scores)):\n    try:\n        valid.append(int(scores[i]))\n    except ValueError:\n        pass" },
+  { q: "Why is try/except described as essential for real data pipelines specifically?", steps: "Real-world data is rarely perfectly clean — missing files, malformed values, and unexpected formats are common. Without error handling, a single bad row could crash processing of an entire dataset." },
+  { q: "Is it good practice to use try/except INSTEAD of a simple 'if' check when you could easily check the condition in advance?", steps: "No — exceptions are meant for genuinely unexpected situations. Using them as a substitute for an easy, predictable if-check makes code harder to read and reason about." },
+  { q: "In your own words: how does today's try/except directly complete yesterday's FileNotFoundError problem?", steps: "Day 43 showed that opening a missing file raises FileNotFoundError, crashing the program. Wrapping that open() call in try/except lets you catch that specific error and respond gracefully (e.g., use a default) instead of crashing." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with try/except/else/finally ---
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(Array.isArray(val)){
+    return '[' + val.map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v)).join(', ') + ']';
+  }
+  return String(val);
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))){
+    return value.slice(1,-1);
+  }
+  if(!isNaN(parseFloat(value)) && isFinite(value)){
+    return value.includes('.') ? parseFloat(value) : parseInt(value);
+  }
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pyErr(type, msg){
+  const e = new Error(msg ? `${type}: ${msg}` : type);
+  e.pyType = type;
+  return e;
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v)) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  const containsDiv = /[^\/]\/[^\/]/.test(expr) || /^\//.test(expr);
+  const val = Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+  if(containsDiv && (val === Infinity || val === -Infinity || Number.isNaN(val))){
+    throw pyErr('ZeroDivisionError', 'division by zero');
+  }
+  return val;
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+
+  let m = arg.match(/^f(["'])([\s\S]*)\1$/);
+  if(m){
+    return m[2].replace(/\{([^}]+)\}/g, (w, expr) => {
+      const v = evalComplex(expr.trim(), vars);
+      return typeof v === 'boolean' ? (v?'True':'False') : (v===null?'None':String(v));
+    });
+  }
+
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p => evalComplex(p, vars));
+  }
+
+  const intMatch = arg.match(/^int\((.+)\)$/);
+  if(intMatch){
+    const v = evalComplex(intMatch[1], vars);
+    if(typeof v === 'string'){
+      const n = parseInt(v.trim(), 10);
+      if(isNaN(n)) throw pyErr('ValueError', `invalid literal for int() with base 10: '${v}'`);
+      return n;
+    }
+    return Math.trunc(v);
+  }
+  const floatMatch = arg.match(/^float\((.+)\)$/);
+  if(floatMatch){
+    const v = evalComplex(floatMatch[1], vars);
+    if(typeof v === 'string'){
+      const n = parseFloat(v.trim());
+      if(isNaN(n)) throw pyErr('ValueError', `could not convert string to float: '${v}'`);
+      return n;
+    }
+    return Number(v);
+  }
+  const strMatch = arg.match(/^str\((.+)\)$/);
+  if(strMatch) return pyRepr(evalComplex(strMatch[1], vars)).replace(/^'(.*)'$/, '$1');
+
+  const idxMatch = arg.match(/^(\w+)\[(.*)\]$/);
+  if(idxMatch && Array.isArray(vars[idxMatch[1]])){
+    const arr = vars[idxMatch[1]];
+    let i = evalGeneral(idxMatch[2], vars);
+    if(i<0) i = arr.length+i;
+    if(i<0||i>=arr.length) throw pyErr('IndexError', 'list index out of range');
+    return arr[i];
+  }
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch){ return vars[lenMatch[1]].length; }
+
+  return evalGeneral(arg, vars);
+}
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+function execLine(line, vars, output){
+  if(line === 'pass') return;
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  const appendMatch = line.match(/^(\w+)\.append\((.*)\)$/);
+  if(appendMatch && Array.isArray(vars[appendMatch[1]])){
+    vars[appendMatch[1]].push(evalComplex(appendMatch[2], vars));
+    return;
+  }
+  if(printMatch){
+    const parts = splitTopLevel(printMatch[1], ',');
+    output.push(parts.map(p => { const v = evalComplex(p, vars); return typeof v==='string'?v:pyRepr(v); }).join(' '));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+    const tryMatch = trimmed.match(/^try:$/);
+
+    if(tryMatch){
+      const bStart = i+1;
+      const tryEnd = findBlockExtent(lines, bStart, baseIndent);
+      let j = tryEnd;
+      const clauses = [];
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mExcept = t.match(/^except(\s+(\w+))?\s*:$/);
+        const mElse = t.match(/^else:$/);
+        const mFinally = t.match(/^finally:$/);
+        if(mExcept){
+          const cStart = j+1, cEnd = findBlockExtent(lines, cStart, baseIndent);
+          clauses.push({type:'except', exc: mExcept[2] || null, cStart, cEnd}); j = cEnd;
+        } else if(mElse){
+          const cStart = j+1, cEnd = findBlockExtent(lines, cStart, baseIndent);
+          clauses.push({type:'else', cStart, cEnd}); j = cEnd;
+        } else if(mFinally){
+          const cStart = j+1, cEnd = findBlockExtent(lines, cStart, baseIndent);
+          clauses.push({type:'finally', cStart, cEnd}); j = cEnd;
+        } else break;
+      }
+      let errorCaught = null;
+      let noError = false;
+      try{
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        noError = true;
+      } catch(err){
+        errorCaught = err;
+      }
+      if(errorCaught){
+        let handled = false;
+        for(const c of clauses){
+          if(c.type === 'except' && !handled){
+            if(c.exc === null || c.exc === errorCaught.pyType){
+              execBlock(lines, c.cStart, baseIndent+4, vars, output, guard);
+              handled = true;
+            }
+          }
+        }
+        if(!handled){
+          const finallyClause = clauses.find(c=>c.type==='finally');
+          if(finallyClause) execBlock(lines, finallyClause.cStart, baseIndent+4, vars, output, guard);
+          throw errorCaught;
+        }
+      } else if(noError){
+        const elseClause = clauses.find(c=>c.type==='else');
+        if(elseClause) execBlock(lines, elseClause.cStart, baseIndent+4, vars, output, guard);
+      }
+      const finallyClause = clauses.find(c=>c.type==='finally');
+      if(finallyClause) execBlock(lines, finallyClause.cStart, baseIndent+4, vars, output, guard);
+      i = j;
+      continue;
+    } else if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars)){
+          execBlock(lines, c.bStart, baseIndent+4, vars, output, guard);
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 4000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else {
+      execLine(trimmed, vars, output);
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  const output = [];
+  try{
+    execBlock(lines, 0, 0, vars, output, {count:0});
+  } catch(err){
+    output.push(`<span class="error">Uncaught ${err.pyType || 'Error'}: ${escapeHtml((err.message||'').replace((err.pyType||'')+': ',''))}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "What happens when code inside a try block raises an error?", opts: [
+      "The whole program stops immediately with no way to respond",
+      "Python jumps to the matching except block instead of crashing",
+      "The error is automatically ignored",
+      "The try block restarts from the beginning"
+    ], correct: 1, explain: "try/except lets you intercept and respond to the error instead of crashing." },
+  { q: "int('hello') raises which exception?", opts: ["TypeError","IndexError","ValueError","KeyError"], correct: 2, explain: "Converting a non-numeric string raises ValueError." },
+  { q: "nums=[1,2,3]. nums[10] raises which exception?", opts: ["ValueError","IndexError","KeyError","TypeError"], correct: 1, explain: "Accessing beyond a list's valid range raises IndexError." },
+  { q: "When does an 'else' clause in try/except/else run?", opts: ["Always","Only when an exception occurs","Only when NO exception occurs","Never, it's optional syntax with no effect"], correct: 2, explain: "else runs only if the try block completed without error." },
+  { q: "When does 'finally' run?", opts: ["Only on success","Only on failure","Always, regardless of whether an error occurred","Never"], correct: 2, explain: "finally always executes, making it ideal for cleanup code." },
+  { q: "Why is a bare 'except:' (no exception type) considered risky?", opts: [
+      "It's actually the safest option",
+      "It catches every possible error, including genuine bugs, hiding problems you should know about",
+      "It only catches ValueError",
+      "It causes a syntax error"
+    ], correct: 1, explain: "Bare except hides real bugs alongside the errors you actually expected." },
+  { q: "scores=['80','bad','90']. Using try/except inside a loop with int(), what happens to 'bad'?", opts: [
+      "The whole program crashes immediately",
+      "It can be caught and skipped, while '80' and '90' still process successfully",
+      "It gets silently converted to 0",
+      "It causes an infinite loop"
+    ], correct: 1, explain: "try/except inside the loop lets you skip just the bad entry and continue processing the rest." },
+  { q: "Why is try/except described as essential for realistic ML data pipelines?", opts: [
+      "It isn't really needed for ML",
+      "Real-world data is often messy or incomplete, and pipelines need to handle errors gracefully rather than crash entirely",
+      "Only used for training neural networks, not data loading",
+      "It replaces the need for data cleaning entirely"
+    ], correct: 1, explain: "Graceful error handling is what lets a pipeline process large, imperfect real-world datasets reliably." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

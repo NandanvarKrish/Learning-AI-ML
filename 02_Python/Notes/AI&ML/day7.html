@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 7 — Variance & Standard Deviation</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+table{width:100%; border-collapse:collapse; margin:12px 0; font-family:var(--font-mono); font-size:13px;}
+th,td{border:1px solid var(--line); padding:7px 8px; text-align:center;}
+th{background:var(--accent-soft); color:var(--accent);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver input[type=text]{width:100%; padding:10px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono); font-size:15px; margin:10px 0;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:15px; line-height:1.9;}
+.stat-badge{display:inline-block; background:#2a3442; padding:6px 12px; border-radius:4px; margin-right:8px; margin-bottom:8px;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 7 of 210 · Phase 1: Statistics & Probability Week</span>
+    <h1>Variance & Standard Deviation</h1>
+    <div class="subtitle">~2 hours · Builds directly on Day 6's mean/median</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Knowing the mean tells you the center of your data. It tells you nothing about how <strong>spread out</strong> the data is — and that spread matters enormously in ML. Standard deviation is used to scale features before training (so one column with huge numbers doesn't dominate another), to detect outliers, and to describe the "normal distribution" you'll meet very soon. It's one of the most-used numbers in all of data science.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> The problem variance solves</h2>
+  <div class="panel">
+    <p><strong>Two classes both scored a mean of 70 on a test:</strong></p>
+    <p>Class A scores: 68, 69, 70, 71, 72 — everyone close to 70</p>
+    <p>Class B scores: 20, 50, 70, 90, 120 — wildly spread out, but the mean is still 70</p>
+    <p>Same mean, completely different story. Variance and standard deviation are what let you tell these two situations apart numerically.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> What is variance?</h2>
+  <p>Variance measures the average "squared distance" of each data point from the mean:</p>
+  <div class="eq">Variance = Σ(x − mean)² / n</div>
+  <p>Read this as: for each value, subtract the mean, square the result (to make it positive), add all of those up, then divide by how many values there are.</p>
+  <details>
+    <summary>Worked example step by step</summary>
+    <div class="details-body">
+      <p>Data: 4, 8, 6, 10, 12. Mean = (4+8+6+10+12)/5 = 40/5 = 8</p>
+      <table>
+        <tr><th>x</th><td>4</td><td>8</td><td>6</td><td>10</td><td>12</td></tr>
+        <tr><th>x − mean</th><td>-4</td><td>0</td><td>-2</td><td>2</td><td>4</td></tr>
+        <tr><th>(x − mean)²</th><td>16</td><td>0</td><td>4</td><td>4</td><td>16</td></tr>
+      </table>
+      <p>Sum of squared deviations = 16+0+4+4+16 = 40</p>
+      <p>Variance = 40 / 5 = <strong>8</strong></p>
+    </div>
+  </details>
+  <p><strong>Why square the deviations instead of just adding them?</strong> Because positive and negative deviations would cancel out to zero every single time (that's a mathematical property of the mean) — squaring forces everything positive so the spread doesn't vanish in the math.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> What is standard deviation?</h2>
+  <p>Standard deviation is simply the <strong>square root of variance:</strong></p>
+  <div class="eq">Standard Deviation = √Variance</div>
+  <p>For the example above: √8 ≈ <strong>2.83</strong>. Why bother taking the square root? Because variance is in <em>squared units</em> (e.g., "rupees squared," which means nothing intuitively), while standard deviation brings it back to the <strong>original unit</strong> (rupees, marks, kg) — making it directly interpretable and comparable to the actual data.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (investment risk)</h2>
+  <div class="panel">
+    <p class="example-tag">Finance example — std dev as "risk"</p>
+    <p>Two mutual funds both average 12% annual return over 5 years:</p>
+    <p><strong>Fund A yearly returns:</strong> 11%, 12%, 13%, 11%, 13% — mean = 12%, low spread</p>
+    <p><strong>Fund B yearly returns:</strong> -10%, 30%, 5%, 25%, 10% — mean = 12%, high spread</p>
+    <p>Both funds have the identical average return, but Fund B swings wildly year to year — that's higher <strong>risk</strong>. In finance, standard deviation of returns literally <em>is</em> the standard measure of investment risk/volatility. If you've heard "high-risk, high-reward" investments described that way, standard deviation is the number behind that label.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> A quick note: population vs. sample</h2>
+  <div class="panel">
+    <p>You may later see variance divided by <code>n</code> (population variance — used when you have ALL the data) versus <code>n − 1</code> (sample variance — used when your data is just a sample representing a larger group). Most real-world data science uses <code>n − 1</code> (called Bessel's correction) because you're almost always working with a sample, not the entire population. Don't worry about proving why — just recognize both formulas exist, and libraries like Pandas default to the <code>n − 1</code> version.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Forgetting to square the deviations.</strong> Without squaring, positive and negative deviations cancel to exactly zero, giving a useless "average deviation" of 0 every time.</p>
+    <p><strong>Mistake 2 — Comparing variance directly to your data.</strong> Variance is in squared units — don't compare a variance of "64" to data that ranges from 0–20 and conclude something is wildly off. Convert to standard deviation (√64 = 8) first.</p>
+    <p><strong>Mistake 3 — Confusing high variance with "bad" data.</strong> High variance just means more spread — it's not inherently good or bad, it depends on context (low spread is good for consistent product quality, but might mean "boring" for stock returns some investors want).</p>
+    <p><strong>Mistake 4 — Skipping the mean calculation.</strong> You cannot compute variance without first finding the mean — always calculate it as step one.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Variance & Std Dev Calculator</h2>
+  <div class="solver">
+    <h3>Enter a dataset (comma-separated numbers)</h3>
+    <input type="text" id="dataInput" value="4, 8, 6, 10, 12">
+    <button onclick="calcStats()">Calculate Variance & Std Dev</button>
+    <div class="solver-result" id="result"></div>
+    <canvas id="plot" width="600" height="240"></canvas>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">The bars below show each value's deviation from the mean — the taller the bar, the further that point is from "typical." This is exactly what variance is measuring.</p>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> When you standardize features before training an ML model (a very common preprocessing step), you'll compute <code>z = (x − mean) / std_dev</code> for every value — literally today's formula, applied directly to reshape your data onto a common scale.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 7 of 210 · AI & ML Study Plan · Phase 1: Statistics & Probability Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Find the variance of: 2, 4, 6, 8, 10 (mean = 6)", steps: "Deviations: -4,-2,0,2,4 → squared: 16,4,0,4,16 → sum=40 → variance = 40/5 = 8" },
+  { q: "Find the standard deviation of the dataset above (variance = 8)", steps: "√8 ≈ 2.83" },
+  { q: "Data: 5, 5, 5, 5. Find the variance.", steps: "Mean = 5. All deviations = 0. Variance = 0 (no spread at all — every value identical)." },
+  { q: "Data: 10, 20, 30. Find mean, then variance.", steps: "Mean = 20. Deviations: -10,0,10 → squared: 100,0,100 → sum=200 → variance = 200/3 ≈ 66.67" },
+  { q: "Using the variance from above (≈66.67), find the standard deviation.", steps: "√66.67 ≈ 8.16" },
+  { q: "Two funds both average 10% return. Fund X has std dev 2%, Fund Y has std dev 15%. Which is riskier?", steps: "Fund Y — higher standard deviation means more volatile, unpredictable returns." },
+  { q: "Why can't you just average (x - mean) directly without squaring?", steps: "Positive and negative deviations always cancel out to exactly 0 for any dataset — squaring is necessary to measure spread." },
+  { q: "Data: 100, 102, 98, 104, 96. Estimate: is the standard deviation likely small or large?", steps: "Small — all values are close to the mean (100), so deviations are small, meaning low variance/std dev." },
+  { q: "If variance = 25, what is the standard deviation?", steps: "√25 = 5" },
+  { q: "A dataset's variance is 144 (in ₹²). What's the standard deviation, and why is it more useful to report?", steps: "√144 = 12 (in ₹, not ₹²) — standard deviation is in the original unit, making it directly comparable/interpretable against the data." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+function calcStats(){
+  const raw = document.getElementById('dataInput').value;
+  const nums = raw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+  const res = document.getElementById('result');
+  if(nums.length === 0){
+    res.textContent = "Enter valid comma-separated numbers.";
+    return;
+  }
+  const mean = nums.reduce((a,b)=>a+b,0) / nums.length;
+  const sqDevs = nums.map(n => Math.pow(n-mean,2));
+  const variance = sqDevs.reduce((a,b)=>a+b,0) / nums.length;
+  const stdDev = Math.sqrt(variance);
+
+  res.innerHTML = `
+    <div class="stat-badge">Mean: ${mean.toFixed(2)}</div>
+    <div class="stat-badge">Variance: ${variance.toFixed(2)}</div>
+    <div class="stat-badge">Std Dev: ${stdDev.toFixed(2)}</div>
+  `;
+  drawDeviationBars(nums, mean);
+}
+
+function drawDeviationBars(nums, mean){
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const midY = h/2;
+  const padding = 40;
+  const maxDev = Math.max(...nums.map(n => Math.abs(n-mean))) || 1;
+  const barW = (w - padding*2) / nums.length;
+  const scaleY = (h/2 - 30) / maxDev;
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, midY); ctx.lineTo(w-padding, midY); ctx.stroke();
+  ctx.fillStyle = '#6b6459'; ctx.font = '11px monospace';
+  ctx.fillText('mean', 6, midY+4);
+
+  nums.forEach((n, i) => {
+    const dev = n - mean;
+    const barH = Math.abs(dev) * scaleY;
+    const x = padding + i*barW + barW*0.2;
+    const bw = barW*0.6;
+    ctx.fillStyle = dev >= 0 ? '#c05621' : '#2f6d4f';
+    if(dev >= 0){
+      ctx.fillRect(x, midY-barH, bw, barH);
+    } else {
+      ctx.fillRect(x, midY, bw, barH);
+    }
+    ctx.fillStyle = '#1b2430';
+    ctx.font = '10px monospace';
+    ctx.fillText(n, x, dev >= 0 ? midY-barH-6 : midY+barH+14);
+  });
+}
+calcStats();
+
+const quizData = [
+  { q: "What does variance measure?", opts: ["The average value of a dataset","The middle value","The spread of data around the mean","The most frequent value"], correct: 2, explain: "Variance quantifies how far, on average, data points are spread from the mean." },
+  { q: "Why do we square the deviations when computing variance?", opts: ["To make the math harder","So negative and positive deviations don't cancel to zero","Because it's tradition","To make the numbers bigger for no reason"], correct: 1, explain: "Deviations from the mean always sum to zero — squaring makes them all positive so they don't cancel." },
+  { q: "Standard deviation is:", opts: ["Variance squared","The square root of variance","The same as the mean","Always equal to 1"], correct: 1, explain: "Standard deviation = √variance, bringing the units back to match the original data." },
+  { q: "Data: 5,5,5,5,5. What is the standard deviation?", opts: ["5","1","0","25"], correct: 2, explain: "No spread at all since every value equals the mean — std dev = 0." },
+  { q: "If variance = 49, what is the standard deviation?", opts: ["7","49","24.5","98"], correct: 0, explain: "√49 = 7." },
+  { q: "In finance, standard deviation of returns is commonly used to represent:", opts: ["Guaranteed profit","Investment risk/volatility","Tax liability","Company size"], correct: 1, explain: "A higher standard deviation of returns means more unpredictable/volatile performance — i.e., higher risk." },
+  { q: "Why is variance alone (before taking the square root) often hard to interpret directly?", opts: ["It's always negative","It's measured in squared units, not the original unit","It's always exactly 1","It can't be calculated by hand"], correct: 1, explain: "Variance is in squared units (e.g. ₹²), which doesn't map intuitively back to the original data scale." },
+  { q: "Why does ML use standard deviation when scaling features before training?", opts: [
+      "To make the dataset smaller",
+      "To bring different features onto a comparable scale so no single feature dominates due to its units",
+      "It's a legal requirement",
+      "Standard deviation isn't actually used in ML"
+    ], correct: 1, explain: "Standardizing with z = (x-mean)/std_dev puts every feature on equal footing regardless of its original units or range." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

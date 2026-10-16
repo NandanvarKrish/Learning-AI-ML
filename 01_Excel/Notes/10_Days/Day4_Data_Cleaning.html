@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 4 — Data Cleaning & Preprocessing</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(176,17,43,0.04),transparent 65%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:540px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:var(--accent);box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov{font-size:14px;font-weight:700;}
+
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-warn{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+
+/* PIPELINE STEPS */
+.pipe{display:flex;gap:0;flex-wrap:wrap;margin:12px 0;}
+.pipe-step{background:var(--al);border:1.5px solid var(--ag);border-radius:8px;padding:10px 14px;flex:1;min-width:120px;text-align:center;position:relative;}
+.pipe-step:not(:last-child)::after{content:'→';position:absolute;right:-14px;top:50%;transform:translateY(-50%);color:var(--accent);font-weight:700;font-size:14px;z-index:1;}
+.pipe-num{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:3px;}
+.pipe-label{font-size:12px;font-weight:700;color:var(--accent);}
+
+/* IMPUTATION TABLE */
+.it{width:100%;border-collapse:collapse;margin-top:10px;border-radius:8px;overflow:hidden;}
+.it th{font-family:var(--mono);font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:1px;padding:9px 13px;text-align:left;background:var(--accent);}
+.it td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;}
+.it tr:last-child td{border-bottom:none;}
+.it tr:nth-child(even) td{background:var(--card2);}
+.it code{font-family:var(--mono);font-size:11px;background:var(--al);padding:2px 6px;border-radius:4px;color:var(--accent);}
+.it .ok{color:var(--green);font-weight:600;}.it .bad{color:var(--red);}
+
+/* CHEATSHEET */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+/* TASK CARDS */
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.br{background:var(--rl);color:var(--red);border:1px solid rgba(176,17,43,0.2);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.rb{display:flex;gap:10px;background:var(--rl);border:1px solid rgba(176,17,43,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+.tip{background:linear-gradient(135deg,var(--al),var(--bl));border:1.5px solid var(--ag);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:#0b6650;}
+
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 4 of 10</div>
+    <div class="db">DAY 4</div>
+  </div>
+  <h1>Data Cleaning &amp;<br><span class="hl">Preprocessing</span></h1>
+  <div class="tagline">80% of ML work lives right here. Garbage in = garbage out. Master cleaning and your models will outperform anyone using raw, messy data.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: Data Prep</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●○</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">🔧 Power Query Used</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pd"></div><div class="pd"></div><div class="pd"></div>
+    <div class="pd"></div><div class="pd"></div><div class="pd"></div>
+    <div class="pl">Day 4 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">🧹</div><div class="ol2">Focus</div><div class="ov">Data Cleaning</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Topics</div><div class="ov">8 Cleaning Steps</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Outcomes</div><div class="ov">4 Skills Mastered</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Key Tool</div><div class="ov">Power Query ETL</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Topics Covered Today</div>
+<div class="tg">
+  <div class="ti"><div class="tn">01</div><div><div class="tt">Finding & Handling Missing Data</div><div class="ts">ISBLANK, COUNTBLANK, Go To Special, imputation strategies</div></div></div>
+  <div class="ti"><div class="tn">02</div><div><div class="tt">Removing Duplicates</div><div class="ts">COUNTIF detection, UNIQUE(), Remove Duplicates tool</div></div></div>
+  <div class="ti"><div class="tn">03</div><div><div class="tt">Data Validation</div><div class="ts">Dropdowns, number constraints, custom rules, error alerts</div></div></div>
+  <div class="ti"><div class="tn">04</div><div><div class="tt">Flash Fill</div><div class="ts">Pattern-based data splitting & transformation — Ctrl+E</div></div></div>
+  <div class="ti"><div class="tn">05</div><div><div class="tt">Power Query Introduction</div><div class="ts">Import, transform, load — the professional ETL pipeline</div></div></div>
+  <div class="ti"><div class="tn">06</div><div><div class="tt">Splitting & Merging Columns</div><div class="ts">Text to Columns, TEXTJOIN, FIND/MID combos</div></div></div>
+  <div class="ti"><div class="tn">07</div><div><div class="tt">Date Handling</div><div class="ts">YEAR, MONTH, WEEKDAY, DATEDIF — date feature engineering</div></div></div>
+  <div class="ti"><div class="tn">08</div><div><div class="tt">Encoding Categorical Variables</div><div class="ts">Dummy coding, one-hot encoding with IF formulas</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sl">🧠 Key Concepts Deep Dive</div>
+
+<!-- Cleaning Pipeline -->
+<div class="cc">
+  <div class="ct">🔄 The 6-Step Data Cleaning Pipeline <span class="cb cb-core">FOLLOW THIS ORDER</span></div>
+  <div class="cd">Always clean in this specific order. Deduplicating before imputing means you impute fewer rows. Encoding before splitting means you might encode wrong values. Order matters — this sequence is battle-tested across thousands of real ML projects.</div>
+  <div class="pipe">
+    <div class="pipe-step"><div class="pipe-num">Step 1</div><div class="pipe-label">Audit</div></div>
+    <div class="pipe-step"><div class="pipe-num">Step 2</div><div class="pipe-label">Deduplicate</div></div>
+    <div class="pipe-step"><div class="pipe-num">Step 3</div><div class="pipe-label">Fix Types</div></div>
+    <div class="pipe-step"><div class="pipe-num">Step 4</div><div class="pipe-label">Impute Nulls</div></div>
+    <div class="pipe-step"><div class="pipe-num">Step 5</div><div class="pipe-label">Normalize</div></div>
+    <div class="pipe-step"><div class="pipe-num">Step 6</div><div class="pipe-label">Encode</div></div>
+  </div>
+  <div class="code" style="margin-top:14px;">
+<span class="cm">// Step 1: Audit — how bad is the data?</span>
+=<span class="fn">COUNTBLANK</span>(A2:A101)              <span class="cm">→ Count nulls in column</span>
+=<span class="fn">COUNTBLANK</span>(A2:A101)/<span class="fn">ROWS</span>(A2:A101)  <span class="cm">→ % missing</span>
+=<span class="fn">ROWS</span>(A2:A101)-<span class="fn">COUNT</span>(A2:A101)      <span class="cm">→ Non-numeric gaps</span>
+
+<span class="cm">// Quick data quality scorecard per column</span>
+=<span class="fn">COUNTA</span>(A2:A101)       <span class="cm">→ Non-blank count</span>
+=<span class="fn">COUNTBLANK</span>(A2:A101)   <span class="cm">→ Blank count</span>
+=<span class="fn">COUNT</span>(A2:A101)        <span class="cm">→ Numeric count only</span>
+=<span class="fn">SUMPRODUCT</span>(<span class="fn">ISNUMBER</span>(A2:A101)*<span class="num">1</span>) <span class="cm">→ True numeric count</span>
+  </div>
+</div>
+
+<!-- Missing Data -->
+<div class="cc">
+  <div class="ct">🕳 Missing Data — Imputation Strategies <span class="cb cb-warn">CHOOSE CAREFULLY</span></div>
+  <div class="cd">How you fill missing values can make or break a model. The wrong imputation strategy introduces bias that's invisible but deadly. Here's the decision framework used by professional data scientists:</div>
+  <table class="it">
+    <tr><th>Data Type</th><th>Missing %</th><th>Strategy</th><th>Excel Formula</th></tr>
+    <tr><td><strong>Numeric</strong></td><td>&lt;5%</td><td class="ok">Impute with mean</td><td><code>=AVERAGE(col)</code></td></tr>
+    <tr><td><strong>Numeric (skewed)</strong></td><td>&lt;5%</td><td class="ok">Impute with median</td><td><code>=MEDIAN(col)</code></td></tr>
+    <tr><td><strong>Categorical</strong></td><td>&lt;10%</td><td class="ok">Impute with mode</td><td><code>=MODE.SNGL(col)</code></td></tr>
+    <tr><td><strong>Any type</strong></td><td>10–30%</td><td>Add "Missing" flag column + impute</td><td><code>=ISBLANK(A2)*1</code></td></tr>
+    <tr><td><strong>Any type</strong></td><td>&gt;30%</td><td class="bad">Drop the column — too unreliable</td><td>Delete column</td></tr>
+    <tr><td><strong>Time series</strong></td><td>Any</td><td class="ok">Forward fill (use previous value)</td><td><code>=IF(ISBLANK(A2),A1,A2)</code></td></tr>
+  </table>
+</div>
+
+<!-- One-Hot Encoding -->
+<div class="cc">
+  <div class="ct">🏷 Categorical Encoding — One-Hot in Excel <span class="cb cb-pow">ML REQUIRED</span></div>
+  <div class="cd">ML algorithms need numbers — they can't process "Engineering", "Marketing", "Finance". One-hot encoding converts each category into a binary column (0/1). It's the most important preprocessing step for categorical features.</div>
+  <div class="code">
+<span class="cm">// Original column: Department = "Eng" | "Mkt" | "Sci" | "Fin"</span>
+<span class="cm">// One-hot encoding creates 4 new columns:</span>
+
+Is_Eng = <span class="fn">IF</span>([@Department]=<span class="str">"Eng"</span>, <span class="num">1</span>, <span class="num">0</span>)
+Is_Mkt = <span class="fn">IF</span>([@Department]=<span class="str">"Mkt"</span>, <span class="num">1</span>, <span class="num">0</span>)
+Is_Sci = <span class="fn">IF</span>([@Department]=<span class="str">"Sci"</span>, <span class="num">1</span>, <span class="num">0</span>)
+<span class="cm">// Note: drop one column (Is_Fin) to avoid dummy variable trap</span>
+<span class="cm">// The dropped column = reference category (implied when all others = 0)</span>
+
+<span class="cm">// Ordinal encoding (when categories have natural order)</span>
+Grade_Num = <span class="fn">SWITCH</span>([@Grade], <span class="str">"A"</span>,<span class="num">4</span>, <span class="str">"B"</span>,<span class="num">3</span>, <span class="str">"C"</span>,<span class="num">2</span>, <span class="str">"D"</span>,<span class="num">1</span>, <span class="str">"F"</span>,<span class="num">0</span>)
+
+<span class="cm">// Verify encoding: each row should sum to exactly 1</span>
+=<span class="fn">SUM</span>([@Is_Eng],[@Is_Mkt],[@Is_Sci],[@Is_Fin])  <span class="cm">→ must = 1 for every row</span>
+  </div>
+</div>
+
+<!-- Power Query -->
+<div class="cc">
+  <div class="ct">⚙ Power Query — Professional ETL Pipeline <span class="cb cb-tip">GAME CHANGER</span></div>
+  <div class="cd">Power Query is Excel's built-in ETL (Extract, Transform, Load) engine. It records every transformation step and lets you re-run them on new data with one click. This is the bridge between Excel and professional data engineering.</div>
+  <div class="code">
+<span class="cm">// Power Query access: Data tab → Get Data → From File/Table/Web</span>
+<span class="cm">// Or: Data → Get & Transform Data → From Table/Range</span>
+
+<span class="cm">// Key Power Query transformations (all via GUI — no code needed):</span>
+<span class="cm">// • Remove columns          → Remove Columns button</span>
+<span class="cm">// • Rename columns          → Double-click header</span>
+<span class="cm">// • Change data types       → Click type icon in header</span>
+<span class="cm">// • Remove nulls            → Remove Rows → Remove Blank Rows</span>
+<span class="cm">// • Filter rows             → Click column arrow → filter</span>
+<span class="cm">// • Split column            → Transform → Split Column → By Delimiter</span>
+<span class="cm">// • Add custom column       → Add Column → Custom Column</span>
+<span class="cm">// • Replace values          → Transform → Replace Values</span>
+<span class="cm">// • Group by (aggregate)    → Transform → Group By</span>
+
+<span class="cm">// Every step is recorded in "Applied Steps" panel (right side)</span>
+<span class="cm">// Delete a step = undo that transformation</span>
+<span class="cm">// Refresh = re-run all steps on updated source data</span>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Audit, detect, and impute missing values with the right strategy</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Find and remove duplicates without losing valid data</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Use Power Query to build a reusable ETL pipeline</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">One-hot encode categorical variables for ML models</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Task Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#b84f00;flex:12"></div>
+  <div class="hs" style="background:#1558c0;flex:13"></div>
+  <div class="hs" style="background:#5e35b1;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:12"></div>
+  <div class="hs" style="background:#0d7a5f;flex:8"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#0d7a5f"></div>Project</div>
+  <div class="li"><div class="ld" style="background:#5e35b1"></div>Power Query</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>Practice</div>
+  <div class="li"><div class="ld" style="background:#b84f00"></div>Audit</div>
+</div>
+
+<!-- ══ TASKS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bo">0 – 12 min</div>
+    <div class="tw"><div class="tm">🕵️ Missing Data Audit &amp; Imputation</div><div class="ts2">Find every null, choose the right imputation strategy, document every decision</div></div>
+    <div class="typ bo">Audit</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Before touching a single value, you need to know the full scope of missing data. Imputing without understanding the missing pattern can introduce serious bias — especially if data is Missing Not At Random (MNAR), where the absence itself carries information.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create <strong>Day4_Cleaning.xlsx</strong>. In sheet "DirtyData", paste or type a deliberately messy 60-row dataset with columns: <strong>CustomerID, Name, Age, Income, Department, Score, JoinDate, Churned (Yes/No)</strong>. Manually blank out ~15% of numeric cells and ~10% of category cells to simulate real missing data.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Create a <strong>Data Quality Audit</strong> table in a separate area. For each column, calculate:<br>
+        Total Rows: <code>=COUNTA(A2:A61)</code><br>
+        Blanks: <code>=COUNTBLANK(A2:A61)</code><br>
+        Missing %: <code>=COUNTBLANK(A2:A61)/60</code> (format as %)<br>
+        Recommended Action: manually type (Impute/Drop/Flag)</div></div>
+      <div class="si2"><div class="sn">3</div><div>Use <strong>Go To Special</strong> to visually locate all blanks: Ctrl+G (Go To) → Special → Blanks → OK. All blank cells are now selected (highlighted in blue). Count them in the status bar bottom-right.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Impute numeric columns</strong> (Age, Income, Score): In a helper column, use: <code>=IF(ISBLANK([@Age]), AVERAGE(DirtyData[Age]), [@Age])</code>. This replaces blanks with the column mean while keeping existing values untouched.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Impute categorical column</strong> (Department): <code>=IF(ISBLANK([@Department]), "Unknown", [@Department])</code>. For ML, "Unknown" becomes its own category — potentially informative. Alternatively use MODE: <code>=IF(ISBLANK([@Department]), MODE.SNGL(DirtyData[Department_Num]), [@Department])</code> (requires numeric encoding first).</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Add a "Was_Imputed" flag column</strong> for each imputed numeric: <code>=IF(ISBLANK([@Age]),1,0)</code>. This binary flag tells the model "this value was estimated, not measured" — it often improves predictions because the missingness itself carries signal.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Audit — missing data scorecard</span>
+=<span class="fn">COUNTBLANK</span>(B2:B61)                          <span class="cm">→ Count blanks</span>
+=<span class="fn">COUNTBLANK</span>(B2:B61)/<span class="fn">ROWS</span>(B2:B61)            <span class="cm">→ % missing</span>
+
+<span class="cm">// Mean imputation (non-destructive — use helper column)</span>
+=<span class="fn">IF</span>(<span class="fn">ISBLANK</span>([@Age]), <span class="fn">AVERAGE</span>(DirtyData[Age]), [@Age])
+
+<span class="cm">// Median imputation (for skewed Income)</span>
+=<span class="fn">IF</span>(<span class="fn">ISBLANK</span>([@Income]), <span class="fn">MEDIAN</span>(DirtyData[Income]), [@Income])
+
+<span class="cm">// Categorical → "Unknown"</span>
+=<span class="fn">IF</span>(<span class="fn">ISBLANK</span>([@Department]), <span class="str">"Unknown"</span>, [@Department])
+
+<span class="cm">// Missing flag (keep for ML — missingness = feature)</span>
+=<span class="fn">IF</span>(<span class="fn">ISBLANK</span>([@Age]), <span class="num">1</span>, <span class="num">0</span>)
+    </div>
+    <div class="wb"><div class="ni">⚠️</div><div><strong>Never impute in-place on raw data.</strong> Always create a new column (e.g., "Age_Clean") and keep the original. This preserves your audit trail. In production ML, you need to explain every data transformation — and "I overwrote the original" is not acceptable.</div></div>
+    <div class="cks">
+      <div class="ck">Audit table complete (all 8 cols)</div><div class="ck">Go To Special used</div>
+      <div class="ck">Numeric imputation done</div><div class="ck">Categorical imputed</div>
+      <div class="ck">Was_Imputed flags added</div><div class="ck">Original raw data preserved</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bp">12 – 25 min</div>
+    <div class="tw"><div class="tm">🔍 Duplicate Detection &amp; Removal</div><div class="ts2">Find exact AND fuzzy duplicates — then decide what to keep</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Duplicates in training data make models overfit to repeated examples. In transactional data, they inflate counts and revenue metrics. There are two types — exact duplicates (same row) and partial duplicates (same entity, different rows). Both need different treatments.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "DedupLab". Copy your DirtyData and manually add 8 duplicate rows (copy-paste 4 random rows twice). Also add 3 "fuzzy" duplicates — same CustomerID but slightly different Name (e.g., "John Smith" vs "john smith").</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Detect exact duplicates</strong> with COUNTIF: Add column "Dup_Flag":<br><code>=COUNTIF($A$2:A2, A2)>1</code><br>This counts how many times the CustomerID appeared ABOVE the current row. Returns TRUE for every duplicate (second occurrence onward).</div></div>
+      <div class="si2"><div class="sn">3</div><div>Apply <strong>conditional formatting</strong> to Dup_Flag: TRUE rows get orange fill. Count total duplicates: <code>=COUNTIF(Dup_Flag_Range, TRUE)</code>. What % of your dataset are duplicates?</div></div>
+      <div class="si2"><div class="sn">4</div><div>Use the <strong>Remove Duplicates</strong> tool: Data tab → Remove Duplicates → select CustomerID column only → OK. Excel removes rows where CustomerID has already appeared above. Note the "X rows removed" message.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Detect fuzzy name duplicates:</strong> Add a "Name_Lower" column: <code>=LOWER(TRIM([@Name]))</code>. Now sort by Name_Lower. Visually identical names (different capitalization/spacing) appear together. Use EXACT() or manual review to identify true fuzzy dups.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Record counts:</strong> In your Notes sheet, write: rows before dedup, rows removed, rows after dedup, % removed. This "data lineage" record is required documentation in any ML project — it proves your model was trained on clean data.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Detect exact duplicate in column A (running count from top)</span>
+=<span class="fn">COUNTIF</span>($A$2:A2, A2)><span class="num">1</span>       <span class="cm">→ TRUE for 2nd+ occurrence</span>
+
+<span class="cm">// Count total duplicates</span>
+=<span class="fn">COUNTIF</span>(F2:F61, <span class="kw">TRUE</span>)
+
+<span class="cm">// Full-row duplicate (compare entire row as text)</span>
+=<span class="fn">COUNTIF</span>($A$2:A2, A2&B2&C2&D2)><span class="num">1</span>   <span class="cm">→ concatenate all cols</span>
+
+<span class="cm">// Fuzzy duplicate prep — normalize names</span>
+=<span class="fn">LOWER</span>(<span class="fn">TRIM</span>([@Name]))
+
+<span class="cm">// Check if two names are exactly identical (case sensitive)</span>
+=<span class="fn">EXACT</span>(<span class="fn">LOWER</span>(<span class="fn">TRIM</span>(A2)), <span class="fn">LOWER</span>(<span class="fn">TRIM</span>(A3)))
+
+<span class="cm">// Unique values only (Excel 365)</span>
+=<span class="fn">UNIQUE</span>(A2:A61)
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>ML implication:</strong> Duplicates in training data but not test data make your model appear more accurate than it is. A model that "memorized" a duplicate row will correctly predict it — but that's not generalization. Always deduplicate before splitting train/test.</div></div>
+    <div class="cks">
+      <div class="ck">Dup_Flag column added</div><div class="ck">Conditional formatting applied</div>
+      <div class="ck">Remove Duplicates tool used</div><div class="ck">Fuzzy dups normalized</div>
+      <div class="ck">Before/after count recorded</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bb">25 – 40 min</div>
+    <div class="tw"><div class="tm">⚙ Power Query ETL Pipeline</div><div class="ts2">Build a reusable, click-to-refresh data cleaning pipeline</div></div>
+    <div class="typ bb">Power Query</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Power Query transforms your one-time manual cleaning into a repeatable, documented pipeline. Every step is recorded. When new data arrives, you click "Refresh" and all transformations run automatically. This is professional data engineering — inside Excel.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Click anywhere inside your DirtyData Table → Data tab → From Table/Range. Power Query Editor opens. You'll see your data in a preview with column headers at the top.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Step 1 — Change data types:</strong> Click the type icon (ABC or 123) in each column header. Set: CustomerID → Whole Number, Age → Whole Number, Income → Decimal Number, Score → Decimal Number, JoinDate → Date. Watch "Changed Type" appear in Applied Steps panel.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Step 2 — Remove blank rows:</strong> Home tab → Remove Rows → Remove Blank Rows. This removes rows where ALL cells are blank. For partial nulls: Click Score column header → right-click → Remove Rows → Remove Errors.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Step 3 — Replace null values:</strong> Select Age column → Transform → Replace Values → Value to Find: null → Replace With: average value (you'll need to calculate this outside PQ first). Do this for Income and Score columns.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Step 4 — Add custom columns:</strong> Add Column tab → Custom Column → Name: "Age_Group" → Formula: <code>if [Age] < 30 then "Young" else if [Age] < 50 then "Mid" else "Senior"</code>. This is M language — Power Query's own syntax.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Step 5 — Load back to Excel:</strong> Home → Close &amp; Load → Close &amp; Load To → Existing Worksheet → pick an empty cell. A new Table appears with all transformations applied. Check the "Applied Steps" shows your full pipeline (should have 5+ steps).</div></div>
+      <div class="si2"><div class="sn">7</div><div><strong>Test refresh:</strong> Go back to DirtyData and add 5 new rows. Then right-click the Power Query output table → Refresh. Watch the new rows appear, already cleaned and with Age_Group applied — automatically. This is ETL.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Power Query M Language examples (Add Column → Custom Column)</span>
+
+<span class="cm">// Age group conditional (M syntax)</span>
+<span class="kw">if</span> [Age] &lt; <span class="num">30</span> <span class="kw">then</span> <span class="str">"Young"</span>
+<span class="kw">else if</span> [Age] &lt; <span class="num">50</span> <span class="kw">then</span> <span class="str">"Mid"</span>
+<span class="kw">else</span> <span class="str">"Senior"</span>
+
+<span class="cm">// Replace null with fixed value (M syntax)</span>
+<span class="kw">if</span> [Income] = <span class="kw">null</span> <span class="kw">then</span> <span class="num">45000</span> <span class="kw">else</span> [Income]
+
+<span class="cm">// Clean text in M</span>
+Text.Trim(Text.Proper([Name]))
+
+<span class="cm">// Combine columns in M</span>
+[CustomerID] &amp; <span class="str">"-"</span> &amp; [Department]
+
+<span class="cm">// Excel formula (outside PQ) to get column mean for imputation</span>
+=<span class="fn">ROUND</span>(<span class="fn">AVERAGE</span>(DirtyData[Age]),<span class="num">0</span>)    <span class="cm">→ use this value in PQ Replace</span>
+    </div>
+    <div class="gb"><div class="ni">🚀</div><div><strong>Why Power Query matters for ML:</strong> When you receive updated data weekly (new customers, new transactions), your cleaning pipeline runs in one click. No manual re-work. This is the difference between a one-time analysis and a production ML system that actually gets maintained.</div></div>
+    <div class="cks">
+      <div class="ck">Power Query Editor opened</div><div class="ck">Data types corrected</div>
+      <div class="ck">Blank rows removed</div><div class="ck">Nulls replaced</div>
+      <div class="ck">Age_Group column added</div><div class="ck">Loaded to worksheet</div>
+      <div class="ck">Refresh tested with new rows</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bp">40 – 52 min</div>
+    <div class="tw"><div class="tm">🏷 Categorical Encoding + Date Features</div><div class="ts2">One-hot encode departments and extract ML-ready date features</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">ML algorithms are mathematical — they cannot understand the string "Engineering". You must convert every categorical variable to numbers, and every date to its component features (year, month, day-of-week). This task builds the final feature matrix ready for modeling.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "Encodelab". Paste your cleaned data (from Power Query output). You'll work with the Department column (4 categories: Eng, Mkt, Sci, Fin) and JoinDate column.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>One-hot encode Department</strong> (4 new columns):<br>
+        Is_Eng: <code>=IF([@Department]="Eng",1,0)</code><br>
+        Is_Mkt: <code>=IF([@Department]="Mkt",1,0)</code><br>
+        Is_Sci: <code>=IF([@Department]="Sci",1,0)</code><br>
+        <em>(Drop Is_Fin — dummy variable trap: 3 columns fully describe 4 categories)</em></div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Verify encoding:</strong> Add a "Check" column: <code>=Is_Eng+Is_Mkt+Is_Sci+Is_Fin</code>. Every row MUST equal 1. If any row = 0, your category string doesn't match (likely whitespace or case issue — use TRIM/LOWER first).</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Encode Churned (Yes/No)</strong> as binary: <code>=IF([@Churned]="Yes",1,0)</code>. This is your <strong>target variable</strong> — the thing your ML model will predict. Binary targets (0/1) are required for logistic regression and most classifiers.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Date feature engineering</strong> — extract ML features from JoinDate:<br>
+        Join_Year: <code>=YEAR([@JoinDate])</code><br>
+        Join_Month: <code>=MONTH([@JoinDate])</code><br>
+        Join_DayOfWeek: <code>=WEEKDAY([@JoinDate],2)</code> (1=Mon, 7=Sun)<br>
+        Tenure_Days: <code>=TODAY()-[@JoinDate]</code> (days since joining)<br>
+        Tenure_Years: <code>=DATEDIF([@JoinDate],TODAY(),"Y")</code></div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Flash Fill bonus:</strong> If you have a "FullName" column ("John Smith"), click in a blank "FirstName" column, type "John" in the first row, then press <strong>Ctrl+E</strong>. Excel detects the pattern and fills all 60 rows instantly. Do the same for LastName with "Smith".</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// One-hot encoding (n categories → n-1 columns)</span>
+Is_Eng = <span class="fn">IF</span>([@Department]=<span class="str">"Eng"</span>, <span class="num">1</span>, <span class="num">0</span>)
+Is_Mkt = <span class="fn">IF</span>([@Department]=<span class="str">"Mkt"</span>, <span class="num">1</span>, <span class="num">0</span>)
+Is_Sci = <span class="fn">IF</span>([@Department]=<span class="str">"Sci"</span>, <span class="num">1</span>, <span class="num">0</span>)
+<span class="cm">// Drop Is_Fin → dummy variable trap (multicollinearity)</span>
+
+<span class="cm">// Verify: all rows must sum to 1</span>
+Check = <span class="fn">IF</span>(Is_Eng+Is_Mkt+Is_Sci+Is_Fin=<span class="num">1</span>, <span class="str">"✓ OK"</span>, <span class="str">"✗ ERROR"</span>)
+
+<span class="cm">// Binary target variable</span>
+Churned_Num = <span class="fn">IF</span>([@Churned]=<span class="str">"Yes"</span>, <span class="num">1</span>, <span class="num">0</span>)
+
+<span class="cm">// Date feature engineering</span>
+Join_Year    = <span class="fn">YEAR</span>([@JoinDate])
+Join_Month   = <span class="fn">MONTH</span>([@JoinDate])
+Join_DOW     = <span class="fn">WEEKDAY</span>([@JoinDate], <span class="num">2</span>)
+Tenure_Days  = <span class="fn">TODAY</span>()-[@JoinDate]
+Tenure_Years = <span class="fn">DATEDIF</span>([@JoinDate], <span class="fn">TODAY</span>(), <span class="str">"Y"</span>)
+    </div>
+    <div class="rb"><div class="ni">🚨</div><div><strong>Dummy Variable Trap:</strong> If you create a binary column for EVERY category (4 columns for 4 categories), you have perfect multicollinearity — one column is always perfectly predictable from the others. This crashes regression models. Always use n−1 columns for n categories. The dropped category becomes the "reference" (when all encoded columns = 0).</div></div>
+    <div class="cks">
+      <div class="ck">3 one-hot columns created</div><div class="ck">Verify check = 1 for all rows</div>
+      <div class="ck">Churned binary encoded</div><div class="ck">5 date features extracted</div>
+      <div class="ck">Flash Fill practiced</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bg">52 – 60 min</div>
+    <div class="tw"><div class="tm">🏆 Full Clean Pipeline + Final Feature Matrix</div><div class="ts2">Assemble the complete ML-ready feature matrix from scratch in 8 minutes</div></div>
+    <div class="typ bg">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Assemble everything into the final ML-ready feature matrix. This is the deliverable of Day 4 — a clean, encoded, normalized table that you could hand to any ML algorithm tomorrow. No strings, no blanks, no duplicates, no unscaled features.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "FinalFeatures". This is your master clean dataset. It should have ONLY numeric columns — no raw text, no dates, no blanks.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Include these columns (all numeric): CustomerID, Age_Clean, Income_Clean, Score_Clean, Tenure_Days, Join_Month, Join_DOW, Is_Eng, Is_Mkt, Is_Sci, Age_Was_Imputed, Income_Was_Imputed, Churned_Num (target).</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Final quality checks</strong> — run ALL of these on each column:<br>
+        Blanks: <code>=COUNTBLANK(col)</code> → must be 0<br>
+        Non-numeric: <code>=ROWS(col)-COUNT(col)</code> → must be 0<br>
+        Min: <code>=MIN(col)</code> → check no negative ages/scores<br>
+        Max: <code>=MAX(col)</code> → check no unrealistic values<br>
+        Duplicates: <code>=ROWS(A)-SUMPRODUCT(1/COUNTIF(A,A))</code> → must be 0</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Data Cleaning Log (Notes sheet):</strong> Document every decision you made:<br>
+        - Rows started: 68 (60 original + 8 duplicates added)<br>
+        - Duplicates removed: 8<br>
+        - Age nulls imputed with mean (n=9)<br>
+        - Income nulls imputed with median (n=7, skewed)<br>
+        - Department blanks → "Unknown" (n=6)<br>
+        - Columns dropped: Name, JoinDate (replaced by features)<br>
+        - Final rows: 60, Final columns: 13</div></div>
+      <div class="si2"><div class="sn">5</div><div>Apply <strong>Data Validation</strong> to prevent future dirty data: Select Age_Clean column → Data → Data Validation → Whole Number → Between 18 and 90. Set error alert: Stop → "Age must be 18–90". Test by typing 150 — it should be rejected.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Save as Day4_Complete.xlsx.</strong> FinalFeatures sheet is your ML input. Any algorithm — regression, classification, clustering — can now consume this table directly. Congratulations: you've completed a professional data cleaning pipeline.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Final quality check — run on every column</span>
+=<span class="fn">COUNTBLANK</span>(col)                            <span class="cm">→ 0 = no missing values ✓</span>
+=<span class="fn">ROWS</span>(col)-<span class="fn">COUNT</span>(col)                        <span class="cm">→ 0 = all numeric ✓</span>
+=<span class="fn">MIN</span>(col)                                    <span class="cm">→ check for negatives</span>
+=<span class="fn">MAX</span>(col)                                    <span class="cm">→ check for outliers</span>
+
+<span class="cm">// Duplicate check on entire dataset</span>
+=<span class="fn">ROWS</span>(A2:A61)-<span class="fn">SUMPRODUCT</span>(<span class="num">1</span>/<span class="fn">COUNTIF</span>(A2:A61,A2:A61))   <span class="cm">→ 0 = no dups ✓</span>
+
+<span class="cm">// One-hot sum check (must = 1 for every row)</span>
+=<span class="fn">COUNTIF</span>(Check_Col, <span class="str">"✗ ERROR"</span>)              <span class="cm">→ 0 = encoding correct ✓</span>
+
+<span class="cm">// Data Validation formula example (custom rule)</span>
+<span class="cm">// =AND(A2>=18, A2<=90) — enter in Data Validation → Custom</span>
+    </div>
+    <div class="gb"><div class="ni">🎖️</div><div><strong>You now have a professional ML-ready dataset.</strong> Every transformation is documented. The data lineage is traceable. New data can flow through Power Query automatically. This is the standard expected in data science teams at tech companies — and you built it in Excel.</div></div>
+    <div class="cks">
+      <div class="ck">FinalFeatures sheet built</div><div class="ck">All 13 columns numeric</div>
+      <div class="ck">Quality checks all = 0</div><div class="ck">Data Cleaning Log written</div>
+      <div class="ck">Data Validation rules added</div><div class="ck">Day4_Complete.xlsx saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <div class="tpi">🧹</div>
+  <div>
+    <div class="tpt">Day 4 Pro Tip — Clean Data Beats Clever Algorithms Every Time</div>
+    <div class="tpd">Studies across Kaggle competitions and enterprise ML projects consistently show the same result: a simple linear model on clean, well-engineered data outperforms a complex neural network on raw, messy data. Spending an extra hour on data cleaning instead of model tuning is almost always the better investment. The pipeline you built today is what separates professional ML practitioners from hobbyists.</div>
+  </div>
+</div>
+
+<!-- QUICK REF -->
+<div class="sl">📋 Day 4 Formula Quick Reference</div>
+<div class="fg" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">COUNTBLANK(range)</div><div class="fd">Count empty cells — audit missing data</div></div>
+  <div class="fr"><div class="ff">ISBLANK(cell)</div><div class="fd">TRUE if cell is empty — use in IF for imputation</div></div>
+  <div class="fr"><div class="ff">IF(ISBLANK,avg,val)</div><div class="fd">Non-destructive imputation with mean/median</div></div>
+  <div class="fr"><div class="ff">COUNTIF($A$2:A2,A2)&gt;1</div><div class="fd">Running duplicate flag from top of column</div></div>
+  <div class="fr"><div class="ff">UNIQUE(range)</div><div class="fd">Return unique values only (Excel 365)</div></div>
+  <div class="fr"><div class="ff">IF(cat="Eng",1,0)</div><div class="fd">One-hot encode a single category</div></div>
+  <div class="fr"><div class="ff">YEAR / MONTH / WEEKDAY</div><div class="fd">Extract ML features from date columns</div></div>
+  <div class="fr"><div class="ff">DATEDIF(start,end,"Y")</div><div class="fd">Years between two dates (tenure feature)</div></div>
+  <div class="fr"><div class="ff">Ctrl+E</div><div class="fd">Flash Fill — pattern-based column split</div></div>
+  <div class="fr"><div class="ff">Ctrl+G → Special → Blanks</div><div class="fd">Select all blank cells instantly</div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a class="nb2" href="Day3_Statistical_Analysis.html">← Day 3: Statistics</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">Day 4 Complete ✓<br><span style="color:var(--accent);">Day 5: Charts &amp; EDA →</span></div>
+  <a class="nb2 pr" href="#">Day 5: Charts &amp; EDA →</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>

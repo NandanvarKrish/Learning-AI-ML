@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 50 — Mini Project: Console To-Do List</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+.milestone{background:var(--ink); color:var(--paper); border-radius:8px; padding:26px; text-align:center; margin:24px 0;}
+.milestone .big{font-size:24px; font-family:var(--font-display); color:var(--accent-soft);}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.note-box{background:#fdf6ea; border:1px solid var(--accent-soft); border-radius:6px; padding:14px 18px; margin:14px 0; font-size:14px;}
+.todo-box{background:var(--ink); color:var(--paper); border-radius:8px; padding:24px;}
+.todo-box h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.todo-input-row{display:flex; gap:8px; margin-bottom:14px;}
+.todo-input-row input{flex:1; padding:10px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-body);}
+.todo-input-row button{background:var(--accent); color:#fff; border:none; padding:10px 16px; border-radius:4px; cursor:pointer; font-weight:bold;}
+.todo-list{list-style:none; padding:0; margin:0;}
+.todo-list li{display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #2a3442; font-family:var(--font-mono); font-size:14px;}
+.todo-list li.done span.text{text-decoration:line-through; color:#6b7684;}
+.todo-list li .text{flex:1;}
+.todo-list li button{background:transparent; border:1px solid #444; color:#cfc8b8; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px;}
+.todo-empty{color:#6b7684; text-align:center; padding:20px; font-family:var(--font-mono); font-size:13px;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:260px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver .input-label{font-family:var(--font-mono); font-size:12px; color:#cfc8b8; margin-top:14px; display:block;}
+.solver textarea.inputs{min-height:100px; margin-top:6px;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:320px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 50 of 210 · Phase 2: Mini Projects</span>
+    <h1>Mini Project: Console To-Do List</h1>
+    <div class="subtitle">~2 hours · Lists, loops, and menus — a genuinely useful little tool</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Today isn't about a new concept — it's about combining lists, dictionaries, loops, and conditionals into a menu-driven program that keeps running until the user chooses to stop. This "loop, show options, act on input, repeat" structure is the backbone of countless real tools, including data-labeling scripts and interactive pipelines you may build later.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Planning the program</h2>
+  <div class="panel">
+    <p>We'll store tasks as a list of dictionaries, each with a text and a done flag:</p>
+    <div class="code">tasks = []
+# each task looks like: {"text": "Buy milk", "done": False}</div>
+    <p>The program loop will repeatedly show a menu and act on the user's choice:</p>
+    <div class="code">1. Add task
+2. View tasks
+3. Mark task done
+4. Remove task
+5. Quit</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Building it, step by step</h2>
+  <div class="panel">
+    <p><strong>Adding a task:</strong></p>
+    <div class="code">tasks.append({"text": "Buy milk", "done": False})</div>
+    <p><strong>Viewing tasks (with a done/pending marker):</strong></p>
+    <div class="code">for i in range(len(tasks)):
+    task = tasks[i]
+    if task["done"]:
+        marker = "[x]"
+    else:
+        marker = "[ ]"
+    print(str(i+1) + ". " + marker + " " + task["text"])</div>
+    <p><strong>Marking a task done (user picks by 1-based number):</strong></p>
+    <div class="code">index = int(input("Which task number? ")) - 1
+tasks[index]["done"] = True</div>
+    <p>Note the <code>- 1</code> — users naturally think in 1-based numbering ("task #1"), but Python lists are 0-indexed, so converting between the two is essential and a very common source of off-by-one bugs.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> The complete program (with functions, best-practice structure)</h2>
+  <div class="panel">
+    <div class="code">tasks = []
+
+def add_task(text):
+    tasks.append({"text": text, "done": False})
+
+def view_tasks():
+    for i in range(len(tasks)):
+        task = tasks[i]
+        marker = "[x]" if task["done"] else "[ ]"
+        print(str(i+1) + ". " + marker + " " + task["text"])
+
+def mark_done(index):
+    tasks[index]["done"] = True
+
+while True:
+    print("1.Add 2.View 3.Done 4.Remove 5.Quit")
+    choice = input("Choose: ")
+
+    if choice == "1":
+        text = input("Task: ")
+        add_task(text)
+    elif choice == "2":
+        view_tasks()
+    elif choice == "3":
+        num = int(input("Task number: "))
+        mark_done(num - 1)
+    elif choice == "5":
+        print("Goodbye!")
+        break</div>
+    <p>Splitting the logic into named functions (<code>add_task</code>, <code>view_tasks</code>, <code>mark_done</code>) instead of cramming everything into the loop makes the program far easier to read, test, and extend — exactly the organizing principle Day 38's functions were building toward.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Off-by-one between user-facing numbers and list indices.</strong> Always subtract 1 when converting a "task #3" the user typed into <code>tasks[2]</code>.</p>
+    <p><strong>Mistake 2 — Forgetting the quit condition inside the while True loop.</strong> Without a <code>break</code> reachable from some menu choice, the program runs forever.</p>
+    <p><strong>Mistake 3 — Not validating the task number before using it.</strong> If a user enters a number bigger than the list, you'll hit an IndexError — a real program should check this first or wrap it in try/except (Day 44).</p>
+    <p><strong>Mistake 4 — Rebuilding logic inline instead of using functions.</strong> Repeating the same view-tasks loop in multiple places (instead of calling one <code>view_tasks()</code> function) makes future changes error-prone — update one function, not five copy-pasted blocks.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Try it — a real, working to-do list</h2>
+  <div class="todo-box">
+    <h3>Your tasks</h3>
+    <div class="todo-input-row">
+      <input type="text" id="todoInput" placeholder="Add a task...">
+      <button onclick="addTodo()">Add</button>
+    </div>
+    <ul class="todo-list" id="todoList"></ul>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Click a task to mark it done; click Remove to delete it. This is the same logic as the Python program above, running as a live UI instead of a text menu.</p>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Try it yourself — Code Console (simulated menu input)</h2>
+  <div class="solver">
+    <h3>Trace through the flat (function-free) version — pre-fill menu choices below</h3>
+    <textarea id="codeInput">tasks = []
+
+while True:
+    print("1.Add 2.View 3.Done 5.Quit")
+    choice = input("Choose: ")
+
+    if choice == "1":
+        text = input("Task: ")
+        tasks.append({"text": text, "done": False})
+    elif choice == "2":
+        for i in range(len(tasks)):
+            task = tasks[i]
+            if task["done"]:
+                marker = "[x]"
+            else:
+                marker = "[ ]"
+            print(str(i+1) + ". " + marker + " " + task["text"])
+    elif choice == "3":
+        num = int(input("Task number: "))
+        tasks[num-1]["done"] = True
+    elif choice == "5":
+        print("Goodbye!")
+        break</textarea>
+    <label class="input-label">Simulated menu inputs (one per line — try: 1, Buy milk, 1, Walk dog, 2, 3, 1, 2, 5)</label>
+    <textarea class="inputs" id="inputQueue">1
+Buy milk
+1
+Walk dog
+2
+3
+1
+2
+5</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+  <div class="note-box">This console doesn't support user-defined functions (def) yet in combination with everything else — the flat version above shows identical logic without them, so you can trace it step by step. The full program with functions (Section 4) is what you'd actually write in VS Code.</div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="milestone">
+  <div class="big">Two mini projects complete 🎉</div>
+  <p style="color:#cfc8b8; margin-top:8px;">Day 51 begins NumPy — the array library nearly every ML tool in Python is built on top of.</p>
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 50 of 210 · AI & ML Study Plan · Phase 2: Mini Projects</div>
+</footer>
+
+<script>
+// --- Live to-do widget ---
+let todos = [];
+function renderTodos(){
+  const list = document.getElementById('todoList');
+  list.innerHTML = '';
+  if(todos.length === 0){
+    list.innerHTML = '<div class="todo-empty">No tasks yet — add one above</div>';
+    return;
+  }
+  todos.forEach((t, i) => {
+    const li = document.createElement('li');
+    if(t.done) li.className = 'done';
+    const span = document.createElement('span');
+    span.className = 'text';
+    span.textContent = t.text;
+    span.style.cursor = 'pointer';
+    span.onclick = () => { t.done = !t.done; renderTodos(); };
+    const rm = document.createElement('button');
+    rm.textContent = 'Remove';
+    rm.onclick = () => { todos.splice(i,1); renderTodos(); };
+    li.appendChild(span);
+    li.appendChild(rm);
+    list.appendChild(li);
+  });
+}
+function addTodo(){
+  const input = document.getElementById('todoInput');
+  const text = input.value.trim();
+  if(text === '') return;
+  todos.push({text, done:false});
+  input.value = '';
+  renderTodos();
+}
+(function(){
+  const inp = document.getElementById('todoInput');
+  if(inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') addTodo(); });
+  renderTodos();
+})();
+
+// --- Code console interpreter: lists, dicts, while/break, input() ---
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val instanceof Map){
+    const parts = [...val.entries()].map(([k,v]) => `${typeof k==='string'?`'${k}'`:pyRepr(k)}: ${typeof v==='string'?`'${v}'`:pyRepr(v)}`);
+    return '{' + parts.join(', ') + '}';
+  }
+  if(Array.isArray(val)) return '[' + val.map(v=>typeof v==='string'?`'${v}'`:pyRepr(v)).join(', ') + ']';
+  return String(val);
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"')&&value.endsWith('"'))||(value.startsWith("'")&&value.endsWith("'"))) return value.slice(1,-1);
+  if(!isNaN(parseFloat(value)) && isFinite(value)) return value.includes('.')?parseFloat(value):parseInt(value);
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+let inputQueueArr = [];
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || v instanceof Map) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function evalTernary(arg, vars, output){
+  // support: X if COND else Y  (conditional expression, e.g. marker assignment inline)
+  const m = arg.match(/^(.+?)\s+if\s+(.+?)\s+else\s+(.+)$/);
+  if(m){
+    const cond = evalComplex(m[2], vars, output);
+    return cond ? evalComplex(m[1], vars, output) : evalComplex(m[3], vars, output);
+  }
+  return null;
+}
+function evalComplex(argRaw, vars, output){
+  const arg = argRaw.trim();
+
+  const tern = arg.match(/^.+\sif\s.+\selse\s.+$/);
+  if(tern){
+    const r = evalTernary(arg, vars, output);
+    if(r !== null) return r;
+  }
+
+  let m = arg.match(/^input\((.*)\)$/);
+  if(m){
+    const promptText = m[1].trim() ? evalComplex(m[1], vars, output) : '';
+    if(inputQueueArr.length === 0) throw new Error('EOFError: no more simulated input available');
+    const val = inputQueueArr.shift();
+    output.push((typeof promptText==='string'?promptText:'') + val);
+    return val;
+  }
+
+  if(arg.startsWith('{') && arg.includes(':') && arg.endsWith('}')){
+    const inner = arg.slice(1,-1).trim();
+    const map = new Map();
+    if(inner !== ''){
+      splitTopLevel(inner, ',').forEach(entry => {
+        const idx = entry.indexOf(':');
+        map.set(resolveSimple(entry.slice(0,idx), vars), resolveSimple(entry.slice(idx+1), vars));
+      });
+    }
+    return map;
+  }
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p => evalComplex(p, vars, output));
+  }
+
+  const intMatch = arg.match(/^int\((.+)\)$/);
+  if(intMatch){
+    const v = evalComplex(intMatch[1], vars, output);
+    if(typeof v === 'string'){
+      const n = parseInt(v.trim(),10);
+      if(isNaN(n)) throw new Error(`ValueError: invalid literal for int(): '${v}'`);
+      return n;
+    }
+    return Math.trunc(v);
+  }
+  const strMatch = arg.match(/^str\((.+)\)$/);
+  if(strMatch) return pyRepr(evalComplex(strMatch[1], vars, output));
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch){ const v = vars[lenMatch[1]]; return v instanceof Map ? v.size : v.length; }
+
+  // indexing: name[idx] or name[idx]["key"] chained once
+  let idxMatch = arg.match(/^(\w+)\[(.*?)\](\[(.*)\])?$/);
+  if(idxMatch && Array.isArray(vars[idxMatch[1]])){
+    const arr = vars[idxMatch[1]];
+    let i = evalGeneral(idxMatch[2], vars);
+    if(i<0) i = arr.length+i;
+    if(i<0||i>=arr.length) throw new Error('IndexError: list index out of range');
+    let result = arr[i];
+    if(idxMatch[4] !== undefined){
+      const key = resolveSimple(idxMatch[4], vars);
+      if(result instanceof Map){
+        if(!result.has(key)) throw new Error(`KeyError: ${JSON.stringify(key)}`);
+        result = result.get(key);
+      }
+    }
+    return result;
+  }
+  // dict key access: name["key"]
+  let dictMatch = arg.match(/^(\w+)\[(["'].*?["'])\]$/);
+  if(dictMatch && vars[dictMatch[1]] instanceof Map){
+    const map = vars[dictMatch[1]];
+    const key = resolveSimple(dictMatch[2], vars);
+    if(!map.has(key)) throw new Error(`KeyError: ${JSON.stringify(key)}`);
+    return map.get(key);
+  }
+
+  return evalGeneral(arg, vars);
+}
+function getIndent(line){ const m = line.match(/^(\s*)/); return m ? m[1].replace(/\t/g,'    ').length : 0; }
+function findBlockExtent(lines, start, baseIndent){
+  let bEnd = start;
+  while(bEnd < lines.length && (lines[bEnd].trim()==='' || getIndent(lines[bEnd]) > baseIndent)) bEnd++;
+  return bEnd;
+}
+const BREAK_SIGNAL = {__signal:'break'};
+const CONTINUE_SIGNAL = {__signal:'continue'};
+function execLine(line, vars, output){
+  if(line === 'break') throw BREAK_SIGNAL;
+  if(line === 'continue') throw CONTINUE_SIGNAL;
+
+  // dict/list item assignment: name[idx]["key"] = val  or name[idx] = val
+  const chainedAssign = line.match(/^(\w+)\[(.*?)\]\[(.*?)\]\s*=\s*(.+)$/);
+  if(chainedAssign){
+    const arr = vars[chainedAssign[1]];
+    let i = evalGeneral(chainedAssign[2], vars);
+    if(i<0) i = arr.length+i;
+    const container = arr[i];
+    const key = resolveSimple(chainedAssign[3], vars);
+    const val = evalComplex(chainedAssign[4], vars, [] );
+    if(container instanceof Map) container.set(key, val);
+    return;
+  }
+  const itemAssign = line.match(/^(\w+)\[(.*?)\]\s*=\s*(.+)$/);
+  if(itemAssign){
+    const container = vars[itemAssign[1]];
+    const keyExpr = itemAssign[2];
+    const val = evalComplex(itemAssign[3], vars, []);
+    if(container instanceof Map){
+      container.set(resolveSimple(keyExpr, vars), val);
+    } else if(Array.isArray(container)){
+      let idx = evalGeneral(keyExpr, vars);
+      if(idx<0) idx = container.length+idx;
+      container[idx] = val;
+    }
+    return;
+  }
+
+  const appendMatch = line.match(/^(\w+)\.append\((.*)\)$/);
+  if(appendMatch && Array.isArray(vars[appendMatch[1]])){
+    vars[appendMatch[1]].push(evalComplex(appendMatch[2], vars, []));
+    return;
+  }
+
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  if(printMatch){
+    const parts = splitTopLevel(printMatch[1], ',');
+    output.push(parts.map(p => { const v = evalComplex(p, vars, output); return typeof v==='string'?v:pyRepr(v); }).join(' '));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars, output);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+function execBlock(lines, idx, baseIndent, vars, output, guard){
+  guard = guard || {count:0};
+  let i = idx;
+  while(i < lines.length){
+    const raw = lines[i];
+    if(raw.trim() === '' || raw.trim().startsWith('#')){ i++; continue; }
+    const indent = getIndent(raw);
+    if(indent < baseIndent) break;
+    const trimmed = raw.trim();
+    const ifMatch = trimmed.match(/^if (.+):$/);
+    const whileMatch = trimmed.match(/^while (.+):$/);
+    const forMatch = trimmed.match(/^for (\w+) in range\((.*)\):$/);
+
+    if(ifMatch){
+      const chain = [];
+      let j = i;
+      while(j < lines.length){
+        const t = lines[j].trim();
+        const ind = getIndent(lines[j]);
+        if(ind !== baseIndent) break;
+        const mIf = t.match(/^if (.+):$/);
+        const mElif = t.match(/^elif (.+):$/);
+        const mElse = t.match(/^else:$/);
+        if(j === i && mIf){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'if', cond:mIf[1], bStart, bEnd}); j = bEnd;
+        } else if(mElif){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'elif', cond:mElif[1], bStart, bEnd}); j = bEnd;
+        } else if(mElse){
+          const bStart = j+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+          chain.push({type:'else', cond:null, bStart, bEnd}); j = bEnd;
+        } else break;
+      }
+      let matched = false;
+      for(const c of chain){
+        if(matched) break;
+        if(c.type === 'else' || evalComplex(c.cond, vars, output)){
+          try{ execBlock(lines, c.bStart, baseIndent+4, vars, output, guard); }
+          catch(sig){ if(sig===BREAK_SIGNAL||sig===CONTINUE_SIGNAL) throw sig; else throw sig; }
+          matched = true;
+        }
+      }
+      i = j;
+      continue;
+    } else if(forMatch){
+      const loopVar = forMatch[1];
+      const args = forMatch[2].split(',').map(a => evalGeneral(a.trim(), vars));
+      let start=0, stop=0, step=1;
+      if(args.length === 1){ stop = args[0]; }
+      else if(args.length === 2){ start = args[0]; stop = args[1]; }
+      else { start = args[0]; stop = args[1]; step = args[2]; }
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      let v = start;
+      while((step > 0 && v < stop) || (step < 0 && v > stop)){
+        guard.count++;
+        if(guard.count > 2000){ output.push('<span class="error">Stopped: loop too long</span>'); return lines.length; }
+        vars[loopVar] = v;
+        try{ execBlock(lines, bStart, baseIndent+4, vars, output, guard); }
+        catch(sig){ if(sig===BREAK_SIGNAL) break; else if(sig===CONTINUE_SIGNAL){} else throw sig; }
+        v += step;
+      }
+      i = bEnd;
+      continue;
+    } else if(whileMatch){
+      const condRaw = whileMatch[1];
+      const bStart = i+1, bEnd = findBlockExtent(lines, bStart, baseIndent);
+      while(condRaw.trim()==='True' ? true : evalComplex(condRaw, vars, output)){
+        guard.count++;
+        if(guard.count > 500){ output.push('<span class="error">Stopped: loop ran too long</span>'); return lines.length; }
+        try{
+          execBlock(lines, bStart, baseIndent+4, vars, output, guard);
+        } catch(sig){
+          if(sig === BREAK_SIGNAL) break;
+          else if(sig === CONTINUE_SIGNAL) continue;
+          else throw sig;
+        }
+      }
+      i = bEnd;
+      continue;
+    } else {
+      execLine(trimmed, vars, output);
+      i++;
+    }
+  }
+  return i;
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  const output = [];
+  inputQueueArr = document.getElementById('inputQueue').value.split('\n').map(s=>s.trim()).filter(s=>s!=='');
+  try{
+    execBlock(lines, 0, 0, vars, output, {count:0});
+  } catch(err){
+    output.push(`<span class="error">${escapeHtml(err.message || 'Error running code.')}</span>`);
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "tasks=[]. tasks.append({'text':'Buy milk','done':False}). What does tasks[0]['text'] return?", opts: ["'Buy milk'","False","0","Error"], correct: 0, explain: "Accessing the 'text' key of the first dictionary in the list." },
+  { q: "A user types task number '2' to mark it done. What index should be used in tasks[]?", opts: ["2","1","0","3"], correct: 1, explain: "Convert 1-based user input to 0-based index by subtracting 1." },
+  { q: "Why does 'while True:' need a break reachable from within the menu loop?", opts: [
+      "It doesn't need one",
+      "Without it, the program would loop asking for menu choices forever, with no way to exit",
+      "break is only cosmetic here",
+      "while True stops automatically after 10 iterations"
+    ], correct: 1, explain: "The quit option's break is the only way this loop ever ends." },
+  { q: "What does 'marker = \"[x]\" if task[\"done\"] else \"[ ]\"' do?", opts: [
+      "Always sets marker to '[x]'",
+      "Sets marker based on a condition — a compact conditional expression, equivalent to an if/else",
+      "Causes a syntax error",
+      "Deletes the task"
+    ], correct: 1, explain: "This is Python's conditional expression syntax: value_if_true if condition else value_if_false." },
+  { q: "Why is splitting logic into add_task(), view_tasks(), mark_done() functions better than writing it all inline in the loop?", opts: [
+      "It isn't better, inline is always simpler",
+      "It makes each piece of logic reusable, testable, and easier to update in one place",
+      "Functions run faster than inline code",
+      "Python requires functions for loops"
+    ], correct: 1, explain: "This is the same organizing benefit functions provide in any program, covered back on Day 38." },
+  { q: "tasks[5]['done'] = True is attempted but tasks only has 3 items. What happens?", opts: ["Nothing, silently ignored","Raises an IndexError","Creates 3 empty tasks automatically","Marks the last task done instead"], correct: 1, explain: "Accessing an out-of-range index always raises an IndexError." },
+  { q: "Why should a real version of this program use try/except around the task-number input?", opts: [
+      "It shouldn't, errors are fine to crash on",
+      "To gracefully handle invalid input (like an out-of-range number or non-numeric text) instead of crashing the whole program",
+      "try/except is unrelated to user input",
+      "Only needed for file operations"
+    ], correct: 1, explain: "This directly reuses Day 44's exception handling for a realistic, robust program." },
+  { q: "What comes next after these two mini-projects?", opts: [
+      "Deep learning directly",
+      "NumPy — the array library most of the Python data/ML ecosystem is built on",
+      "Nothing, the plan ends here",
+      "Repeating OOP"
+    ], correct: 1, explain: "Day 51 begins NumPy, moving from general Python into data-focused tools." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

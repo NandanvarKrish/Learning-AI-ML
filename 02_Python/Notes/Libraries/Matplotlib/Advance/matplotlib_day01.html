@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matplotlib – Day 1 | Figure, Axes & Basic Plots</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F0F9FF;--surface:#FFFFFF;--border:#BAE6FD;--accent:#0284C7;--accent2:#0C4A6E;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--purple:#7C3AED;--orange:#EA580C;
+    --text:#082F49;--muted:#0369A1;--code-bg:#04121C;--code-text:#BAE6FD;--tag-bg:#E0F2FE;--tag-text:#0C4A6E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(2,132,199,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0284C7 0%,#0C4A6E 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#BAE6FD;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#0284C7;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#7DD3FC;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#0C4A6E;font-style:italic;} .op{color:#BAE6FD;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.green .callout-title{color:var(--green);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .anatomy-visual{border:1px solid var(--border);border-radius:10px;padding:20px;background:var(--bg);margin:16px 0;position:relative;}
+  .anatomy-fig{border:2px dashed var(--accent);border-radius:8px;padding:16px;background:#fff;position:relative;}
+  .anatomy-label{position:absolute;font-size:10px;font-weight:700;color:var(--accent);background:#fff;padding:1px 5px;border-radius:3px;border:1px solid var(--accent);}
+  .anatomy-ax{border:2px solid var(--accent2);border-radius:4px;height:140px;position:relative;background:#F0FDFA;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#0C4A6E,#0284C7);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0284C7,#0C4A6E);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#0284C7,#059669);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">📊 Matplotlib</div><span class="sep">|</span><span class="day-label">Day 1 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">20%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:20%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Matplotlib Full Course · Day 1</div>
+  <h1>Figure, Axes &amp; <span>Basic Plots</span></h1>
+  <p>Master the Figure/Axes anatomy that every Matplotlib chart is built on, then create line, scatter, bar, and histogram plots with confidence.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🏗️ Figure &amp; Axes Anatomy</span>
+    <span class="hero-pill">📈 Line Plots</span>
+    <span class="hero-pill">⚫ Scatter Plots</span>
+    <span class="hero-pill">📊 Bar Charts</span>
+    <span class="hero-pill">📉 Histograms</span>
+    <span class="hero-pill">🏷️ Labels &amp; Titles</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🏗️</div>
+    <div><h2>Figure &amp; Axes — The Foundation of Every Plot</h2><p>Understanding Matplotlib's core architecture before drawing anything</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>Matplotlib</strong> is Python's original and most flexible plotting library, created by John D. Hunter in 2003. Nearly every other Python visualization library (Seaborn, Pandas' .plot(), Plotly's static exports) is built on top of it or inspired by it.</p>
+
+    <div class="fbox">
+      <div class="ft">🏗️ The Core Hierarchy</div>
+      <div class="fm">Figure   →  the whole canvas/window (can hold multiple plots)</div>
+      <div class="fm">Axes     →  one individual plot/chart area (NOT the same as "axis"!)</div>
+      <div class="fm">Axis     →  the x or y number-line within an Axes</div>
+      <div class="fm">Artist   →  everything drawn: lines, text, ticks, legends</div>
+      <div class="fnote">A Figure can contain many Axes. Each Axes has its own x-axis and y-axis.</div>
+    </div>
+
+    <h3>Visual Anatomy</h3>
+    <div class="anatomy-visual">
+      <div class="anatomy-fig">
+        <div class="anatomy-label" style="top:-10px;left:16px;">FIGURE</div>
+        <div class="anatomy-ax">AXES (one subplot — title, labels, ticks, data)</div>
+      </div>
+    </div>
+
+    <h3>Two Ways to Create Plots — Pyplot vs Object-Oriented</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+x = <span class="op">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">100</span>)
+y = <span class="op">np</span>.<span class="fn">sin</span>(x)
+
+<span class="cm"># ── METHOD 1: pyplot (state-based) — quick &amp; simple ──</span>
+<span class="op">plt</span>.<span class="fn">plot</span>(x, y)
+<span class="op">plt</span>.<span class="fn">title</span>(<span class="st">'Sine Wave'</span>)
+<span class="op">plt</span>.<span class="fn">xlabel</span>(<span class="st">'X'</span>)
+<span class="op">plt</span>.<span class="fn">ylabel</span>(<span class="st">'sin(x)'</span>)
+<span class="op">plt</span>.<span class="fn">show</span>()
+
+<span class="cm"># ── METHOD 2: Object-Oriented (OO) — RECOMMENDED for anything serious ──</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>()      <span class="cm"># creates ONE figure + ONE axes</span>
+ax.<span class="fn">plot</span>(x, y)
+ax.<span class="fn">set_title</span>(<span class="st">'Sine Wave'</span>)
+ax.<span class="fn">set_xlabel</span>(<span class="st">'X'</span>)
+ax.<span class="fn">set_ylabel</span>(<span class="st">'sin(x)'</span>)
+<span class="op">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <div class="callout blue" style="border-color:#3B82F6;background:#EFF6FF;">
+      <div class="callout-title" style="color:#1D4ED8;">💡 Always Use the OO Interface</div>
+      The pyplot interface (<code>plt.plot()</code>) is fine for one-off quick plots, but the Object-Oriented interface (<code>fig, ax = plt.subplots()</code>) gives you explicit control — essential for subplots, complex layouts, and professional code. This course uses <strong>ax.method()</strong> throughout.
+    </div>
+
+    <h3>Figure &amp; Axes Configuration</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Control figure size and resolution</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">10</span>, <span class="nm">6</span>), dpi=<span class="nm">100</span>)   <span class="cm"># 10x6 inches, 100 dots per inch</span>
+
+<span class="cm"># Multiple axes in one figure (subplots grid)</span>
+fig, axes = <span class="op">plt</span>.<span class="fn">subplots</span>(nrows=<span class="nm">2</span>, ncols=<span class="nm">2</span>, figsize=(<span class="nm">12</span>,<span class="nm">8</span>))
+<span class="fn">print</span>(axes.shape)   <span class="cm"># (2, 2) — a 2D NumPy array of Axes objects!</span>
+axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">plot</span>(x, y)         <span class="cm"># top-left</span>
+axes[<span class="nm">0</span>,<span class="nm">1</span>].<span class="fn">scatter</span>(x, y)      <span class="cm"># top-right</span>
+axes[<span class="nm">1</span>,<span class="nm">0</span>].<span class="fn">bar</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>])  <span class="cm"># bottom-left</span>
+axes[<span class="nm">1</span>,<span class="nm">1</span>].<span class="fn">hist</span>(y)             <span class="cm"># bottom-right</span>
+
+<span class="cm"># Save a figure to file (do this BEFORE plt.show())</span>
+fig.<span class="fn">savefig</span>(<span class="st">'my_chart.png'</span>, dpi=<span class="nm">300</span>, bbox_inches=<span class="st">'tight'</span>)
+fig.<span class="fn">savefig</span>(<span class="st">'my_chart.pdf'</span>)     <span class="cm"># vector format — scales infinitely</span>
+fig.<span class="fn">savefig</span>(<span class="st">'my_chart.svg'</span>)     <span class="cm"># also vector — great for web</span>
+
+<span class="cm"># Adjust spacing between subplots</span>
+fig.<span class="fn">tight_layout</span>()          <span class="cm"># auto-adjusts to prevent overlap — use this almost always</span>
+<span class="op">plt</span>.<span class="fn">subplots_adjust</span>(hspace=<span class="nm">0.4</span>, wspace=<span class="nm">0.3</span>)  <span class="cm"># manual control</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">📈</div>
+    <div><h2>Line Plots — The Most Common Chart Type</h2><p>Trends over time, mathematical functions, comparisons</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+
+months = [<span class="st">'Jan'</span>,<span class="st">'Feb'</span>,<span class="st">'Mar'</span>,<span class="st">'Apr'</span>,<span class="st">'May'</span>,<span class="st">'Jun'</span>]
+revenue_2023 = [<span class="nm">45</span>,<span class="nm">52</span>,<span class="nm">48</span>,<span class="nm">61</span>,<span class="nm">58</span>,<span class="nm">67</span>]
+revenue_2024 = [<span class="nm">50</span>,<span class="nm">55</span>,<span class="nm">60</span>,<span class="nm">65</span>,<span class="nm">70</span>,<span class="nm">75</span>]
+
+<span class="cm"># Basic line plot</span>
+ax.<span class="fn">plot</span>(months, revenue_2023, label=<span class="st">'2023'</span>)
+ax.<span class="fn">plot</span>(months, revenue_2024, label=<span class="st">'2024'</span>)
+
+<span class="cm"># Styling: color, linewidth, linestyle, marker</span>
+ax.<span class="fn">plot</span>(months, revenue_2023,
+        color=<span class="st">'#3B82F6'</span>,        <span class="cm"># hex color code</span>
+        linewidth=<span class="nm">2.5</span>,
+        linestyle=<span class="st">'--'</span>,           <span class="cm"># '-' solid, '--' dashed, ':' dotted, '-.' dash-dot</span>
+        marker=<span class="st">'o'</span>,               <span class="cm"># circle markers at each point</span>
+        markersize=<span class="nm">8</span>,
+        label=<span class="st">'2023 Revenue'</span>,
+        alpha=<span class="nm">0.8</span>)               <span class="cm"># transparency 0-1</span>
+
+<span class="cm"># Shorthand format string: color + marker + linestyle</span>
+ax.<span class="fn">plot</span>(months, revenue_2024, <span class="st">'ro--'</span>)  <span class="cm"># red circles, dashed line</span>
+ax.<span class="fn">plot</span>(months, revenue_2023, <span class="st">'g^-'</span>)   <span class="cm"># green triangles, solid line</span>
+ax.<span class="fn">plot</span>(months, revenue_2024, <span class="st">'bs:'</span>)   <span class="cm"># blue squares, dotted line</span>
+
+ax.<span class="fn">set_title</span>(<span class="st">'Monthly Revenue Comparison'</span>, fontsize=<span class="nm">14</span>, fontweight=<span class="st">'bold'</span>)
+ax.<span class="fn">set_xlabel</span>(<span class="st">'Month'</span>)
+ax.<span class="fn">set_ylabel</span>(<span class="st">'Revenue (₹ Lakhs)'</span>)
+ax.<span class="fn">legend</span>(loc=<span class="st">'upper left'</span>)     <span class="cm"># shows the label= entries</span>
+ax.<span class="fn">grid</span>(<span class="kw">True</span>, alpha=<span class="nm">0.3</span>)         <span class="cm"># light gridlines</span>
+<span class="op">plt</span>.<span class="fn">show</span>()</pre>
+    </div>
+
+    <h3>Color, Marker &amp; Linestyle Reference</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Color codes</th><th>Marker codes</th><th>Linestyle codes</th></tr>
+        <tr><td><code>'b'</code> blue, <code>'g'</code> green, <code>'r'</code> red</td><td><code>'o'</code> circle, <code>'s'</code> square</td><td><code>'-'</code> solid</td></tr>
+        <tr><td><code>'c'</code> cyan, <code>'m'</code> magenta</td><td><code>'^'</code> triangle up, <code>'v'</code> down</td><td><code>'--'</code> dashed</td></tr>
+        <tr><td><code>'y'</code> yellow, <code>'k'</code> black</td><td><code>'*'</code> star, <code>'x'</code> x-mark</td><td><code>':'</code> dotted</td></tr>
+        <tr><td><code>'#3B82F6'</code> any hex</td><td><code>'D'</code> diamond, <code>'+'</code> plus</td><td><code>'-.'</code> dash-dot</td></tr>
+      </table>
+    </div>
+
+    <h3>Multiple Y-Axes (Twin Axes)</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># When comparing 2 metrics with very different scales</span>
+fig, ax1 = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+
+ax1.<span class="fn">plot</span>(months, revenue_2024, <span class="st">'b-'</span>, label=<span class="st">'Revenue'</span>)
+ax1.<span class="fn">set_xlabel</span>(<span class="st">'Month'</span>)
+ax1.<span class="fn">set_ylabel</span>(<span class="st">'Revenue (₹L)'</span>, color=<span class="st">'b'</span>)
+ax1.<span class="fn">tick_params</span>(axis=<span class="st">'y'</span>, labelcolor=<span class="st">'b'</span>)
+
+ax2 = ax1.<span class="fn">twinx</span>()      <span class="cm"># creates a second y-axis sharing the same x-axis</span>
+units_sold = [<span class="nm">1200</span>,<span class="nm">1350</span>,<span class="nm">1100</span>,<span class="nm">1600</span>,<span class="nm">1450</span>,<span class="nm">1800</span>]
+ax2.<span class="fn">plot</span>(months, units_sold, <span class="st">'r--'</span>, label=<span class="st">'Units Sold'</span>)
+ax2.<span class="fn">set_ylabel</span>(<span class="st">'Units Sold'</span>, color=<span class="st">'r'</span>)
+ax2.<span class="fn">tick_params</span>(axis=<span class="st">'y'</span>, labelcolor=<span class="st">'r'</span>)
+
+fig.<span class="fn">tight_layout</span>()</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">⚫</div>
+    <div><h2>Scatter Plots — Relationships Between Two Variables</h2><p>Correlation, clusters, outliers, and multi-dimensional encoding</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">42</span>)
+study_hours = <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">1</span>, <span class="nm">10</span>, <span class="nm">50</span>)
+exam_scores = study_hours * <span class="nm">7</span> + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>, <span class="nm">8</span>, <span class="nm">50</span>) + <span class="nm">20</span>
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">6</span>))
+
+<span class="cm"># Basic scatter</span>
+ax.<span class="fn">scatter</span>(study_hours, exam_scores)
+
+<span class="cm"># Fully styled — encode extra dimensions with color and size</span>
+attendance = <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">60</span>, <span class="nm">100</span>, <span class="nm">50</span>)   <span class="cm"># 3rd variable → color</span>
+sc = ax.<span class="fn">scatter</span>(study_hours, exam_scores,
+              c=attendance,           <span class="cm"># color mapped to attendance %</span>
+              cmap=<span class="st">'viridis'</span>,        <span class="cm"># colormap name</span>
+              s=<span class="nm">80</span>,                   <span class="cm"># marker size</span>
+              alpha=<span class="nm">0.7</span>,               <span class="cm"># transparency</span>
+              edgecolors=<span class="st">'black'</span>,      <span class="cm"># marker border</span>
+              linewidths=<span class="nm">0.5</span>)
+
+cbar = fig.<span class="fn">colorbar</span>(sc, ax=ax)       <span class="cm"># show the color scale</span>
+cbar.<span class="fn">set_label</span>(<span class="st">'Attendance %'</span>)
+
+ax.<span class="fn">set_title</span>(<span class="st">'Study Hours vs Exam Scores'</span>)
+ax.<span class="fn">set_xlabel</span>(<span class="st">'Study Hours per Week'</span>)
+ax.<span class="fn">set_ylabel</span>(<span class="st">'Exam Score'</span>)
+
+<span class="cm"># Add a trend line using np.polyfit</span>
+z = <span class="op">np</span>.<span class="fn">polyfit</span>(study_hours, exam_scores, <span class="nm">1</span>)   <span class="cm"># degree-1 = linear fit</span>
+p = <span class="op">np</span>.<span class="fn">poly1d</span>(z)
+x_line = <span class="op">np</span>.<span class="fn">linspace</span>(study_hours.<span class="fn">min</span>(), study_hours.<span class="fn">max</span>(), <span class="nm">100</span>)
+ax.<span class="fn">plot</span>(x_line, p(x_line), <span class="st">'r--'</span>, linewidth=<span class="nm">2</span>, label=<span class="st">f'Trend: y={z[0]:.1f}x+{z[1]:.1f}'</span>)
+ax.<span class="fn">legend</span>()</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Scatter Plots Can Encode 4 Dimensions</h3></div>
+      X position, Y position, marker <strong>size</strong> (s=), and marker <strong>color</strong> (c=) — that's 4 variables in a single 2D chart. This technique is called a "bubble chart" when size varies.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📊</div>
+    <div><h2>Bar Charts — Comparing Categories</h2><p>Vertical, horizontal, grouped, and stacked bars</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>depts = [<span class="st">'Eng'</span>,<span class="st">'Sales'</span>,<span class="st">'Mktg'</span>,<span class="st">'HR'</span>,<span class="st">'Finance'</span>]
+headcount_2023 = [<span class="nm">45</span>,<span class="nm">30</span>,<span class="nm">20</span>,<span class="nm">15</span>,<span class="nm">18</span>]
+headcount_2024 = [<span class="nm">52</span>,<span class="nm">35</span>,<span class="nm">22</span>,<span class="nm">16</span>,<span class="nm">20</span>]
+
+<span class="cm"># Basic vertical bar chart</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+ax.<span class="fn">bar</span>(depts, headcount_2024, color=<span class="st">'#0284C7'</span>)
+ax.<span class="fn">set_title</span>(<span class="st">'Headcount by Department (2024)'</span>)
+
+<span class="cm"># Horizontal bar chart — better for long category names</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+ax.<span class="fn">barh</span>(depts, headcount_2024, color=<span class="st">'#059669'</span>)
+
+<span class="cm"># GROUPED bar chart — compare 2+ series side by side</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">9</span>,<span class="nm">5</span>))
+x = <span class="op">np</span>.<span class="fn">arange</span>(<span class="fn">len</span>(depts))    <span class="cm"># [0,1,2,3,4]</span>
+width = <span class="nm">0.35</span>
+
+ax.<span class="fn">bar</span>(x - width/<span class="nm">2</span>, headcount_2023, width, label=<span class="st">'2023'</span>, color=<span class="st">'#93C5FD'</span>)
+ax.<span class="fn">bar</span>(x + width/<span class="nm">2</span>, headcount_2024, width, label=<span class="st">'2024'</span>, color=<span class="st">'#0284C7'</span>)
+ax.<span class="fn">set_xticks</span>(x)
+ax.<span class="fn">set_xticklabels</span>(depts)
+ax.<span class="fn">legend</span>()
+ax.<span class="fn">set_title</span>(<span class="st">'Headcount: 2023 vs 2024'</span>)
+
+<span class="cm"># STACKED bar chart</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+male = [<span class="nm">25</span>,<span class="nm">18</span>,<span class="nm">10</span>,<span class="nm">6</span>,<span class="nm">9</span>]
+female = [<span class="nm">20</span>,<span class="nm">12</span>,<span class="nm">10</span>,<span class="nm">9</span>,<span class="nm">9</span>]
+ax.<span class="fn">bar</span>(depts, male, label=<span class="st">'Male'</span>, color=<span class="st">'#3B82F6'</span>)
+ax.<span class="fn">bar</span>(depts, female, bottom=male, label=<span class="st">'Female'</span>, color=<span class="st">'#F472B6'</span>)  <span class="cm"># bottom= stacks it</span>
+ax.<span class="fn">legend</span>()
+
+<span class="cm"># Add value labels on top of bars</span>
+bars = ax.<span class="fn">bar</span>(depts, headcount_2024, color=<span class="st">'#0284C7'</span>)
+<span class="kw">for</span> bar <span class="kw">in</span> bars:
+    height = bar.<span class="fn">get_height</span>()
+    ax.<span class="fn">text</span>(bar.<span class="fn">get_x</span>() + bar.<span class="fn">get_width</span>()/<span class="nm">2</span>, height + <span class="nm">0.5</span>,
+            <span class="fn">str</span>(<span class="fn">int</span>(height)), ha=<span class="st">'center'</span>, fontsize=<span class="nm">10</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DC2626">📉</div>
+    <div><h2>Histograms — Distribution Shapes</h2><p>Understanding how numeric data is spread</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>scores = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">70</span>, <span class="nm">12</span>, <span class="nm">500</span>)   <span class="cm"># 500 exam scores, mean=70, std=12</span>
+
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+
+<span class="cm"># Basic histogram</span>
+ax.<span class="fn">hist</span>(scores, bins=<span class="nm">20</span>)
+
+<span class="cm"># Styled histogram</span>
+ax.<span class="fn">hist</span>(scores,
+        bins=<span class="nm">25</span>,                <span class="cm"># number of bins (bars)</span>
+        color=<span class="st">'#0284C7'</span>,
+        edgecolor=<span class="st">'white'</span>,       <span class="cm"># border between bars</span>
+        alpha=<span class="nm">0.85</span>)
+
+<span class="cm"># Compare 2 distributions overlapping</span>
+class_a = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">70</span>, <span class="nm">10</span>, <span class="nm">300</span>)
+class_b = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">78</span>, <span class="nm">8</span>, <span class="nm">300</span>)
+ax.<span class="fn">hist</span>(class_a, bins=<span class="nm">20</span>, alpha=<span class="nm">0.5</span>, label=<span class="st">'Class A'</span>, color=<span class="st">'#3B82F6'</span>)
+ax.<span class="fn">hist</span>(class_b, bins=<span class="nm">20</span>, alpha=<span class="nm">0.5</span>, label=<span class="st">'Class B'</span>, color=<span class="st">'#F97316'</span>)
+ax.<span class="fn">legend</span>()
+
+<span class="cm"># Normalise to show density/probability instead of raw counts</span>
+ax.<span class="fn">hist</span>(scores, bins=<span class="nm">25</span>, density=<span class="kw">True</span>)   <span class="cm"># area under curve sums to 1</span>
+
+<span class="cm"># Add vertical line for mean</span>
+ax.<span class="fn">axvline</span>(scores.<span class="fn">mean</span>(), color=<span class="st">'red'</span>, linestyle=<span class="st">'--'</span>, linewidth=<span class="nm">2</span>, label=<span class="st">f'Mean: {scores.mean():.1f}'</span>)
+ax.<span class="fn">legend</span>()</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">🏷️</div>
+    <div><h2>Labels, Titles &amp; Text Annotations</h2><p>Making your charts self-explanatory and publication-ready</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+ax.<span class="fn">plot</span>(months, revenue_2024, marker=<span class="st">'o'</span>)
+
+<span class="cm"># Titles &amp; labels with full styling control</span>
+ax.<span class="fn">set_title</span>(<span class="st">'2024 Monthly Revenue'</span>, fontsize=<span class="nm">16</span>, fontweight=<span class="st">'bold'</span>, pad=<span class="nm">15</span>)
+ax.<span class="fn">set_xlabel</span>(<span class="st">'Month'</span>, fontsize=<span class="nm">12</span>)
+ax.<span class="fn">set_ylabel</span>(<span class="st">'Revenue (₹ Lakhs)'</span>, fontsize=<span class="nm">12</span>)
+
+<span class="cm"># Axis limits</span>
+ax.<span class="fn">set_xlim</span>(-<span class="nm">0.5</span>, <span class="nm">5.5</span>)
+ax.<span class="fn">set_ylim</span>(<span class="nm">0</span>, <span class="nm">100</span>)
+
+<span class="cm"># Custom tick positions and labels</span>
+ax.<span class="fn">set_yticks</span>([<span class="nm">0</span>,<span class="nm">25</span>,<span class="nm">50</span>,<span class="nm">75</span>,<span class="nm">100</span>])
+ax.<span class="fn">set_yticklabels</span>([<span class="st">'₹0L'</span>,<span class="st">'₹25L'</span>,<span class="st">'₹50L'</span>,<span class="st">'₹75L'</span>,<span class="st">'₹100L'</span>])
+
+<span class="cm"># Rotate x labels (useful for long category names)</span>
+ax.<span class="fn">tick_params</span>(axis=<span class="st">'x'</span>, rotation=<span class="nm">45</span>)
+
+<span class="cm"># Annotate a specific point</span>
+ax.<span class="fn">annotate</span>(<span class="st">'Peak!'</span>,
+            xy=(<span class="nm">5</span>, <span class="nm">75</span>),              <span class="cm"># point being annotated</span>
+            xytext=(<span class="nm">4</span>, <span class="nm">85</span>),          <span class="cm"># text position</span>
+            arrowprops=<span class="fn">dict</span>(facecolor=<span class="st">'black'</span>, arrowstyle=<span class="st">'->'</span>),
+            fontsize=<span class="nm">11</span>)
+
+<span class="cm"># Plain text anywhere on the axes</span>
+ax.<span class="fn">text</span>(<span class="nm">0.5</span>, <span class="nm">90</span>, <span class="st">'Q1 Growth Phase'</span>, fontsize=<span class="nm">10</span>, color=<span class="st">'gray'</span>)
+
+<span class="cm"># Legend positioning</span>
+ax.<span class="fn">legend</span>(loc=<span class="st">'best'</span>)              <span class="cm"># auto-picks least obstructive spot</span>
+ax.<span class="fn">legend</span>(loc=<span class="st">'upper left'</span>, bbox_to_anchor=(<span class="nm">1.02</span>, <span class="nm">1</span>))  <span class="cm"># outside the plot area</span>
+
+<span class="cm"># Remove/customise spines (the box border)</span>
+ax.spines[<span class="st">'top'</span>].<span class="fn">set_visible</span>(<span class="kw">False</span>)
+ax.spines[<span class="st">'right'</span>].<span class="fn">set_visible</span>(<span class="kw">False</span>)</pre>
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">ax.set_title()</div><div class="mc-desc">Chart title</div><div class="mc-ex">fontsize, fontweight, pad</div></div>
+      <div class="mini-card"><div class="mc-name">ax.set_xlabel()/ylabel()</div><div class="mc-desc">Axis labels</div><div class="mc-ex">fontsize, color</div></div>
+      <div class="mini-card"><div class="mc-name">ax.legend()</div><div class="mc-desc">Shows label= entries</div><div class="mc-ex">loc='upper right'</div></div>
+      <div class="mini-card"><div class="mc-name">ax.grid()</div><div class="mc-desc">Background gridlines</div><div class="mc-ex">alpha=0.3</div></div>
+      <div class="mini-card"><div class="mc-name">ax.annotate()</div><div class="mc-desc">Point + arrow + text</div><div class="mc-ex">xy, xytext, arrowprops</div></div>
+      <div class="mini-card"><div class="mc-name">ax.text()</div><div class="mc-desc">Plain text at coordinates</div><div class="mc-ex">x, y, string</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>Figure/Axes, line/scatter/bar/histogram, labels. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0284C7">🏆</div>
+    <div><h2>Real-World Task — Company Performance Report</h2><p>Estimated time: 75–90 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Business Intelligence Analyst</strong> at <em>Horizon Retail</em>. Build a complete set of charts for the quarterly board meeting — covering revenue trends, department comparisons, customer distributions, and sales correlations — using only Matplotlib.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0284C7">1</div><h4>Phase 1 — Data Setup</h4><span class="phase-time">~10 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Generate the Business Dataset</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">10</span>)
+months = [<span class="st">'Jan'</span>,<span class="st">'Feb'</span>,<span class="st">'Mar'</span>,<span class="st">'Apr'</span>,<span class="st">'May'</span>,<span class="st">'Jun'</span>,
+          <span class="st">'Jul'</span>,<span class="st">'Aug'</span>,<span class="st">'Sep'</span>,<span class="st">'Oct'</span>,<span class="st">'Nov'</span>,<span class="st">'Dec'</span>]
+revenue_2023 = <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">40</span>,<span class="nm">70</span>,<span class="nm">12</span>).<span class="fn">round</span>(<span class="nm">1</span>)
+revenue_2024 = revenue_2023 * <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">1.05</span>,<span class="nm">1.25</span>,<span class="nm">12</span>)
+
+depts = [<span class="st">'Electronics'</span>,<span class="st">'Apparel'</span>,<span class="st">'Grocery'</span>,<span class="st">'Home'</span>,<span class="st">'Sports'</span>]
+dept_revenue = <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">80</span>,<span class="nm">400</span>,<span class="nm">5</span>).<span class="fn">round</span>(<span class="nm">1</span>)
+
+customer_spend = <span class="op">np</span>.random.<span class="fn">gamma</span>(<span class="nm">3</span>, <span class="nm">80</span>, <span class="nm">1000</span>)   <span class="cm"># realistic skewed spending distribution</span>
+
+ad_spend  = <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">5</span>,<span class="nm">50</span>,<span class="nm">40</span>)
+sales_gen = ad_spend * <span class="nm">8</span> + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>,<span class="nm">30</span>,<span class="nm">40</span>) + <span class="nm">50</span></pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Build 5 Required Charts</h4><span class="phase-time">~50 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 1: Revenue Trend Line (2023 vs 2024)</h5>
+          <p>Line plot with both years, markers, legend, gridlines, and a title. Use different colors and linestyles for each year.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 2: Department Revenue Bar Chart</h5>
+          <p>Horizontal bar chart (better for reading department names), sorted descending by revenue, with value labels shown on each bar.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Chart 3: Customer Spending Histogram</h5>
+          <p>Histogram of customer_spend with 30 bins, a vertical line marking the mean, and a vertical line marking the median. Add a legend distinguishing the two lines.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">4</div><div class="step-content">
+          <h5>Chart 4: Ad Spend vs Sales Scatter with Trend Line</h5>
+          <p>Scatter plot with a fitted linear trend line (np.polyfit), showing the correlation between advertising spend and sales generated. Include the equation in the legend.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">5</div><div class="step-content">
+          <h5>Chart 5: Combined Dashboard — 2×2 Subplot Grid</h5>
+          <p>Combine all 4 charts above into ONE figure using <code>plt.subplots(2, 2, figsize=(14,10))</code>. Add an overall figure title with <code>fig.suptitle()</code>. Use <code>fig.tight_layout()</code> to prevent overlap.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STRUCTURE HINT</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>fig, axes = <span class="op">plt</span>.<span class="fn">subplots</span>(<span class="nm">2</span>, <span class="nm">2</span>, figsize=(<span class="nm">14</span>,<span class="nm">10</span>))
+fig.<span class="fn">suptitle</span>(<span class="st">'Horizon Retail — Q4 2024 Board Report'</span>, fontsize=<span class="nm">16</span>, fontweight=<span class="st">'bold'</span>)
+
+<span class="cm"># Top-left: revenue trend</span>
+axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">plot</span>(months, revenue_2023, marker=<span class="st">'o'</span>, label=<span class="st">'2023'</span>)
+axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">plot</span>(months, revenue_2024, marker=<span class="st">'s'</span>, label=<span class="st">'2024'</span>)
+axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">set_title</span>(<span class="st">'Monthly Revenue Trend'</span>)
+axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">legend</span>(); axes[<span class="nm">0</span>,<span class="nm">0</span>].<span class="fn">grid</span>(alpha=<span class="nm">0.3</span>)
+
+<span class="cm"># ... fill in the other 3 quadrants similarly ...</span>
+
+fig.<span class="fn">tight_layout</span>()
+fig.<span class="fn">savefig</span>(<span class="st">'horizon_dashboard.png'</span>, dpi=<span class="nm">200</span>, bbox_inches=<span class="st">'tight'</span>)
+<span class="op">plt</span>.<span class="fn">show</span>()</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Polish &amp; Export</h4><span class="phase-time">~15 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Final Touches Checklist</h5>
+          <ul>
+            <li>Every chart has a title, x-label, and y-label</li>
+            <li>Every multi-series chart has a legend</li>
+            <li>Top and right spines removed for a cleaner look</li>
+            <li>Consistent color palette across all charts</li>
+            <li>Saved the combined dashboard as a high-res PNG (dpi=200+)</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated realistic revenue, department, customer, and ad spend data</li>
+        <li>Built revenue trend line chart with 2 series, markers, and legend</li>
+        <li>Built horizontal department revenue bar chart, sorted, with value labels</li>
+        <li>Built customer spending histogram with mean and median lines</li>
+        <li>Built ad spend vs sales scatter plot with fitted trend line and equation</li>
+        <li>Combined all 4 charts into one 2×2 subplot dashboard</li>
+        <li>Added fig.suptitle() for the overall report title</li>
+        <li>Applied tight_layout() to prevent overlapping</li>
+        <li>Removed top/right spines for a clean look</li>
+        <li>Exported the dashboard as a high-resolution PNG</li>
+      </ul>
+    </div>
+
+    <div class="callout green" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 20 min)</div>
+      Add a 5th subplot area (use <code>plt.subplots(3,2)</code> and hide the unused 6th slot with <code>axes[2,1].axis('off')</code>) showing a pie chart of department revenue share using <code>ax.pie()</code>.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Matplotlib Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done active">Day 1 · Figure &amp; Basic Plots</span>
+    <span class="day-pill">Day 2 · Styling &amp; Subplots</span>
+    <span class="day-pill">Day 3 · Statistical Charts</span>
+    <span class="day-pill">Day 4 · Animation</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What is the difference between a Matplotlib 'Figure' and 'Axes'?",opts:["They are the same thing","Figure is the whole canvas/window; Axes is one individual plot area within it","Axes is the whole canvas; Figure is one plot","Figure only exists in the OO interface"],ans:1,explain:"The Figure is the top-level container (like a blank page). Axes is an individual plotting area within that figure — a Figure can contain multiple Axes (subplots)."},
+  {code:"fig, ax = plt.subplots()\nax.plot(x, y)",q:"Why is this OO-style approach generally preferred over plt.plot(x,y) directly?",opts:["It's the only way to plot data","It gives explicit control over the figure and axes objects, essential for subplots and complex layouts","plt.plot() doesn't exist","It's always faster"],ans:1,explain:"The Object-Oriented interface (fig, ax = plt.subplots()) gives explicit references to the Figure and Axes objects, making it easy to build complex multi-plot layouts and professional, maintainable code."},
+  {q:"What does `nrows=2, ncols=2` in `plt.subplots(nrows=2, ncols=2)` create?",opts:["A single large plot","4 separate Axes arranged in a 2×2 grid, returned as a 2D array","2 plots side by side","An error — invalid parameters"],ans:1,explain:"nrows and ncols define a grid of subplots. 2×2 creates 4 Axes objects arranged in a grid, accessible via axes[0,0], axes[0,1], axes[1,0], axes[1,1] — a 2D NumPy array of Axes."},
+  {code:"ax.plot(x, y, 'ro--')", q:"What does the format string 'ro--' specify?",opts:["Red circles connected with a dashed line","Round shape only","Rotated 90 degrees","Random colors"],ans:0,explain:"The shorthand format string combines color+marker+linestyle: 'r' = red, 'o' = circle marker, '--' = dashed line. This is a quick way to style a plot in one string argument."},
+  {q:"What is the purpose of `fig.tight_layout()`?",opts:["Reduces the figure size","Automatically adjusts subplot spacing to prevent titles/labels from overlapping","Removes the legend","Compresses the image file size"],ans:1,explain:"tight_layout() automatically adjusts padding between subplots and the figure edges so labels, titles, and ticks don't get cut off or overlap — should be called almost every time you have multiple subplots."},
+  {q:"When comparing two datasets with very different scales (e.g., Revenue in millions vs Units in hundreds) on the same x-axis, what should you use?",opts:["Two separate figures always","ax.twinx() to create a second y-axis sharing the same x-axis","Ignore the scale difference","Convert both to percentages only"],ans:1,explain:"ax.twinx() creates a second y-axis that shares the same x-axis as the first. This lets you plot two series with very different scales on the same chart without one flattening the other visually."},
+  {code:"ax.scatter(x, y, c=z, s=sizes, cmap='viridis')",q:"How many dimensions of data can this single scatter call visually encode?",opts:["2 — just x and y","3 — x, y, and either color or size","4 — x position, y position, color (c=z), and size (s=sizes)","Unlimited"],ans:2,explain:"This scatter call encodes 4 variables: x-position, y-position, color (mapped from z via the colormap), and marker size (from the sizes array) — a powerful way to show multi-dimensional relationships in 2D."},
+  {q:"What does `bottom=male` do in `ax.bar(depts, female, bottom=male)`?",opts:["Sorts bars from bottom","Creates a STACKED bar chart — the female bars start on top of where the male bars end","Removes the male bars","Creates a horizontal bar chart"],ans:1,explain:"The bottom parameter tells Matplotlib where each bar segment should START (its base). Setting bottom=male stacks the female values on top of the male values, creating a stacked bar chart."},
+  {q:"In a grouped bar chart with `x - width/2` and `x + width/2` positioning, what is the purpose?",opts:["To randomize bar positions","To offset two bar series so they sit SIDE BY SIDE at each category position instead of overlapping","To make bars transparent","To sort the bars"],ans:1,explain:"Without offsetting, two bar() calls at the same x positions would draw directly on top of each other. Shifting one set left (x-width/2) and the other right (x+width/2) places them side-by-side within each category group."},
+  {code:"ax.hist(scores, bins=25, density=True)",q:"What does density=True change compared to the default?",opts:["Makes bars thicker","Normalizes the histogram so the area under all bars sums to 1 (shows probability density instead of raw counts)","Removes outliers","Changes the color"],ans:1,explain:"density=True normalizes the histogram to show a probability density (area under the histogram = 1) rather than raw frequency counts. Useful when comparing distributions with different total sample sizes."},
+  {q:"What is the purpose of `ax.axvline(scores.mean(), color='red', linestyle='--')`?",opts:["Draws a horizontal line at the mean value","Draws a VERTICAL line at the x-position equal to the mean, useful for marking a reference point on a histogram","Colors all bars red","Removes bars below the mean"],ans:1,explain:"axvline (axis vertical line) draws a full-height vertical line at the specified x-coordinate. It's commonly used on histograms to visually mark the mean, median, or a threshold value."},
+  {q:"What does `np.polyfit(x, y, 1)` return?",opts:["The correlation coefficient","Coefficients [slope, intercept] for a degree-1 (linear) best-fit line through the data","The R² value","A list of residuals"],ans:1,explain:"polyfit(x, y, degree) fits a polynomial of the specified degree to the data using least squares. Degree 1 gives a straight line, returning [slope, intercept] which can be used with np.poly1d() to generate y-values for plotting."},
+  {q:"Which method saves a Matplotlib figure to a file?",opts:["ax.export()","fig.savefig('name.png')","plt.export_figure()","ax.write()"],ans:1,explain:"fig.savefig() (or plt.savefig() in pyplot style) saves the current figure to a file. Common formats include .png (raster), .pdf and .svg (vector, scale infinitely). Call it BEFORE plt.show() since show() can clear the figure."},
+  {code:"ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1))",q:"What does bbox_to_anchor=(1.02, 1) achieve?",opts:["Centers the legend inside the plot","Positions the legend OUTSIDE the plot area, to the right of it","Makes the legend transparent","Rotates the legend text"],ans:1,explain:"bbox_to_anchor lets you place the legend at custom coordinates relative to the axes, including OUTSIDE the plot boundaries. (1.02, 1) places it just to the right of the axes, avoiding overlap with the data."},
+  {q:"What is the difference between `ax.set_xlabel()` and `ax.set_title()`?",opts:["No difference","set_xlabel() labels the x-axis; set_title() sets the overall chart title displayed above the plot","set_title() is only for figures, not axes","set_xlabel() is deprecated"],ans:1,explain:"set_xlabel() adds a label describing what the x-axis represents (appears below the x-axis). set_title() adds a title describing the whole chart (appears above the plot area)."},
+  {code:"axes[0,0].plot(x,y)\naxes[0,1].scatter(x,y)",q:"What does this code structure imply about the figure?",opts:["A single plot with two overlapping chart types","A subplot grid where axes[0,0] is one Axes (line plot) and axes[0,1] is a different Axes (scatter plot), side by side","An error — cannot mix chart types","The same chart drawn twice"],ans:1,explain:"When using plt.subplots(nrows, ncols) with more than 1 row/col, axes becomes an array of separate Axes objects. axes[0,0] and axes[0,1] are two DIFFERENT plot areas, each capable of holding its own chart type."},
+  {q:"What does `ax.spines['top'].set_visible(False)` do?",opts:["Removes the top border/frame line of the plot for a cleaner, more modern look","Hides the title","Removes the top row of data","Makes the chart transparent"],ans:0,explain:"Spines are the border lines around the plot area (top, bottom, left, right). Hiding the top and right spines is a common styling choice that creates a cleaner, more open look, similar to many modern dashboard designs."},
+  {q:"Why might you choose `ax.barh()` over `ax.bar()` for a chart with department names like 'Electronics', 'Home Appliances', 'Sporting Goods'?",opts:["barh() is always faster","Horizontal bars give long category labels more room to display fully without rotation or truncation","bar() cannot handle strings","There's no functional difference"],ans:1,explain:"With vertical bars (bar()), long category names often get cut off, overlap, or need rotation to fit. Horizontal bars (barh()) put labels on the y-axis where there's naturally more horizontal space to read full text."},
+  {q:"What does `fig.suptitle('Report Title')` do differently from `ax.set_title()`?",opts:["They are identical","suptitle() sets a title for the ENTIRE FIGURE (spanning all subplots); set_title() sets a title for just ONE Axes/subplot","suptitle() only works with 1 subplot","set_title() is for the figure, suptitle() is for one axes"],ans:1,explain:"fig.suptitle() adds an overarching title above the entire figure, appropriate when you have multiple subplots and want one master title for the whole dashboard. Each individual ax.set_title() still labels its own specific subplot."},
+  {code:"z = np.polyfit(x, y, 1)\np = np.poly1d(z)\nax.plot(x_line, p(x_line))",q:"What is being plotted here?",opts:["The raw data points","A fitted linear trend line computed from the polyfit coefficients","A histogram","Random noise"],ans:1,explain:"polyfit computes the best-fit line coefficients, poly1d turns those coefficients into a callable polynomial function, and p(x_line) evaluates that line at each x value — producing the y-values for drawing a smooth trend line over the scatter data."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review Figure/Axes anatomy and the OO interface, then try again! 📚"],[50,75,"Good progress! Focus on chart-specific parameters. 💪"],[75,90,"Strong Day 1! Chart fundamentals are solid. 🎉"],[90,101,"Excellent! Day 1 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

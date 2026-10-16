@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 17 — Vector Addition & Scalar Multiplication</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:110px;}
+.solver input[type=range]{flex:1; min-width:120px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:44px; text-align:center;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:14px; line-height:1.8;}
+.legend{display:flex; gap:16px; margin-top:8px; font-family:var(--font-mono); font-size:12px; flex-wrap:wrap;}
+.legend span{display:flex; align-items:center; gap:6px;}
+.dot{width:10px; height:10px; border-radius:50%; display:inline-block;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 17 of 210 · Phase 1: Linear Algebra Week</span>
+    <h1>Vector Addition & Scalar Multiplication</h1>
+    <div class="subtitle">~2 hours · The two operations everything else in linear algebra builds on</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Every neural network computation is, at its core, repeated <strong>scaling and adding of vectors</strong> — multiply each input by a weight (scalar multiplication), then sum everything together (vector addition). You're about to learn, by hand, the two exact operations that a neural network performs millions of times per second.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Vector addition</h2>
+  <p>To add two vectors, add their components position by position:</p>
+  <div class="eq">[3, 2] + [1, 4] = [3+1, 2+4] = [4, 6]</div>
+  <div class="panel">
+    <p><strong>Geometric meaning — "tip to tail":</strong> draw the first vector, then draw the second vector starting from where the first one ended. The sum is the arrow from the very start to the very end. This is exactly how the interactive tool below will show it.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Scalar multiplication</h2>
+  <p>A "scalar" is just a regular single number (as opposed to a vector). To multiply a vector by a scalar, multiply every component by that number:</p>
+  <div class="eq">3 × [2, 5] = [3×2, 3×5] = [6, 15]</div>
+  <div class="panel">
+    <p><strong>Geometric meaning — stretching, shrinking, or flipping:</strong></p>
+    <p>• Scalar &gt; 1: stretches the vector longer, same direction</p>
+    <p>• Scalar between 0 and 1: shrinks the vector shorter, same direction</p>
+    <p>• Scalar negative: flips the vector to point the opposite direction (and scales it too)</p>
+  </div>
+  <details>
+    <summary>See a negative scalar example</summary>
+    <div class="details-body">
+      <p><code>-2 × [3, 1] = [-6, -2]</code> — this vector now points in exactly the opposite direction, and is twice as long.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Real-world example (adding vectors)</h2>
+  <div class="panel">
+    <p class="example-tag">Business example</p>
+    <p>A shop tracks sales across 3 product categories (Electronics, Clothing, Groceries) as a vector each month:</p>
+    <p>January: <code>[45000, 30000, 20000]</code></p>
+    <p>February: <code>[38000, 42000, 25000]</code></p>
+    <p><strong>Q1-so-far total = January + February (vector addition):</strong></p>
+    <p><code>[45000+38000, 30000+42000, 20000+25000] = [83000, 72000, 45000]</code></p>
+    <p>Add March's vector the same way, and you have the full quarterly total — this is precisely how spreadsheet software sums rows, just framed as vector addition.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Second example (scalar multiplication)</h2>
+  <div class="panel">
+    <p class="example-tag">Finance example</p>
+    <p>A household budget vector (rent, food, transport, savings) in ₹: <code>[15000, 8000, 3000, 5000]</code>. Next year, the family expects a 10% raise and wants to scale their entire budget up proportionally.</p>
+    <p><code>1.10 × [15000, 8000, 3000, 5000] = [16500, 8800, 3300, 5500]</code></p>
+    <p>Every category scaled by the exact same factor — this is scalar multiplication in a completely ordinary financial planning task, no different mathematically from scaling a vector in any ML pipeline.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Adding vectors of different lengths.</strong> [3,4] + [1,2,5] is undefined — the number of components must match exactly.</p>
+    <p><strong>Mistake 2 — Forgetting to scale EVERY component.</strong> A common slip is multiplying only the first number by the scalar and leaving the rest unchanged.</p>
+    <p><strong>Mistake 3 — Sign confusion with negative scalars.</strong> Multiplying by -1 doesn't just "shrink" a vector — it fully reverses its direction while keeping the same magnitude.</p>
+    <p><strong>Mistake 4 — Mixing up vector addition with multiplication.</strong> [3,4] + [1,2] = [4,6] (add each position). This is NOT the same operation as multiplying components together (which is a different, less common operation).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Vector Addition & Scaling Visualizer</h2>
+  <div class="solver">
+    <h3>Adjust two vectors and a scalar</h3>
+    <div class="solver-row">
+      <label>Vector A: x</label>
+      <input type="range" id="ax" min="-8" max="8" step="1" value="3">
+      <span class="val" id="axVal">3</span>
+    </div>
+    <div class="solver-row">
+      <label>Vector A: y</label>
+      <input type="range" id="ay" min="-8" max="8" step="1" value="2">
+      <span class="val" id="ayVal">2</span>
+    </div>
+    <div class="solver-row">
+      <label>Vector B: x</label>
+      <input type="range" id="bx" min="-8" max="8" step="1" value="1">
+      <span class="val" id="bxVal">1</span>
+    </div>
+    <div class="solver-row">
+      <label>Vector B: y</label>
+      <input type="range" id="by" min="-8" max="8" step="1" value="4">
+      <span class="val" id="byVal">4</span>
+    </div>
+    <div class="solver-row">
+      <label>Scalar (for A)</label>
+      <input type="range" id="scalar" min="-3" max="3" step="0.5" value="1">
+      <span class="val" id="scalarVal">1</span>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:#c05621;"></span>Vector A (scaled)</span>
+      <span><span class="dot" style="background:#2f6d4f;"></span>Vector B</span>
+      <span><span class="dot" style="background:#8a63d2;"></span>A + B (sum, tip-to-tail)</span>
+    </div>
+    <canvas id="plot" width="600" height="360"></canvas>
+    <div class="solver-result" id="result"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Tomorrow you meet the matrix — essentially a whole table of vectors stacked together, and matrix multiplication, which is really just organized, repeated vector addition and scalar multiplication happening all at once.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 17 of 210 · AI & ML Study Plan · Phase 1: Linear Algebra Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Add: [2,5] + [3,1]", steps: "[2+3, 5+1] = [5, 6]" },
+  { q: "Add: [-4,6] + [7,-2]", steps: "[-4+7, 6+(-2)] = [3, 4]" },
+  { q: "Multiply: 4 × [2,3]", steps: "[4×2, 4×3] = [8, 12]" },
+  { q: "Multiply: -2 × [5,1]", steps: "[-2×5, -2×1] = [-10, -2]" },
+  { q: "Multiply: 0.5 × [8,10]", steps: "[0.5×8, 0.5×10] = [4, 5]" },
+  { q: "Add: [10,0,5] + [2,7,1] (3D vectors)", steps: "[10+2, 0+7, 5+1] = [12, 7, 6]" },
+  { q: "Sales vectors: Jan=[20000,15000], Feb=[25000,18000]. Find total for Jan+Feb.", steps: "[20000+25000, 15000+18000] = [45000, 33000]" },
+  { q: "A budget [10000, 4000, 2000] is cut by 20% (scalar 0.8). Find the new budget.", steps: "0.8 × [10000,4000,2000] = [8000, 3200, 1600]" },
+  { q: "Can you add [3,4] and [1,2,5]? Why or why not?", steps: "No — they have different numbers of components (2D vs 3D). Vector addition requires matching dimensions." },
+  { q: "If vector v = [4,3] and you compute -1 × v, describe what happens geometrically.", steps: "The vector flips to point in exactly the opposite direction: result is [-4,-3], same length, reversed direction." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const ids = ['ax','ay','bx','by','scalar'];
+const sliders = {}; const vals = {};
+ids.forEach(id => { sliders[id] = document.getElementById(id); vals[id] = document.getElementById(id+'Val'); });
+const result = document.getElementById('result');
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+
+function drawArrow(fromX, fromY, toX, toY, color){
+  ctx.strokeStyle = color; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(fromX, fromY); ctx.lineTo(toX, toY); ctx.stroke();
+  const angle = Math.atan2(fromY-toY, toX-fromX);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(toX, toY);
+  ctx.lineTo(toX - 10*Math.cos(angle-Math.PI/6), toY + 10*Math.sin(angle-Math.PI/6));
+  ctx.lineTo(toX - 10*Math.cos(angle+Math.PI/6), toY + 10*Math.sin(angle+Math.PI/6));
+  ctx.closePath(); ctx.fill();
+}
+
+function drawAll(){
+  ids.forEach(id => { vals[id].textContent = sliders[id].value; });
+  const ax = parseFloat(sliders.ax.value), ay = parseFloat(sliders.ay.value);
+  const bx = parseFloat(sliders.bx.value), by = parseFloat(sliders.by.value);
+  const k = parseFloat(sliders.scalar.value);
+  const sax = k*ax, say = k*ay;
+  const sumX = sax+bx, sumY = say+by;
+
+  result.innerHTML = `${k} × A = [${sax.toFixed(1)}, ${say.toFixed(1)}] &nbsp;|&nbsp; (${k}×A) + B = [${sumX.toFixed(1)}, ${sumY.toFixed(1)}]`;
+
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const originX = w/2, originY = h/2;
+  const scale = 18;
+
+  ctx.strokeStyle = '#e5ded0'; ctx.lineWidth = 1;
+  for(let gx=0; gx<=w; gx+=scale){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
+  for(let gy=0; gy<=h; gy+=scale){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+  // scaled A from origin
+  const aEndX = originX + sax*scale, aEndY = originY - say*scale;
+  drawArrow(originX, originY, aEndX, aEndY, '#c05621');
+
+  // B starting from tip of scaled A (tip-to-tail)
+  const bEndX = aEndX + bx*scale, bEndY = aEndY - by*scale;
+  drawArrow(aEndX, aEndY, bEndX, bEndY, '#2f6d4f');
+
+  // sum vector from origin
+  drawArrow(originX, originY, bEndX, bEndY, '#8a63d2');
+}
+ids.forEach(id => sliders[id].addEventListener('input', drawAll));
+drawAll();
+
+const quizData = [
+  { q: "To add two vectors, you:", opts: ["Multiply their magnitudes","Add their components position by position","Average all the numbers together","Subtract the smaller from the larger"], correct: 1, explain: "[a,b]+[c,d] = [a+c, b+d] — matching positions add together." },
+  { q: "3 × [4, -2] equals:", opts: ["[12, -6]","[7, 1]","[4, -6]","[12, 2]"], correct: 0, explain: "Multiply every component: [3×4, 3×(-2)] = [12,-6]." },
+  { q: "What does multiplying a vector by -1 do geometrically?", opts: ["Doubles its length","Makes it zero","Reverses its direction, keeping the same length","Rotates it 90 degrees"], correct: 2, explain: "Negative scalars flip the direction while preserving magnitude." },
+  { q: "Can [2,5,1] and [4,3] be added together?", opts: ["Yes, always","No — they have different numbers of dimensions","Only if both are positive","Only if you convert them to magnitudes first"], correct: 1, explain: "Vector addition requires matching dimensions — 3D and 2D can't be directly added." },
+  { q: "A scalar between 0 and 1 (e.g., 0.5) applied to a vector will:", opts: ["Reverse its direction","Stretch it longer","Shrink it shorter, same direction","Have no effect"], correct: 2, explain: "Fractional positive scalars shrink the vector while keeping the same direction." },
+  { q: "Monthly expense vectors: [5000,2000] and [4500,2500]. Find their sum.", opts: ["[9500,4500]","[500,-500]","[9000,5000]","[4750,2250]"], correct: 0, explain: "[5000+4500, 2000+2500] = [9500, 4500]." },
+  { q: "Geometrically, vector addition (tip-to-tail) means:", opts: ["Drawing both vectors from the same starting point only","Placing the second vector's tail at the first vector's tip, then the sum is start-to-end","Rotating one vector onto the other","Overlapping both vectors exactly"], correct: 1, explain: "This is the tip-to-tail method shown in the interactive visualizer." },
+  { q: "Why are scalar multiplication and vector addition described as the 'building blocks' of neural networks?", opts: [
+      "They aren't actually used in neural networks",
+      "Because every neuron computes a weighted sum: multiply inputs by weights (scalars) then add them together (vector addition)",
+      "Only used for initializing the network, not computation",
+      "They're only relevant for image data"
+    ], correct: 1, explain: "A neuron's core computation is literally scalar multiplication (inputs × weights) followed by vector addition (summing) — you'll see this explicitly in Phase 4." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

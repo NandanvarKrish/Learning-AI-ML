@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 16 — What Is a Vector?</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.eq{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:17px; margin:12px 0; display:inline-block;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.resource-box{background:#fdf6ea; border:1px solid var(--accent-soft); border-radius:6px; padding:14px 18px; margin:14px 0; font-size:14px;}
+.resource-box a{color:var(--accent); font-weight:bold;}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:70px;}
+.solver input[type=range]{flex:1; min-width:140px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:44px; text-align:center;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:15px;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 16 of 210 · Phase 1: Linear Algebra Week</span>
+    <h1>What Is a Vector?</h1>
+    <div class="subtitle">~2 hours · Pair today with 3Blue1Brown's "Essence of Linear Algebra" Ep. 1</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="resource-box">
+  <strong>Companion video:</strong> Watch <a href="https://www.youtube.com/watch?v=fNk_zzaMoSs" target="_blank">3Blue1Brown — "Vectors, what even are they?"</a> (~10 min) either before or after this page — the visual animation of vectors as arrows is genuinely one of the best explanations available anywhere, free.
+</div>
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Every single piece of data an ML model touches — a customer's age and income, the pixels in a photo, the words in a sentence — gets converted into a vector before the model can use it. Understanding what a vector actually <em>is</em>, geometrically, makes concepts like "distance between two data points" and "similarity" click immediately instead of feeling abstract.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> What is a vector?</h2>
+  <p>A vector is an <strong>ordered list of numbers</strong> that can represent both a <strong>direction</strong> and a <strong>magnitude</strong> (length). Written as:</p>
+  <div class="eq">v = [3, 4]</div>
+  <p>Geometrically, this is an arrow starting at the origin (0,0) and pointing to the point (3,4) — 3 steps right, 4 steps up. The two numbers are called <strong>components</strong>.</p>
+  <div class="panel">
+    <p><strong>Vector vs. point — an important distinction:</strong> the point (3,4) is just a location. The vector [3,4] is the <em>arrow</em> from the origin to that location — it carries both "how far" and "which direction." In practice, especially in ML, we often use them interchangeably, but the arrow framing is what makes vector math (adding, scaling) intuitive.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Vectors beyond 2D</h2>
+  <p>Nothing stops a vector from having more than 2 numbers — you just can't easily draw it anymore past 3 dimensions. A vector with 5 numbers, like <code>[25, 50000, 3, 1, 0]</code>, might represent a customer's age, income, number of purchases, membership status, and something else — 5 dimensions, one vector, even though you can't sketch it on paper.</p>
+  <div class="panel">
+    <p class="example-tag">This is the key mental leap</p>
+    <p>In ML, a single row of your dataset — one customer, one house, one email — <strong>is a vector</strong>. The "columns" of your dataset are the vector's components. When you have thousands of rows, you have thousands of vectors — and the whole dataset together is called a <strong>matrix</strong> (tomorrow's topic).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Real-world example (customer as a vector)</h2>
+  <div class="panel">
+    <p class="example-tag">Business example</p>
+    <p>An e-commerce company describes each customer using 3 numbers: age, average order value (₹), and number of orders this year.</p>
+    <p>Customer A: <code>[28, 1200, 15]</code> — 28 years old, ₹1,200 average order, 15 orders</p>
+    <p>Customer B: <code>[45, 3000, 3]</code> — 45 years old, ₹3,000 average order, 3 orders</p>
+    <p>These are 3-dimensional vectors. You can't draw them on paper easily, but the computer can still measure how "close" or "far apart" these two customers are — the exact technique behind customer segmentation, which you'll build for real in Phase 3.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Magnitude (length of a vector)</h2>
+  <p>The magnitude of a 2D vector [x, y] is its length — the straight-line distance from the origin, calculated using the Pythagorean theorem:</p>
+  <div class="eq">|v| = √(x² + y²)</div>
+  <div class="panel">
+    <p><strong>Example:</strong> for v = [3, 4]: |v| = √(3² + 4²) = √(9+16) = √25 = <strong>5</strong></p>
+    <p>This generalizes to any number of dimensions — for [x, y, z]: |v| = √(x²+y²+z²), and so on. This exact formula is used constantly in ML to measure "distance" between data points (e.g., in K-Nearest Neighbors, which you'll build in Phase 3).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Ignoring the order of components.</strong> [3, 4] and [4, 3] are different vectors — order matters, and each position means something specific (e.g., position 1 = age, position 2 = income).</p>
+    <p><strong>Mistake 2 — Confusing magnitude with a component.</strong> The magnitude |v| = 5 for [3,4] is NOT one of the vector's numbers — it's a separately calculated single number describing overall length.</p>
+    <p><strong>Mistake 3 — Assuming vectors must be 2D or 3D to make sense.</strong> A 100-dimensional vector is mathematically completely valid, even though you can never draw it — the arithmetic (magnitude, addition) works exactly the same way.</p>
+    <p><strong>Mistake 4 — Forgetting vectors need matching dimensions to compare/combine.</strong> You can't meaningfully add a 2D vector to a 3D vector — they need the same number of components (this becomes very relevant once you reach vector addition tomorrow).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Vector Plotter</h2>
+  <div class="solver">
+    <h3>Adjust x and y, watch the vector arrow change</h3>
+    <div class="solver-row">
+      <label>x</label>
+      <input type="range" id="xSlider" min="-10" max="10" step="1" value="3">
+      <span class="val" id="xVal">3</span>
+    </div>
+    <div class="solver-row">
+      <label>y</label>
+      <input type="range" id="ySlider" min="-10" max="10" step="1" value="4">
+      <span class="val" id="yVal">4</span>
+    </div>
+    <canvas id="plot" width="600" height="320"></canvas>
+    <div class="solver-result" id="result"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Quick Self-Check (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Tomorrow you'll learn to add vectors and multiply them by numbers (scalars) — the operations that let ML combine and adjust data represented this way. Together with today's magnitude concept, you're building toward understanding how models measure "similarity" between data points.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 16 of 210 · AI & ML Study Plan · Phase 1: Linear Algebra Week</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Find the magnitude of vector [6, 8].", steps: "√(6²+8²) = √(36+64) = √100 = 10" },
+  { q: "Find the magnitude of vector [0, 5].", steps: "√(0²+5²) = √25 = 5" },
+  { q: "Find the magnitude of vector [-3, 4].", steps: "√((-3)²+4²) = √(9+16) = √25 = 5 (negative components still square to positive)" },
+  { q: "Find the magnitude of vector [1, 1].", steps: "√(1+1) = √2 ≈ 1.414" },
+  { q: "A vector represents [height in cm, weight in kg] = [170, 65]. What does this vector 'mean' conceptually?", steps: "It's a 2D representation of one person's two measurements — not literally a direction on a map, but the same mathematical object as any 2D vector." },
+  { q: "Find the magnitude of the 3D vector [2, 3, 6].", steps: "√(4+9+36) = √49 = 7" },
+  { q: "Are [5, 2] and [2, 5] the same vector? Explain.", steps: "No — order matters. [5,2] and [2,5] point in different directions and represent different data (e.g., different age vs. income combinations)." },
+  { q: "A customer vector is [32, 5000, 8] (age, spend, orders). What would changing the ORDER of these numbers do to their meaning?", steps: "It would completely change what each number represents — e.g., '5000' would suddenly be interpreted as age, which is meaningless. Order/position defines meaning in a feature vector." },
+  { q: "Can you directly add a 2D vector [3,4] to a 3D vector [1,2,3]? Why or why not?", steps: "No — vector addition requires matching dimensions (same number of components). This is a strict rule in linear algebra." },
+  { q: "In your own words, why is representing a dataset row as a vector useful for a computer?", steps: "It turns real-world attributes into a single mathematical object the computer can measure distance/similarity on, combine, and process using consistent, well-defined math operations." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+const xSlider = document.getElementById('xSlider');
+const ySlider = document.getElementById('ySlider');
+const xVal = document.getElementById('xVal');
+const yVal = document.getElementById('yVal');
+const result = document.getElementById('result');
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+
+function drawVector(){
+  const x = parseFloat(xSlider.value);
+  const y = parseFloat(ySlider.value);
+  xVal.textContent = x;
+  yVal.textContent = y;
+  const mag = Math.sqrt(x*x + y*y);
+  result.innerHTML = `Vector: [${x}, ${y}] &nbsp;|&nbsp; Magnitude |v| = √(${x}² + ${y}²) = <strong style="color:#e8a86b;">${mag.toFixed(2)}</strong>`;
+
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const originX = w/2, originY = h/2;
+  const scale = 20;
+
+  ctx.strokeStyle = '#e5ded0'; ctx.lineWidth = 1;
+  for(let gx=0; gx<=w; gx+=scale){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
+  for(let gy=0; gy<=h; gy+=scale){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+  const endX = originX + x*scale;
+  const endY = originY - y*scale;
+  ctx.strokeStyle = '#c05621'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(originX, originY); ctx.lineTo(endX, endY); ctx.stroke();
+
+  // arrowhead
+  const angle = Math.atan2(originY-endY, endX-originX);
+  ctx.fillStyle = '#c05621';
+  ctx.beginPath();
+  ctx.moveTo(endX, endY);
+  ctx.lineTo(endX - 10*Math.cos(angle-Math.PI/6), endY + 10*Math.sin(angle-Math.PI/6));
+  ctx.lineTo(endX - 10*Math.cos(angle+Math.PI/6), endY + 10*Math.sin(angle+Math.PI/6));
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#2f6d4f'; ctx.font = '12px monospace';
+  ctx.fillText(`[${x}, ${y}]`, endX+8, endY-8);
+}
+xSlider.addEventListener('input', drawVector);
+ySlider.addEventListener('input', drawVector);
+drawVector();
+
+const quizData = [
+  { q: "A vector is best described as:", opts: ["Just a single number","An ordered list of numbers representing direction and magnitude","Always exactly 2 numbers","A type of equation only"], correct: 1, explain: "Vectors are ordered lists of numbers (components), interpretable as an arrow with direction and length." },
+  { q: "Find the magnitude of [5, 12].", opts: ["13","17","60","7"], correct: 0, explain: "√(25+144) = √169 = 13." },
+  { q: "Are [2, 7] and [7, 2] the same vector?", opts: ["Yes, order never matters","No, they represent different directions/meanings","Only if both numbers are positive","Only in 3D"], correct: 1, explain: "Order matters — these point in different directions and typically represent different things." },
+  { q: "A dataset row like [34, 65000, 2] (age, income, purchases) is best understood as:", opts: ["A random set of unrelated numbers","A vector representing one data point across 3 dimensions","An equation to solve","A single scalar value"], correct: 1, explain: "Each row of structured data is naturally a vector — one point in a multi-dimensional feature space." },
+  { q: "Can a vector have more than 3 dimensions?", opts: ["No, that's mathematically impossible","Yes, but you can no longer easily draw it","Only in theoretical math, never in ML","Only up to 4 dimensions"], correct: 1, explain: "Vectors can have any number of dimensions — ML datasets often use hundreds or thousands." },
+  { q: "What's required to add two vectors together?", opts: ["Nothing special, any two vectors can be added","They must have the same number of dimensions/components","They must both be 2D","One must be negative"], correct: 1, explain: "Vector addition requires matching dimensions — you can't add a 2D and 3D vector directly." },
+  { q: "The magnitude of a vector represents:", opts: ["One of its components","Its length/size, regardless of direction","Always exactly 1","The number of dimensions it has"], correct: 1, explain: "Magnitude is a single number describing overall length, calculated via the Pythagorean-style formula." },
+  { q: "Why does representing data as vectors matter for ML?", opts: [
+      "It doesn't, ML avoids vectors",
+      "It lets a computer mathematically measure distance and similarity between data points using consistent operations",
+      "Vectors are only used for physics, not data",
+      "It's purely a display/visualization trick"
+    ], correct: 1, explain: "Vector representation is what allows algorithms to compute things like 'how similar are these two customers' using well-defined math." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

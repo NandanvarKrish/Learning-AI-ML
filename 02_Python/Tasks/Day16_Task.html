@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 16 — AI Task: NumPy Arrays & Fast Math</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eff6ff;--paper:#fff;--p2:#dbeafe;
+  --ink:#0a1628;--ink2:#1e3a5f;--ink3:#5080b0;
+  --rule:#bfdbfe;
+  --blue:#1d4ed8;--bs:#eff6ff;--bb:#bfdbfe;
+  --green:#15803d;--gs:#f0fdf4;--gb:#bbf7d0;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#7c3aed;--ps:#f5f3ff;--pb:#ddd6fe;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --sh:0 1px 4px rgba(30,80,200,.07),0 4px 18px rgba(30,80,200,.06);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bfdbfe55,transparent 42%),radial-gradient(circle at 5% 92%,#93c5fd44,transparent 40%);min-height:100vh}
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(30,80,200,.06)}
+.bar-in{max-width:880px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:var(--blue);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.page{max-width:880px;margin:0 auto;padding:40px 20px 90px}
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--blue)}
+.hsub{font-size:.95rem;color:var(--ink2);max-width:620px;line-height:1.8;margin-bottom:18px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--blue),#1e40af);border-radius:99px;transition:width .7s ease}
+
+/* month badge */
+.m2badge{background:linear-gradient(135deg,var(--blue),#1e40af);color:#fff;border-radius:var(--r);padding:20px 24px;margin-bottom:22px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 16px rgba(29,78,216,.25)}
+.m2-icon{font-size:2rem;flex-shrink:0}
+.m2-text{font-size:.88rem;line-height:1.75}
+.m2-text strong{display:block;font-size:.98rem;margin-bottom:4px}
+
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:26px 28px;margin-bottom:18px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tl{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.18rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.85;margin-bottom:12px}
+.card p:last-child{margin-bottom:0}
+.sh2{font-family:'Fraunces',Georgia,serif;font-size:1rem;font-weight:700;color:var(--ink);margin:18px 0 8px;border-left:3px solid var(--blue);padding-left:10px}
+
+/* callouts */
+.cb{border-radius:10px;padding:13px 16px;font-size:.88rem;line-height:1.75;margin:12px 0;display:flex;gap:11px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:2px;font-style:normal;font-size:1rem}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* analogies boxes */
+.analogy{background:linear-gradient(135deg,#f0f7ff,#e8f2ff);border:1.5px solid var(--bb);border-radius:12px;padding:16px 18px;margin:14px 0}
+.analogy-title{font-weight:700;font-size:.82rem;color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.08em}
+.analogy-body{font-size:.88rem;color:var(--ink2);line-height:1.8}
+
+/* comparison grid */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+@media(max-width:500px){.cmp{grid-template-columns:1fr}}
+.cmp-box{border-radius:11px;padding:14px;border:1.5px solid}
+.cmp-box.lst{background:#fff1f2;border-color:#fecdd3}
+.cmp-box.arr{background:var(--bs);border-color:var(--bb)}
+.cmp-title{font-weight:700;font-size:.84rem;margin-bottom:8px;font-family:'DM Mono',monospace}
+.cmp-box.lst .cmp-title{color:#be123c}
+.cmp-box.arr .cmp-title{color:var(--blue)}
+.cmp-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--ink2);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.cmp-row:last-child{border:none}
+.cmp-row span:last-child{font-weight:600;font-family:'DM Mono',monospace;font-size:.75rem}
+
+/* array visual */
+.arr-vis{background:var(--p2);border:1.5px solid var(--rule);border-radius:12px;padding:18px 20px;margin:14px 0}
+.arr-lbl{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.09em}
+.arr-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.arr-cell{background:var(--blue);color:#fff;border-radius:6px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:.84rem;font-weight:700;min-width:46px;text-align:center}
+.arr-cell.idx{background:var(--paper);color:var(--ink3);border:1px solid var(--rule);font-size:.68rem;padding:4px 10px;font-weight:400}
+.arr-cell.g{background:#15803d}
+.arr-cell.r{background:#be123c}
+
+/* step-by-step box */
+.steps{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.step{display:flex;gap:13px;align-items:flex-start;padding:12px 15px;background:var(--bg);border:1.5px solid var(--rule);border-radius:10px}
+.step-num{background:var(--blue);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:2px}
+.step-body{font-size:.88rem;color:var(--ink2);line-height:1.7}
+.step-body code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--blue)}
+.step-body strong{color:var(--ink)}
+
+/* code windows */
+.cw{background:#0a1628;border-radius:10px;margin:14px 0;overflow:hidden}
+.cbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0f2040;border-bottom:1px solid #1a3060}
+.cdots{display:flex;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot-r{background:#ef4444}.dot-y{background:#f59e0b}.dot-g{background:#22c55e}
+.clang{font-family:'DM Mono',monospace;font-size:.62rem;color:#5080b0;letter-spacing:.1em;text-transform:uppercase}
+.cbody{padding:18px;font-family:'DM Mono',monospace;font-size:.84rem;line-height:2.1;overflow-x:auto;color:#d0e8ff}
+.cm{color:#304870;font-style:italic}.kw{color:#93c5fd}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#d0e8ff}.op{color:#5080b0}
+
+/* interactive explorer */
+.explorer{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.exp-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.exp-lbl{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--ink3);min-width:100px}
+.exp-inp,.exp-sel{flex:1;border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink);background:var(--paper);outline:none;min-width:120px;transition:border-color .2s}
+.exp-inp:focus,.exp-sel:focus{border-color:var(--blue)}
+.exp-out{margin-top:12px;background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink2);line-height:2;white-space:pre-wrap;display:none}
+.exp-out.show{display:block}
+.exp-ok{color:var(--blue);font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 18px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#1e40af}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+
+/* TASK CARDS with puzzle lock */
+.task-card{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);margin-bottom:22px;overflow:hidden;box-shadow:var(--sh)}
+.task-head{padding:18px 22px;display:flex;align-items:flex-start;gap:14px}
+.task-num{background:var(--blue);color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:.84rem;padding:5px 13px;border-radius:6px;flex-shrink:0;margin-top:2px}
+.task-body{flex:1}
+.task-title{font-family:'Fraunces',Georgia,serif;font-size:1.08rem;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3}
+.task-desc{font-size:.9rem;color:var(--ink2);line-height:1.85}
+.task-desc code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--blue)}
+.task-explain{background:linear-gradient(135deg,#f0f7ff,#e8f2ff);border:1.5px solid var(--bb);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:.86rem;color:var(--ink2);line-height:1.8}
+.task-explain strong{color:var(--blue)}
+.task-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.ptag{font-family:'DM Mono',monospace;font-size:.63rem;padding:3px 10px;border-radius:99px;font-weight:600}
+.ptag-b{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.ptag-g{background:var(--gs);border:1px solid var(--gb);color:var(--green)}
+.ptag-a{background:var(--as);border:1px solid var(--ab);color:var(--amber)}
+
+/* puzzle */
+.puzzle-section{border-top:2px dashed var(--rule);padding:16px 22px;background:#f8fbff}
+.pz-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.pz-icon{font-size:1.1rem}
+.pz-title{font-size:.84rem;font-weight:700;color:var(--ink2)}
+.pz-q{font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5}
+.pz-opts{display:flex;flex-direction:column;gap:7px}
+.popt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;background:var(--paper);user-select:none}
+.popt:hover:not(.dis){background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.popt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600;cursor:default}
+.popt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red);cursor:default}
+.popt.dis{cursor:default;opacity:.55}
+.popt-l{width:21px;height:21px;border-radius:6px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.popt.cor .popt-l{background:var(--green);border-color:var(--green);color:#fff}
+.popt.wrg .popt-l{background:var(--red);border-color:var(--red);color:#fff}
+.pz-fb{margin-top:9px;padding:10px 13px;border-radius:8px;font-size:.84rem;line-height:1.7;display:none}
+.pz-fb.show{display:block}
+.pz-fb.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.pz-fb.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* code reveal */
+.code-reveal{display:none;border-top:2px solid var(--gb);background:#f0fdf4}
+.code-reveal.show{display:block}
+.cr-head{display:flex;align-items:center;gap:9px;padding:12px 22px;border-bottom:1px solid var(--rule)}
+.cr-title{font-size:.84rem;font-weight:700;color:var(--green)}
+
+/* done row */
+.done-row{display:flex;align-items:center;gap:10px;padding:12px 22px;border-top:1px solid var(--rule);background:var(--bg)}
+.done-cb{width:20px;height:20px;border:2px solid #5080b0;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700;flex-shrink:0;transition:all .2s}
+.done-cb.on{background:var(--green);border-color:var(--green)}
+.done-lbl{font-size:.84rem;color:var(--ink2);cursor:pointer;user-select:none}
+
+/* AI chat */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:340px;overflow-y:auto;background:#f8fbff}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--blue);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--bs);border:1px solid var(--bb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--blue)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aic-send:hover{background:#1e40af}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* fill */
+.fq{margin-bottom:14px}
+.fq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:360px;transition:border-color .2s}
+.fi:focus{border-color:var(--blue)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+
+/* MCQ */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--bs);border-color:var(--bb);color:var(--blue)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.82rem;line-height:1.7;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+.final{background:linear-gradient(135deg,#0a1628,#1e3a5f);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.fin-emoji{font-size:2.5rem;margin-bottom:10px}
+.fin-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.fin-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.fin-cta{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:11px 24px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;border:none}
+.fin-cta:hover{background:rgba(255,255,255,.25)}
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-ttl{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700}
+.sh-sub{font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-bdg{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+@media(max-width:600px){.card,.task-card{padding:18px 16px}.exp-row{flex-direction:column;align-items:flex-start}.exp-inp,.exp-sel{width:100%}.aic-msgs{max-height:260px}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">📅 Day 16</div>
+      <div class="btl">AI Task — NumPy Arrays · Month 2 Begins!</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 2 · Week 1 · Day 16 Task</div>
+  <h1>NumPy —<br><em>Arrays & Fast Math</em></h1>
+  <p class="hsub">Welcome to Month 2! Python is done — now we enter the real AI/ML tools. Today: <strong>NumPy</strong>. Everything in ML — sklearn, Keras, PyTorch — uses NumPy arrays internally. Understanding NumPy = understanding how ML data is stored and processed.</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">🔢 NumPy</span>
+    <span class="pill">📦 ndarray</span>
+    <span class="pill">⚡ Vectorised ops</span>
+    <span class="pill">🎭 Boolean masking</span>
+    <span class="pill">🔧 reshape</span>
+    <span class="pill">🔐 Puzzle Code</span>
+    <span class="pill">🧠 15 MCQs</span>
+  </div>
+</div>
+
+<!-- MONTH 2 BADGE -->
+<div class="m2badge">
+  <div class="m2-icon">🔢</div>
+  <div class="m2-text">
+    <strong>Welcome to Month 2 — Data Science Foundations</strong>
+    Month 1 was Python. Month 2 is where you start using the actual tools that data scientists and ML engineers use every single day. This month: NumPy, Pandas, Matplotlib, and Statistics. Install now: <code style="font-family:'DM Mono',monospace;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px">pip install numpy pandas matplotlib</code>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- LOCK BANNER -->
+<div class="cb cbb" style="margin-bottom:24px">
+  <i>🔐</i>
+  <span><strong>How this works:</strong> Every task explains WHAT to build, WHY it matters in AI, and HOW to think about it (with real-world analogies). Solve the puzzle to unlock the solution code. The explanations here go deeper than the lesson — read them carefully!</span>
+</div>
+
+<!-- ===== CONCEPT SECTION ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">📖</div>
+  <div><div class="sh-ttl">First — Understand NumPy Before Coding</div><div class="sh-sub">Read this section carefully — it changes how you think about data</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tl">📖 Deep Explanation</div>
+  <h2>What IS NumPy and Why Does It Matter?</h2>
+  <p>When you learned Python lists in Month 1, you used them like: <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">scores = [85, 45, 72]</code>. That works for small amounts of data. But imagine you are building an AI that recognises images. Each image is 224×224 pixels = <strong>50,176 numbers</strong>. A dataset of 10,000 images = <strong>501 million numbers</strong>. A Python list cannot handle this efficiently. NumPy can.</p>
+
+  <div class="analogy">
+    <div class="analogy-title">🏗️ Analogy — List vs Array</div>
+    <div class="analogy-body">
+      Imagine storing 1,000 books. A <strong>Python list</strong> is like storing each book in its own cardboard box, scattered around a room. To find book 500, you open 500 boxes one by one. A <strong>NumPy array</strong> is like a perfectly organised shelf — every book is the same size, in the same slot, and you can go directly to slot 500 in one step. Plus you can photocopy all 1,000 books at once instead of one at a time.
+    </div>
+  </div>
+
+  <div class="cmp">
+    <div class="cmp-box lst">
+      <div class="cmp-title">❌ Python List — Old Way</div>
+      <div class="cmp-row"><span>Speed</span><span>Slow (Python loop)</span></div>
+      <div class="cmp-row"><span>Memory</span><span>High — stores objects</span></div>
+      <div class="cmp-row"><span>Math</span><span>Must write loops</span></div>
+      <div class="cmp-row"><span>Types</span><span>Can mix str, int, float</span></div>
+      <div class="cmp-row"><span>ML use</span><span>Almost never</span></div>
+    </div>
+    <div class="cmp-box arr">
+      <div class="cmp-title">✅ NumPy Array — ML Way</div>
+      <div class="cmp-row"><span>Speed</span><span>~100× faster</span></div>
+      <div class="cmp-row"><span>Memory</span><span>Tiny — raw bytes</span></div>
+      <div class="cmp-row"><span>Math</span><span>One line, no loops</span></div>
+      <div class="cmp-row"><span>Types</span><span>One dtype only</span></div>
+      <div class="cmp-row"><span>ML use</span><span>Always — X, y data</span></div>
+    </div>
+  </div>
+
+  <div class="sh2">🧱 Understanding Shape — The Most Important Concept</div>
+  <p>Every NumPy array has a <strong>shape</strong> — how many rows and columns it has. This is critical because sklearn, Keras, and PyTorch are very strict about shapes. Get the shape wrong → error. Get it right → everything works.</p>
+
+  <div class="arr-vis">
+    <div class="arr-lbl">1D Array — shape (6,) — one row of numbers — like ONE column of data</div>
+    <div class="arr-row">
+      <div class="arr-cell idx">[0]</div><div class="arr-cell idx">[1]</div><div class="arr-cell idx">[2]</div><div class="arr-cell idx">[3]</div><div class="arr-cell idx">[4]</div><div class="arr-cell idx">[5]</div>
+    </div>
+    <div class="arr-row">
+      <div class="arr-cell">85</div><div class="arr-cell">45</div><div class="arr-cell">72</div><div class="arr-cell">33</div><div class="arr-cell">91</div><div class="arr-cell">58</div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="arr-lbl">2D Array — shape (3, 3) — rows × columns — like a mini Excel table</div>
+      <div class="arr-row" style="margin-top:6px">
+        <div class="arr-cell idx">→ row 0</div><div class="arr-cell">80</div><div class="arr-cell">90</div><div class="arr-cell">1</div>
+      </div>
+      <div class="arr-row">
+        <div class="arr-cell idx">→ row 1</div><div class="arr-cell">60</div><div class="arr-cell">50</div><div class="arr-cell">0</div>
+      </div>
+      <div class="arr-row">
+        <div class="arr-cell idx">→ row 2</div><div class="arr-cell">75</div><div class="arr-cell">85</div><div class="arr-cell">1</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);margin-top:8px">↑ col 0: marks &nbsp; ↑ col 1: attendance &nbsp; ↑ col 2: has_textbook</div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">🎯 In ML — X is always 2D, y is always 1D</div>
+    <div class="analogy-body">
+      <strong>X (features)</strong> has shape (n_students, n_features) — e.g. (100, 3) means 100 students, each with 3 measurements.<br>
+      <strong>y (labels)</strong> has shape (n_students,) — e.g. (100,) means 100 answers (pass=1, fail=0).<br><br>
+      This is true in <em>every single ML tutorial and project you will ever see</em>. Whenever sklearn fails, check your shapes first.
+    </div>
+  </div>
+
+  <div class="sh2">⚡ Vectorised Operations — No Loops Ever</div>
+  <p>This is NumPy's superpower. Instead of writing <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">for s in scores: normalised.append(s/100)</code>, you write ONE line: <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">normalised = scores / 100</code>. NumPy applies the division to ALL elements at the same time using optimised C code — no Python loop, no overhead.</p>
+
+  <div class="analogy">
+    <div class="analogy-title">🔬 Real Example — Normalising 1 Million Pixels</div>
+    <div class="analogy-body">
+      Image AI needs pixel values between 0 and 1 (not 0–255).<br><br>
+      <strong>Python loop way (slow):</strong> for pixel in image: normalised.append(pixel/255) — 1 million iterations<br>
+      <strong>NumPy way (fast):</strong> normalised = image / 255 — one line, C speed, done in milliseconds<br><br>
+      NumPy's version runs ~100× faster. This is not a small improvement — it is the difference between training in 1 hour vs 4 days.
+    </div>
+  </div>
+
+  <div class="sh2">🎭 Boolean Masking — Filter Without Loops</div>
+  <p>In Python Month 1, to filter a list you used list comprehension: <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">[s for s in scores if s >= 50]</code>. NumPy's version is even cleaner and faster: <code style="font-family:'DM Mono',monospace;background:var(--p2);color:var(--blue)">scores[scores >= 50]</code>. This works in two steps:</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Comparison creates a boolean array:</strong> <code>scores >= 50</code> → [True, False, True, False, True, True] — True where condition is met</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Boolean array used as index:</strong> <code>scores[mask]</code> → returns only values where mask is True → [85, 72, 91, 58]</div></div>
+  </div>
+</div>
+
+<!-- LIVE EXPLORER -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">⚡</div>
+  <div><div class="sh-ttl">Live NumPy Operations Explorer</div><div class="sh-sub">Type your own numbers and see real NumPy-style math instantly</div></div>
+  <div class="sh-bdg">⏱ 5 min warm-up</div>
+</div>
+
+<div class="card">
+  <div class="ctag tl">⚡ Explorer</div>
+  <h2>Try NumPy Operations On Your Own Numbers</h2>
+  <p>Enter any numbers (like your own exam scores!), pick an operation, and see exactly what NumPy would output — along with an explanation of what it computed and why it matters in ML.</p>
+  <div class="explorer">
+    <div class="exp-row">
+      <span class="exp-lbl">Numbers:</span>
+      <input class="exp-inp" id="exp-nums" value="85, 45, 72, 33, 91, 58" placeholder="comma separated..."/>
+    </div>
+    <div class="exp-row">
+      <span class="exp-lbl">Operation:</span>
+      <select class="exp-sel" id="exp-op">
+        <option value="stats">📊 Statistics (mean, std, min, max)</option>
+        <option value="norm">⚖️ Normalise 0–1 (MinMaxScaler)</option>
+        <option value="zscore">📐 Z-score standardise (StandardScaler)</option>
+        <option value="mask">🎭 Boolean mask (values ≥ 60)</option>
+        <option value="sort">🔢 argsort — ranking by sorted index</option>
+        <option value="shape">📦 Shape, dtype, ndim info</option>
+      </select>
+    </div>
+    <button class="btn btn-b" style="width:100%;justify-content:center;margin-top:4px" onclick="runExplorer()">▶ Run NumPy Operation</button>
+    <div class="exp-out" id="exp-out"></div>
+  </div>
+</div>
+
+<!-- ===== TASKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">🎯</div>
+  <div><div class="sh-ttl">Tasks — Solve Puzzle → Unlock Code</div><div class="sh-sub">Read the task carefully — attempt it in Python — then unlock the solution</div></div>
+  <div class="sh-bdg">⏱ 3–4 Hours</div>
+</div>
+
+<!-- TASK 1 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">1</div>
+    <div class="task-body">
+      <div class="task-title">📦 Create Your First NumPy Array + Explore Its Properties</div>
+      <div class="task-desc">
+        Your very first task is to create a NumPy array from a list of exam scores and then explore its properties. Think of this as "meeting" NumPy — understanding its language before using it.<br><br>
+        <strong>What to do:</strong><br>
+        1. Install NumPy: <code>pip install numpy</code><br>
+        2. <code>import numpy as np</code> (always use this alias — it's universal)<br>
+        3. Create: <code>scores = np.array([85, 45, 72, 33, 91, 58, 76, 64])</code><br>
+        4. Print: <code>scores.shape</code>, <code>scores.dtype</code>, <code>scores.ndim</code>, <code>scores.size</code><br>
+        5. Also create: <code>np.zeros(5)</code>, <code>np.ones(3)</code>, <code>np.arange(0,10,2)</code>, <code>np.linspace(0,1,5)</code>
+      </div>
+      <div class="task-explain">
+        <strong>Why this matters in AI:</strong><br>
+        Before you can build ANY ML model, your data must be a NumPy array. When you later do <code>pd.read_csv("data.csv")</code> in Pandas and pass it to sklearn — Pandas converts it to a NumPy array automatically. But you need to understand what <code>shape</code> means:<br><br>
+        • <code>shape (8,)</code> = 1D array, 8 elements — like ONE column of data<br>
+        • <code>shape (100, 3)</code> = 2D array, 100 rows, 3 columns — like a small dataset<br>
+        • <code>dtype int64</code> = each number is stored as a 64-bit integer<br>
+        • <code>ndim 1</code> = it's 1-dimensional (not 2D like a matrix)
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">np.array()</span>
+        <span class="ptag ptag-b">shape, dtype, ndim</span>
+        <span class="ptag ptag-g">Beginner ⭐</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">What is the shape of <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">np.array([85, 45, 72, 33, 91, 58, 76, 64])</code>?</div>
+    <div class="pz-opts" id="pz1-opts">
+      <div class="popt" onclick="pz(1,'A',false)"><span class="popt-l">A</span> (1, 8) — 1 row, 8 columns</div>
+      <div class="popt" onclick="pz(1,'B',true)"><span class="popt-l">B</span> (8,) — a 1D array with 8 elements. No rows/cols — just a flat line of 8 numbers.</div>
+      <div class="popt" onclick="pz(1,'C',false)"><span class="popt-l">C</span> (8, 1) — 8 rows, 1 column</div>
+      <div class="popt" onclick="pz(1,'D',false)"><span class="popt-l">D</span> 8 — just the number 8</div>
+    </div>
+    <div class="pz-fb" id="pz1-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr1">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Solution Code — Task 1 Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task1.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>   <span class="cm"># np is the universal alias — always use this</span>
+
+<span class="cm"># ── CREATE YOUR FIRST ARRAY ──────────────────────</span>
+<span class="vr">scores</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>, <span class="nm">76</span>, <span class="nm">64</span>])
+
+<span class="cm"># ── EXPLORE ITS PROPERTIES ───────────────────────</span>
+<span class="fn">print</span>(<span class="st">"Array:"</span>, <span class="vr">scores</span>)          <span class="cm"># [85 45 72 33 91 58 76 64]</span>
+<span class="fn">print</span>(<span class="st">"Shape:"</span>, <span class="vr">scores</span>.<span class="vr">shape</span>)    <span class="cm"># (8,)  ← 1D, 8 elements</span>
+<span class="fn">print</span>(<span class="st">"Dtype:"</span>, <span class="vr">scores</span>.<span class="vr">dtype</span>)    <span class="cm"># int64 ← 64-bit integer</span>
+<span class="fn">print</span>(<span class="st">"Ndim:"</span>,  <span class="vr">scores</span>.<span class="vr">ndim</span>)     <span class="cm"># 1     ← one-dimensional</span>
+<span class="fn">print</span>(<span class="st">"Size:"</span>,  <span class="vr">scores</span>.<span class="vr">size</span>)     <span class="cm"># 8     ← total elements</span>
+
+<span class="cm"># ── SPECIAL ARRAY CREATORS ───────────────────────</span>
+<span class="vr">zeros</span> = <span class="fn">np</span>.<span class="fn">zeros</span>(<span class="nm">5</span>)          <span class="cm"># [0. 0. 0. 0. 0.] — initial weights in ML!</span>
+<span class="vr">ones</span>  = <span class="fn">np</span>.<span class="fn">ones</span>(<span class="nm">3</span>)           <span class="cm"># [1. 1. 1.]</span>
+<span class="vr">rng</span>   = <span class="fn">np</span>.<span class="fn">arange</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">2</span>)  <span class="cm"># [0 2 4 6 8] — like range() but NumPy</span>
+<span class="vr">evens</span> = <span class="fn">np</span>.<span class="fn">linspace</span>(<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">5</span>) <span class="cm"># [0.   0.25 0.5  0.75 1.  ] — 5 evenly spaced</span>
+<span class="vr">rand</span>  = <span class="fn">np</span>.<span class="fn">random</span>.<span class="fn">rand</span>(<span class="nm">5</span>)    <span class="cm"># 5 random floats between 0 and 1</span>
+
+<span class="fn">print</span>(<span class="st">"\nzeros:"</span>, <span class="vr">zeros</span>)
+<span class="fn">print</span>(<span class="st">"arange:"</span>, <span class="vr">rng</span>)
+<span class="fn">print</span>(<span class="st">"linspace:"</span>, <span class="vr">evens</span>)
+
+<span class="cm"># 💡 np.zeros(n) is used to initialise model weights to 0</span>
+<span class="cm"># 💡 np.linspace(0,1,n) is used to create evenly-spaced thresholds</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done1" onclick="markDone(1)"></div><span class="done-lbl" onclick="markDone(1)">I ran this code and explored all properties ✓</span></div>
+</div>
+
+<!-- TASK 2 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">2</div>
+    <div class="task-body">
+      <div class="task-title">⚡ Vectorised Operations — Math on Whole Arrays, No Loops</div>
+      <div class="task-desc">
+        Apply maths to entire arrays in one line — no <code>for</code> loop needed. This is called <strong>vectorised operations</strong> and it is one of the biggest reasons NumPy is used in ML.<br><br>
+        <strong>What to do:</strong><br>
+        1. Take your scores array and add 5 to ALL scores in one line: <code>scores + 5</code><br>
+        2. Multiply all by 1.1 (bonus marks!): <code>scores * 1.1</code><br>
+        3. Apply sqrt to all: <code>np.sqrt(scores)</code><br>
+        4. Check: which scores are above 70? <code>scores > 70</code><br>
+        5. Try adding two arrays together: <code>a + b</code> — element by element
+      </div>
+      <div class="task-explain">
+        <strong>Why this matters in AI:</strong><br>
+        Vectorised operations are the core of how ML models compute things. For example:<br>
+        • <strong>Normalising pixels:</strong> <code>image / 255</code> — divides ALL 50,176 pixels at once<br>
+        • <strong>Applying weights:</strong> <code>X * weights</code> — multiplies every feature by its weight<br>
+        • <strong>Activation function:</strong> <code>np.maximum(0, z)</code> — ReLU on all neurons at once<br><br>
+        Without vectorisation, training a neural network on 1 million images would take weeks instead of hours. This is literally why GPU computing works — GPUs are designed to do millions of these vectorised operations simultaneously.
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">Vectorised ops</span><span class="ptag ptag-b">np.sqrt, np.exp, np.log</span><span class="ptag ptag-g">⭐ Beginner</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">You have <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">a = np.array([10, 20, 30])</code> and <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">b = np.array([1, 2, 3])</code>. What does <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">a * b</code> return?</div>
+    <div class="pz-opts" id="pz2-opts">
+      <div class="popt" onclick="pz(2,'A',false)"><span class="popt-l">A</span> 60 — multiplies all elements together into one number</div>
+      <div class="popt" onclick="pz(2,'B',false)"><span class="popt-l">B</span> [10, 40, 90, 20, 40, 60] — concatenates the arrays</div>
+      <div class="popt" onclick="pz(2,'C',true)"><span class="popt-l">C</span> [10, 40, 90] — multiplies element by element: 10×1=10, 20×2=40, 30×3=90</div>
+      <div class="popt" onclick="pz(2,'D',false)"><span class="popt-l">D</span> Error — cannot multiply two arrays</div>
+    </div>
+    <div class="pz-fb" id="pz2-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr2">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Solution Code — Task 2 Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task2.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="vr">scores</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>])
+
+<span class="cm"># ── SCALAR OPERATIONS ────────────────────────────</span>
+<span class="cm"># Operation applies to EVERY element — no loop needed!</span>
+<span class="fn">print</span>(<span class="st">"Original:"</span>,  <span class="vr">scores</span>)          <span class="cm"># [85 45 72 33 91 58]</span>
+<span class="fn">print</span>(<span class="st">"+ 5:"</span>,       <span class="vr">scores</span> + <span class="nm">5</span>)       <span class="cm"># [90 50 77 38 96 63]</span>
+<span class="fn">print</span>(<span class="st">"× 1.1:"</span>,     <span class="vr">scores</span> * <span class="nm">1.1</span>)     <span class="cm"># [93.5 49.5 79.2 36.3 100.1 63.8]</span>
+<span class="fn">print</span>(<span class="st">"÷ 100:"</span>,     <span class="vr">scores</span> / <span class="nm">100</span>)     <span class="cm"># [0.85 0.45 0.72 0.33 0.91 0.58]</span>
+<span class="fn">print</span>(<span class="st">"² :"</span>,        <span class="vr">scores</span> ** <span class="nm">2</span>)      <span class="cm"># [7225 2025 5184 1089 8281 3364]</span>
+
+<span class="cm"># ── UNIVERSAL FUNCTIONS (ufuncs) ─────────────────</span>
+<span class="fn">print</span>(<span class="st">"\nSqrt:"</span>, <span class="fn">np</span>.<span class="fn">sqrt</span>(<span class="vr">scores</span>))     <span class="cm"># [9.22 6.71 8.49 5.74 9.54 7.62]</span>
+<span class="fn">print</span>(<span class="st">"Log:"</span>,  <span class="fn">np</span>.<span class="fn">log</span>(<span class="vr">scores</span>))       <span class="cm"># natural log of each</span>
+<span class="fn">print</span>(<span class="st">"Abs:"</span>,  <span class="fn">np</span>.<span class="fn">abs</span>([-<span class="nm">3</span>, <span class="nm">5</span>, -<span class="nm">1</span>]))  <span class="cm"># [3 5 1]</span>
+
+<span class="cm"># ── ARRAY + ARRAY (element-wise) ─────────────────</span>
+<span class="vr">a</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>])
+<span class="vr">b</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">1</span>,  <span class="nm">2</span>,  <span class="nm">3</span>])
+<span class="fn">print</span>(<span class="st">"\na + b ="</span>, <span class="vr">a</span> + <span class="vr">b</span>)  <span class="cm"># [11 22 33]  ← element 0+0, 1+1, 2+2</span>
+<span class="fn">print</span>(<span class="st">"a * b ="</span>, <span class="vr">a</span> * <span class="vr">b</span>)  <span class="cm"># [10 40 90]  ← 10×1, 20×2, 30×3</span>
+<span class="fn">print</span>(<span class="st">"a / b ="</span>, <span class="vr">a</span> / <span class="vr">b</span>)  <span class="cm"># [10. 10. 10.]</span>
+
+<span class="cm"># ── CHECK CONDITION ──────────────────────────────</span>
+<span class="fn">print</span>(<span class="st">"\nscores > 70:"</span>, <span class="vr">scores</span> > <span class="nm">70</span>)
+<span class="cm"># [ True False  True False  True False] ← boolean array!</span>
+<span class="cm"># This will be used for boolean masking in Task 3</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done2" onclick="markDone(2)"></div><span class="done-lbl" onclick="markDone(2)">I tested all vectorised operations ✓</span></div>
+</div>
+
+<!-- TASK 3 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">3</div>
+    <div class="task-body">
+      <div class="task-title">🎭 Boolean Masking — Filter Data Without Any Loop</div>
+      <div class="task-desc">
+        Boolean masking is NumPy's way to filter data. Instead of writing a for loop + if statement, you write ONE expression. This is how real ML engineers extract subsets of data.<br><br>
+        <strong>What to do:</strong><br>
+        1. Create: <code>scores = np.array([85, 45, 72, 33, 91, 58, 76, 64])</code><br>
+        2. Get all passing scores (≥50): <code>scores[scores >= 50]</code><br>
+        3. Get all scores above 80: <code>scores[scores > 80]</code><br>
+        4. Count how many passed: <code>np.sum(scores >= 50)</code><br>
+        5. Get percentage passing: <code>np.mean(scores >= 50) * 100</code><br>
+        6. Combine conditions: <code>scores[(scores >= 50) & (scores < 80)]</code> — B grade range
+      </div>
+      <div class="task-explain">
+        <strong>Why this matters in AI:</strong><br>
+        Boolean masking is one of the most used NumPy patterns in data science:<br>
+        • <strong>Removing outliers:</strong> <code>data[data < 3 * std]</code> — keep only values within 3 standard deviations<br>
+        • <strong>Finding misclassified samples:</strong> <code>X[y_pred != y_true]</code> — get all wrongly predicted samples<br>
+        • <strong>Selecting confident predictions:</strong> <code>X[probabilities > 0.9]</code> — high-confidence only<br><br>
+        In Pandas (next week), this becomes: <code>df[df["marks"] >= 50]</code> — same concept, just on a DataFrame column.
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">Boolean masking</span><span class="ptag ptag-b">np.sum, np.mean</span><span class="ptag ptag-a">⭐⭐ Intermediate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">You have <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">scores = np.array([85, 45, 72, 33, 91])</code>. What does <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">np.mean(scores >= 50)</code> return?</div>
+    <div class="pz-opts" id="pz3-opts">
+      <div class="popt" onclick="pz(3,'A',false)"><span class="popt-l">A</span> 65.2 — the mean of scores that are ≥50</div>
+      <div class="popt" onclick="pz(3,'B',true)"><span class="popt-l">B</span> 0.6 — the proportion of scores ≥50. Boolean array [True,False,True,False,True] = [1,0,1,0,1]. Mean = 3/5 = 0.6 = 60%.</div>
+      <div class="popt" onclick="pz(3,'C',false)"><span class="popt-l">C</span> 3 — just counts the True values</div>
+      <div class="popt" onclick="pz(3,'D',false)"><span class="popt-l">D</span> Error — can't take mean of booleans</div>
+    </div>
+    <div class="pz-fb" id="pz3-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr3">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Solution Code — Task 3 Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task3.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="vr">scores</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>, <span class="nm">76</span>, <span class="nm">64</span>])
+
+<span class="cm"># ── STEP 1: Condition creates a boolean array ─────</span>
+<span class="vr">mask</span> = <span class="vr">scores</span> >= <span class="nm">50</span>
+<span class="fn">print</span>(<span class="st">"Mask:"</span>, <span class="vr">mask</span>)
+<span class="cm"># [ True False  True False  True  True  True  True]</span>
+
+<span class="cm"># ── STEP 2: Use mask as index to filter ──────────</span>
+<span class="fn">print</span>(<span class="st">"Passing scores:"</span>, <span class="vr">scores</span>[<span class="vr">mask</span>])       <span class="cm"># [85 72 91 58 76 64]</span>
+<span class="fn">print</span>(<span class="st">"Above 80:"</span>,       <span class="vr">scores</span>[<span class="vr">scores</span> > <span class="nm">80</span>]) <span class="cm"># [85 91]</span>
+
+<span class="cm"># ── STEP 3: Count and percentage ─────────────────</span>
+<span class="fn">print</span>(<span class="st">"Count passing:"</span>, <span class="fn">np</span>.<span class="fn">sum</span>(<span class="vr">scores</span> >= <span class="nm">50</span>))   <span class="cm"># 6</span>
+<span class="fn">print</span>(<span class="st">"Pass rate:"</span>, <span class="fn">np</span>.<span class="fn">mean</span>(<span class="vr">scores</span> >= <span class="nm">50</span>) * <span class="nm">100</span>, <span class="st">"%"</span>)
+<span class="cm"># 75.0%  ← True=1, False=0 → mean = 6/8 = 0.75</span>
+
+<span class="cm"># ── STEP 4: Combine conditions ───────────────────</span>
+<span class="cm"># B grade: 60 ≤ score < 80</span>
+<span class="vr">b_grade</span> = <span class="vr">scores</span>[(<span class="vr">scores</span> >= <span class="nm">60</span>) & (<span class="vr">scores</span> < <span class="nm">80</span>)]
+<span class="fn">print</span>(<span class="st">"B grade scores:"</span>, <span class="vr">b_grade</span>)  <span class="cm"># [72 76 64]</span>
+
+<span class="cm"># ── STEP 5: Mean of ONLY passing scores ──────────</span>
+<span class="vr">pass_mean</span> = <span class="fn">np</span>.<span class="fn">mean</span>(<span class="vr">scores</span>[<span class="vr">scores</span> >= <span class="nm">50</span>])
+<span class="fn">print</span>(<span class="st">f"Mean of passing: {pass_mean:.1f}"</span>)  <span class="cm"># 74.3</span>
+
+<span class="cm"># 💡 ML connection: y_pred = (probabilities > 0.5)  ← creates binary labels!</span>
+<span class="cm"># 💡 Accuracy: np.mean(y_pred == y_true) * 100</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done3" onclick="markDone(3)"></div><span class="done-lbl" onclick="markDone(3)">I used boolean masking on my own arrays ✓</span></div>
+</div>
+
+<!-- TASK 4 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">4</div>
+    <div class="task-body">
+      <div class="task-title">📊 Statistics — mean, std, argmax, argsort</div>
+      <div class="task-desc">
+        NumPy gives you an entire statistics toolkit — one function call replaces what would take 10 lines of Python. These functions are used constantly in ML for understanding data before training.<br><br>
+        <strong>What to do:</strong><br>
+        1. Compute: mean, median, std, variance, min, max, sum<br>
+        2. Find: <code>np.argmax(scores)</code> — index of the highest scorer<br>
+        3. Rank everyone: <code>np.argsort(scores)</code> — sorted indices (lowest first)<br>
+        4. Create a 2D array and compute: <code>np.mean(X, axis=0)</code> (per column) and <code>np.mean(X, axis=1)</code> (per row)<br>
+        5. Explain the difference between axis=0 and axis=1 in your own words
+      </div>
+      <div class="task-explain">
+        <strong>Why this matters in AI:</strong><br>
+        These statistics are used in every ML project for <strong>Exploratory Data Analysis (EDA)</strong> — the step where you understand your data before training a model. Specifically:<br>
+        • <code>np.mean(X, axis=0)</code> — average value of each feature across all students. Used to check if features are balanced.<br>
+        • <code>np.std(X, axis=0)</code> — how spread out each feature is. If std=0, the feature is useless (all same value).<br>
+        • <code>np.argmax(predictions)</code> — in image classification, the predicted class is the one with the highest probability. argmax finds it.<br>
+        • <code>np.argsort()</code> — used to rank predictions, sort by confidence.
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">np.mean, np.std, np.argmax</span><span class="ptag ptag-b">axis=0 vs axis=1</span><span class="ptag ptag-a">⭐⭐ Intermediate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">For <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">X = np.array([[80,90,70],[60,50,40]])</code> with shape (2,3), what does <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">np.mean(X, axis=0)</code> compute?</div>
+    <div class="pz-opts" id="pz4-opts">
+      <div class="popt" onclick="pz(4,'A',false)"><span class="popt-l">A</span> The mean of the entire array: 65.0</div>
+      <div class="popt" onclick="pz(4,'B',true)"><span class="popt-l">B</span> The mean of each COLUMN — collapses the rows. Result shape (3,): [70, 70, 55]. Column 0: (80+60)/2=70, Column 1: (90+50)/2=70, Column 2: (70+40)/2=55.</div>
+      <div class="popt" onclick="pz(4,'C',false)"><span class="popt-l">C</span> The mean of each ROW: [80, 50] — that would be axis=1</div>
+      <div class="popt" onclick="pz(4,'D',false)"><span class="popt-l">D</span> The first row only: [80, 90, 70]</div>
+    </div>
+    <div class="pz-fb" id="pz4-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr4">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Solution Code — Task 4 Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task4.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="vr">data</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>, <span class="nm">91</span>, <span class="nm">58</span>, <span class="nm">76</span>])
+
+<span class="cm"># ── 1D STATISTICS ────────────────────────────────</span>
+<span class="fn">print</span>(<span class="st">f"Mean:   {np.mean(data):.2f}"</span>)    <span class="cm"># 65.71</span>
+<span class="fn">print</span>(<span class="st">f"Median: {np.median(data):.2f}"</span>)  <span class="cm"># 72.0 — middle value</span>
+<span class="fn">print</span>(<span class="st">f"Std:    {np.std(data):.2f}"</span>)     <span class="cm"># spread</span>
+<span class="fn">print</span>(<span class="st">f"Min:    {np.min(data)}"</span>)          <span class="cm"># 33</span>
+<span class="fn">print</span>(<span class="st">f"Max:    {np.max(data)}"</span>)          <span class="cm"># 91</span>
+<span class="fn">print</span>(<span class="st">f"Sum:    {np.sum(data)}"</span>)          <span class="cm"># 460</span>
+
+<span class="cm"># ── ARGMAX AND ARGSORT ───────────────────────────</span>
+<span class="fn">print</span>(<span class="st">f"\nTop scorer index: {np.argmax(data)}"</span>)  <span class="cm"># 4 (91 is at index 4)</span>
+<span class="fn">print</span>(<span class="st">f"Top scorer: {data[np.argmax(data)]}"</span>)   <span class="cm"># 91</span>
+<span class="fn">print</span>(<span class="st">f"Ranking (lowest→highest): {np.argsort(data)}"</span>)
+<span class="cm"># [3 1 5 2 0 6 4] — index 3 (score 33) is lowest, index 4 (91) is highest</span>
+
+<span class="cm"># ── 2D STATS WITH AXIS ───────────────────────────</span>
+<span class="vr">X</span> = <span class="fn">np</span>.<span class="fn">array</span>([
+    [<span class="nm">80</span>, <span class="nm">90</span>, <span class="nm">70</span>],   <span class="cm"># student 0: marks, attendance, score</span>
+    [<span class="nm">60</span>, <span class="nm">50</span>, <span class="nm">40</span>],   <span class="cm"># student 1</span>
+])  <span class="cm"># shape (2, 3)</span>
+
+<span class="fn">print</span>(<span class="st">"\naxis=0 (column means):"</span>, <span class="fn">np</span>.<span class="fn">mean</span>(<span class="vr">X</span>, <span class="vr">axis</span>=<span class="nm">0</span>))
+<span class="cm"># [70. 70. 55.] — average of EACH COLUMN</span>
+
+<span class="fn">print</span>(<span class="st">"axis=1 (row means):"</span>,    <span class="fn">np</span>.<span class="fn">mean</span>(<span class="vr">X</span>, <span class="vr">axis</span>=<span class="nm">1</span>))
+<span class="cm"># [80. 50.] — average for EACH STUDENT</span>
+
+<span class="cm"># MEMORY TIP:</span>
+<span class="cm"># axis=0 → compresses DOWN the rows → gives per-COLUMN result</span>
+<span class="cm"># axis=1 → compresses ACROSS columns → gives per-ROW result</span>
+<span class="cm"># In ML: axis=0 is almost always used (stats per feature, not per sample)</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done4" onclick="markDone(4)"></div><span class="done-lbl" onclick="markDone(4)">I computed statistics on 1D and 2D arrays ✓</span></div>
+</div>
+
+<!-- TASK 5 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">5</div>
+    <div class="task-body">
+      <div class="task-title">🔧 Indexing, Slicing & reshape() — Controlling Array Shape</div>
+      <div class="task-desc">
+        Accessing specific parts of a NumPy array and changing its shape are two of the most important skills. sklearn is very strict about shapes — many beginner errors come from wrong shapes.<br><br>
+        <strong>What to do:</strong><br>
+        1. Access first element: <code>arr[0]</code>, last: <code>arr[-1]</code>, slice: <code>arr[1:4]</code><br>
+        2. Create 2D: <code>m = np.array([[1,2,3],[4,5,6],[7,8,9]])</code><br>
+        3. Access element at row 0, col 2: <code>m[0, 2]</code><br>
+        4. Get all of column 1: <code>m[:, 1]</code><br>
+        5. Get all of row 1: <code>m[1, :]</code><br>
+        6. Reshape: <code>np.arange(12).reshape(3, 4)</code> and <code>arr.reshape(-1, 1)</code>
+      </div>
+      <div class="task-explain">
+        <strong>Why reshape(-1, 1) matters SO much in ML:</strong><br>
+        This is the #1 thing beginners get wrong with sklearn. Here's the situation:<br><br>
+        • You have: <code>marks = np.array([85, 45, 72, 33])</code> — shape (4,)<br>
+        • You do: <code>model.fit(marks, y)</code> — ERROR! sklearn needs 2D input<br>
+        • Fix: <code>model.fit(marks.reshape(-1, 1), y)</code> — shape (4, 1) ✅<br><br>
+        The <code>-1</code> in reshape means "calculate this dimension automatically." So <code>.reshape(-1, 1)</code> means "make it 1 column wide, and figure out how many rows." This is used in virtually every sklearn tutorial you will ever see.
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">Indexing [row, col]</span><span class="ptag ptag-b">reshape(-1, 1)</span><span class="ptag ptag-a">⭐⭐ Intermediate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Solve puzzle → unlock solution code</div></div></div>
+    <div class="pz-q">You have <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">marks = np.array([85, 45, 72, 33])</code> with shape (4,). What does <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">marks.reshape(-1, 1)</code> give you?</div>
+    <div class="pz-opts" id="pz5-opts">
+      <div class="popt" onclick="pz(5,'A',false)"><span class="popt-l">A</span> The same (4,) array — no change</div>
+      <div class="popt" onclick="pz(5,'B',false)"><span class="popt-l">B</span> Shape (1, 4) — 1 row, 4 columns</div>
+      <div class="popt" onclick="pz(5,'C',true)"><span class="popt-l">C</span> Shape (4, 1) — 4 rows, 1 column. The -1 means "calculate automatically" → 4/1 = 4 rows. This is a column vector needed by sklearn.</div>
+      <div class="popt" onclick="pz(5,'D',false)"><span class="popt-l">D</span> Error — -1 is not a valid reshape value</div>
+    </div>
+    <div class="pz-fb" id="pz5-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr5">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Solution Code — Task 5 Unlocked!</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_task5.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="cm"># ── 1D INDEXING ──────────────────────────────────</span>
+<span class="vr">a</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>])
+<span class="fn">print</span>(<span class="vr">a</span>[<span class="nm">0</span>])      <span class="cm"># 10 — first element</span>
+<span class="fn">print</span>(<span class="vr">a</span>[-<span class="nm">1</span>])     <span class="cm"># 50 — last element</span>
+<span class="fn">print</span>(<span class="vr">a</span>[<span class="nm">1</span>:<span class="nm">4</span>])    <span class="cm"># [20 30 40] — index 1,2,3</span>
+<span class="fn">print</span>(<span class="vr">a</span>[:<span class="nm">3</span>])     <span class="cm"># [10 20 30] — first 3</span>
+
+<span class="cm"># ── 2D INDEXING — [row, col] ─────────────────────</span>
+<span class="vr">m</span> = <span class="fn">np</span>.<span class="fn">array</span>([[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>],[<span class="nm">7</span>,<span class="nm">8</span>,<span class="nm">9</span>]])
+<span class="fn">print</span>(<span class="st">"\nm[0,2] ="</span>, <span class="vr">m</span>[<span class="nm">0</span>,<span class="nm">2</span>])    <span class="cm"># 3 — row 0, col 2</span>
+<span class="fn">print</span>(<span class="st">"m[:,1] ="</span>, <span class="vr">m</span>[:,<span class="nm">1</span>])    <span class="cm"># [2 5 8] — ALL rows, col 1</span>
+<span class="fn">print</span>(<span class="st">"m[1,:] ="</span>, <span class="vr">m</span>[<span class="nm">1</span>,:])    <span class="cm"># [4 5 6] — row 1, ALL cols</span>
+<span class="fn">print</span>(<span class="st">"m[:2,:] ="</span>, <span class="vr">m</span>[:<span class="nm">2</span>,:]) <span class="cm"># first 2 rows, all cols</span>
+
+<span class="cm"># ── RESHAPE ──────────────────────────────────────</span>
+<span class="vr">flat</span> = <span class="fn">np</span>.<span class="fn">arange</span>(<span class="nm">12</span>)           <span class="cm"># [0 1 2 ... 11]</span>
+<span class="fn">print</span>(<span class="st">"\nOriginal shape:"</span>, <span class="vr">flat</span>.<span class="vr">shape</span>)   <span class="cm"># (12,)</span>
+
+<span class="vr">mat3x4</span> = <span class="vr">flat</span>.<span class="fn">reshape</span>(<span class="nm">3</span>, <span class="nm">4</span>)
+<span class="fn">print</span>(<span class="st">"3×4 matrix:\n"</span>, <span class="vr">mat3x4</span>)         <span class="cm"># shape (3,4)</span>
+
+<span class="cm"># ── THE MOST IMPORTANT RESHAPE IN ML ─────────────</span>
+<span class="vr">marks</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">85</span>, <span class="nm">45</span>, <span class="nm">72</span>, <span class="nm">33</span>])
+<span class="fn">print</span>(<span class="st">"\nBefore reshape:"</span>, <span class="vr">marks</span>.<span class="vr">shape</span>)  <span class="cm"># (4,)</span>
+<span class="vr">marks_2d</span> = <span class="vr">marks</span>.<span class="fn">reshape</span>(-<span class="nm">1</span>, <span class="nm">1</span>)
+<span class="fn">print</span>(<span class="st">"After reshape(-1,1):"</span>, <span class="vr">marks_2d</span>.<span class="vr">shape</span>)  <span class="cm"># (4, 1)</span>
+<span class="fn">print</span>(<span class="vr">marks_2d</span>)
+<span class="cm"># [[85]</span>
+<span class="cm">#  [45]</span>
+<span class="cm">#  [72]</span>
+<span class="cm">#  [33]]</span>
+
+<span class="cm"># WHEN TO USE: sklearn model.fit(X, y) needs X to be 2D!</span>
+<span class="cm"># from sklearn.linear_model import LinearRegression</span>
+<span class="cm"># model = LinearRegression()</span>
+<span class="cm"># model.fit(marks.reshape(-1, 1), y)  ← shape (4,1) works!</span>
+<span class="cm"># model.fit(marks, y)                 ← shape (4,) FAILS!</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done5" onclick="markDone(5)"></div><span class="done-lbl" onclick="markDone(5)">I practiced indexing and reshape ✓</span></div>
+</div>
+
+<!-- TASK 6 -->
+<div class="task-card">
+  <div class="task-head">
+    <div class="task-num">6</div>
+    <div class="task-body">
+      <div class="task-title">🌍 Full Mini ML Pipeline — Your First Real AI Data Prep!</div>
+      <div class="task-desc">
+        Put everything together. Build a complete data preparation pipeline — exactly what happens before you train any ML model. You are going to create a fake dataset with 5 students and 3 features, then prepare it for a machine learning model.<br><br>
+        <strong>Your pipeline steps:</strong><br>
+        1. Create X (features) — shape (5, 3): study_hours, attendance, has_textbook<br>
+        2. Create y (labels) — shape (5,): 1=pass, 0=fail<br>
+        3. Print shapes and confirm X is 2D and y is 1D<br>
+        4. Normalise X using min-max: <code>(X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))</code><br>
+        5. Simple prediction: predict pass if study_hours ≥ 4<br>
+        6. Calculate accuracy: how many predictions match y?
+      </div>
+      <div class="task-explain">
+        <strong>This is EXACTLY what sklearn does internally:</strong><br>
+        When you call <code>model.fit(X, y)</code> in sklearn:<br>
+        • Step 1–3 is what you do before calling fit()<br>
+        • Step 4 is what <code>sklearn.preprocessing.MinMaxScaler</code> does<br>
+        • Step 5–6 is what <code>model.predict(X)</code> and <code>model.score(X, y)</code> do<br><br>
+        You just built all of these from scratch using only NumPy. This is the foundation of understanding what sklearn does "under the hood."
+      </div>
+      <div class="task-tags">
+        <span class="ptag ptag-b">Full pipeline</span><span class="ptag ptag-b">2D arrays, normalise, predict</span><span class="ptag ptag-a">⭐⭐⭐ Challenge</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-section">
+    <div class="pz-header"><span class="pz-icon">🔐</span><div><div class="pz-title">Final puzzle — unlock the complete ML pipeline</div></div></div>
+    <div class="pz-q">The normalisation formula is <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">(X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))</code>. Why use <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">axis=0</code> instead of just <code style="background:var(--p2);font-family:'DM Mono',monospace;padding:1px 6px;border-radius:4px">X.min()</code>?</div>
+    <div class="pz-opts" id="pz6-opts">
+      <div class="popt" onclick="pz(6,'A',false)"><span class="popt-l">A</span> axis=0 makes it faster</div>
+      <div class="popt" onclick="pz(6,'B',true)"><span class="popt-l">B</span> axis=0 finds the min/max of EACH COLUMN separately — so study_hours (0-10), attendance (40-90), and textbook (0-1) each get normalised to 0-1 using their own scale. X.min() would use one global min for all, mixing up different measurements.</div>
+      <div class="popt" onclick="pz(6,'C',false)"><span class="popt-l">C</span> axis=0 and X.min() give the same result</div>
+      <div class="popt" onclick="pz(6,'D',false)"><span class="popt-l">D</span> axis=0 only works on 1D arrays</div>
+    </div>
+    <div class="pz-fb" id="pz6-fb"></div>
+  </div>
+
+  <div class="code-reveal" id="cr6">
+    <div class="cr-head"><span style="font-size:1.1rem">🔓</span><span class="cr-title">Complete Mini ML Pipeline — Unlocked! 🎉</span></div>
+    <div class="cw">
+      <div class="cbar"><div class="cdots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><div class="clang">Python — numpy_ml_pipeline.py</div></div>
+      <div class="cbody">
+<span class="kw">import</span> <span class="vr">numpy</span> <span class="kw">as</span> <span class="vr">np</span>
+
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="cm">#   STEP 1: Create the dataset</span>
+<span class="cm">#   X: 5 students × 3 features</span>
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="vr">X</span> = <span class="fn">np</span>.<span class="fn">array</span>([
+    [<span class="nm">5</span>,  <span class="nm">80</span>, <span class="nm">1</span>],    <span class="cm"># study_hrs, attendance%, has_textbook</span>
+    [<span class="nm">2</span>,  <span class="nm">50</span>, <span class="nm">0</span>],
+    [<span class="nm">8</span>,  <span class="nm">90</span>, <span class="nm">1</span>],
+    [<span class="nm">1</span>,  <span class="nm">40</span>, <span class="nm">0</span>],
+    [<span class="nm">7</span>,  <span class="nm">85</span>, <span class="nm">1</span>],
+])
+<span class="vr">y</span> = <span class="fn">np</span>.<span class="fn">array</span>([<span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">0</span>, <span class="nm">1</span>])  <span class="cm"># 1=pass, 0=fail</span>
+
+<span class="fn">print</span>(<span class="st">f"X shape: {X.shape}"</span>)  <span class="cm"># (5, 3) — 5 students, 3 features</span>
+<span class="fn">print</span>(<span class="st">f"y shape: {y.shape}"</span>)  <span class="cm"># (5,)   — 5 labels</span>
+
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="cm">#   STEP 2: Normalise — each column to 0–1</span>
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="vr">col_min</span> = <span class="vr">X</span>.<span class="fn">min</span>(<span class="vr">axis</span>=<span class="nm">0</span>)   <span class="cm"># [1, 40, 0] — min of each column</span>
+<span class="vr">col_max</span> = <span class="vr">X</span>.<span class="fn">max</span>(<span class="vr">axis</span>=<span class="nm">0</span>)   <span class="cm"># [8, 90, 1] — max of each column</span>
+
+<span class="vr">X_norm</span> = (<span class="vr">X</span> - <span class="vr">col_min</span>) / (<span class="vr">col_max</span> - <span class="vr">col_min</span>)
+<span class="cm"># Each column is now 0–1 independently!</span>
+<span class="fn">print</span>(<span class="st">"\nNormalised X:"</span>)
+<span class="fn">print</span>(<span class="fn">np</span>.<span class="fn">round</span>(<span class="vr">X_norm</span>, <span class="nm">2</span>))
+
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="cm">#   STEP 3: Simple prediction</span>
+<span class="cm">#   Rule: predict PASS if study_hours >= 4</span>
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="vr">study_hrs</span> = <span class="vr">X</span>[:, <span class="nm">0</span>]          <span class="cm"># column 0 — all rows</span>
+<span class="vr">y_pred</span>    = (<span class="vr">study_hrs</span> >= <span class="nm">4</span>).<span class="fn">astype</span>(<span class="fn">int</span>)  <span class="cm"># True→1, False→0</span>
+
+<span class="fn">print</span>(<span class="st">f"\nTrue labels:       {y}"</span>)
+<span class="fn">print</span>(<span class="st">f"Predicted labels:  {y_pred}"</span>)
+<span class="fn">print</span>(<span class="st">f"Correct?           {y == y_pred}"</span>)
+
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="cm">#   STEP 4: Accuracy</span>
+<span class="cm"># ══════════════════════════════════════════════</span>
+<span class="vr">accuracy</span> = <span class="fn">np</span>.<span class="fn">mean</span>(<span class="vr">y_pred</span> == <span class="vr">y</span>) * <span class="nm">100</span>
+<span class="fn">print</span>(<span class="st">f"\n✅ Accuracy: {accuracy:.1f}%"</span>)
+
+<span class="cm"># Compare to sklearn MinMaxScaler:</span>
+<span class="cm"># from sklearn.preprocessing import MinMaxScaler</span>
+<span class="cm"># scaler = MinMaxScaler()</span>
+<span class="cm"># X_scaled = scaler.fit_transform(X)  ← does the SAME as X_norm above!</span>
+      </div>
+    </div>
+  </div>
+  <div class="done-row"><div class="done-cb" id="done6" onclick="markDone(6)"></div><span class="done-lbl" onclick="markDone(6)">I built and ran the full ML pipeline ✓</span></div>
+</div>
+
+<!-- AI TUTOR -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">💬</div>
+  <div><div class="sh-ttl">AI Tutor — Ask Anything About NumPy</div><div class="sh-sub">Stuck? Confused? Ask in plain English — get a detailed answer</div></div>
+  <div class="sh-bdg">⏱ Any time</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Ask Me Anything About NumPy</h2>
+  <p>Ask in plain, simple language. Examples: <em>"Why is NumPy faster than a list?"</em> · <em>"I don't understand what shape means"</em> · <em>"What does axis=0 actually do?"</em> · <em>"When do I need reshape?"</em></p>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">NumPy AI Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">Day 16 · Month 2 · I explain NumPy in simple terms with real examples</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Hello! I'm your Day 16 NumPy tutor. Ask me ANYTHING — I'll explain it simply. Don't worry if your question sounds "too basic" — all questions are good questions when you're learning something new!</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Biggest Day 16 confusion:</strong> The difference between shape (4,) and (4, 1). Both have 4 numbers but they're very different!<br><br>• shape (4,) = a flat list: [85, 45, 72, 33]<br>• shape (4, 1) = a column: [[85], [45], [72], [33]]<br><br>sklearn ALWAYS needs 2D input for X — that's why reshape(-1, 1) is so important.</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask in plain English — any NumPy question..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILL BLANKS -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">✏️</div>
+  <div><div class="sh-ttl">Fill in the Blanks</div><div class="sh-sub">Complete from memory — no peeking!</div></div>
+  <div class="sh-bdg">⏱ 10 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Quick Check</div>
+  <h2>Fill in the Missing Parts</h2>
+  <div id="fill-wrap"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <button class="btn btn-b" onclick="checkFill()">Check Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- MCQ -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-ttl">MCQ Quiz (15 Questions)</div><div class="sh-sub">Answer from memory — every answer shows a detailed explanation</div></div>
+  <div class="sh-bdg">📝 15 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 15</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 12/15 (80%). Read every explanation even when correct!</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="fin-emoji" id="fin-emoji">🎉</div>
+  <div class="fin-title" id="fin-title">—</div>
+  <div class="fin-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">Day 17 tomorrow: <strong>NumPy — Indexing, Broadcasting & Linear Algebra</strong></p>
+  <button class="fin-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top</button>
+</div>
+
+</div>
+<footer>Day 16 of 300+ · AI/ML 15-Month Curriculum · Month 2, Week 1<br>NumPy · ndarray · Vectorised ops · Boolean masking · Statistics · reshape(-1,1) · sklearn foundation</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let tasksD=0,mcqS=0,fillS=0,mcqSet=new Set();
+function updateProg(){const t=Math.min(Math.round((tasksD/6)*40+(mcqS/15)*40+(fillS/8)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function markDone(n){const cb=document.getElementById('done'+n);const on=cb.classList.toggle('on');cb.textContent=on?'✓':'';tasksD=document.querySelectorAll('.done-cb.on').length;updateProg();}
+
+// ── LIVE EXPLORER ──
+function runExplorer(){
+  const raw=document.getElementById('exp-nums').value;
+  const op=document.getElementById('exp-op').value;
+  const nums=raw.split(',').map(s=>parseFloat(s.trim())).filter(s=>!isNaN(s));
+  const out=document.getElementById('exp-out');
+  if(!nums.length){out.className='exp-out show';out.textContent='Please enter some numbers!';return;}
+  const mn=Math.min(...nums),mx=Math.max(...nums);
+  const mean=nums.reduce((a,b)=>a+b,0)/nums.length;
+  const std=Math.sqrt(nums.map(x=>(x-mean)**2).reduce((a,b)=>a+b,0)/nums.length);
+  let html='';
+  html+=`<span class="exp-ok">Input array:</span>  [${nums.join(', ')}]   shape: (${nums.length},)\n\n`;
+  if(op==='stats'){
+    html+=`<span class="exp-ok">np.mean()</span>   = ${mean.toFixed(2)}   ← average value\n`;
+    html+=`<span class="exp-ok">np.median()</span> = ${nums.slice().sort((a,b)=>a-b)[Math.floor(nums.length/2)].toFixed(1)}   ← middle value\n`;
+    html+=`<span class="exp-ok">np.std()</span>    = ${std.toFixed(2)}   ← spread (higher = more varied)\n`;
+    html+=`<span class="exp-ok">np.min()</span>    = ${mn}   ← smallest\n`;
+    html+=`<span class="exp-ok">np.max()</span>    = ${mx}   ← largest\n`;
+    html+=`<span class="exp-ok">np.sum()</span>    = ${nums.reduce((a,b)=>a+b,0)}   ← total\n`;
+    html+=`<span class="exp-ok">np.argmax()</span> = ${nums.indexOf(mx)}   ← index of largest`;
+  } else if(op==='norm'){
+    const normed=nums.map(x=>+(( x-mn)/(mx-mn)).toFixed(3));
+    html+=`<span class="exp-ok">Formula:</span>  (x - min) / (max - min)\n`;
+    html+=`<span class="exp-ok">min=${mn}, max=${mx}</span>\n\n`;
+    html+=`<span class="exp-ok">Result:</span>  [${normed.join(', ')}]\n`;
+    html+=`All values now between 0.0 and 1.0 ✅\n`;
+    html+=`This is exactly what sklearn MinMaxScaler does!`;
+  } else if(op==='zscore'){
+    const zs=nums.map(x=>+((x-mean)/std).toFixed(3));
+    html+=`<span class="exp-ok">Formula:</span>  (x - mean) / std\n`;
+    html+=`<span class="exp-ok">mean=${mean.toFixed(2)}, std=${std.toFixed(2)}</span>\n\n`;
+    html+=`<span class="exp-ok">Result:</span>  [${zs.join(', ')}]\n`;
+    html+=`Mean of result ≈ 0.0, Std ≈ 1.0 ✅\n`;
+    html+=`This is what sklearn StandardScaler does!`;
+  } else if(op==='mask'){
+    const bools=nums.map(x=>x>=60);
+    const kept=nums.filter(x=>x>=60);
+    html+=`<span class="exp-ok">Condition (>= 60):</span>\n`;
+    html+=`[${bools.map(b=>b?'True ':' False').join(', ')}]\n\n`;
+    html+=`<span class="exp-ok">scores[mask]:</span>  [${kept.join(', ')}]\n`;
+    html+=`${kept.length} of ${nums.length} values passed the filter ✅`;
+  } else if(op==='sort'){
+    const idxs=[...nums.keys()].sort((a,b)=>nums[a]-nums[b]);
+    html+=`<span class="exp-ok">np.argsort():</span>  [${idxs.join(', ')}]\n`;
+    html+=`(returns INDICES in sorted order, not the values)\n\n`;
+    html+=`<span class="exp-ok">Sorted values:</span>  [${idxs.map(i=>nums[i]).join(', ')}]\n`;
+    html+=`Index ${idxs[0]} (value ${nums[idxs[0]]}) is smallest`;
+  } else if(op==='shape'){
+    html+=`<span class="exp-ok">shape:</span>   (${nums.length},)   ← 1D array with ${nums.length} elements\n`;
+    html+=`<span class="exp-ok">dtype:</span>   float64 (or int64 if all whole numbers)\n`;
+    html+=`<span class="exp-ok">ndim:</span>    1   ← one-dimensional\n`;
+    html+=`<span class="exp-ok">size:</span>    ${nums.length}   ← total number of elements\n\n`;
+    html+=`After reshape(-1,1):\n`;
+    html+=`<span class="exp-ok">shape:</span>   (${nums.length}, 1)   ← needed for sklearn!`;
+  }
+  out.className='exp-out show';out.innerHTML=html;
+}
+
+// ── PUZZLE ──
+const PZ_FB={
+  1:{ok:`✅ Correct! shape (8,) means 1D — just a flat row of 8 numbers, like a single column of data. It's NOT (1,8) — that would be 1 row, 8 columns, which is 2D. The comma after 8 with nothing after it is NumPy's way of saying "this is 1-dimensional." Whenever you see (n,), it's 1D.`,
+     no:`❌ shape (8,) — the comma with nothing after it means 1D. There are no rows or columns yet — just 8 numbers in a flat line. (1,8) would be 2D with 1 row. (8,1) would be 2D with 8 rows. Just (8,) = 1D, 8 elements.`},
+  2:{ok:`✅ Correct! NumPy multiplication is element-wise: a[0]*b[0]=10, a[1]*b[1]=40, a[2]*b[2]=90. This is called "vectorised element-wise multiplication" — not a dot product (which sums). This is used constantly in ML: features × weights, pixel × mask, etc.`,
+     no:`❌ NumPy * is element-wise: a[0]×b[0], a[1]×b[1], a[2]×b[2] = [10, 40, 90]. It does NOT concatenate (that would need np.concatenate). It does NOT sum into one number (that would be np.dot). Element-wise means "corresponding positions multiply."`},
+  3:{ok:`✅ Perfect! np.mean(scores >= 50) treats True=1 and False=0. Three students pass (85, 72, 91), two fail (45, 33). mean([1,0,1,0,1]) = 3/5 = 0.6. Multiply by 100 = 60%. This elegant trick (np.mean of a boolean condition = pass rate %) is used constantly in ML.`,
+     no:`❌ np.mean() on booleans treats True=1, False=0. scores=[85,45,72,33,91]. scores>=50 = [True,False,True,False,True] = [1,0,1,0,1]. Mean = (1+0+1+0+1)/5 = 0.6. That's the pass PROPORTION, not the count (which would be np.sum).`},
+  4:{ok:`✅ Exactly right! axis=0 = collapse along rows = compute per column. Think of it as "looking DOWN each column." Column 0: (80+60)/2=70, Column 1: (90+50)/2=70, Column 2: (70+40)/2=55. Result shape (3,). axis=1 would give per-ROW means = shape (2,).`,
+     no:`❌ axis=0 means "collapse down the rows" — you get one value PER COLUMN. X has 2 rows and 3 columns. axis=0 gives 3 values (one per column): [70,70,55]. axis=1 gives 2 values (one per row): [80,50]. Remember: axis=0 → per COLUMN.`},
+  5:{ok:`✅ Correct! reshape(-1, 1) makes it a column vector: 4 rows, 1 column, shape (4,1). The -1 is a placeholder meaning "calculate this yourself." NumPy computes: total/1 = 4/1 = 4 rows. This is essential because sklearn's fit() requires 2D input when X has only one feature.`,
+     no:`❌ reshape(-1, 1) creates shape (4, 1) — the -1 means "calculate this dimension automatically." 4 total elements ÷ 1 column = 4 rows. Result: [[85],[45],[72],[33]] — a column vector. sklearn needs this for single-feature datasets.`},
+  6:{ok:`✅ Perfect! axis=0 normalises each COLUMN by its own min and max. study_hours (range 1-8) gets its own scale. attendance (range 40-90) gets its own scale. If you used X.min() (global), you'd subtract the global min (1) from attendance (40), which doesn't make sense — you'd be mixing units.`,
+     no:`❌ axis=0 computes min/max of each COLUMN independently. study_hours: min=1, max=8. attendance: min=40, max=90. Each column is then scaled to 0-1 using ITS OWN min and max. Global X.min() would give one number for the whole array — wrong for features with different scales.`}
+};
+function pz(n,opt,correct){
+  const opts=document.getElementById('pz'+n+'-opts').querySelectorAll('.popt');
+  opts.forEach(o=>o.classList.add('dis'));
+  event.currentTarget.classList.add(correct?'cor':'wrg');
+  if(!correct){opts.forEach(o=>{if(o.getAttribute('onclick')&&o.getAttribute('onclick').includes(',true)'))o.classList.add('cor');});}
+  const fb=document.getElementById('pz'+n+'-fb');fb.className='pz-fb show '+(correct?'ok':'no');
+  fb.textContent=correct?PZ_FB[n].ok:PZ_FB[n].no;
+  if(correct){setTimeout(()=>{const cr=document.getElementById('cr'+n);cr.classList.add('show');cr.scrollIntoView({behavior:'smooth',block:'nearest'});},350);}
+}
+
+// ── AI TUTOR ──
+const replies={
+  numpy:`NumPy is Python's number-crunching library. Here's why it's special:\n\nPython list: [85, 45, 72] — each number stored as a separate Python object. To add 5 to each, Python loops through each one individually.\n\nNumPy array: np.array([85,45,72]) — all numbers stored as raw bytes in a single block of memory. To add 5, it runs one optimised C command that processes ALL at once.\n\nResult: 100× faster for large data.\n\nFor ML with millions of data points, this speed difference is the difference between finishing in 1 hour vs 4 days.\n\nImport it as: import numpy as np`,
+  shape:`Shape tells you the dimensions of your array:\n\n(8,)   = 1D array, 8 elements  [85, 45, 72, ...]\n(4, 3) = 2D array, 4 rows 3 cols  like a small table\n(100, 28, 28) = 3D array  like 100 grayscale images\n\nIn ML — always remember:\n  X (features) = 2D — shape (n_samples, n_features)\n  y (labels)   = 1D — shape (n_samples,)\n\nCheck shape: print(arr.shape)\n\nWhy does it matter?\nsklearn is VERY strict about shapes.\nIf X has shape (100,) when it needs (100,1) → Error!\nFix: X.reshape(-1, 1) converts (100,) to (100,1)`,
+  reshape:`reshape(-1, 1) is one of the most used NumPy commands in ML.\n\nYou have: marks = np.array([85,45,72]) — shape (3,)\nYou need: shape (3,1) for sklearn\n\nSolution: marks.reshape(-1, 1)\n→ -1 means "calculate this automatically"\n→ 1 means "make it 1 column wide"\n→ -1 resolves to 3 (3 total ÷ 1 = 3 rows)\n→ Result: shape (3,1) ✅\n\nOther reshape examples:\narr.reshape(3, 4)   → 3 rows, 4 cols (3×4=12 elements needed)\narr.reshape(-1, 4)  → NumPy calculates rows\narr.reshape(3, -1)  → NumPy calculates cols\narr.flatten()       → convert any shape to 1D`,
+  axis:`axis is about DIRECTION of the operation:\n\nFor a 2D array shape (5, 3) — 5 students, 3 features:\n\naxis=0 → look DOWN the columns → one value per column\n  np.mean(X, axis=0) → shape (3,) — mean of each feature\n\naxis=1 → look ACROSS the rows → one value per row\n  np.mean(X, axis=1) → shape (5,) — mean for each student\n\nMemory trick:\n  axis=0 = collapses ROWS → result is about COLUMNS\n  axis=1 = collapses COLS → result is about ROWS\n\nIn ML: axis=0 is used almost always (stats per feature)\nExample: StandardScaler computes mean/std of each feature\nusing axis=0 — same logic.`,
+  masking:`Boolean masking = filter without a loop!\n\nStep 1 — Create a mask:\n  scores = np.array([85, 45, 72, 33, 91])\n  mask = scores >= 50\n  # [True, False, True, False, True]\n\nStep 2 — Use mask as index:\n  scores[mask]\n  # [85, 72, 91] — only True positions!\n\nShorthand (no variable):\n  scores[scores >= 50]   # same result\n  scores[scores > 80]    # [85, 91]\n\nTwo conditions:\n  scores[(scores >= 60) & (scores < 80)]  # B grade\n  # & = AND, | = OR\n\nCount matching:\n  np.sum(scores >= 50)    # 3 — count of True\n  np.mean(scores >= 50)   # 0.6 — proportion (60%)`,
+  default:`Welcome to NumPy! Here's a quick overview:\n\n📦 Create array:\n  np.array([1,2,3])          → from list\n  np.zeros(5)                → [0,0,0,0,0]\n  np.arange(0,10,2)          → [0,2,4,6,8]\n  np.linspace(0,1,5)         → 5 evenly spaced\n\n⚡ Vectorised ops (no loop needed):\n  arr + 5, arr * 2, arr ** 2\n  np.sqrt(arr), np.log(arr)\n\n🎭 Boolean masking (filter):\n  arr[arr > 50]              → values above 50\n  np.mean(arr >= 50)         → pass rate!\n\n📊 Statistics:\n  np.mean(), np.std(), np.min(), np.max()\n  np.argmax()  → index of max\n  np.argsort() → sorted indices\n\n🔧 Shape:\n  arr.shape, arr.dtype, arr.ndim\n  arr.reshape(-1, 1)  → make 2D for sklearn\n\nWhat specifically would you like explained?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('what is numpy')||lm.includes('why numpy')||lm.includes('faster')||lm.includes('list'))r=replies.numpy;
+    else if(lm.includes('shape')||lm.includes('dimension'))r=replies.shape;
+    else if(lm.includes('reshape'))r=replies.reshape;
+    else if(lm.includes('axis'))r=replies.axis;
+    else if(lm.includes('mask')||lm.includes('filter')||lm.includes('boolean'))r=replies.masking;
+    addMsg(r,'ai');},800+Math.random()*400);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ── FILL ──
+const fillData=[
+  {q:'1. The universal alias for NumPy: import numpy ___ np',ans:['as'],hint:'as'},
+  {q:'2. To get the shape of an array: arr.___',ans:['shape'],hint:'shape'},
+  {q:'3. A 1D array of 5 elements has shape ___',ans:['(5,)','5,'],hint:'(5,)'},
+  {q:'4. A 2D array with 3 rows and 4 cols has shape ___',ans:['(3, 4)','(3,4)'],hint:'(3, 4)'},
+  {q:'5. To divide ALL array elements by 100 without a loop: arr ___ 100',ans:['/'],hint:'/'},
+  {q:'6. Boolean mask to filter scores ≥ 50: scores[scores ___ 50]',ans:['>=','≥'],hint:'>='},
+  {q:'7. Mean of EACH COLUMN in 2D array X: np.mean(X, axis=___)',ans:['0'],hint:'0'},
+  {q:'8. Convert shape (100,) to shape (100,1) for sklearn: arr.reshape(___, 1)',ans:['-1'],hint:'-1'},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+}
+function checkFill(){
+  fillS=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase().replace(/\s/g,'');
+    const ok=q.ans.some(a=>v===a.toLowerCase().replace(/\s/g,'')||v.includes(a.toLowerCase().replace(/\s/g,'')));
+    if(ok){fillS++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.hint;}
+  });
+  updateProg();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillS===8?'<span style="color:var(--green)">🎉 Perfect — 8/8!</span>':fillS>=6?`<span style="color:var(--amber)">${fillS}/8 — almost there!</span>`:`<span style="color:var(--red)">${fillS}/8 — review the concepts above.</span>`;
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ── MCQ ──
+const mcqs=[
+  {q:'Why are NumPy arrays ~100× faster than Python lists for numerical operations?',opts:['NumPy skips error checking to run faster','NumPy arrays store data as raw bytes in contiguous memory and operations run as compiled C code — no Python overhead per element','NumPy uses more RAM which speeds things up','NumPy automatically uses multiple CPU cores'],ans:1,exp:'Python lists store "pointers to Python objects" — each element is a separate Python object with overhead (type info, reference count, etc). NumPy stores raw numbers as fixed-size bytes next to each other in memory. Operations run as compiled C code that processes ALL elements in one sweep — no Python interpreter overhead per element. This is called "vectorised computation."'},
+  {q:'You run: scores = np.array([85, 45, 72]). What is scores.shape?',opts:['(3)','(1, 3)','(3,)','3'],ans:2,exp:'"(3,)" means 1-dimensional array with 3 elements. The comma after 3 with nothing after it is NumPy\'s notation for 1D. If it were (1, 3) it would be 2D with 1 row and 3 columns. If it were (3, 1) it would be 2D with 3 rows and 1 column. Understanding this difference is critical for avoiding sklearn errors.'},
+  {q:'What does scores + 5 do when scores is a NumPy array?',opts:['Adds 5 only to the first element','Returns an error — you need a loop','Adds 5 to EVERY element and returns a new array — no loop needed','Appends 5 as a new element at the end'],ans:2,exp:'This is vectorised operation — the entire array is processed at once. scores = [85, 45, 72] → scores + 5 → [90, 50, 77]. No loop needed, NumPy does it in one optimised C operation. This also works with * / ** and any NumPy function like np.sqrt(scores).'},
+  {q:'scores = np.array([85, 45, 72, 33, 91]). What does scores[scores > 80] return?',opts:['[True, False, False, False, True]','The count: 2','A new array: [85, 91]','The indices: [0, 4]'],ans:2,exp:'Boolean masking works in 2 steps: (1) scores > 80 creates boolean array [True, False, False, False, True]. (2) Using that as index returns only elements where True → [85, 91]. This is "boolean masking" or "fancy indexing" — NumPy\'s way to filter without a for loop.'},
+  {q:'What is the shape of np.array([[1,2,3],[4,5,6],[7,8,9]])?',opts:['(9,)','(3,3)','(3, 3)','(1, 9)'],ans:2,exp:'"(3, 3)" — a 2D array with 3 rows and 3 columns. In NumPy, shape is written as (rows, columns). This is called a "matrix." In ML, the features matrix X almost always has shape (n_samples, n_features) — so shape (100, 5) means 100 data points, each with 5 features.'},
+  {q:'For 2D array X with shape (5, 3): what does np.mean(X, axis=0) compute?',opts:['The mean of the whole array (one number)','The mean of each COLUMN — shape (3,) — one value per feature','The mean of each ROW — shape (5,) — one value per student','Just the mean of column 0'],ans:1,exp:'axis=0 means "collapse along the row dimension" — you get one result per column. For shape (5, 3): axis=0 → shape (3,) = mean of each of the 3 columns. Think of it as "looking DOWN each column." In ML, this is how StandardScaler computes the mean of each feature — axis=0 gives per-feature statistics.'},
+  {q:'What does scores.reshape(-1, 1) do to a 1D array of 8 elements?',opts:['Makes it shape (1, 8) — 1 row, 8 columns','Makes it shape (8, 1) — 8 rows, 1 column','Flattens it to shape (8,)','Returns an error — -1 is invalid'],ans:1,exp:'"shape (8, 1)" — a column vector. The -1 tells NumPy "calculate this dimension." Total elements = 8, columns = 1, so rows = 8/1 = 8. This creates shape (8, 1). This is critical for sklearn: model.fit(X, y) requires X to be 2D. If marks.shape is (8,), you need marks.reshape(-1, 1) to make it (8, 1).'},
+  {q:'np.mean(scores >= 50) when scores = [85, 45, 72, 33, 91, 58]. What does it return?',opts:['The mean of scores above 50: 76.5','The count of scores ≥ 50: 4','The proportion: 4/6 ≈ 0.667 (about 67%)','An error — can\'t take mean of booleans'],ans:2,exp:'Boolean array: [True,False,True,False,True,True] = [1,0,1,0,1,1]. Mean = 4/6 = 0.6667. Multiply by 100 = 66.7% passing rate! This elegant trick — np.mean(condition) = proportion where condition is True — is used constantly in ML: pass rates, accuracy, precision, recall.'},
+  {q:'m = np.array([[1,2,3],[4,5,6],[7,8,9]]). What does m[:, 1] return?',opts:['[1, 2, 3] — the first row','[2, 5, 8] — all of column 1','\n[2]\n[5]\n[8]  — a column vector','3 — the element at position 1'],ans:1,exp:'"[2, 5, 8]" — all rows, column 1. The : means "all rows" and 1 means column index 1. In ML, this is how you extract ONE feature from a dataset: X[:,2] extracts the 3rd feature (column 2) from all samples. This gives you a 1D array you can analyse.'},
+  {q:'np.argmax(predictions) where predictions = [0.1, 0.7, 0.2] returns:',opts:['0.7 — the maximum value','0 — the first index always','1 — the INDEX of the maximum value','2 — the count of elements below max'],ans:2,exp:'"1" — argmax returns the INDEX of the maximum value, not the value itself. predictions[1] = 0.7 is the highest. In image classification (e.g. cat vs dog vs bird), np.argmax(model.predict(image)) gives you the predicted class. Class 0 = cat, class 1 = dog, class 2 = bird → argmax tells you WHICH class won.'},
+  {q:'Which code correctly creates a 2D array with shape (4, 1) for sklearn from marks = [85, 45, 72, 33]?',opts:['np.array([[85, 45, 72, 33]])','np.array([85, 45, 72, 33]).reshape(1, 4)','np.array([85, 45, 72, 33]).reshape(-1, 1)','np.expand_dims([85,45,72,33], 1)'],ans:2,exp:'.reshape(-1, 1) — -1 calculates rows automatically (4÷1=4 rows), 1 sets columns to 1. Result: shape (4, 1). Option A gives shape (1,4). Option B also gives shape (1,4). Option D actually works too but is less common. .reshape(-1, 1) is the standard solution you\'ll see in every sklearn tutorial.'},
+  {q:'What does np.arange(0, 10, 2) create?',opts:['10 zeros: [0,0,0,...0]','[0,2,4,6,8] — from 0 to 10, step 2','[0,1,2,...10] — from 0 to 10','2 arrays: one with 0s, one with 10s'],ans:1,exp:'"[0, 2, 4, 6, 8]" — arange(start, stop, step). Starts at 0, goes up to (but NOT including) 10, stepping by 2. Similar to Python\'s range(0,10,2) but returns a NumPy array. np.linspace(0,1,5) is similar but creates evenly spaced values: [0.0, 0.25, 0.5, 0.75, 1.0].'},
+  {q:'Normalising a column of scores using: (X - X.min()) / (X.max() - X.min()) produces:',opts:['Scores scaled from 0 to 100','Scores scaled from -1 to 1','Scores scaled from 0.0 to 1.0 — the minimum becomes 0, maximum becomes 1','Z-scores — mean=0, std=1'],ans:2,exp:'"0.0 to 1.0" — Min-Max normalisation scales so minimum → 0 and maximum → 1. (min - min)/(max - min) = 0. (max - min)/(max - min) = 1. All others in between. This is what sklearn\'s MinMaxScaler does. It\'s used when you want all features on the same 0-1 scale, which helps many ML algorithms converge faster.'},
+  {q:'What is the difference between np.sum(arr) and np.sum(arr > 50)?',opts:['No difference — both sum the array','np.sum(arr) sums the values. np.sum(arr > 50) counts how many elements are > 50 (True=1, False=0)','np.sum(arr > 50) raises an error','np.sum(arr > 50) gives the sum of values above 50'],ans:1,exp:'np.sum(arr) = sum of actual values (85+45+72+...). np.sum(arr>50) = count of elements above 50. Boolean array [T,F,T,F,T] = [1,0,1,0,1], sum = 3. This distinction is important: to COUNT elements meeting a condition use np.sum(condition). To SUM only matching values use np.sum(arr[arr>50]).'},
+  {q:'In ML, why must X (features) always be 2D (n_samples, n_features)?',opts:['It\'s just a convention with no technical reason','sklearn raises an error — it assumes each row is one sample and each column is one feature. A 1D array is ambiguous: is it n_samples or n_features?','2D arrays are faster to process','1D arrays don\'t work in Python'],ans:1,exp:'sklearn expects X to have shape (n_samples, n_features) where each ROW is one data point and each COLUMN is one feature. A 1D array (n,) is ambiguous — is it one sample with n features, or n samples with 1 feature each? sklearn defaults to the latter interpretation but raises errors to force you to be explicit. That\'s why reshape(-1,1) is needed for single-feature data.'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 15</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqSet.has(qi))return;mcqSet.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqS++;document.getElementById('live-sc').textContent=mcqS;}
+  if(mcqSet.size===15){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProg();
+}
+function showFinal(){
+  const pct=Math.round(mcqS/15*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--blue) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score!':pct>=80?'Excellent Work!':pct>=60?'Good Effort!':'Keep Practising!';
+  document.getElementById('fin-msg').textContent=`Score: ${mcqS}/15 (${pct}%) — ${pct>=80?'NumPy arrays mastered! Day 17 covers broadcasting and linear algebra.':pct>=60?'Good foundation. Re-read the explanations for any questions you got wrong.':'Re-read the concept section above and try the tasks again.'}`;
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

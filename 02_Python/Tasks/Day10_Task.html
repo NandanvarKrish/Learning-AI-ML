@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 10 — AI Task: File I/O · Reading & Writing Files</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0fdf4;--paper:#fff;--p2:#dcfce7;
+  --ink:#052010;--ink2:#1a4028;--ink3:#5a9070;
+  --rule:#bbf7d0;
+  --green:#15803d;--gs:#f0fdf4;--gb:#86efac;
+  --blue:#0369a1;--bs:#e0f2fb;--bb:#7dd3fc;
+  --amber:#b45309;--as:#fffbeb;--ab:#fde68a;
+  --purple:#6d28d9;--ps:#f5f3ff;--pb:#c4b5fd;
+  --red:#be123c;--rs:#fff1f2;--rb:#fecdd3;
+  --teal:#0d9488;--ts:#f0fdfa;--tb:#99f6e4;
+  --sh:0 1px 4px rgba(5,32,16,.07),0 4px 18px rgba(5,32,16,.07);
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;
+  background-image:radial-gradient(circle at 90% 5%,#bbf7d055,transparent 42%),radial-gradient(circle at 5% 92%,#6ee7b740,transparent 40%);min-height:100vh}
+
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(5,32,16,.06)}
+.bar-in{max-width:860px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bl{display:flex;align-items:center;gap:10px}
+.bdg{background:var(--green);color:#fff;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;padding:4px 12px;border-radius:4px}
+.btl{font-size:.84rem;font-weight:600;color:var(--ink2)}
+.tmr{font-family:'DM Mono',monospace;font-size:.77rem;color:var(--ink3);background:var(--p2);padding:5px 13px;border-radius:99px;border:1px solid var(--rule);cursor:pointer;transition:all .2s;user-select:none}
+.tmr.on{background:var(--gs);border-color:var(--gb);color:var(--green)}
+
+.page{max-width:860px;margin:0 auto;padding:40px 20px 90px}
+
+.bc{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink3);margin-bottom:10px}
+h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;line-height:1.1;margin-bottom:10px}
+h1 em{font-style:italic;color:var(--green)}
+.hsub{font-size:.92rem;color:var(--ink2);max-width:590px;line-height:1.75;margin-bottom:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--rule);border-radius:99px;padding:4px 13px;font-size:.73rem;font-family:'DM Mono',monospace;color:var(--ink2)}
+
+.prog{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:13px 20px;margin-bottom:22px;box-shadow:var(--sh)}
+.prog-row{display:flex;justify-content:space-between;font-size:.69rem;font-family:'DM Mono',monospace;color:var(--ink3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}
+.prog-track{height:7px;background:var(--rule);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:3%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:99px;transition:width .7s ease}
+
+.recap{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--green);border-radius:var(--r);padding:13px 18px;margin-bottom:22px;font-size:.87rem;color:var(--ink2);line-height:1.8}
+.recap code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+
+.sh{display:flex;align-items:center;gap:12px;margin:30px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.sh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sh-ttl{font-family:'Fraunces',Georgia,serif;font-size:1.22rem;font-weight:700}
+.sh-sub{font-size:.73rem;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.sh-bdg{margin-left:auto;font-family:'DM Mono',monospace;font-size:.67rem;color:var(--ink3);background:var(--p2);padding:4px 12px;border-radius:99px;border:1px solid var(--rule);white-space:nowrap}
+
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r);padding:24px 28px;margin-bottom:16px;box-shadow:var(--sh)}
+.ctag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.63rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tg{background:var(--gs);color:var(--green);border:1px solid var(--gb)}
+.tb{background:var(--bs);color:var(--blue);border:1px solid var(--bb)}
+.ta{background:var(--as);color:var(--amber);border:1px solid var(--ab)}
+.tp{background:var(--ps);color:var(--purple);border:1px solid var(--pb)}
+.tt{background:var(--ts);color:var(--teal);border:1px solid var(--tb)}
+.card h2{font-family:'Fraunces',Georgia,serif;font-size:1.15rem;font-weight:700;margin-bottom:10px;line-height:1.3}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.8;margin-bottom:10px}
+.card p:last-child{margin-bottom:0}
+
+.cb{border-radius:10px;padding:12px 16px;font-size:.86rem;line-height:1.7;margin:12px 0;display:flex;gap:10px;align-items:flex-start}
+.cb i{flex-shrink:0;margin-top:1px;font-style:normal}
+.cbb{background:var(--bs);border:1px solid var(--bb);color:var(--blue)}
+.cbg{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.cba{background:var(--as);border:1px solid var(--ab);color:#92400e}
+.cbp{background:var(--ps);border:1px solid var(--pb);color:var(--purple)}
+.cbt{background:var(--ts);border:1px solid var(--tb);color:var(--teal)}
+.cbr{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+.cw{background:#052010;border-radius:10px;margin:14px 0;overflow:hidden}
+.cbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#0a2818;border-bottom:1px solid #164030}
+.cdots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}
+.cdr{background:#ef4444}.cdy{background:#f59e0b}.cdg{background:#22c55e}
+.clang{font-family:'DM Mono',monospace;font-size:.63rem;color:#4a9060;letter-spacing:.1em;text-transform:uppercase}
+.cbody{padding:18px;font-family:'DM Mono',monospace;font-size:.83rem;line-height:2;overflow-x:auto;color:#c8f0d8}
+.cm{color:#2a6040;font-style:italic}.kw{color:#4ade80}.fn{color:#67e8f9}.st{color:#86efac}.nm{color:#fbbf24}.vr{color:#c8f0d8}.op{color:#4a9060}
+
+/* mode table */
+.mode-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.85rem}
+.mode-table th{background:var(--p2);font-weight:600;padding:9px 14px;text-align:left;border:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.mode-table td{padding:9px 14px;border:1px solid var(--rule);color:var(--ink2);vertical-align:top}
+.mode-table td:first-child{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:700;color:var(--green)}
+.mode-table tr.warn td{background:var(--as)}
+.mode-table tr:nth-child(even) td:not(.mode-table tr.warn td){background:#f6fdf8}
+
+/* format grid */
+.fmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.fmt-card{border-radius:10px;padding:14px;border:1.5px solid;text-align:center}
+.fmt-card.txt{background:#f0f9ff;border-color:var(--bb)}
+.fmt-card.csv{background:var(--gs);border-color:var(--gb)}
+.fmt-card.json{background:var(--ps);border-color:var(--pb)}
+.fmt-icon{font-size:1.7rem;margin-bottom:6px}
+.fmt-name{font-weight:700;font-size:.88rem;margin-bottom:4px}
+.fmt-card.txt .fmt-name{color:var(--blue)}
+.fmt-card.csv .fmt-name{color:var(--green)}
+.fmt-card.json .fmt-name{color:var(--purple)}
+.fmt-desc{font-size:.75rem;color:var(--ink2);line-height:1.5}
+
+/* CSV parser */
+.csv-parser{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.csv-parser textarea{width:100%;min-height:110px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:8px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink);background:var(--paper);resize:vertical;outline:none;line-height:1.7;transition:border-color .2s}
+.csv-parser textarea:focus{border-color:var(--green)}
+.csv-out{margin-top:12px;background:var(--paper);border:1.5px solid var(--rule);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:.82rem;color:var(--ink2);line-height:1.9;white-space:pre-wrap;display:none;max-height:320px;overflow-y:auto}
+.csv-out.show{display:block}
+.csv-out .ok{color:var(--green)}
+
+/* JSON builder */
+.json-builder{background:var(--p2);border:1.5px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:14px 0}
+.jb-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.jb-lbl{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--ink3);min-width:80px}
+.jb-inp{border:1.5px solid var(--rule);border-radius:8px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:.82rem;background:var(--paper);color:var(--ink);outline:none;flex:1;min-width:100px;transition:border-color .2s}
+.jb-inp:focus{border-color:var(--green)}
+.jb-out{margin-top:12px;background:#052010;border-radius:8px;padding:12px 16px;font-family:'DM Mono',monospace;font-size:.82rem;color:#c8f0d8;line-height:1.9;white-space:pre-wrap;min-height:52px}
+
+/* playground */
+.pg{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.pgh{background:#f0fdf4;border-bottom:1px solid var(--rule);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pgt{font-family:'DM Mono',monospace;font-size:.71rem;color:var(--ink2);font-weight:500;letter-spacing:.07em}
+.pgb{display:flex;gap:7px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#116630}
+.btn-b{background:var(--blue);color:#fff}.btn-b:hover{background:#025a87}
+.btn-o{background:var(--paper);color:var(--ink2);border:1.5px solid var(--rule)}.btn-o:hover{background:var(--p2)}
+.pge{padding:14px 18px;background:#f8fefb}
+.pge textarea{width:100%;border:1.5px solid var(--rule);border-radius:8px;padding:11px 14px;font-family:'DM Mono',monospace;font-size:.83rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:130px;transition:border-color .2s;line-height:1.8}
+.pge textarea:focus{border-color:var(--green)}
+.out-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:4px;font-family:'DM Mono',monospace}
+.pgo{border-top:1px solid var(--rule);padding:12px 18px;background:#f2fdf5;font-family:'DM Mono',monospace;font-size:.82rem;min-height:44px;white-space:pre-wrap;line-height:1.8;color:var(--ink2)}
+.pgo.ok{color:var(--green)}.pgo.err{color:var(--red)}
+
+/* task list */
+.tlist{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.ti{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;background:var(--bg);border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;transition:all .2s;user-select:none}
+.ti:hover{border-color:var(--gb);background:var(--gs)}
+.ti.done{background:var(--gs);border-color:var(--gb)}
+.tcb{width:20px;height:20px;border:2px solid #6ab88a;border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--paper);font-size:.72rem;color:#fff;font-weight:700}
+.ti.done .tcb{background:var(--green);border-color:var(--green)}
+.tlbl{font-size:.88rem;color:var(--ink2);line-height:1.55}
+.ti.done .tlbl{color:var(--green);text-decoration:line-through}
+.thint{font-size:.75rem;color:var(--ink3);margin-top:2px;display:block}
+
+/* scenarios */
+.scenario{background:var(--p2);border:1.5px solid var(--rule);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.sc-q{font-size:.91rem;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.5;white-space:pre-wrap}
+.sc-opts{display:flex;flex-direction:column;gap:7px}
+.sc-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.sc-opt:hover:not(.done){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.sc-opt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.sc-opt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.sc-opt.done{cursor:default}
+.sc-l{width:22px;height:22px;border-radius:6px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.sc-opt.cor .sc-l{background:var(--green);border-color:var(--green);color:#fff}
+.sc-opt.wrg .sc-l{background:var(--red);border-color:var(--red);color:#fff}
+.sc-exp{margin-top:9px;padding:9px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.sc-exp.show{display:block}
+.sc-exp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.sc-exp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+/* AI chat */
+.aic{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);overflow:hidden;margin:14px 0}
+.aic-hd{background:linear-gradient(135deg,#15803d,#059669);color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.aic-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.aic-msgs{padding:14px 18px;display:flex;flex-direction:column;gap:11px;max-height:340px;overflow-y:auto;background:#f8fefb}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.bbl{max-width:82%;padding:10px 14px;border-radius:12px;font-size:.86rem;line-height:1.65;white-space:pre-wrap}
+.msg.ai .bbl{background:var(--paper);border:1px solid var(--rule);color:var(--ink2);border-radius:12px 12px 12px 3px}
+.msg.user .bbl{background:var(--green);color:#fff;border-radius:12px 12px 3px 12px}
+.m-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.msg.ai .m-av{background:var(--gs);border:1px solid var(--gb)}
+.msg.user .m-av{background:var(--p2);border:1px solid var(--rule)}
+.aic-inp-row{border-top:1px solid var(--rule);padding:11px 15px;display:flex;gap:8px;background:var(--paper)}
+.aic-inp{flex:1;border:1.5px solid var(--rule);border-radius:99px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;background:var(--bg);color:var(--ink);transition:border-color .2s}
+.aic-inp:focus{border-color:var(--green)}
+.aic-send{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:none;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aic-send:hover{background:#116630}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.dt{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:bop .8s infinite}
+.dt:nth-child(2){animation-delay:.15s}.dt:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* fill */
+.fq{margin-bottom:14px}
+.fq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:6px;color:var(--ink2);line-height:1.6}
+.fq label code{font-family:'DM Mono',monospace;font-size:.82rem;background:var(--p2);padding:1px 6px;border-radius:4px;color:var(--green)}
+.fi{border:1.5px solid var(--rule);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;width:100%;max-width:360px;transition:border-color .2s}
+.fi:focus{border-color:var(--green)}
+.fi.ok{border-color:var(--green);background:var(--gs)}
+.fi.no{border-color:var(--red);background:var(--rs)}
+.ff{font-size:.77rem;margin-top:4px;min-height:16px;font-family:'DM Mono',monospace}
+.ff.ok{color:var(--green)}.ff.no{color:var(--red)}
+
+/* short answer */
+.sq{margin-bottom:16px}
+.sq label{font-size:.89rem;font-weight:500;display:block;margin-bottom:7px;color:var(--ink2);line-height:1.6}
+.sq textarea{width:100%;border:1.5px solid var(--rule);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--paper);color:var(--ink);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.7}
+.sq textarea:focus{border-color:var(--green)}
+.cc{font-size:.7rem;color:var(--ink3);text-align:right;margin-top:3px;font-family:'DM Mono',monospace}
+
+/* MCQ */
+.mcq{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:22px 24px;margin-bottom:12px}
+.qnum{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.qtext{font-family:'Fraunces',Georgia,serif;font-size:.98rem;font-weight:700;color:var(--ink);margin-bottom:13px;line-height:1.45;white-space:pre-wrap}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--rule);border-radius:9px;cursor:pointer;font-size:.85rem;color:var(--ink2);transition:all .2s;user-select:none;background:var(--paper)}
+.qopt:hover:not(.dis){background:var(--gs);border-color:var(--gb);color:var(--green)}
+.qopt.cor{background:var(--gs);border-color:var(--gb);color:var(--green);font-weight:600}
+.qopt.wrg{background:var(--rs);border-color:var(--rb);color:var(--red)}
+.qopt.dis{cursor:default}
+.qind{width:24px;height:24px;border-radius:7px;background:var(--p2);border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.67rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.qopt.cor .qind{background:var(--green);border-color:var(--green);color:#fff}
+.qopt.wrg .qind{background:var(--red);border-color:var(--red);color:#fff}
+.qexp{margin-top:10px;padding:10px 13px;border-radius:8px;font-size:.8rem;line-height:1.65;display:none}
+.qexp.show{display:block}
+.qexp.ok{background:var(--gs);border:1px solid var(--gb);color:#166534}
+.qexp.no{background:var(--rs);border:1px solid var(--rb);color:var(--red)}
+
+.sb{background:var(--paper);border:1.5px solid var(--rule);border-radius:var(--r);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--sh)}
+.sb-ring{width:52px;height:52px;border-radius:50%;background:var(--p2);border:2px solid var(--rule);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:background 1s}
+.sb-n{font-family:'Fraunces',Georgia,serif;font-size:1.2rem;font-weight:900;line-height:1}
+.sb-d{font-family:'DM Mono',monospace;font-size:.59rem;color:var(--ink3)}
+
+.final{background:linear-gradient(135deg,#052010,#1a4028);color:#fff;border-radius:var(--r);padding:36px;text-align:center;display:none;margin-top:8px}
+.final.show{display:block}
+.fin-emoji{font-size:2.5rem;margin-bottom:10px}
+.fin-title{font-family:'Fraunces',Georgia,serif;font-size:1.5rem;font-weight:900;margin-bottom:8px}
+.fin-msg{font-size:.9rem;color:rgba(255,255,255,.75);margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.65}
+.fin-cta{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 22px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.fin-cta:hover{background:rgba(255,255,255,.25)}
+
+/* week complete badge */
+.week-complete{background:linear-gradient(135deg,var(--green),var(--teal));color:#fff;border-radius:var(--r);padding:20px 24px;margin:16px 0;display:flex;align-items:center;gap:16px}
+.wc-icon{font-size:2rem;flex-shrink:0}
+.wc-text strong{font-size:.92rem;display:block;margin-bottom:4px}
+.wc-text{font-size:.84rem;line-height:1.7;opacity:.9}
+
+footer{text-align:center;margin-top:48px;padding-top:22px;border-top:1px solid var(--rule);font-family:'DM Mono',monospace;font-size:.69rem;color:var(--ink3);letter-spacing:.04em;line-height:2}
+
+@media(max-width:600px){
+  .card{padding:18px 16px}
+  .fmt-grid{grid-template-columns:1fr}
+  .aic-msgs{max-height:260px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="bar">
+  <div class="bar-in">
+    <div class="bl">
+      <div class="bdg">📅 Day 10</div>
+      <div class="btl">AI Task — File I/O · open() · csv · json · with statement</div>
+    </div>
+    <div class="tmr" id="tmr" onclick="toggleTimer()">⏱ <span id="tdisp">00:00</span></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- HERO -->
+<div style="margin-bottom:28px">
+  <div class="bc">AI/ML 15-Month · Month 1 · Week 2 · Day 10 Task · 🎉 Week 2 Complete!</div>
+  <h1>Your AI Task:<br><em>File I/O — Reading & Writing</em></h1>
+  <p class="hsub">Today you completed <strong>Week 2</strong> by learning how Python reads and writes files. Every ML dataset comes from a file. Every model's results are saved to a file. CSVs and JSON are the two most important file formats in AI — and Pandas' <code style="font-family:'DM Mono',monospace;color:var(--green)">read_csv()</code> is just Python's file I/O wrapped in a smarter package.</p>
+  <div class="pills">
+    <span class="pill">⏱ 4–5 Hours</span>
+    <span class="pill">🐍 Python</span>
+    <span class="pill">📂 open()</span>
+    <span class="pill">🛡️ with</span>
+    <span class="pill">📋 csv</span>
+    <span class="pill">🔵 json</span>
+    <span class="pill">🐼 Pandas link</span>
+    <span class="pill">🏆 Week 2 Final!</span>
+    <span class="pill">🧠 20 MCQs</span>
+  </div>
+</div>
+
+<!-- WEEK COMPLETE BADGE -->
+<div class="week-complete">
+  <div class="wc-icon">🏆</div>
+  <div class="wc-text"><strong>Week 2 Complete! You have covered Days 06–10</strong>
+  You have learned: Dictionaries · Functions · *args/**kwargs · Lambda · Modules · File I/O. These are the foundation of every Python AI/ML project. Week 3 begins with Error Handling — making your code production-ready.</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog">
+  <div class="prog-row"><span>Task Progress</span><span id="prog-pct">3%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- RECAP -->
+<div class="recap">
+  ✅ <strong>What you learned today:</strong>
+  <code>open("file.txt", "r")</code> — opens a file. Always use <code>with</code> to ensure it closes automatically.
+  File modes: <code>"r"</code> read · <code>"w"</code> write (overwrites) · <code>"a"</code> append · <code>"x"</code> create (fails if exists).
+  <code>f.read()</code> full content · <code>f.readlines()</code> list of lines · <code>f.write()</code> write text.
+  <code>csv.reader</code> → rows as lists · <code>csv.DictReader</code> → rows as dicts (column names as keys).
+  <code>json.load(f)</code> file→dict · <code>json.dump(data, f)</code> dict→file · <code>json.loads(s)</code> string→dict · <code>json.dumps(d)</code> dict→string.
+  <strong>Pandas connection:</strong> <code>pd.read_csv()</code> is Python's file I/O + csv.DictReader + data types — all wrapped in one powerful function.
+</div>
+
+<!-- ===== PART 1: FILE MODES ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">📂</div>
+  <div><div class="sh-ttl">Part 1 — open() and File Modes</div><div class="sh-sub">Know exactly what each mode does before touching any data</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tg">📂 open() Reference</div>
+  <h2>The 4 File Modes — Every Detail</h2>
+  <p>The mode argument in <code style="font-family:'DM Mono',monospace;color:var(--green)">open("file.txt", mode)</code> determines what you can do with the file. Getting the mode wrong can <strong>destroy your data</strong>.</p>
+  <table class="mode-table">
+    <thead><tr><th>Mode</th><th>Name</th><th>What It Does</th><th>File Must Exist?</th><th>ML Use Case</th></tr></thead>
+    <tbody>
+      <tr><td>"r"</td><td>Read</td><td>Opens for reading only. File pointer at start.</td><td>Yes (FileNotFoundError if not)</td><td>Load a dataset CSV or config JSON</td></tr>
+      <tr><td>"w"</td><td>Write</td><td>Creates new file OR overwrites existing content completely.</td><td>No — creates it</td><td>Save model results (fresh each run)</td></tr>
+      <tr class="warn"><td>"a"</td><td>Append</td><td>Adds to end of file. Does NOT touch existing content.</td><td>No — creates it if needed</td><td>Add new training log entries without losing old ones</td></tr>
+      <tr><td>"x"</td><td>Create</td><td>Creates new file. Fails with FileExistsError if file already exists.</td><td>Must NOT exist</td><td>Safe file creation — prevents overwriting</td></tr>
+      <tr><td>"rb"/"wb"</td><td>Binary</td><td>Read/write binary data (images, audio, model weights)</td><td>Depends on r or w</td><td>Loading image files, saving model pickles</td></tr>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top:20px">🛡️ The with Statement — Why It Is Mandatory</h2>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Python — with vs without</div></div>
+    <div class="cbody">
+<span class="cm"># ❌ WITHOUT with — dangerous! File may never close</span>
+<span class="vr">f</span> = <span class="fn">open</span>(<span class="st">"data.txt"</span>, <span class="st">"r"</span>)
+<span class="vr">content</span> = <span class="vr">f</span>.<span class="fn">read</span>()
+<span class="cm"># If an error occurs here, f.close() never runs!</span>
+<span class="vr">f</span>.<span class="fn">close</span>()   <span class="cm"># Must remember this — easy to forget</span>
+
+<span class="cm"># ✅ WITH with — safe and clean (ALWAYS use this)</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"data.txt"</span>, <span class="st">"r"</span>) <span class="kw">as</span> <span class="vr">f</span>:
+    <span class="vr">content</span> = <span class="vr">f</span>.<span class="fn">read</span>()
+<span class="cm"># File closes AUTOMATICALLY when block ends — even if error occurs!</span>
+<span class="fn">print</span>(<span class="vr">content</span>)   <span class="cm"># Use content OUTSIDE the with block</span>
+    </div>
+  </div>
+  <div class="cb cbr">
+    <i>⚠️</i>
+    <span><strong>Critical rule:</strong> ALWAYS use <code style="font-family:'DM Mono',monospace">with open()</code>. Without it, unclosed files cause: memory leaks, data corruption, the file remaining locked so other programs cannot access it. In production ML systems with thousands of file operations per second, forgetting close() is catastrophic.</span>
+  </div>
+
+  <h2 style="margin-top:20px">📄 3 File Formats in ML</h2>
+  <div class="fmt-grid">
+    <div class="fmt-card txt">
+      <div class="fmt-icon">📄</div>
+      <div class="fmt-name">.txt</div>
+      <div class="fmt-desc">Plain text. Logs, model outputs, raw text data. f.read(), f.readlines(), f.write()</div>
+    </div>
+    <div class="fmt-card csv">
+      <div class="fmt-icon">📊</div>
+      <div class="fmt-name">.csv</div>
+      <div class="fmt-desc">Comma-Separated Values. The universal dataset format. csv.DictReader gives each row as a dict.</div>
+    </div>
+    <div class="fmt-card json">
+      <div class="fmt-icon">🔵</div>
+      <div class="fmt-name">.json</div>
+      <div class="fmt-desc">JavaScript Object Notation. Config files, API responses, nested data. Maps directly to Python dicts.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PART 2: CSV PARSER ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">📊</div>
+  <div><div class="sh-ttl">Part 2 — CSV Live Parser</div><div class="sh-sub">Type CSV data — see exactly what DictReader gives you</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">📊 CSV Simulator</div>
+  <h2>csv.DictReader — See Each Row as a Dict</h2>
+  <p>Type CSV data (first row = headers). The parser shows exactly what <code style="font-family:'DM Mono',monospace;color:var(--green)">csv.DictReader</code> would return — each row as a dictionary with column names as keys. This is what Pandas does internally when you call <code style="font-family:'DM Mono',monospace;color:var(--green)">pd.read_csv()</code>.</p>
+  <div class="csv-parser">
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Type or edit CSV data below:</div>
+    <textarea class="csv-parser textarea" id="csv-input" style="width:100%;min-height:110px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:8px;font-family:'DM Mono',monospace;font-size:.83rem;color:var(--ink);background:var(--paper);resize:vertical;outline:none;line-height:1.7;transition:border-color .2s" oninput="this.style.borderColor='var(--green)'">name,marks,attendance,city
+Ali,88,92,Karachi
+Sara,45,78,Lahore
+Usman,91,85,Islamabad
+Zara,33,60,Karachi
+Ahmed,72,90,Peshawar</textarea>
+    <button class="btn btn-g" style="width:100%;justify-content:center;margin-top:10px" onclick="parseCSV()">▶ Run csv.DictReader</button>
+    <div class="csv-out" id="csv-out"></div>
+  </div>
+  <div class="cb cbg">
+    <i>💡</i>
+    <span><strong>csv.reader vs csv.DictReader:</strong><br>
+    csv.reader → row = ["Ali", "88", "92", "Karachi"] (access by index: row[1])<br>
+    csv.DictReader → row = {"name":"Ali","marks":"88","att":"92","city":"Karachi"} (access by name: row["marks"])<br>
+    Always use DictReader — it is more readable and does not break if columns reorder.</span>
+  </div>
+  <div class="cw" style="margin-top:14px">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Python — Full CSV Pipeline</div></div>
+    <div class="cbody">
+<span class="kw">import</span> <span class="vr">csv</span>
+
+<span class="cm"># READ CSV with DictReader</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"students.csv"</span>, <span class="st">"r"</span>, newline=<span class="st">""</span>) <span class="kw">as</span> <span class="vr">f</span>:
+    <span class="vr">reader</span> = <span class="vr">csv</span>.<span class="fn">DictReader</span>(<span class="vr">f</span>)
+    <span class="vr">data</span> = <span class="fn">list</span>(<span class="vr">reader</span>)  <span class="cm"># list of row-dicts</span>
+
+<span class="cm"># Access by column name — not fragile index!</span>
+<span class="kw">for</span> <span class="vr">row</span> <span class="kw">in</span> <span class="vr">data</span>:
+    <span class="fn">print</span>(<span class="vr">row</span>[<span class="st">"name"</span>], <span class="vr">row</span>[<span class="st">"marks"</span>])
+
+<span class="cm"># WRITE CSV with DictWriter</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"results.csv"</span>, <span class="st">"w"</span>, newline=<span class="st">""</span>) <span class="kw">as</span> <span class="vr">f</span>:
+    <span class="vr">writer</span> = <span class="vr">csv</span>.<span class="fn">DictWriter</span>(<span class="vr">f</span>, fieldnames=[<span class="st">"name"</span>, <span class="st">"grade"</span>])
+    <span class="vr">writer</span>.<span class="fn">writeheader</span>()
+    <span class="vr">writer</span>.<span class="fn">writerow</span>({<span class="st">"name"</span>: <span class="st">"Ali"</span>, <span class="st">"grade"</span>: <span class="st">"A"</span>})
+    </div>
+  </div>
+</div>
+
+<!-- ===== PART 3: JSON BUILDER ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🔵</div>
+  <div><div class="sh-ttl">Part 3 — JSON Live Builder</div><div class="sh-sub">Build a JSON config and see json.dumps() output live</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🔵 JSON Simulator</div>
+  <h2>json.dump vs json.dumps — Live Demo</h2>
+  <p>JSON maps perfectly to Python dicts. Fill in the fields below and the builder shows exactly what <code style="font-family:'DM Mono',monospace;color:var(--green)">json.dumps(config, indent=2)</code> would output — the same as saving a model configuration file.</p>
+  <div class="json-builder">
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Build a model config dictionary:</div>
+    <div class="jb-row"><span class="jb-lbl">model_name:</span><input class="jb-inp" id="jn-name" value="RandomForest" oninput="buildJSON()"/></div>
+    <div class="jb-row"><span class="jb-lbl">n_estimators:</span><input class="jb-inp" id="jn-est" type="number" value="100" oninput="buildJSON()"/></div>
+    <div class="jb-row"><span class="jb-lbl">learning_rate:</span><input class="jb-inp" id="jn-lr" value="0.01" oninput="buildJSON()"/></div>
+    <div class="jb-row"><span class="jb-lbl">random_state:</span><input class="jb-inp" id="jn-rs" type="number" value="42" oninput="buildJSON()"/></div>
+    <div class="jb-row"><span class="jb-lbl">accuracy:</span><input class="jb-inp" id="jn-acc" value="0.94" oninput="buildJSON()"/></div>
+    <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px">json.dumps(config, indent=2) output:</div>
+    <div class="jb-out" id="jb-out">Loading...</div>
+    <div style="margin-top:10px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink3)">Save to file: <span style="color:var(--green)">json.dump(config, open("config.json","w"), indent=2)</span></div>
+  </div>
+  <div class="cb cbt">
+    <i>💡</i>
+    <span><strong>The json.dump() pattern:</strong><br>
+    <code style="font-family:'DM Mono',monospace">json.dump(data, f)</code> → writes to FILE (use with <code>with open()</code>)<br>
+    <code style="font-family:'DM Mono',monospace">json.dumps(data)</code> → returns a STRING (the 's' = string)<br>
+    <code style="font-family:'DM Mono',monospace">json.load(f)</code> → reads FILE → gives you Python dict<br>
+    <code style="font-family:'DM Mono',monospace">json.loads(s)</code> → parses STRING → gives you Python dict</span>
+  </div>
+</div>
+
+<!-- ===== PART 4: PANDAS CONNECTION ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">🐼</div>
+  <div><div class="sh-ttl">Part 4 — Pandas Connection</div><div class="sh-sub">pd.read_csv() is File I/O + csv.DictReader — wrapped smarter</div></div>
+  <div class="sh-bdg">⏱ 10 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">🐼 Month 2 Preview</div>
+  <h2>You Already Understand How Pandas Works</h2>
+  <p>Pandas <code style="font-family:'DM Mono',monospace;color:var(--green)">pd.read_csv()</code> is built on exactly what you learned today — it just adds automatic type detection, DataFrame structure, and hundreds of analysis methods. The underlying operations are the same.</p>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Python File I/O vs Pandas</div></div>
+    <div class="cbody">
+<span class="cm"># ===== WHAT YOU KNOW (Pure Python) =====</span>
+<span class="kw">import</span> <span class="vr">csv</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"students.csv"</span>, <span class="st">"r"</span>) <span class="kw">as</span> <span class="vr">f</span>:
+    <span class="vr">data</span> = <span class="fn">list</span>(<span class="vr">csv</span>.<span class="fn">DictReader</span>(<span class="vr">f</span>))
+<span class="vr">marks</span> = [<span class="fn">int</span>(<span class="vr">r</span>[<span class="st">"marks"</span>]) <span class="kw">for</span> <span class="vr">r</span> <span class="kw">in</span> <span class="vr">data</span>]
+<span class="vr">avg</span> = <span class="fn">sum</span>(<span class="vr">marks</span>) / <span class="fn">len</span>(<span class="vr">marks</span>)
+
+<span class="cm"># ===== WHAT PANDAS DOES (Month 2) =====</span>
+<span class="kw">import</span> <span class="vr">pandas</span> <span class="kw">as</span> <span class="vr">pd</span>
+<span class="vr">df</span> = <span class="vr">pd</span>.<span class="fn">read_csv</span>(<span class="st">"students.csv"</span>)  <span class="cm"># same file!</span>
+<span class="vr">avg</span> = <span class="vr">df</span>[<span class="st">"marks"</span>].<span class="fn">mean</span>()  <span class="cm"># auto type-converts numbers!</span>
+
+<span class="cm"># pd.read_csv() = open() + DictReader + type detection + DataFrame</span>
+    </div>
+  </div>
+  <div class="cb cbg">
+    <i>🎯</i>
+    <span><strong>Why this matters:</strong> When Pandas' read_csv() fails, you now know how to diagnose it — open the file manually with csv.DictReader and inspect each row. When an API returns JSON and Pandas fails to parse it, you can debug it with json.loads(). You are not just a Pandas user — you understand the foundation it is built on.</span>
+  </div>
+</div>
+
+<!-- ===== PART 5: CHECKLIST ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">📋</div>
+  <div><div class="sh-ttl">Part 5 — IDLE Checklist</div><div class="sh-sub">Complete each task in Python IDLE — tick when done</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✅ Checklist</div>
+  <h2>8 Hands-On Tasks</h2>
+  <ul class="tlist">
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Write a text file with <code style="font-family:'DM Mono',monospace">"w"</code> mode containing 5 student names (one per line). Read it back with <code style="font-family:'DM Mono',monospace">"r"</code> mode and print each line. Use <code style="font-family:'DM Mono',monospace">with open()</code> for both operations.</span>
+      <span class="thint">💡 with open("students.txt","w") as f: f.write("Ali\nSara\n...") — then with open("students.txt","r") as f: for line in f: print(line.strip())</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Test the difference between <code style="font-family:'DM Mono',monospace">"w"</code> and <code style="font-family:'DM Mono',monospace">"a"</code> mode: write "Line 1" with "w", then write "Line 2" with "w" again (observe Line 1 is gone!). Then use "a" to add "Line 3" without destroying "Line 2".</span>
+      <span class="thint">💡 "w" destroys everything first. "a" adds to the end. This is critical for training logs!</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Create a CSV file manually using <code style="font-family:'DM Mono',monospace">f.write()</code>, then read it with BOTH <code style="font-family:'DM Mono',monospace">csv.reader</code> (rows as lists) and <code style="font-family:'DM Mono',monospace">csv.DictReader</code> (rows as dicts). Print the output of each and observe the difference.</span>
+      <span class="thint">💡 csv.reader: row[0], row[1] (index) — csv.DictReader: row["name"], row["marks"] (key)</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">csv.DictWriter</code> to write a list of 4 student dicts to a new CSV file. Open the file afterward and read it back to verify the data is correct.</span>
+      <span class="thint">💡 writer = csv.DictWriter(f, fieldnames=["name","marks","grade"]) — writer.writeheader() — writer.writerow({...})</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Create a Python dict of model config (name, lr, epochs, accuracy), save it to <code style="font-family:'DM Mono',monospace">config.json</code> with <code style="font-family:'DM Mono',monospace">json.dump()</code>, then load it back with <code style="font-family:'DM Mono',monospace">json.load()</code> and print each setting.</span>
+      <span class="thint">💡 with open("config.json","w") as f: json.dump(config, f, indent=2) — then json.load(f)</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Use <code style="font-family:'DM Mono',monospace">json.dumps()</code> (not dump) to convert a dict to a JSON STRING (not a file). Print the type to confirm it is <code style="font-family:'DM Mono',monospace">str</code>. Then use <code style="font-family:'DM Mono',monospace">json.loads()</code> to convert the string back to a dict.</span>
+      <span class="thint">💡 s = json.dumps(config) — print(type(s)) — d = json.loads(s) — print(type(d))</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Build a training log appender: a function that appends one epoch's results (epoch, loss, accuracy) to <code style="font-family:'DM Mono',monospace">training_log.csv</code> using <code style="font-family:'DM Mono',monospace">"a"</code> mode. Call it 5 times to simulate 5 epochs.</span>
+      <span class="thint">💡 def log_epoch(epoch, loss, acc): with open("training_log.csv","a") as f: f.write(f"{epoch},{loss:.4f},{acc:.4f}\n")</span></div>
+    </li>
+    <li class="ti" onclick="tick(this)"><div class="tcb"></div>
+      <div><span class="tlbl">Complete the full pipeline: read a CSV → process data (compute grades) → save results back to a new CSV + save summary stats to JSON. This is a real ML data pipeline!</span>
+      <span class="thint">💡 read with DictReader → process with list comprehension → write with DictWriter → dump stats to JSON</span></div>
+    </li>
+  </ul>
+</div>
+
+<!-- ===== PART 6: PLAYGROUNDS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">⚙️</div>
+  <div><div class="sh-ttl">Part 6 — Code Playgrounds</div><div class="sh-sub">Write File I/O code — simulators validate your logic</div></div>
+  <div class="sh-bdg">⏱ 40 min</div>
+</div>
+
+<!-- PLAYGROUND 1 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 1</div>
+  <h2>Complete Data Pipeline — CSV Read → Process → JSON Save</h2>
+  <p>Write a complete pipeline that reads student CSV data, calculates grades and stats, then saves the summary to a JSON config. This is the exact pattern used in every ML preprocessing script.</p>
+  <div class="cb cbb"><i>💡</i><span><strong>Expected output:</strong><br>
+=== Student Report ===<br>
+Ali      | 88 | Grade: A | ✅ Pass<br>
+Sara     | 45 | Grade: F | ❌ Fail<br>
+Usman    | 91 | Grade: A | ✅ Pass<br>
+Zara     | 33 | Grade: F | ❌ Fail<br>
+Ahmed    | 72 | Grade: B | ✅ Pass<br>
+<br>
+=== Summary Stats ===<br>
+Total: 5 | Passed: 3 | Average: 65.8<br>
+<br>
+✅ Config saved to model_config.json</span></div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Data Pipeline</span><div class="pgb"><button class="btn btn-g" onclick="runPipeline()">▶ Run</button><button class="btn btn-o" onclick="clearPG('p1-code','p1-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="p1-code" spellcheck="false" placeholder="import csv, json&#10;&#10;# Simulated CSV data (in real life, read from file)&#10;csv_data = '''name,marks&#10;Ali,88&#10;Sara,45&#10;Usman,91&#10;Zara,33&#10;Ahmed,72'''&#10;&#10;# Parse CSV using csv.DictReader&#10;import io&#10;reader = csv.DictReader(io.StringIO(csv_data))&#10;students = list(reader)&#10;&#10;# Process data&#10;def get_grade(marks):&#10;    if marks >= 80: return 'A'&#10;    elif marks >= 60: return 'B'&#10;    elif marks >= 50: return 'C'&#10;    else: return 'F'&#10;&#10;print('=== Student Report ==='  )&#10;marks_list = []&#10;for s in students:&#10;    m = int(s['marks'])&#10;    marks_list.append(m)&#10;    g = get_grade(m)&#10;    status = '✅ Pass' if m >= 50 else '❌ Fail'&#10;    print(f'{s[&quot;name&quot;]:<8} | {m} | Grade: {g} | {status}')&#10;&#10;passed = [m for m in marks_list if m >= 50]&#10;avg = sum(marks_list) / len(marks_list)&#10;print(f'\n=== Summary Stats ===')&#10;print(f'Total: {len(students)} | Passed: {len(passed)} | Average: {avg:.1f}')&#10;&#10;# Save to JSON&#10;config = {'total': len(students), 'passed': len(passed), 'average': round(avg,2)}&#10;print(f'\n✅ Config saved to model_config.json')&#10;print(f'JSON: {json.dumps(config, indent=2)}')"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="p1-out">Click ▶ Run...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkPipeline()">✓ Check My Code</button></div>
+  <div id="p1-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 2 -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 2</div>
+  <h2>Training Log — Append Mode in Action</h2>
+  <p>Simulate an ML training loop that appends each epoch's results to a CSV log using <code style="font-family:'DM Mono',monospace;color:var(--green)">"a"</code> mode. This is exactly how real ML training logs work — each epoch appends one row without losing previous data.</p>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Training Log</span><div class="pgb"><button class="btn btn-g" onclick="runTrainLog()">▶ Run</button><button class="btn btn-o" onclick="clearPG('tl-code','tl-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="tl-code" spellcheck="false" placeholder="import random&#10;random.seed(42)&#10;&#10;# Simulate training log&#10;log = []  # simulate the CSV file as a list&#10;&#10;def log_epoch(epoch, loss, accuracy):&#10;    entry = f'Epoch {epoch}: loss={loss:.4f}, acc={accuracy:.4f}'&#10;    log.append(entry)&#10;    print(f'  ✍️ Appended: {entry}')&#10;&#10;print('=== Training Log (append mode) ===')&#10;loss = 2.0&#10;acc = 0.5&#10;&#10;for epoch in range(1, 6):&#10;    loss *= 0.75 + random.uniform(-0.05, 0.05)&#10;    acc = min(0.99, acc + random.uniform(0.05, 0.1))&#10;    log_epoch(epoch, loss, acc)&#10;&#10;print(f'\n=== Full Training Log ({len(log)} entries) ===')&#10;for entry in log:&#10;    print(f'  {entry}')&#10;&#10;print(f'\n✅ In real code: file opened with mode=&quot;a&quot; so previous epochs are NEVER overwritten!')"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Output</div><div class="pgo" id="tl-out">Click ▶ Run...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkTrainLog()">✓ Check</button></div>
+  <div id="tl-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- PLAYGROUND 3: BUG HUNT -->
+<div class="card">
+  <div class="ctag ta">🧪 Exercise 3 — Bug Hunt</div>
+  <h2>Find and Fix the 4 File I/O Bugs</h2>
+  <p>4 bugs below — wrong mode, missing <code style="font-family:'DM Mono',monospace;color:var(--green)">with</code>, json.dump vs json.dumps confusion, and using index instead of key with DictReader.</p>
+  <div class="cw">
+    <div class="cbar"><div class="cdots"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div></div><div class="clang">Buggy File I/O — Fix All 4</div></div>
+    <div class="cbody">
+<span class="cm"># Bug 1: wrong mode — this OVERWRITES the log each time!</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"training.log"</span>, <span class="st" style="color:#ef4444">"w"</span>) <span class="kw">as</span> <span class="vr">f</span>:
+    <span class="vr">f</span>.<span class="fn">write</span>(<span class="st">"Epoch 5: loss=0.12\n"</span>)   <span class="cm" style="color:#ef4444"># should be "a" for append</span>
+
+<span class="cm"># Bug 2: no 'with' — file may never close</span>
+<span class="vr">f</span> = <span class="fn">open</span>(<span class="st">"data.txt"</span>, <span class="st">"r"</span>)
+<span class="vr">content</span> = <span class="vr">f</span>.<span class="fn">read</span>()    <span class="cm" style="color:#ef4444"># Bug 2: missing 'with' — no auto-close!</span>
+
+<span class="cm"># Bug 3: json.dumps writes to file (WRONG)</span>
+<span class="kw">import</span> <span class="vr">json</span>
+<span class="vr">config</span> = {<span class="st">"lr"</span>: <span class="nm">0.01</span>, <span class="st">"epochs"</span>: <span class="nm">100</span>}
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"config.json"</span>, <span class="st">"w"</span>) <span class="kw">as</span> <span class="vr">f</span>:
+    <span class="vr">json</span>.<span class="fn" style="color:#ef4444">dumps</span>(<span class="vr">config</span>, <span class="vr">f</span>)    <span class="cm" style="color:#ef4444"># Bug 3: should be json.dump (no 's')</span>
+
+<span class="cm"># Bug 4: accessing DictReader row by index</span>
+<span class="kw">import</span> <span class="vr">csv</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"students.csv"</span>, <span class="st">"r"</span>) <span class="kw">as</span> <span class="vr">f</span>:
+    <span class="kw">for</span> <span class="vr">row</span> <span class="kw">in</span> <span class="vr">csv</span>.<span class="fn">DictReader</span>(<span class="vr">f</span>):
+        <span class="fn">print</span>(<span class="vr">row</span>[<span class="nm" style="color:#ef4444">0</span>])  <span class="cm" style="color:#ef4444"># Bug 4: DictReader rows are DICTS — use row["name"] not row[0]</span>
+    </div>
+  </div>
+  <div class="pg">
+    <div class="pgh"><span class="pgt">🐍 Write the Fixed Version</span><div class="pgb"><button class="btn btn-g" onclick="runBugFix()">▶ Simulate</button><button class="btn btn-o" onclick="clearPG('bf-code','bf-out')">Clear</button></div></div>
+    <div class="pge"><textarea id="bf-code" spellcheck="false" placeholder="# Fix Bug 1: use 'a' for append, not 'w'&#10;with open('training.log', 'a') as f:&#10;    f.write('Epoch 5: loss=0.12\n')&#10;&#10;# Fix Bug 2: add 'with' statement&#10;with open('data.txt', 'r') as f:&#10;    content = f.read()&#10;&#10;# Fix Bug 3: use json.dump (not json.dumps) to write to file&#10;import json&#10;config = {'lr': 0.01, 'epochs': 100}&#10;with open('config.json', 'w') as f:&#10;    json.dump(config, f, indent=2)&#10;&#10;# Fix Bug 4: access by key name, not index&#10;import csv&#10;# (simulated: normally reads from file)&#10;# for row in csv.DictReader(f):&#10;#     print(row['name'])  ← correct!&#10;print('All 4 bugs fixed!')"></textarea></div>
+    <div style="padding:8px 18px 0;background:#f2fdf5"><div class="out-lbl">Validation</div><div class="pgo" id="bf-out">Click ▶ Simulate...</div></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-g" onclick="checkBugFix()">✓ Check All 4 Fixes</button></div>
+  <div id="bf-fb" style="display:none;margin-top:10px"></div>
+</div>
+
+<!-- ===== PART 7: SCENARIOS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--gs)">🌍</div>
+  <div><div class="sh-ttl">Part 7 — Real AI Scenarios</div><div class="sh-sub">Choose the correct File I/O approach for each ML situation</div></div>
+  <div class="sh-bdg">⏱ 20 min</div>
+</div>
+
+<div id="sc-wrap"></div>
+<div id="sc-score" style="display:none;margin-top:12px;font-size:.9rem;font-weight:600"></div>
+
+<!-- ===== PART 8: AI TUTOR ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">💬</div>
+  <div><div class="sh-ttl">Part 8 — AI Tutor Chat</div><div class="sh-sub">Ask anything about File I/O, csv, json, or the Pandas connection</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tp">🤖 AI Tutor</div>
+  <h2>Chat With Your File I/O Tutor</h2>
+  <p>Ask anything about <strong>open()</strong>, <strong>with statement</strong>, <strong>file modes</strong>, <strong>csv</strong>, <strong>json</strong>, or how this connects to <strong>Pandas</strong>. Try: <em>"Why is 'a' mode safer than 'w' for logging?"</em> or <em>"What is the difference between json.dump and json.dumps?"</em></p>
+  <div class="aic">
+    <div class="aic-hd">
+      <div class="aic-av">🤖</div>
+      <div><div style="font-weight:600;font-size:.87rem">Python AI Tutor</div><div style="font-size:.7rem;opacity:.8;margin-top:1px">Day 10 Specialist · File I/O · open() · with · csv · json · Pandas connection</div></div>
+    </div>
+    <div class="aic-msgs" id="chat-msgs">
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">Hello! I am your Day 10 tutor. Ask me anything about <strong>File I/O</strong>, <strong>open()</strong>, <strong>csv</strong>, <strong>json</strong>, or the Pandas connection. What would you like to understand?</div></div>
+      <div class="msg ai"><div class="m-av">🤖</div><div class="bbl">💡 <strong>Day 10 key mistake:</strong> Using mode <code>"w"</code> when you want to ADD to a log file. <code>"w"</code> OVERWRITES everything — your previous training epochs disappear! Always use <code>"a"</code> (append) for logs. Save <code>"w"</code> for creating fresh result files.</div></div>
+    </div>
+    <div class="aic-inp-row">
+      <input class="aic-inp" id="chat-in" placeholder="Ask about open(), with, file modes, csv, json, Pandas..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="aic-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PART 9: FILL IN BLANKS ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--as)">✏️</div>
+  <div><div class="sh-ttl">Part 9 — Fill in the Blanks</div><div class="sh-sub">Complete each File I/O statement from memory</div></div>
+  <div class="sh-bdg">⏱ 15 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag ta">✏️ Complete the Code</div>
+  <h2>Fill in the Missing Parts</h2>
+  <div id="fill-wrap"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-b" onclick="checkFill()">Check All Answers</button>
+    <button class="btn btn-o" onclick="resetFill()">Clear</button>
+  </div>
+  <div id="fill-score" style="display:none;margin-top:10px;font-size:.9rem;font-weight:600"></div>
+</div>
+
+<!-- ===== PART 10: DEEP THINKING ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--bs)">🧠</div>
+  <div><div class="sh-ttl">Part 10 — Deep Thinking Questions</div><div class="sh-sub">Build your AI data engineering mindset around file operations</div></div>
+  <div class="sh-bdg">⏱ 30 min</div>
+</div>
+
+<div class="card">
+  <div class="ctag tb">🧠 Think Deeply</div>
+  <h2>5 Questions — Write Thorough Answers</h2>
+  <div class="sq"><label>Q1. Explain exactly why <code style="font-family:'DM Mono',monospace">with open()</code> is safer than <code style="font-family:'DM Mono',monospace">f = open()</code> followed by <code style="font-family:'DM Mono',monospace">f.close()</code>. Give a specific scenario in an ML training loop where the unsafe version could cause data loss.</label><textarea id="dq1" placeholder="Think about what happens if an error occurs between open() and close()..." oninput="cc(this,'dc1')"></textarea><div class="cc" id="dc1">0 chars</div></div>
+  <div class="sq"><label>Q2. An ML training loop runs for 100 epochs, appending results to <code style="font-family:'DM Mono',monospace">training.csv</code> after each epoch. Explain why you would use <code style="font-family:'DM Mono',monospace">"a"</code> mode (not <code style="font-family:'DM Mono',monospace">"w"</code>) and write the Python function that logs each epoch safely.</label><textarea id="dq2" placeholder="Write the log_epoch function using mode 'a' and explain why 'w' would be catastrophic..." oninput="cc(this,'dc2')"></textarea><div class="cc" id="dc2">0 chars</div></div>
+  <div class="sq"><label>Q3. Compare <code style="font-family:'DM Mono',monospace">csv.DictReader</code> vs plain <code style="font-family:'DM Mono',monospace">csv.reader</code>. Give a specific example where DictReader is safer than reader — and explain how DictReader relates to what Pandas does when it loads a CSV.</label><textarea id="dq3" placeholder="Write the code for both, show the output difference, and explain the Pandas connection..." oninput="cc(this,'dc3')"></textarea><div class="cc" id="dc3">0 chars</div></div>
+  <div class="sq"><label>Q4. Explain the 4 JSON functions and when you would use each in an ML project: <code style="font-family:'DM Mono',monospace">json.dump()</code>, <code style="font-family:'DM Mono',monospace">json.dumps()</code>, <code style="font-family:'DM Mono',monospace">json.load()</code>, <code style="font-family:'DM Mono',monospace">json.loads()</code>. Give one real ML use case for each.</label><textarea id="dq4" placeholder="When is dumps (string) better than dump (file)? When would you use loads vs load?" oninput="cc(this,'dc4')"></textarea><div class="cc" id="dc4">0 chars</div></div>
+  <div class="sq"><label>Q5. Design a complete ML data pipeline using File I/O. Describe: (1) how you load the raw data, (2) how you process and clean it, (3) how you save the processed data and results. Write the Python structure using open(), csv, and json appropriately.</label><textarea id="dq5" placeholder="Think about: load CSV → clean → process → save results CSV + save config JSON..." oninput="cc(this,'dc5')"></textarea><div class="cc" id="dc5">0 chars</div></div>
+  <button class="btn btn-g" onclick="saveDQ()">✓ Save All Answers</button>
+  <div id="dq-msg" style="display:none;margin-top:10px;font-size:.84rem"></div>
+</div>
+
+<!-- ===== PART 11: MCQ ===== -->
+<div class="sh">
+  <div class="sh-ic" style="background:var(--ps)">🧪</div>
+  <div><div class="sh-ttl">Part 11 — MCQ Quiz (20 Questions)</div><div class="sh-sub">Answer from memory — every answer shows a full explanation</div></div>
+  <div class="sh-bdg">📝 20 MCQs</div>
+</div>
+
+<div class="sb">
+  <div class="sb-ring" id="sb-ring"><div class="sb-n" id="live-sc">0</div><div class="sb-d">/ 20</div></div>
+  <div><strong style="display:block;margin-bottom:3px">Live Score</strong><span style="font-size:.84rem;color:var(--ink3)">Target: 16/20 (80%). Week 2 final quiz — give it your best!</span></div>
+</div>
+
+<div id="mcq-wrap"></div>
+
+<div style="text-align:center;margin-top:20px">
+  <button class="btn btn-b" id="fin-btn" style="display:none;font-size:.9rem;padding:12px 28px" onclick="showFinal()">Show Final Score 🎯</button>
+</div>
+
+<div class="final" id="final-card">
+  <div class="fin-emoji" id="fin-emoji">🎉</div>
+  <div class="fin-title" id="fin-title">—</div>
+  <div class="fin-msg" id="fin-msg">—</div>
+  <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:18px">Week 3 starts with Day 11: <strong>Error Handling — try / except / finally</strong> — make your ML code production-ready!</p>
+  <button class="fin-cta" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Back to Top · Start Week 3!</button>
+</div>
+
+</div>
+<footer>Day 10 of 300+ · AI/ML 15-Month Curriculum · Month 1, Week 2 COMPLETE<br>open() · with · "r"/"w"/"a" modes · csv.DictReader · json.dump/load · Pandas pd.read_csv() Foundation</footer>
+
+<script>
+// ── TIMER ──
+let sec=0,ton=false,tiv;
+function toggleTimer(){const b=document.getElementById('tmr');if(!ton){ton=true;b.classList.add('on');tiv=setInterval(()=>{sec++;const m=Math.floor(sec/60),s=sec%60;document.getElementById('tdisp').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}else{ton=false;b.classList.remove('on');clearInterval(tiv);}}
+
+// ── PROGRESS ──
+let tasksDone=0,mcqScore=0,fillScore=0,mcqDoneSet=new Set();
+function updateProgress(){const t=Math.min(Math.round((tasksDone/8)*30+(mcqScore/20)*50+(fillScore/10)*20),100);document.getElementById('prog-fill').style.width=t+'%';document.getElementById('prog-pct').textContent=t+'%';}
+function tick(el){const done=el.classList.toggle('done');el.querySelector('.tcb').textContent=done?'✓':'';tasksDone=document.querySelectorAll('.ti.done').length;updateProgress();}
+
+// ── CSV PARSER ──
+function parseCSV(){
+  const raw=document.getElementById('csv-input').value.trim();
+  const out=document.getElementById('csv-out');
+  if(!raw){out.className='csv-out show';out.textContent='Type some CSV data first!';return;}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l);
+  if(lines.length<2){out.className='csv-out show';out.textContent='Need at least a header row and one data row.';return;}
+  const headers=lines[0].split(',').map(h=>h.trim());
+  const rows=lines.slice(1).map(line=>{
+    const vals=line.split(',').map(v=>v.trim());
+    const obj={};headers.forEach((h,i)=>obj[h]=vals[i]||'');
+    return obj;
+  });
+  let text=`csv.DictReader result (${rows.length} rows, ${headers.length} columns):\nHeaders: [${headers.map(h=>'"'+h+'"').join(', ')}]\n\n`;
+  rows.forEach((r,i)=>{
+    text+=`Row ${i+1}: {\n`;
+    Object.entries(r).forEach(([k,v])=>{text+=`  "${k}": "${v}",\n`;});
+    text+=`}\n\n`;
+  });
+  text+=`✅ Access like: row["${headers[0]}"]${headers[1]?', row["'+headers[1]+'"]':''}\n`;
+  text+=`📌 Compare: csv.reader gives row[0] (fragile) — DictReader gives row["${headers[0]}"] (safe!)`;
+  out.className='csv-out show';out.innerHTML=text;
+}
+
+// ── JSON BUILDER ──
+function buildJSON(){
+  const name=document.getElementById('jn-name').value||'RandomForest';
+  const est=parseInt(document.getElementById('jn-est').value)||100;
+  const lr=parseFloat(document.getElementById('jn-lr').value)||0.01;
+  const rs=parseInt(document.getElementById('jn-rs').value)||42;
+  const acc=parseFloat(document.getElementById('jn-acc').value)||0.94;
+  const config={model_name:name,n_estimators:est,learning_rate:lr,random_state:rs,accuracy:acc};
+  const j=JSON.stringify(config,null,2);
+  document.getElementById('jb-out').textContent=j;
+}
+setTimeout(buildJSON,200);
+
+// ── PLAYGROUND 1 ──
+function runPipeline(){
+  const code=document.getElementById('p1-code').value;
+  const out=document.getElementById('p1-out');
+  if(!code.trim()){out.textContent='Write the code!';out.className='pgo';return;}
+  const hasCSV=code.includes('DictReader')||code.includes('csv');
+  const hasJSON=code.includes('json');
+  const hasGrade=code.includes('get_grade')||code.includes('grade');
+  const hasLoop=code.includes('for s in')||code.includes('for row');
+  if(hasCSV&&hasJSON&&hasGrade&&hasLoop){
+    out.textContent='=== Student Report ===\nAli      | 88 | Grade: A | ✅ Pass\nSara     | 45 | Grade: F | ❌ Fail\nUsman    | 91 | Grade: A | ✅ Pass\nZara     | 33 | Grade: F | ❌ Fail\nAhmed    | 72 | Grade: B | ✅ Pass\n\n=== Summary Stats ===\nTotal: 5 | Passed: 3 | Average: 65.8\n\n✅ Config saved to model_config.json\nJSON: {\n  "total": 5,\n  "passed": 3,\n  "average": 65.8\n}';
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasCSV)h.push('Use csv.DictReader to parse the CSV data');
+    if(!hasJSON)h.push('Use json.dumps() or json.dump() to save config');
+    if(!hasGrade)h.push('Calculate grade for each student (A/B/C/F)');
+    if(!hasLoop)h.push('Loop through students and print each row');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkPipeline(){
+  const code=document.getElementById('p1-code').value;
+  const fb=document.getElementById('p1-fb');fb.style.display='block';
+  const msgs=[
+    code.includes('DictReader')?'✅ csv.DictReader used to parse CSV':'❌ Use csv.DictReader to get rows as dicts',
+    code.includes('int(')&&code.includes('marks')?'✅ marks converted to int for calculation':'❌ Convert marks to int: int(row["marks"])',
+    (code.includes('get_grade')||code.includes('Grade:'))?'✅ Grade calculated for each student':'❌ Calculate grade using if/elif/else',
+    code.includes('json.dumps')||code.includes('json.dump')?'✅ JSON used to save/display summary':'❌ Use json.dumps(config) to format as JSON string',
+    code.includes('passed')&&code.includes('avg')?'✅ Summary stats computed (passed count + average)':'❌ Compute: passed = [m for m in marks if m>=50], avg = sum/len',
+  ];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===5?'var(--green)':sc>=3?'var(--amber)':'var(--red)'}">${sc===5?'🎉 Perfect data pipeline!':sc>=3?`${sc}/5 — fix remaining`:'Review the pipeline structure'}</div></div>`;
+}
+
+// ── PLAYGROUND 2 ──
+function runTrainLog(){
+  const code=document.getElementById('tl-code').value;
+  const out=document.getElementById('tl-out');
+  if(!code.trim()){out.textContent='Write the code!';out.className='pgo';return;}
+  const hasLoop=code.includes('for epoch in range');
+  const hasLog=code.includes('log_epoch')||code.includes('append');
+  const hasSeed=code.includes('seed');
+  if(hasLoop&&hasLog){
+    out.textContent='=== Training Log (append mode) ===\n  ✍️ Appended: Epoch 1: loss=1.5284, acc=0.5765\n  ✍️ Appended: Epoch 2: loss=1.1284, acc=0.6512\n  ✍️ Appended: Epoch 3: loss=0.8481, acc=0.7289\n  ✍️ Appended: Epoch 4: loss=0.6387, acc=0.7934\n  ✍️ Appended: Epoch 5: loss=0.4892, acc=0.8612\n\n=== Full Training Log (5 entries) ===\n  Epoch 1: loss=1.5284, acc=0.5765\n  Epoch 2: loss=1.1284, acc=0.6512\n  ...\n\n✅ In real code: file opened with mode="a" so previous epochs are NEVER overwritten!';
+    out.className='pgo ok';
+  } else {
+    let h=[];
+    if(!hasLoop)h.push('Need: for epoch in range(1, 6):');
+    if(!hasLog)h.push('Need: log_epoch() function or log.append()');
+    out.textContent=h.join('\n');out.className='pgo err';
+  }
+}
+function checkTrainLog(){
+  const code=document.getElementById('tl-code').value;
+  const fb=document.getElementById('tl-fb');fb.style.display='block';
+  const b1=code.includes('for epoch in range(1, 6)')||code.includes('for epoch in range(1,6)');
+  const b2=code.includes('def log_epoch')||code.includes('log.append');
+  const b3=code.includes('loss')&&(code.includes('*=')|| code.includes('* 0.7'));
+  const b4=code.includes('"a"')||code.includes("'a'");
+  const msgs=[b1?'✅ for epoch in range(1,6) — 5 epochs correct':'❌ Loop: for epoch in range(1, 6):',b2?'✅ log_epoch() function or append used':'❌ Define def log_epoch(epoch, loss, acc):',b3?'✅ Loss decreases each epoch (decay)':'⚠️ Show loss changing each epoch: loss *= 0.75',b4?'✅ Mode "a" used for append':'⚠️ Mention "a" mode — append never overwrites'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 Perfect training log!':sc>=2?`${sc}/4 — fix remaining`:'Review the log structure'}</div></div>`;
+}
+
+// ── BUG FIX ──
+function runBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const out=document.getElementById('bf-out');
+  if(!code.trim()){out.textContent='Write the fixed code!';out.className='pgo';return;}
+  const b1=(code.includes('"a"')||code.includes("'a'"))&&!code.match(/"w".*training\.log|training\.log.*"w"/);
+  const b2=code.includes('with open(');
+  const b3=code.includes('json.dump(')&&!code.includes('json.dumps(config, f)');
+  const b4=code.includes('row["name"]')||code.includes("row['name']");
+  if(b1&&b2&&b3&&b4){out.textContent='All 4 bugs fixed correctly! ✅\nAppend mode preserved training history\nwith statement closes file automatically\njson.dump writes to file correctly\nrow["name"] accesses dict by key';out.className='pgo ok';}
+  else{let e=[];if(!b1)e.push('Bug 1: change "w" to "a" for the training.log file');if(!b2)e.push('Bug 2: use with open("data.txt","r") as f: instead');if(!b3)e.push('Bug 3: use json.dump(config, f) — not json.dumps — to write to file');if(!b4)e.push('Bug 4: DictReader rows need string key: row["name"] not row[0]');out.textContent=e.join('\n');out.className='pgo err';}
+}
+function clearPG(c,o){document.getElementById(c).value='';document.getElementById(o).textContent='Click ▶ to see output...';document.getElementById(o).className='pgo';}
+function checkBugFix(){
+  const code=document.getElementById('bf-code').value;
+  const fb=document.getElementById('bf-fb');fb.style.display='block';
+  const b1=(code.includes('"a"')||code.includes("'a'"))&&code.includes('training.log');
+  const b2=code.includes('with open(')&&(code.includes('"r"')||code.includes("'r'"));
+  const b3=code.includes('json.dump(')&&!code.match(/json\.dumps\s*\([^)]*,\s*f/);
+  const b4=(code.includes('row["name"]')||code.includes("row['name']"));
+  const msgs=[b1?'✅ Bug 1: mode "a" for training log — append not overwrite':'❌ Bug 1: change mode from "w" to "a" for training.log',b2?'✅ Bug 2: with open() used — file auto-closes safely':'❌ Bug 2: wrap in with open("data.txt","r") as f:',b3?'✅ Bug 3: json.dump(config, f) writes to file correctly':'❌ Bug 3: json.dump() writes to file — json.dumps() returns a string',b4?'✅ Bug 4: row["name"] — correct dict key access':'❌ Bug 4: DictReader returns dicts — use row["name"] not row[0]'];
+  const sc=msgs.filter(m=>m.startsWith('✅')).length;
+  fb.innerHTML='<div style="background:var(--p2);border:1.5px solid var(--rule);border-radius:10px;padding:14px">'+msgs.map(m=>`<div style="font-size:.84rem;margin-bottom:6px">${m}</div>`).join('')+`<div style="margin-top:8px;font-weight:600;color:${sc===4?'var(--green)':sc>=2?'var(--amber)':'var(--red)'}">${sc===4?'🎉 All 4 bugs fixed!':sc>=2?`${sc}/4 fixed`:'Review each bug carefully'}</div></div>`;
+}
+
+// ── SCENARIOS ──
+const scData=[
+  {q:'1. An ML training script saves the loss after each epoch. Which file mode ensures previous epoch results are NOT overwritten?',opts:['"w" — write mode, clean each time','"a" — append mode, adds to end without touching existing data','"r" — read mode','"x" — create mode'],ans:1,exp:'"a" (append) mode adds to the end of an existing file without modifying its content. "w" (write) mode OVERWRITES everything — run 5 times and you only see epoch 5\'s result. For any kind of log or cumulative data storage, always use "a" mode.'},
+  {q:'2. You read a CSV with csv.DictReader. The column header is "marks". How do you access it?',opts:['row[0]','row[1]','row["marks"]','row.marks'],ans:2,exp:'csv.DictReader gives each row as a dictionary with column headers as keys. So row["marks"] is correct. row[0] is what csv.reader (plain reader) gives you — index-based access. DictReader is much safer because if columns reorder, row["marks"] still works but row[1] would give the wrong value.'},
+  {q:'3. What is the difference between json.dump() and json.dumps()?',opts:['No difference — both write to a file','json.dump(data, file) writes to a FILE. json.dumps(data) returns a JSON STRING. The s = string.','json.dumps() is faster','json.dump() converts to bytes'],ans:1,exp:'json.dump(data, f) writes JSON directly to a file object — use with open(). json.dumps(data) returns a JSON-formatted string — use when you want to print, send via API, or store in a variable. Memory trick: the "s" in dumps stands for "string". Same pattern: json.load() reads from file, json.loads() parses a string.'},
+  {q:'4. Why is "with open()" considered mandatory over f = open() followed by f.close()?',opts:['with open() is faster','with open() automatically closes the file even if an exception occurs — no risk of resource leaks or data corruption','f.close() only works on Windows','with open() prevents reading errors'],ans:1,exp:'If an exception occurs between open() and close(), f.close() never runs — the file stays locked and data may be corrupted. with open() is a context manager — it guarantees the file closes when the block exits, whether normally or due to an error. In ML systems with thousands of file operations, forgetting close() causes resource exhaustion.'},
+  {q:'5. pd.read_csv("data.csv") in Pandas is equivalent to which pure Python operation?',opts:['open("data.csv") only','csv.reader() only','with open() + csv.DictReader() + automatic type detection + DataFrame structure','json.load("data.csv")'],ans:2,exp:'pd.read_csv() internally does: open the file, use DictReader to get rows as dicts, automatically detect data types (string "88" → integer 88), and organize everything into a DataFrame. It is a supercharged version of what you learned today. Understanding the foundation means you can debug Pandas when it fails.'},
+];
+let scDone=new Set(),scScore=0;
+function buildScenarios(){
+  document.getElementById('sc-wrap').innerHTML=scData.map((s,i)=>`
+    <div class="scenario"><div class="sc-q">${s.q}</div><div class="sc-opts">${s.opts.map((o,j)=>`<div class="sc-opt" id="ss${i}_${j}" onclick="pickSc(${i},${j})"><div class="sc-l">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.82rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="sc-exp" id="sexp${i}"></div></div>`).join('');
+}
+function pickSc(qi,oi){
+  if(scDone.has(qi))return;scDone.add(qi);
+  const s=scData[qi];
+  for(let j=0;j<s.opts.length;j++){const el=document.getElementById('ss'+qi+'_'+j);el.classList.add('done');if(j===s.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('sexp'+qi);exp.textContent=s.exp;exp.classList.add('show',oi===s.ans?'ok':'no');
+  if(oi===s.ans)scScore++;
+  if(scDone.size===scData.length){const sc=document.getElementById('sc-score');sc.style.display='block';sc.innerHTML=scScore===5?'<span style="color:var(--green)">🎉 Perfect — 5/5!</span>':`<span style="color:var(--amber)">${scScore}/5 — review explanations above.</span>`;}
+}
+buildScenarios();
+
+// ── AI TUTOR ──
+const replies={
+  with:`"with open()" is a context manager — it guarantees the file closes automatically:\n\n# UNSAFE:\nf = open("data.txt", "r")\ncontent = f.read()\n# If error happens here, close() never runs!\nf.close()  # easy to forget\n\n# SAFE (always use this):\nwith open("data.txt", "r") as f:\n    content = f.read()\n# File closes automatically here — even if error occurred!\n\nIn ML systems, if a file is not closed:\n• Data may not be flushed/written correctly\n• The file stays locked — other processes cannot access it\n• Memory leaks over thousands of file operations\n• Python eventually crashes\n\nAlways write with open() — never skip it!`,
+  modes:`File modes in open(filename, mode):\n\n"r" → Read only. Raises FileNotFoundError if file doesn't exist.\n      f.read(), f.readlines()\n\n"w" → Write. OVERWRITES everything from scratch.\n      Creates file if it doesn't exist.\n      Use for fresh output files.\n\n"a" → Append. Adds to END without touching existing content.\n      Creates file if it doesn't exist.\n      Use for logs, cumulative data.\n\n"x" → Create. Fails with FileExistsError if file already exists.\n      Safe creation — prevents accidental overwrite.\n\n"rb"/"wb" → Binary read/write (images, model weights)\n\nML rule: training logs → "a" | results → "w" | loading data → "r"`,
+  csv:`csv.reader → each row is a LIST:\n  row = ["Ali", "88", "Karachi"]\n  access: row[0], row[1], row[2] (fragile!)\n\ncsv.DictReader → each row is a DICT:\n  row = {"name":"Ali","marks":"88","city":"Karachi"}\n  access: row["name"], row["marks"] (safe!)\n\nAlways use DictReader — if columns reorder, row["marks"] still works!\n\nFull pattern:\nimport csv\nwith open("data.csv", "r", newline="") as f:\n    reader = csv.DictReader(f)\n    data = list(reader)  # list of dicts\n\nfor row in data:\n    print(row["name"], row["marks"])\n\nNote: values are always strings! Convert numbers:\n  marks = int(row["marks"])\n  score = float(row["score"])`,
+  json:`json functions:\n\njson.dump(data, file_obj)  → dict to FILE\njson.dumps(data)           → dict to STRING  (s=string)\njson.load(file_obj)        → FILE to dict\njson.loads(json_string)    → STRING to dict  (s=string)\n\nMemory trick: 's' always means STRING.\n\nWrite to file:\nconfig = {"lr": 0.01, "epochs": 100}\nwith open("config.json", "w") as f:\n    json.dump(config, f, indent=2)  ← dump (no s)\n\nGet as string (API, print):\njson_str = json.dumps(config, indent=2)  ← dumps (with s)\n\nRead from file:\nwith open("config.json", "r") as f:\n    config = json.load(f)  ← load (no s)\n\nParse API response string:\napi_str = '{"status": "ok", "score": 0.94}'\ndata = json.loads(api_str)  ← loads (with s)`,
+  pandas:`pd.read_csv() = Python File I/O + csv.DictReader + type detection + DataFrame:\n\n# WHAT YOU KNOW (Days 09-10):\nimport csv\nwith open("data.csv", "r") as f:\n    data = list(csv.DictReader(f))\nmarks = [int(r["marks"]) for r in data]\navg = sum(marks) / len(marks)\n\n# WHAT PANDAS DOES (Month 2):\nimport pandas as pd\ndf = pd.read_csv("data.csv")\navg = df["marks"].mean()  # auto-converts to int!\n\nThe key differences:\n• Pandas auto-detects column types (no int() needed)\n• Returns a DataFrame (not a list of dicts)\n• Handles missing values, encodings, delimiters\n• Much faster for large files (optimised C code)\n\nBut the CONCEPT is identical. When Pandas fails:\n→ Open manually with csv.DictReader to debug!`,
+  default:`Great questions about Day 10 File I/O! Key concepts:\n\n📂 open(file, mode) — always use WITH:\n  with open("file.txt", "r") as f:\n\n📌 File modes:\n  "r" → read | "w" → write (OVERWRITES) | "a" → append | "x" → create\n\n📊 CSV:\n  csv.reader → rows as lists (fragile: row[0])\n  csv.DictReader → rows as dicts (safe: row["name"])\n\n🔵 JSON:\n  json.dump(data, f) → to FILE\n  json.dumps(data)   → to STRING\n  json.load(f)       → from FILE\n  json.loads(s)      → from STRING\n\n🐼 Pandas connection:\n  pd.read_csv() = open() + DictReader + auto-types\n\nWhat specific part would you like explained more?`
+};
+function sendChat(){
+  const inp=document.getElementById('chat-in');const msg=inp.value.trim();if(!msg)return;
+  addMsg(msg,'user');inp.value='';const tid='t'+Date.now();addTyping(tid);
+  setTimeout(()=>{removeTyping(tid);const lm=msg.toLowerCase();let r=replies.default;
+    if(lm.includes('with')||lm.includes('context'))r=replies.with;
+    else if(lm.includes('mode')||lm.includes('"a"')||lm.includes('"w"')||lm.includes('append')||lm.includes('overwr'))r=replies.modes;
+    else if(lm.includes('csv')||lm.includes('dictreader')||lm.includes('reader'))r=replies.csv;
+    else if(lm.includes('json'))r=replies.json;
+    else if(lm.includes('pandas')||lm.includes('read_csv'))r=replies.pandas;
+    addMsg(r,'ai');},700+Math.random()*500);
+}
+function addMsg(t,role){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="m-av">${role==='ai'?'🤖':'👤'}</div><div class="bbl">${t}</div>`;wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function addTyping(id){const wrap=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.id=id;d.innerHTML='<div class="m-av">🤖</div><div class="bbl"><div class="typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div></div>';wrap.appendChild(d);wrap.scrollTop=wrap.scrollHeight;}
+function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
+
+// ── FILL BLANKS ──
+const fillData=[
+  {q:'1. The file mode to add to the END of an existing file without overwriting: ___',ans:['"a"',"'a'",'a'],hint:'"a"'},
+  {q:'2. The file mode that OVERWRITES all existing content: ___',ans:['"w"',"'w'",'w'],hint:'"w"'},
+  {q:'3. Always open files with: ___ open("file.txt","r") as f:',ans:['with'],hint:'with'},
+  {q:'4. csv.DictReader gives each row as a ___ (not a list).',ans:['dict','dictionary'],hint:'dict'},
+  {q:'5. json.___(data, f) writes a dict to a file. (No "s")',ans:['dump'],hint:'dump'},
+  {q:'6. json.___(data) converts a dict to a JSON string. (With "s")',ans:['dumps'],hint:'dumps'},
+  {q:'7. json.___(f) reads a JSON file and returns a Python dict.',ans:['load'],hint:'load'},
+  {q:'8. json.___(json_string) parses a JSON string into a Python dict.',ans:['loads'],hint:'loads'},
+  {q:'9. To read all lines of a file as a list: f.___( )',ans:['readlines'],hint:'readlines'},
+  {q:'10. pd.read_csv() in Pandas is built on Python\'s ___ module internally.',ans:['csv','file i/o','file'],hint:'csv'},
+];
+function buildFill(){
+  document.getElementById('fill-wrap').innerHTML=fillData.map((q,i)=>`<div class="fq"><label>${q.q}</label><input class="fi" id="fi${i}" placeholder="Your answer..."/><div class="ff" id="ff${i}"></div></div>`).join('');
+}
+function checkFill(){
+  fillScore=0;
+  fillData.forEach((q,i)=>{
+    const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);
+    const v=(el.value||'').trim().toLowerCase().replace(/['"]/g,'');
+    const ok=q.ans.some(a=>v===a.toLowerCase().replace(/['"]/g,'')||v.includes(a.toLowerCase().replace(/['"]/g,'')));
+    if(ok){fillScore++;el.className='fi ok';ff.className='ff ok';ff.textContent='✓ Correct!';}
+    else{el.className='fi no';ff.className='ff no';ff.textContent='✗ Answer: '+q.hint;}
+  });
+  updateProgress();
+  const sc=document.getElementById('fill-score');sc.style.display='block';
+  sc.innerHTML=fillScore===10?'<span style="color:var(--green)">🎉 Perfect — 10/10!</span>':fillScore>=7?`<span style="color:var(--amber)">${fillScore}/10 — good! Check the ones above.</span>`:`<span style="color:var(--red)">${fillScore}/10 — re-read Day 10.</span>`;
+}
+function resetFill(){fillData.forEach((_,i)=>{const el=document.getElementById('fi'+i);const ff=document.getElementById('ff'+i);if(el){el.value='';el.className='fi';}if(ff){ff.className='ff';ff.textContent=''}});document.getElementById('fill-score').style.display='none';}
+buildFill();
+
+// ── DEEP Q ──
+function cc(el,id){document.getElementById(id).textContent=(el.value||'').length+' chars';}
+function saveDQ(){
+  const empty=['dq1','dq2','dq3','dq4','dq5'].some(id=>!(document.getElementById(id).value||'').trim());
+  const m=document.getElementById('dq-msg');m.style.display='block';
+  if(empty){m.style.color='var(--red)';m.textContent='⚠️ Please answer all 5 questions.';}
+  else{m.style.color='var(--green)';m.textContent='✅ All 5 answers saved! Now complete the MCQ Quiz to finish Week 2!';}
+}
+
+// ── MCQ ──
+const mcqs=[
+  {q:'What does "with open(\'data.txt\', \'r\') as f:" guarantee?',opts:['The file is opened faster','The file is automatically closed when the block ends — even if an exception occurs','The file is read-only permanently','The file contents are stored in memory'],ans:1,exp:'"with" is a context manager. It guarantees __exit__() is called when the block ends, which closes the file. Without it, if an exception occurs, close() may never be called — leaving the file locked and risking data corruption.'},
+  {q:'What does file mode "w" do if the file already exists?',opts:['Appends to the existing content','Returns a FileExistsError','Overwrites all existing content completely from scratch','Opens in read-write mode'],ans:2,exp:'"w" (write) mode DESTROYS existing content and creates a fresh file. This is the most common Day 10 mistake — using "w" for a training log means each run wipes out previous epochs. Use "a" (append) to add without destroying.'},
+  {q:'Which mode adds new content to the end of a file without touching existing data?',opts:['"r"','"w"','"a"','"x"'],ans:2,exp:'"a" (append) mode opens the file with the pointer at the END. Everything you write is added after existing content. Perfect for logs, training histories, and cumulative data. The file is created if it doesn\'t exist yet.'},
+  {q:'What does csv.DictReader give you for each row?',opts:['A list: ["Ali", "88"]','A tuple: ("Ali", "88")','A dictionary: {"name":"Ali", "marks":"88"}','A string: "Ali,88"'],ans:2,exp:'csv.DictReader uses the first row (header) as dictionary keys. Each subsequent row becomes a dict: {"name":"Ali","marks":"88","city":"Karachi"}. Access by column name: row["marks"]. This is safer than csv.reader which gives a list (row[1]) — if columns reorder, the index breaks but the name never does.'},
+  {q:'What is the difference between json.dump() and json.dumps()?',opts:['No difference — they do the same thing','json.dump(data,file) writes to a FILE. json.dumps(data) returns a JSON STRING.','json.dumps() is faster','json.dump() only works with lists'],ans:1,exp:'json.dump(data, f) → writes JSON to a file object (use with "with open()"). json.dumps(data) → returns a JSON-formatted string (use for printing, API responses, string storage). The "s" always means string. Same pattern: json.load(f) reads file, json.loads(s) parses string.'},
+  {q:'All values read from a CSV file are initially what type?',opts:['int — automatically converted','float — for decimal values','str (string) — always','The original type from the spreadsheet'],ans:2,exp:'csv module always gives string values — even numbers come as "88" not 88. You must explicitly convert: int(row["marks"]), float(row["score"]). This is one reason Pandas is convenient — pd.read_csv() automatically detects types and converts them. But always remember: raw csv → everything is str.'},
+  {q:'What happens if you call open("data.txt", "x") and data.txt already exists?',opts:['Overwrites the file silently','FileExistsError — the operation fails safely','Appends to the existing file','Opens in read mode instead'],ans:1,exp:'"x" (exclusive create) mode creates a new file AND raises FileExistsError if the file already exists. This is the safest way to create files when you want to prevent accidental overwriting. "w" creates silently. "x" protects you from data loss.'},
+  {q:'Which code correctly reads a CSV file using DictReader?',opts:['f = open("data.csv")\ncsv.DictReader(f)','with open("data.csv","r") as f:\n    data = list(csv.DictReader(f))','csv.DictReader("data.csv")','open("data.csv").read()'],ans:1,exp:'"with open("data.csv","r") as f: data = list(csv.DictReader(f))" is correct. DictReader takes a file object (not a filename). list() forces all rows to be read before the file closes. You then work with data outside the with block.'},
+  {q:'What does json.loads(\'{"name":"Ali","marks":88}\') return?',opts:['The string \'{"name":"Ali","marks":88}\'','A Python dictionary: {"name":"Ali","marks":88}','A list: ["Ali", 88]','An error — invalid syntax'],ans:1,exp:'json.loads() parses a JSON-formatted string and returns a Python dict. The "s" stands for string — it takes a string as input. Result: {"name":"Ali","marks":88} — a real Python dict you can use with all dict methods.'},
+  {q:'An ML training script runs for 100 epochs, appending to training.csv after each. Which mode is correct?',opts:['"w" — clean results each run','"a" — add each epoch to existing log','"r" — read mode for safety','"x" — create mode'],ans:1,exp:'"a" mode appends each new line without touching previous content. If you use "w", every epoch run overwrites previous ones — after epoch 5, you only see epoch 5\'s data. With "a", you accumulate all 100 epochs and can track the training history.'},
+  {q:'What does f.readlines() return?',opts:['A single string with all content','A list of strings — one string per line, including newline characters','A generator of lines','The number of lines'],ans:1,exp:'f.readlines() returns a list where each element is one line including the \\n newline character. ["Ali\\n", "Sara\\n", "Usman\\n"]. Use .strip() to remove newlines: [line.strip() for line in f.readlines()]. Alternative: list(f) gives the same result.'},
+  {q:'How does pd.read_csv() relate to what you learned today?',opts:['It is completely unrelated to File I/O','pd.read_csv() = Python open() + csv.DictReader + automatic type detection + DataFrame structure','Pandas cannot read the same files as Python csv module','pd.read_csv() uses json internally'],ans:1,exp:'pd.read_csv() is built on the same file I/O concepts: open the file, read line by line, use header row as column names (like DictReader), parse values (and auto-detect types unlike raw csv). Understanding pure Python file I/O means you can debug Pandas failures and understand what it is doing.'},
+  {q:'You write: with open("config.json","w") as f: json.dumps(config, f). What is wrong?',opts:['Nothing — this is correct','json.dumps() returns a string — it does NOT write to a file. Use json.dump() (no s) instead.','The indent parameter is missing','config must be a list'],ans:1,exp:'json.dumps() returns a string — it never writes to a file. To write to a file: use json.dump(config, f). The correct code: with open("config.json","w") as f: json.dump(config, f, indent=2). Remember: dumps → string, dump → file.'},
+  {q:'csv.reader gives you row[0], row[1]. csv.DictReader gives you row["name"]. Which is safer?',opts:['csv.reader — indexing is always reliable','csv.DictReader — if columns reorder, the name still works but the index breaks','They are equally safe','Depends on the file size'],ans:1,exp:'DictReader is safer because it uses column NAMES as keys. If someone reorders CSV columns, row["marks"] still gives you marks. row[1] would now give you a different column. In ML datasets with many columns that are frequently reorganised, index-based access is fragile and error-prone.'},
+  {q:'What does newline="" do in open("data.csv", "r", newline="")?',opts:['Removes all newline characters from the file','Prevents Python from converting line endings — required for correct CSV parsing on Windows','Makes the file read-only','Opens the file without a newline at the end'],ans:1,exp:'Without newline="", Python may add extra blank rows when reading/writing CSV on Windows (because Windows uses \\r\\n). newline="" tells Python not to translate line endings — the csv module handles them itself. Always include newline="" when using the csv module.'},
+  {q:'Which JSON function would you use to send data to a web API (which expects a string, not a file)?',opts:['json.dump()','json.load()','json.dumps()','json.loads()'],ans:2,exp:'APIs expect strings, not file objects. json.dumps(data) converts your Python dict to a JSON string that you can send as an HTTP request body. json.dump() writes to a file object. When communicating over the internet, everything is strings — so "dumps" (string) is what you need.'},
+  {q:'You forget to write f.close() after f = open("data.csv","w"). What risk do you face?',opts:['Nothing — Python automatically closes files','The file may not be flushed — last written data may be lost. The file stays locked. Memory leak.','An error is raised immediately','The file is deleted'],ans:1,exp:'Without close(): (1) data in Python\'s write buffer may never be flushed to disk — last writes lost. (2) The file stays locked — other processes/programs cannot access it. (3) Memory leak from open file handle. In long-running ML training, this can cause crashes. Always use "with open()" to guarantee closure.'},
+  {q:'What is the correct code to save a Python dict as a JSON file with pretty formatting?',opts:['json.dumps(config, "config.json", indent=2)','with open("config.json","w") as f:\n    json.dump(config, f, indent=2)','open("config.json").write(json.dumps(config))','json.write(config, "config.json")'],ans:1,exp:'"with open("config.json","w") as f: json.dump(config, f, indent=2)" — use json.dump (not dumps) because we are writing to a file. indent=2 creates human-readable formatting with 2-space indentation. The with statement ensures the file closes and data is flushed after writing.'},
+  {q:'An ML API returns this string: \'{"model":"RF","accuracy":0.94}\'. How do you convert it to a Python dict?',opts:['json.load(api_response)','json.loads(api_response)','dict(api_response)','eval(api_response)'],ans:1,exp:'json.loads() parses a JSON STRING into a Python dict. The "s" = string input. json.load() takes a FILE OBJECT, not a string. dict() cannot parse JSON strings. Never use eval() — it is a security risk that can execute arbitrary code if the string is malicious.'},
+  {q:'What is the "write mode danger" when working with ML training logs?',opts:['Write mode is too slow for logs','Using mode "w" when adding new epochs — it deletes all previous epoch data each time','Write mode cannot handle numbers','Write mode requires a special import'],ans:1,exp:'The classic ML logging mistake: using "w" mode for a training log. After 50 epochs, you open in "w" mode for epoch 51 — and all 50 previous epochs are destroyed. You only see epoch 51. Always use "a" (append) for any file that accumulates data over multiple runs or iterations.'},
+];
+function buildMCQ(){
+  document.getElementById('mcq-wrap').innerHTML=mcqs.map((q,i)=>`<div class="mcq"><div class="qnum">Question ${i+1} of 20</div><div class="qtext">${q.q}</div><div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="mo${i}_${j}" onclick="pickQ(${i},${j})"><div class="qind">${['A','B','C','D'][j]}</div><span style="font-family:'DM Mono',monospace;font-size:.83rem;white-space:pre-wrap">${o}</span></div>`).join('')}</div><div class="qexp" id="mex${i}"></div></div>`).join('');
+}
+function pickQ(qi,oi){
+  if(mcqDoneSet.has(qi))return;mcqDoneSet.add(qi);
+  const q=mcqs[qi];
+  for(let j=0;j<q.opts.length;j++){const el=document.getElementById('mo'+qi+'_'+j);el.classList.add('dis');if(j===q.ans)el.classList.add('cor');else if(j===oi)el.classList.add('wrg');}
+  const exp=document.getElementById('mex'+qi);exp.textContent=q.exp;exp.classList.add('show',oi===q.ans?'ok':'no');
+  if(oi===q.ans){mcqScore++;document.getElementById('live-sc').textContent=mcqScore;}
+  if(mcqDoneSet.size===20){document.getElementById('fin-btn').style.display='inline-flex';}
+  updateProgress();
+}
+function showFinal(){
+  const pct=Math.round(mcqScore/20*100);
+  document.getElementById('sb-ring').style.background=`conic-gradient(var(--green) ${pct}%,var(--rule) ${pct}%)`;
+  document.getElementById('fin-emoji').textContent=pct===100?'🏆':pct>=80?'🎉':pct>=60?'👍':'📚';
+  document.getElementById('fin-title').textContent=pct===100?'Perfect Score! Week 2 Done!':pct>=80?'Excellent! Week 2 Complete!':pct>=60?'Good Work!':'Keep Practising!';
+  document.getElementById('fin-msg').textContent=`Score: ${mcqScore}/20 (${pct}%) — ${pct>=80?'File I/O mastered! Week 2 complete — Week 3 starts with Error Handling!':pct>=60?'Solid foundation. Review incorrect answers before Week 3.':'Re-read Day 10 and retry.'}`;
+  const fc=document.getElementById('final-card');fc.classList.add('show');
+  document.getElementById('fin-btn').style.display='none';
+  fc.scrollIntoView({behavior:'smooth',block:'start'});
+}
+buildMCQ();
+setTimeout(()=>{document.getElementById('prog-fill').style.width='3%';},500);
+</script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Python – Day 7 | Iterators, Generators & Decorators</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#ECFEFF;--surface:#FFFFFF;--border:#A5F3FC;--accent:#0E7490;--accent2:#155E75;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--purple:#7C3AED;
+    --text:#083344;--muted:#0E7490;--code-bg:#031014;--code-text:#A5F3FC;--tag-bg:#CFFAFE;--tag-text:#155E75;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0E7490 0%,#155E75 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#A5F3FC;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#22D3EE;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#67E8F9;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#155E75;font-style:italic;} .op{color:#A5F3FC;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.green .callout-title{color:var(--green);} .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .fbox{background:linear-gradient(135deg,#155E75,#0E7490);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0E7490,#155E75);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#0E7490,#7C3AED);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐍 Python</div><span class="sep">|</span><span class="day-label">Day 7 of 10</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">70%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:70%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Python Full Course · Day 7</div>
+  <h1>Iterators, Generators &amp; <span>Decorators</span></h1>
+  <p>The features that make Python code elegant and memory-efficient — how for-loops actually work under the hood, lazy evaluation with yield, and wrapping functions with decorators.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔁 The Iterator Protocol</span>
+    <span class="hero-pill">⚡ Generators &amp; yield</span>
+    <span class="hero-pill">🎁 Generator Expressions</span>
+    <span class="hero-pill">🎀 Decorators</span>
+    <span class="hero-pill">🔧 functools.wraps</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔁</div>
+    <div><h2>The Iterator Protocol</h2><p>What actually happens when you write `for x in something`</p></div>
+  </div>
+  <div class="section-body">
+    <p>Every <code>for</code> loop in Python relies on two special methods: <code>__iter__</code> and <code>__next__</code>. Understanding this protocol demystifies loops, generators, and many built-in functions.</p>
+
+    <div class="fbox">
+      <div class="ft">🔁 The Two-Part Protocol</div>
+      <div class="fm">Iterable   → an object with __iter__() that RETURNS an iterator (e.g., a list)</div>
+      <div class="fm">Iterator   → an object with __next__() that returns the NEXT value, or raises StopIteration</div>
+      <div class="fnote">A for-loop calls iter(obj) once, then next(iterator) repeatedly until StopIteration is raised.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># What a for-loop actually does, under the hood</span>
+numbers = [<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>]
+
+<span class="cm"># for x in numbers:  is roughly equivalent to:</span>
+iterator = <span class="fn">iter</span>(numbers)     <span class="cm"># calls numbers.__iter__()</span>
+<span class="kw">while</span> <span class="kw">True</span>:
+    <span class="kw">try</span>:
+        x = <span class="fn">next</span>(iterator)   <span class="cm"># calls iterator.__next__()</span>
+        <span class="fn">print</span>(x)
+    <span class="kw">except</span> StopIteration:
+        <span class="kw">break</span>
+
+<span class="cm"># Building a CUSTOM iterator class</span>
+<span class="kw">class</span> <span class="fn">Countdown</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, start):
+        self.current = start
+
+    <span class="kw">def</span> <span class="fn">__iter__</span>(self):
+        <span class="kw">return</span> self   <span class="cm"># the object itself IS the iterator</span>
+
+    <span class="kw">def</span> <span class="fn">__next__</span>(self):
+        <span class="kw">if</span> self.current <= <span class="nm">0</span>:
+            <span class="kw">raise</span> StopIteration
+        self.current -= <span class="nm">1</span>
+        <span class="kw">return</span> self.current + <span class="nm">1</span>
+
+<span class="kw">for</span> n <span class="kw">in</span> Countdown(<span class="nm">5</span>):
+    <span class="fn">print</span>(n)   <span class="cm"># 5 4 3 2 1</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Iterable vs Iterator — Not the Same Thing</div>
+      A <strong>list</strong> is iterable (you can loop over it) but is NOT itself an iterator — calling <code>iter()</code> on it produces a separate iterator object. This is why you can loop over the same list multiple times: each <code>for</code> loop gets a FRESH iterator.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">⚡</div>
+    <div><h2>Generators — Lazy Evaluation with yield</h2><p>Writing iterators without the boilerplate class</p></div>
+  </div>
+  <div class="section-body">
+    <p>A <strong>generator function</strong> (any function containing <code>yield</code>) automatically creates an iterator for you — no manual <code>__iter__</code>/<code>__next__</code> needed. Values are produced LAZILY, one at a time, only when requested.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># The SAME countdown, written as a generator — far less code</span>
+<span class="kw">def</span> <span class="fn">countdown</span>(start):
+    <span class="kw">while</span> start > <span class="nm">0</span>:
+        <span class="kw">yield</span> start   <span class="cm"># pauses here, returns start, resumes on next call</span>
+        start -= <span class="nm">1</span>
+
+<span class="kw">for</span> n <span class="kw">in</span> countdown(<span class="nm">5</span>):
+    <span class="fn">print</span>(n)   <span class="cm"># 5 4 3 2 1</span>
+
+<span class="cm"># Calling a generator function does NOT run the code — it returns a generator object</span>
+gen = countdown(<span class="nm">3</span>)
+<span class="fn">print</span>(gen)          <span class="cm"># &lt;generator object countdown at 0x...&gt;</span>
+<span class="fn">print</span>(<span class="fn">next</span>(gen))    <span class="cm"># 3 — runs until the first yield</span>
+<span class="fn">print</span>(<span class="fn">next</span>(gen))    <span class="cm"># 2 — resumes from where it paused</span>
+
+<span class="cm"># MEMORY EFFICIENCY: generators don't build the whole sequence in memory</span>
+<span class="kw">def</span> <span class="fn">infinite_counter</span>():
+    n = <span class="nm">0</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        <span class="kw">yield</span> n
+        n += <span class="nm">1</span>
+<span class="cm"># range(10**12) as a list would exhaust memory; a generator handles it fine</span>
+
+<span class="cm"># Real use case: reading a huge file LINE BY LINE without loading it all</span>
+<span class="kw">def</span> <span class="fn">read_large_file</span>(path):
+    <span class="kw">with</span> <span class="fn">open</span>(path) <span class="kw">as</span> f:
+        <span class="kw">for</span> line <span class="kw">in</span> f:
+            <span class="kw">yield</span> line.strip()</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Approach</th><th>Memory</th><th>When to Use</th></tr>
+        <tr><td>Return a list</td><td>Entire result stored at once</td><td>Need random access, small data</td></tr>
+        <tr><td>Generator (yield)</td><td>One value at a time — lazy</td><td>Huge/infinite sequences, streaming data</td></tr>
+      </table>
+    </div>
+
+    <h3>Generator Expressions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># List comprehension — builds the WHOLE list in memory immediately</span>
+squares_list = [x**<span class="nm">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1000000</span>)]
+
+<span class="cm"># Generator expression — same syntax but with () instead of [] — LAZY, no memory blowup</span>
+squares_gen = (x**<span class="nm">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1000000</span>))
+
+<span class="cm"># Great for feeding directly into functions like sum() — never materializes the full list</span>
+total = <span class="fn">sum</span>(x**<span class="nm">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">100</span>))</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🎁</div>
+    <div><h2>Useful Iterator Tools</h2><p>itertools and built-ins that work with any iterable</p></div>
+  </div>
+  <div class="section-body">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> itertools
+
+<span class="cm"># zip — pairs up multiple iterables together</span>
+names = [<span class="st">"A"</span>,<span class="st">"B"</span>,<span class="st">"C"</span>]
+scores = [<span class="nm">90</span>,<span class="nm">85</span>,<span class="nm">70</span>]
+<span class="kw">for</span> name, score <span class="kw">in</span> <span class="fn">zip</span>(names, scores):
+    <span class="fn">print</span>(name, score)
+
+<span class="cm"># enumerate — get index + value together</span>
+<span class="kw">for</span> i, name <span class="kw">in</span> <span class="fn">enumerate</span>(names, start=<span class="nm">1</span>):
+    <span class="fn">print</span>(i, name)
+
+<span class="cm"># itertools.count — infinite counter (careful with loops!)</span>
+<span class="kw">for</span> i <span class="kw">in</span> itertools.<span class="fn">count</span>(<span class="nm">10</span>, <span class="nm">2</span>):   <span class="cm"># start=10, step=2</span>
+    <span class="kw">if</span> i > <span class="nm">20</span>: <span class="kw">break</span>
+    <span class="fn">print</span>(i)   <span class="cm"># 10 12 14 16 18 20</span>
+
+<span class="cm"># itertools.chain — combine multiple iterables into one sequence</span>
+combined = itertools.<span class="fn">chain</span>([<span class="nm">1</span>,<span class="nm">2</span>], [<span class="nm">3</span>,<span class="nm">4</span>])
+<span class="fn">print</span>(<span class="fn">list</span>(combined))   <span class="cm"># [1, 2, 3, 4]</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🎀</div>
+    <div><h2>Decorators — Wrapping Functions</h2><p>Adding behavior to a function without changing its code</p></div>
+  </div>
+  <div class="section-body">
+    <p>A <strong>decorator</strong> is a function that takes another function and returns a modified version of it — used to add logging, timing, access control, and more, without touching the original function's body.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># The core idea: functions are objects — they can be passed as arguments and returned</span>
+<span class="kw">def</span> <span class="fn">my_decorator</span>(func):
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        <span class="fn">print</span>(<span class="st">f"Calling {func.__name__}..."</span>)
+        result = func(*args, **kwargs)
+        <span class="fn">print</span>(<span class="st">f"{func.__name__} finished."</span>)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper
+
+<span class="kw">def</span> <span class="fn">greet</span>(name):
+    <span class="fn">print</span>(<span class="st">f"Hello, {name}!"</span>)
+
+greet = my_decorator(greet)   <span class="cm"># manually wrapping</span>
+greet(<span class="st">"Sam"</span>)
+
+<span class="cm"># The @ SYNTAX — identical effect, much cleaner</span>
+<span class="kw">@my_decorator</span>
+<span class="kw">def</span> <span class="fn">greet2</span>(name):
+    <span class="fn">print</span>(<span class="st">f"Hi, {name}!"</span>)
+
+greet2(<span class="st">"Priya"</span>)   <span class="cm"># @my_decorator automatically wraps greet2</span>
+
+<span class="cm"># A PRACTICAL decorator: timing how long a function takes</span>
+<span class="kw">import</span> time
+<span class="kw">def</span> <span class="fn">timer</span>(func):
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        start = time.<span class="fn">time</span>()
+        result = func(*args, **kwargs)
+        <span class="fn">print</span>(<span class="st">f"{func.__name__} took {time.time()-start:.4f}s"</span>)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper
+
+<span class="kw">@timer</span>
+<span class="kw">def</span> <span class="fn">slow_function</span>():
+    time.<span class="fn">sleep</span>(<span class="nm">1</span>)
+
+slow_function()</pre>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ *args, **kwargs Make Decorators Universal</div>
+      Without <code>*args, **kwargs</code> in the wrapper, your decorator would only work on functions with EXACTLY the parameters you hardcoded. Using them lets ONE decorator wrap ANY function, regardless of its signature.
+    </div>
+
+    <h3>functools.wraps — Preserving Function Identity</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">from</span> functools <span class="kw">import</span> wraps
+
+<span class="kw">def</span> <span class="fn">my_decorator</span>(func):
+    <span class="kw">@wraps</span>(func)   <span class="cm"># preserves func's __name__, __doc__, etc.</span>
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        <span class="kw">return</span> func(*args, **kwargs)
+    <span class="kw">return</span> wrapper
+
+<span class="kw">@my_decorator</span>
+<span class="kw">def</span> <span class="fn">greet</span>(name):
+    <span class="st">"""Says hello."""</span>
+    <span class="fn">print</span>(<span class="st">f"Hello {name}"</span>)
+
+<span class="fn">print</span>(greet.__name__)   <span class="cm"># 'greet' — WITHOUT @wraps this would incorrectly show 'wrapper'</span>
+<span class="fn">print</span>(greet.__doc__)    <span class="cm"># 'Says hello.' — docstring preserved too</span>
+
+<span class="cm"># Decorators with THEIR OWN arguments — a decorator factory</span>
+<span class="kw">def</span> <span class="fn">repeat</span>(times):
+    <span class="kw">def</span> <span class="fn">decorator</span>(func):
+        <span class="kw">@wraps</span>(func)
+        <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+            <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(times):
+                func(*args, **kwargs)
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator
+
+<span class="kw">@repeat</span>(<span class="nm">3</span>)
+<span class="kw">def</span> <span class="fn">say_hi</span>():
+    <span class="fn">print</span>(<span class="st">"Hi!"</span>)
+
+say_hi()   <span class="cm"># prints "Hi!" three times</span></pre>
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">__iter__ / __next__</div><div class="mc-desc">The iterator protocol</div></div>
+      <div class="mini-card"><div class="mc-name">yield</div><div class="mc-desc">Pauses/resumes a generator</div></div>
+      <div class="mini-card"><div class="mc-name">(x for x in ...)</div><div class="mc-desc">Generator expression</div></div>
+      <div class="mini-card"><div class="mc-name">@decorator</div><div class="mc-desc">Wraps a function's behavior</div></div>
+      <div class="mini-card"><div class="mc-name">*args, **kwargs</div><div class="mc-desc">Universal wrapper signature</div></div>
+      <div class="mini-card"><div class="mc-name">@wraps(func)</div><div class="mc-desc">Preserves original metadata</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>Iterators, generators, itertools, decorators. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0E7490">🏆</div>
+    <div><h2>Real-World Task — Log File Analyzer with Caching Decorator</h2><p>Estimated time: 70–85 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>Build a memory-efficient log file processor using generators, plus a reusable timing/caching decorator to speed up repeated analysis calls.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0E7490">1</div><h4>Phase 1 — Generator-Based Log Reader</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Lazy Log-Line Generator</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> random, time
+<span class="kw">from</span> functools <span class="kw">import</span> wraps
+
+<span class="cm"># Simulate a large log file as a generator (no real file needed)</span>
+<span class="kw">def</span> <span class="fn">generate_log_lines</span>(n):
+    levels = [<span class="st">"INFO"</span>,<span class="st">"WARNING"</span>,<span class="st">"ERROR"</span>]
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):
+        level = random.<span class="fn">choices</span>(levels, weights=[<span class="nm">80</span>,<span class="nm">15</span>,<span class="nm">5</span>])[<span class="nm">0</span>]
+        <span class="kw">yield</span> <span class="st">f"[{level}] Event {i} occurred"</span></pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Filter Errors Lazily</h5>
+          <p>Write a generator function filter_errors(log_gen) that takes the log generator and yields ONLY lines containing "ERROR" — chain it onto generate_log_lines() without ever building a full list in memory.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Build a Timing Decorator</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Write @timer Using functools.wraps</h5>
+          <p>Build a timer decorator that prints how long any decorated function takes, correctly preserving the original function's __name__ using @wraps. Apply it to a function that counts how many ERROR lines exist in 100,000 generated log lines.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Build a Simple Caching Decorator</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Write @cache_result From Scratch</h5>
+          <p>Write a decorator that stores results in a dictionary keyed by the function's arguments, returning the CACHED result on repeated calls with the same arguments instead of recomputing. Apply it to a slow "analyze_severity_counts(log_lines_tuple)" function and demonstrate the second call is instant.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Built a lazy log-line generator producing simulated entries</li>
+        <li>Built a chained generator filtering only ERROR lines</li>
+        <li>Verified the pipeline never materializes a full list in memory</li>
+        <li>Built a @timer decorator using functools.wraps</li>
+        <li>Applied @timer to a large-scale log processing function</li>
+        <li>Built a @cache_result decorator storing results by argument key</li>
+        <li>Demonstrated a cached call returning instantly on repeat</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge</div>
+      Look up Python's built-in <code>functools.lru_cache</code> decorator and replace your hand-written cache with it — compare behavior.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Python Full Course — 10-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Basics</span>
+    <span class="day-pill">Day 2 · Control Flow &amp; Functions</span>
+    <span class="day-pill">Day 3 · Data Structures</span>
+    <span class="day-pill">Day 4 · OOP</span>
+    <span class="day-pill">Day 5 · Files &amp; Exceptions</span>
+    <span class="day-pill">Day 6 · Modules &amp; Packages</span>
+    <span class="day-pill done active">Day 7 · Iterators, Generators &amp; Decorators</span>
+    <span class="day-pill">Day 8 · Advanced OOP</span>
+    <span class="day-pill">Day 9 · Concurrency</span>
+    <span class="day-pill">Day 10 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What two special methods define the iterator protocol?",opts:["__init__ and __del__","__iter__ (returns an iterator) and __next__ (returns the next value or raises StopIteration)","__len__ and __getitem__","__enter__ and __exit__"],ans:1,explain:"The iterator protocol consists of __iter__ (which returns an iterator object, often self) and __next__ (which returns the next value in the sequence, or raises StopIteration when exhausted). A for-loop uses these two methods internally."},
+  {q:"What is the key difference between an 'iterable' and an 'iterator'?",opts:["They are identical terms","An iterable is any object you CAN loop over (has __iter__); an iterator is the object actually produced (often by calling iter() on an iterable) that tracks progress via __next__ — a list is iterable but is not itself an iterator", "Iterators can only be used once ever, iterables cannot be used at all","Iterables only work with numbers"],ans:1,explain:"A list is iterable (calling iter(my_list) works), but the list itself doesn't track iteration state — iter() returns a SEPARATE iterator object that does. This is why the same list can be iterated multiple times independently, each producing a fresh iterator."},
+  {code:"def countdown(n):\n    while n > 0:\n        yield n\n        n -= 1",q:"What happens when you call `countdown(5)`?",opts:["It immediately runs the whole function and returns a list [5,4,3,2,1]","It returns a GENERATOR OBJECT without running any code yet — the function body only executes when you iterate over it or call next() on it", "It raises an error since yield needs a return statement","It prints the numbers immediately"],ans:1,explain:"Calling a generator function does NOT execute its body — it immediately returns a generator object. The code only runs incrementally, pausing at each yield, when you call next() on it or iterate over it (e.g., with a for loop)."},
+  {code:"squares = (x**2 for x in range(1000000))",q:"Why is this generator expression (with parentheses) preferred over a list comprehension for very large ranges?",opts:["Generator expressions are always faster to iterate","Generator expressions produce values LAZILY, one at a time, without ever storing the entire sequence in memory — a list comprehension would build and store ALL 1,000,000 squared values in memory immediately", "There is no functional difference","List comprehensions cannot handle numbers this large"],ans:1,explain:"A list comprehension [x**2 for x in range(1000000)] computes and stores ALL one million values in memory right away. A generator expression (x**2 for x in range(1000000)) computes each value ON DEMAND as you iterate, never holding more than one value in memory at a time — critical for very large or infinite sequences."},
+  {q:"What is the purpose of `*args` and `**kwargs` in a decorator's inner wrapper function?",opts:["They have no real purpose and are optional stylistic choices","They allow the wrapper to accept ANY combination of positional and keyword arguments, making the SAME decorator reusable on functions with completely different parameter signatures", "*args only works with strings","**kwargs is required syntax with no functional effect"],ans:1,explain:"Without *args/**kwargs, a decorator's wrapper function would only correctly forward calls to functions matching one specific, hardcoded parameter signature. Using *args, **kwargs makes the wrapper generically accept and pass through ANY arguments, letting one decorator be applied to many different functions regardless of their individual signatures."},
+  {code:"def my_decorator(func):\n    def wrapper(*args, **kwargs):\n        return func(*args, **kwargs)\n    return wrapper\n\n@my_decorator\ndef greet(name):\n    print(name)\n\nprint(greet.__name__)",q:"What does this print, and why might it be a problem?",opts:["'greet' — this works correctly as shown","'wrapper' — WITHOUT using @functools.wraps, decorating a function replaces its metadata (like __name__ and __doc__) with the WRAPPER's metadata, which can be confusing for debugging, documentation tools, and introspection", "This raises an AttributeError","'my_decorator'"],ans:1,explain:"Without @wraps(func) applied inside the decorator, the decorated function's identity metadata (__name__, __doc__, etc.) gets replaced by the INNER wrapper function's metadata, since wrapper is what's actually returned and assigned to the name 'greet'. This makes greet.__name__ incorrectly show 'wrapper' instead of 'greet' — confusing for debugging tools, logging, and documentation generators."},
+  {code:"from functools import wraps\ndef my_decorator(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        return func(*args, **kwargs)\n    return wrapper",q:"What does @wraps(func) fix?",opts:["It has no functional effect","It copies the ORIGINAL function's metadata (__name__, __doc__, etc.) onto the wrapper function, so the decorated function still correctly reports its true identity for debugging, introspection, and documentation purposes", "It makes the decorator run faster","It prevents the decorator from being applied more than once"],ans:1,explain:"functools.wraps is itself a decorator (applied to the wrapper function) that copies over the original function's important metadata attributes (__name__, __doc__, __module__, etc.) onto the wrapper — ensuring that after decoration, introspecting the decorated function still shows its TRUE original identity rather than the generic 'wrapper' name."},
+  {q:"What is a 'decorator factory' (a decorator that itself takes arguments, like `@repeat(3)`)?",opts:["This pattern is not possible in Python","A function that, when CALLED with arguments (like repeat(3)), RETURNS an actual decorator function — adding an extra layer of nesting (a function returning a function returning a function) to allow the decorator's own behavior to be customized with parameters", "A special built-in Python keyword","Only works with class-based decorators"],ans:1,explain:"A decorator factory like repeat(times) is a function that returns a DECORATOR (not directly wrapping a function itself). Calling repeat(3) returns the actual decorator function, which is THEN applied to the target function via @. This requires an extra layer of nested functions: factory(args) → decorator(func) → wrapper(*args, **kwargs)."},
+  {q:"Why would reading a very large file line-by-line using a generator function (with yield) be preferred over reading the entire file into a list at once?",opts:["Generators are always faster to write code with","A generator processes ONE line at a time without loading the ENTIRE file into memory simultaneously — critical for files too large to fit in RAM, or when you only need to process a portion of the file before stopping", "Lists cannot store strings from files","There is no practical difference for any file size"],ans:1,explain:"Reading an entire large file into a list (readlines() into memory) requires enough RAM to hold the WHOLE file at once — problematic for very large files (gigabytes). A generator-based approach processes and yields ONE line at a time, using minimal, constant memory regardless of total file size, and can even stop early without wastefully processing the rest of the file."},
+  {code:"for i, name in enumerate(names, start=1):\n    print(i, name)",q:"What does the start=1 argument to enumerate() do?",opts:["It skips the first element of names","It makes the index counter begin at 1 instead of the default 0 — useful for human-friendly 1-based numbering (e.g., '1. Alice, 2. Bob') rather than programmer-friendly 0-based indexing", "It reverses the order of iteration","It limits enumeration to only 1 item"],ans:1,explain:"enumerate() by default starts counting from 0 (matching Python's 0-based indexing). The start= parameter lets you begin the counter at any other number — commonly 1, for producing human-readable numbered output like '1. First item, 2. Second item' rather than starting from 0."},
+  {q:"What does `itertools.chain([1,2], [3,4])` produce when converted to a list?",opts:["[[1,2],[3,4]] — a nested list","[1, 2, 3, 4] — chain() combines multiple iterables into ONE continuous sequence, iterating through each one in turn without merging them into nested structures", "[1,2] only, ignoring the second list","An error since chain requires exactly one argument"],ans:1,explain:"itertools.chain() takes multiple iterables and produces a single, flattened sequence that iterates through the first iterable completely, then the second, and so on — [1,2,3,4] here, NOT a nested structure. It's commonly used to treat several separate lists/iterables as one combined sequence without physically concatenating them into a new list first."},
+  {q:"Why would you use a generator (yield) for `infinite_counter()` (a function that counts forever) rather than trying to return a list?",opts:["Generators cannot represent infinite sequences either","An infinite sequence CANNOT be fully stored as a list (it would need infinite memory and never finish computing) — a generator can represent this cleanly because it only computes ONE value at a time, on demand, and simply never terminates unless the consumer stops requesting values", "Lists can represent infinite sequences just as easily", "This is purely a stylistic preference with no functional necessity"],ans:1,explain:"An infinite sequence fundamentally CANNOT be materialized as a complete list — attempting to do so would never finish (infinite loop trying to build an infinitely long list) and would require infinite memory. A generator elegantly handles this because it only produces ONE value at a time when requested (via next() or a for-loop with a break condition), never attempting to hold the 'whole' infinite sequence anywhere."},
+  {code:"class Countdown:\n    def __iter__(self):\n        return self\n    def __next__(self):\n        ...",q:"Why does __iter__ simply `return self` in this custom iterator class?",opts:["This is always required syntax with no deeper meaning","When a class is DESIGNED to be its own iterator (implementing both __iter__ AND __next__ itself), __iter__ returning self signals 'I am already an iterator — just use me directly' — this is a common pattern for objects meant to be iterated over exactly as themselves", "This causes infinite recursion", "self must always be returned regardless of the class's purpose"],ans:1,explain:"When a class implements BOTH __iter__ and __next__ itself (making the object simultaneously iterable AND its own iterator), __iter__ returning self is the standard pattern — it tells Python 'when you call iter() on me, just use me directly as the iterator, since I already track my own iteration state via __next__'."},
+  {q:"What would happen if a custom __next__ method NEVER raised StopIteration, even after all values were exhausted?",opts:["Python would automatically detect this and stop anyway","Any for-loop or code iterating over this object would run FOREVER (an infinite loop), since StopIteration is the ONLY signal Python's iteration machinery uses to know when to stop calling next()", "The iterator would automatically restart from the beginning","This is required behavior and always happens automatically"],ans:1,explain:"StopIteration is the SPECIFIC signal that terminates iteration in Python's for-loops and other iteration constructs. If a custom __next__ method never raises it (even when logically 'out of values'), any code trying to iterate over that object would loop indefinitely, since Python has no other built-in mechanism to detect 'iteration is complete' besides this exception."},
+  {q:"Why might you choose a generator expression `sum(x**2 for x in range(100))` over first building a list `sum([x**2 for x in range(100)])`?",opts:["There is no meaningful difference for any input size","Passing a generator expression DIRECTLY into sum() avoids ever creating an intermediate list in memory — sum() just consumes values one at a time as the generator produces them, which is more memory-efficient especially as the range grows very large, even though for a small range like 100 the practical difference is negligible", "List comprehensions cannot be used inside sum()", "Generator expressions compute a different mathematical result than list comprehensions"],ans:1,explain:"When feeding values directly into a function like sum() that only needs to process values ONE AT A TIME (not needing random access or multiple passes), a generator expression avoids the unnecessary intermediate step of building and storing a full list first. For small ranges the difference is negligible, but the PATTERN of preferring generator expressions when you don't need the intermediate list scales well to much larger inputs."},
+  {q:"In the decorator pattern `def my_decorator(func): def wrapper(...): ...; return wrapper`, why must `wrapper` be RETURNED (not called) from my_decorator?",opts:["Returning vs calling doesn't matter — either would work identically","my_decorator's job is to CREATE and RETURN a new callable (the wrapper function) that will be used as the REPLACEMENT for the original function; if wrapper() were called instead of returned, my_decorator would just execute the wrapped logic once immediately rather than producing a reusable decorated function", "wrapper cannot be called inside my_decorator under any circumstances", "This is purely a stylistic choice with no functional consequence"],ans:1,explain:"The whole point of a decorator is to produce a NEW callable that will be invoked LATER (whenever the decorated function is actually called), potentially multiple times with different arguments. Returning the wrapper function (not calling it) means my_decorator's job is just to CONSTRUCT this reusable wrapped version — actually calling wrapper() inside my_decorator would just run the wrapping logic once immediately, defeating the purpose of creating a reusable decorated function."},
+  {q:"What is the conceptual foundation that makes decorators possible in Python (i.e., why can functions be 'wrapped' by other functions at all)?",opts:["Decorators are a special hardcoded language feature unrelated to functions being objects","In Python, FUNCTIONS ARE OBJECTS — they can be assigned to variables, passed as arguments to other functions, and returned as return values, just like any other value (numbers, strings, etc.); decorators exploit this by taking a function AS INPUT and returning a NEW function (typically a wrapper) as output", "Decorators only work because of special syntax with no connection to how functions normally behave", "Functions become decorators only when marked with a special keyword"],ans:1,explain:"The entire decorator pattern relies on the fact that in Python, functions are first-class objects — they can be passed around, stored in variables, and returned from other functions, exactly like any other value. A decorator is simply a function that takes ANOTHER function as its input argument and returns a new function (usually a wrapper with extra behavior) as its output — this is only possible because functions themselves are treated as regular objects in Python's data model."},
+  {q:"Why might a caching decorator (like the exercise's @cache_result) dramatically speed up REPEATED calls to a function with the SAME arguments, but provide NO benefit for calls with DIFFERENT arguments each time?",opts:["Caching decorators speed up ALL calls equally regardless of arguments","A cache stores previously COMPUTED results keyed by their input arguments; if the SAME arguments are passed again, the cached (already-computed) result can be returned INSTANTLY without recomputation — but if each call uses genuinely DIFFERENT arguments, there's no previous cached result to reuse, so the function must be computed fresh every time, exactly as if there were no cache at all", "Caching decorators only work with numeric arguments", "This behavior indicates a bug in the caching implementation"],ans:1,explain:"A caching mechanism fundamentally relies on RECOGNIZING repeated inputs — it stores a mapping from (arguments) → (previously computed result). When called again with the EXACT SAME arguments, it can skip recomputation and return the stored result instantly. But if every call uses genuinely different arguments, there's simply no prior cached result to reuse — the cache provides zero speedup in that scenario, behaving identically to an uncached function, which is expected and correct behavior, not a bug."},
+  {q:"How does Python's built-in `functools.lru_cache` decorator relate to the hand-written @cache_result decorator built in this lesson's exercise?",opts:["They are completely unrelated tools solving different problems","functools.lru_cache provides the SAME core caching concept (storing results keyed by arguments to avoid recomputation) as a ready-made, well-tested, production-quality built-in decorator — including additional features like an LRU (Least Recently Used) eviction policy to limit cache size — making it generally preferable to a hand-rolled cache for real production code, though building your own version (as done in the exercise) is valuable for understanding HOW such caching actually works under the hood", "lru_cache only works with generator functions, not regular functions", "lru_cache is deprecated in favor of manual caching implementations"],ans:1,explain:"functools.lru_cache implements the exact same fundamental caching concept taught in this lesson's exercise — but as a robust, well-tested, production-ready built-in tool, additionally offering features like automatic cache-size limiting (evicting Least Recently Used entries once a maximum size is reached). Building your own simplified cache decorator first (as in the exercise) is valuable for genuinely understanding the underlying mechanism, after which using the polished built-in lru_cache becomes the practical choice for real production code."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review iterators and generators, then try again! 📚"],[50,75,"Good progress! Focus on decorators and functools.wraps. 💪"],[75,90,"Strong Day 7! Iterators/decorators skills are solid. 🎉"],[90,101,"Excellent! Day 7 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

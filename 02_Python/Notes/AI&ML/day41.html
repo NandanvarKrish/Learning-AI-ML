@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 41 — Lambda Functions, map() & filter()</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:210px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:4px; cursor:pointer; font-weight:bold; font-family:var(--font-body); margin-top:10px; margin-right:8px;}
+.console{background:#0f151d; color:#8fdb9c; font-family:var(--font-mono); font-size:14px; padding:14px; border-radius:6px; margin-top:14px; min-height:60px; max-height:280px; overflow-y:auto; white-space:pre-wrap;}
+.console .error{color:#e8837a;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 41 of 210 · Phase 2: Python & Core AI Foundation</span>
+    <h1>Lambda Functions, map() & filter()</h1>
+    <div class="subtitle">~2 hours · Short throwaway functions, applied across whole lists at once</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Once you reach Pandas in a few weeks, you'll constantly write things like <code>df["price"].apply(lambda x: x * 1.1)</code> — a lambda function applied across an entire column at once. Today's map/filter pattern is the pure-Python foundation for that exact idiom, which is genuinely one of the most common lines of code in real data cleaning work.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Lambda functions — quick, anonymous functions</h2>
+  <div class="code">square = lambda x: x * x
+print(square(5))   # 25</div>
+  <p>A lambda is a small, unnamed function written in one line: <code>lambda parameters: expression</code>. It's equivalent to:</p>
+  <div class="code">def square(x):
+    return x * x</div>
+  <p><strong>The key restriction:</strong> a lambda can only contain a single expression — no multiple lines, no loops, no if/elif/else chains inside it (a simple conditional expression is allowed, but full statements are not). Lambdas are meant for short, throwaway logic, not complex functions.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> map() — apply a function to every item</h2>
+  <div class="code">prices = [100, 250, 80, 500]
+doubled = list(map(lambda x: x * 2, prices))
+print(doubled)   # [200, 500, 160, 1000]</div>
+  <p><code>map(function, list)</code> applies the function to EVERY element and gives back the transformed results. <strong>Note the <code>list()</code> wrapper</strong> — in real Python, <code>map()</code> returns a special "map object" (a lazy iterator), not a list directly, so you need to wrap it in <code>list()</code> to see or use the actual values.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> filter() — keep only matching items</h2>
+  <div class="code">prices = [100, 250, 80, 500]
+expensive = list(filter(lambda x: x > 150, prices))
+print(expensive)   # [250, 500]</div>
+  <p><code>filter(function, list)</code> keeps only the elements where the function returns True — exactly the same "condition-based keep" logic as Day 35's append-in-a-loop pattern, just written more compactly.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (currency conversion + filtering)</h2>
+  <div class="panel">
+    <p class="example-tag">Business example</p>
+    <div class="code">usd_prices = [10, 25, 8, 50, 15]
+exchange_rate = 83
+
+inr_prices = list(map(lambda x: x * exchange_rate, usd_prices))
+print(inr_prices)   # [830, 2075, 664, 4150, 1245]
+
+premium_items = list(filter(lambda x: x > 2000, inr_prices))
+print(premium_items)   # [2075, 4150]</div>
+    <p>This two-step pattern — transform everything with map, then narrow down with filter — is extremely common in real data pipelines, and reads almost like a sentence: "convert all prices, then keep only the expensive ones."</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Second example (sorting by a custom key)</h2>
+  <div class="panel">
+    <p class="example-tag">A genuinely essential real-world pattern</p>
+    <div class="code">products = [
+    {"name": "Pen", "price": 20},
+    {"name": "Bag", "price": 899},
+    {"name": "Notebook", "price": 60}
+]
+
+sorted_products = sorted(products, key=lambda p: p["price"])
+print(sorted_products)
+# sorted from cheapest to most expensive</div>
+    <p><code>sorted(list, key=...)</code> lets you sort by ANY custom rule — here, by the "price" field inside each dictionary — instead of Python's default ordering. This is precisely how you'll sort real records (by date, by score, by relevance) throughout your data work.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Forgetting to wrap map()/filter() in list().</strong> Printing a bare <code>map(...)</code> shows something like <code>&lt;map object at 0x...&gt;</code>, not the actual values — always wrap with <code>list()</code> to see or use the results.</p>
+    <p><strong>Mistake 2 — Trying to put multiple statements inside a lambda.</strong> Lambdas support exactly one expression — if your logic needs multiple steps or a loop, write a regular <code>def</code> function instead.</p>
+    <p><strong>Mistake 3 — Overusing lambda for genuinely complex logic.</strong> A deeply nested lambda hurts readability — if you find yourself squinting at a lambda, it's a sign to name it as a proper function instead.</p>
+    <p><strong>Mistake 4 — Forgetting sorted() returns a NEW list.</strong> Unlike Day 35's <code>.sort()</code> (which sorts in place and returns None), <code>sorted()</code> returns a brand new sorted list, leaving the original untouched — genuinely useful to keep both versions when needed.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Practice Problem Set</h2>
+  <div id="practice"></div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Practice Console (now supports lambda, map, filter, sorted)</h2>
+  <div class="solver">
+    <h3>Try the currency conversion and product sorting examples</h3>
+    <textarea id="codeInput">prices = [100, 250, 80, 500]
+doubled = list(map(lambda x: x * 2, prices))
+print(doubled)
+
+expensive = list(filter(lambda x: x > 150, prices))
+print(expensive)
+
+nums = [5, 3, 9, 1, 7]
+print(sorted(nums))</textarea>
+    <button onclick="runCode()">Run Code</button>
+    <button onclick="clearCode()">Clear</button>
+    <div class="console" id="consoleOutput">Output will appear here...</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 42 covers string manipulation — slicing, formatting, and the string methods you'll use constantly when cleaning real, messy text data.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 41 of 210 · AI & ML Study Plan · Phase 2: Python & Core AI Foundation</div>
+</footer>
+
+<script>
+const practiceData = [
+  { q: "Write a lambda that takes a number and returns its cube.", steps: "lambda x: x ** 3" },
+  { q: "nums=[1,2,3,4,5]. Using map, create a new list with each number squared.", steps: "list(map(lambda x: x**2, nums)) → [1,4,9,16,25]" },
+  { q: "nums=[1,2,3,4,5,6]. Using filter, get only the even numbers.", steps: "list(filter(lambda x: x%2==0, nums)) → [2,4,6]" },
+  { q: "What does print(map(lambda x: x+1, [1,2,3])) show, WITHOUT wrapping in list()?", steps: "Something like <map object at 0x...> — not the actual values. You need list() to see them." },
+  { q: "students=[{'name':'A','score':70},{'name':'B','score':90}]. Sort by score, highest last (ascending). Write the code.", steps: "sorted(students, key=lambda s: s['score'])" },
+  { q: "What's the difference between sorted(my_list) and my_list.sort()?", steps: "sorted() returns a NEW sorted list, leaving the original unchanged. .sort() modifies the original list in place and returns None." },
+  { q: "Can a lambda contain an if/else statement with multiple lines?", steps: "No — lambdas are restricted to a single expression (though a compact conditional EXPRESSION like 'lambda x: \"even\" if x%2==0 else \"odd\"' is allowed, since it's still one expression, not multiple statements)." },
+  { q: "prices_usd=[20,40,60]. Convert to INR (rate=83) AND keep only those above ₹3000. Write the two-step map+filter code.", steps: "inr = list(map(lambda x: x*83, prices_usd))\nresult = list(filter(lambda x: x>3000, inr))" },
+  { q: "Why is 'df[\"col\"].apply(lambda x: ...)' (which you'll see in Pandas soon) conceptually the same as today's map()?", steps: "Both apply a small function across every element of a collection, transforming each value the same way — Pandas' apply() is essentially map() specialized for DataFrame columns." },
+  { q: "In your own words: when should you write a full 'def' function instead of a lambda?", steps: "When the logic needs more than one expression, involves loops/multiple conditions, or when naming the function would make the code significantly more readable and reusable." }
+];
+const practiceEl = document.getElementById('practice');
+practiceData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'panel';
+  box.style.marginBottom = '10px';
+  box.innerHTML = `<p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">${item.steps.replace(/\n/g,'<br>')}</div></details>`;
+  practiceEl.appendChild(box);
+});
+
+// --- Interpreter with lambda, map, filter, sorted ---
+function pyRepr(val){
+  if(val === null || val === undefined) return 'None';
+  if(typeof val === 'boolean') return val ? 'True' : 'False';
+  if(val instanceof Map){
+    const parts = [...val.entries()].map(([k,v]) => `${typeof k==='string'?`'${k}'`:pyRepr(k)}: ${typeof v==='string'?`'${v}'`:pyRepr(v)}`);
+    return '{' + parts.join(', ') + '}';
+  }
+  if(Array.isArray(val)){
+    const items = val.map(v => typeof v === 'string' ? `'${v}'` : pyRepr(v));
+    if(val.__isTuple){ if(val.length===1) return '('+items[0]+',)'; return '('+items.join(', ')+')'; }
+    return '[' + items.join(', ') + ']';
+  }
+  return String(val);
+}
+function resolveSimple(value, vars){
+  value = value.trim();
+  if(value === 'True') return true;
+  if(value === 'False') return false;
+  if((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))){
+    return value.slice(1,-1);
+  }
+  if(!isNaN(parseFloat(value)) && isFinite(value)){
+    return value.includes('.') ? parseFloat(value) : parseInt(value);
+  }
+  if(vars.hasOwnProperty(value)) return vars[value];
+  return value;
+}
+function splitTopLevel(str, sep){
+  const parts = [];
+  let depth = 0, current = '', inQuote = null;
+  for(let ch of str){
+    if(inQuote){ current += ch; if(ch === inQuote) inQuote = null; continue; }
+    if(ch === '"' || ch === "'"){ inQuote = ch; current += ch; continue; }
+    if('([{'.includes(ch)) depth++;
+    if(')]}'.includes(ch)) depth--;
+    if(ch === sep && depth === 0){ parts.push(current); current=''; continue; }
+    current += ch;
+  }
+  if(current.trim() !== '') parts.push(current);
+  return parts;
+}
+function pyIndex(arr, idx){
+  let i = idx;
+  if(i < 0) i = arr.length + i;
+  if(i < 0 || i >= arr.length) throw new Error('IndexError');
+  return arr[i];
+}
+function pythonToJsExpr(expr, vars){
+  let e = expr;
+  const names = Object.keys(vars).sort((a,b)=>b.length-a.length);
+  names.forEach(name => {
+    const re = new RegExp('\\b'+name+'\\b','g');
+    const v = vars[name];
+    if(Array.isArray(v) || v instanceof Map) return;
+    let literal;
+    if(typeof v === 'string') literal = JSON.stringify(v);
+    else if(typeof v === 'boolean') literal = v ? 'true' : 'false';
+    else literal = String(v);
+    e = e.replace(re, literal);
+  });
+  e = e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false');
+  e = e.replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\b/g, '!');
+  e = e.replace(/\bstr\(/g, 'String(').replace(/\bint\(/g, 'Math.trunc(').replace(/\bfloat\(/g, 'Number(');
+  e = e.replace(/([\w.()]+)\s*\/\/\s*([\w.()]+)/g, 'Math.floor(($1)/($2))');
+  return e;
+}
+function evalGeneral(expr, vars){
+  return Function('"use strict"; return (' + pythonToJsExpr(expr.trim(), vars) + ')')();
+}
+function parseLambda(text){
+  const m = text.trim().match(/^lambda\s+([^:]+):\s*(.+)$/);
+  if(!m) return null;
+  const params = m[1].split(',').map(p=>p.trim());
+  return {params, body: m[2].trim()};
+}
+function callLambda(lambdaDef, argVals, outerVars){
+  const temp = Object.assign({}, outerVars);
+  lambdaDef.params.forEach((p,idx) => { temp[p] = argVals[idx]; });
+  return evalComplex(lambdaDef.body, temp);
+}
+function pyIndexOrKey(container, keyExpr, vars){
+  if(container instanceof Map){
+    const key = resolveSimple(keyExpr, vars);
+    if(!container.has(key)) throw new Error('KeyError');
+    return container.get(key);
+  }
+  return pyIndex(container, evalGeneral(keyExpr, vars));
+}
+function evalComplex(argRaw, vars){
+  const arg = argRaw.trim();
+
+  if(arg.startsWith('{') && arg.includes(':') && arg.endsWith('}')){
+    const inner = arg.slice(1,-1).trim();
+    const map = new Map();
+    if(inner !== ''){
+      splitTopLevel(inner, ',').forEach(entry => {
+        const idx = entry.indexOf(':');
+        map.set(resolveSimple(entry.slice(0,idx), vars), resolveSimple(entry.slice(idx+1), vars));
+      });
+    }
+    return map;
+  }
+  if(arg.startsWith('[') && arg.endsWith(']')){
+    const inner = arg.slice(1,-1).trim();
+    if(inner==='') return [];
+    return splitTopLevel(inner, ',').map(p => evalComplex(p, vars));
+  }
+
+  let m = arg.match(/^map\((.+)\)$/);
+  if(m){
+    const parts = splitTopLevel(m[1], ',');
+    if(parts.length === 2){
+      const lam = parseLambda(parts[0]);
+      const listVal = vars[parts[1].trim()];
+      if(lam && Array.isArray(listVal)){
+        return listVal.map(x => callLambda(lam, [x], vars));
+      }
+    }
+  }
+  m = arg.match(/^filter\((.+)\)$/);
+  if(m){
+    const parts = splitTopLevel(m[1], ',');
+    if(parts.length === 2){
+      const lam = parseLambda(parts[0]);
+      const listVal = vars[parts[1].trim()];
+      if(lam && Array.isArray(listVal)){
+        return listVal.filter(x => callLambda(lam, [x], vars));
+      }
+    }
+  }
+  m = arg.match(/^sorted\((.+)\)$/);
+  if(m){
+    const parts = splitTopLevel(m[1], ',');
+    const listVal = vars[parts[0].trim()];
+    if(Array.isArray(listVal)){
+      const copy = listVal.slice();
+      if(parts.length === 2){
+        const keyMatch = parts[1].trim().match(/^key\s*=\s*(lambda.+)$/);
+        if(keyMatch){
+          const lam = parseLambda(keyMatch[1]);
+          copy.sort((a,b) => {
+            const ka = callLambda(lam, [a], vars);
+            const kb = callLambda(lam, [b], vars);
+            return typeof ka === 'string' ? ka.localeCompare(kb) : ka - kb;
+          });
+          return copy;
+        }
+      }
+      copy.sort((a,b) => typeof a === 'string' ? a.localeCompare(b) : a-b);
+      return copy;
+    }
+  }
+  m = arg.match(/^list\((.+)\)$/);
+  if(m){
+    const inner = evalComplex(m[1], vars);
+    return Array.isArray(inner) ? inner : [...inner];
+  }
+
+  const idxMatch = arg.match(/^(\w+)\[(.*)\]$/);
+  if(idxMatch && (vars[idxMatch[1]] instanceof Map || Array.isArray(vars[idxMatch[1]]))){
+    return pyIndexOrKey(vars[idxMatch[1]], idxMatch[2], vars);
+  }
+  const lenMatch = arg.match(/^len\((\w+)\)$/);
+  if(lenMatch){ const v = vars[lenMatch[1]]; return (v instanceof Map) ? v.size : v.length; }
+
+  return evalGeneral(arg, vars);
+}
+
+function execLine(line, vars, output){
+  const printMatch = line.match(/^print\((.*)\)$/);
+  const assignMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.+)$/);
+  if(printMatch){
+    const partsAtTop = splitTopLevel(printMatch[1], ',');
+    output.push(partsAtTop.map(p => pyRepr(evalComplex(p, vars))).join(' '));
+  } else if(assignMatch){
+    vars[assignMatch[1]] = evalComplex(assignMatch[2], vars);
+  } else {
+    output.push(`<span class="error">SyntaxError: ${escapeHtml(line)}</span>`);
+  }
+}
+function runCode(){
+  const raw = document.getElementById('codeInput').value;
+  const lines = raw.split('\n');
+  const vars = {};
+  const output = [];
+  for(let rawLine of lines){
+    const line = rawLine.trim();
+    if(line === '' || line.startsWith('#')) continue;
+    try{ execLine(line, vars, output); }
+    catch(err){ output.push(`<span class="error">${escapeHtml(err.message || 'Error')}</span>`); }
+  }
+  document.getElementById('consoleOutput').innerHTML = output.join('\n') || '(no output)';
+}
+function escapeHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function clearCode(){
+  document.getElementById('codeInput').value = '';
+  document.getElementById('consoleOutput').textContent = 'Output will appear here...';
+}
+
+const quizData = [
+  { q: "A lambda function can contain:", opts: ["Multiple statements and loops","Exactly one expression","Only print statements","Nothing, they're always empty"], correct: 1, explain: "Lambdas are restricted to a single expression by design." },
+  { q: 'square = lambda x: x*x. What is square(6)?', opts: ["6","12","36","Error"], correct: 2, explain: "6*6 = 36." },
+  { q: "map(function, list) returns:", opts: ["A regular list directly","A map object (needs list() to view as a list)","A single number","A dictionary"], correct: 1, explain: "map() returns a lazy iterator in real Python — wrap with list() to see values." },
+  { q: "nums=[1,2,3,4]. list(filter(lambda x: x>2, nums)) returns:", opts: ["[1,2]","[3,4]","[1,2,3,4]","[]"], correct: 1, explain: "Only values greater than 2 are kept: 3 and 4." },
+  { q: "What's the key difference between sorted(my_list) and my_list.sort()?", opts: [
+      "No difference",
+      "sorted() returns a new list; .sort() modifies in place and returns None",
+      ".sort() returns a new list; sorted() modifies in place",
+      "sorted() only works on numbers"
+    ], correct: 1, explain: "sorted() is non-destructive (returns a new list); .sort() changes the original list directly." },
+  { q: "products=[{'price':50},{'price':10}]. sorted(products, key=lambda p: p['price']) sorts by:", opts: ["Dictionary insertion order","Alphabetical key names","The 'price' value inside each dictionary","Random order"], correct: 2, explain: "The lambda extracts 'price' from each dict, and sorting uses that extracted value." },
+  { q: "Why is Pandas' df['col'].apply(lambda x: ...) conceptually similar to today's map()?", opts: [
+      "They're unrelated concepts",
+      "Both apply a function across every element of a collection, transforming each value",
+      "apply() only works on numbers",
+      "map() is exclusive to Pandas"
+    ], correct: 1, explain: "This is exactly the pattern you'll reuse constantly once working with real DataFrames." },
+  { q: "When should you prefer a full 'def' function over a lambda?", opts: [
+      "Always, lambdas should never be used",
+      "When the logic needs multiple steps, loops, or would be clearer with a descriptive name",
+      "Only for very short logic",
+      "Lambdas and def functions are always interchangeable with no tradeoffs"
+    ], correct: 1, explain: "Lambdas are best for short, throwaway logic — anything more complex deserves a named function for readability." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

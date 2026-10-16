@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Day 6 — Regression Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f2f5fb;--surface:#fff;--card2:#f7f9fd;
+  --border:#dde4f0;--border2:#c5cfdf;
+  --accent:#0d7a5f;--al:#e6faf4;--ag:rgba(13,122,95,0.22);
+  --blue:#1558c0;--bl:#eaf1ff;
+  --orange:#b84f00;--ol:#fff3e8;
+  --purple:#5e35b1;--pl:#f0ebff;
+  --red:#b0112b;--rl:#fff0f2;
+  --green:#0a6640;
+  --text:#18243a;--text2:#3d4f6e;--text3:#7f90aa;
+  --sh:0 1px 8px rgba(18,34,64,0.07);--shm:0 4px 18px rgba(18,34,64,0.10);
+  --mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 55% 35% at 8% 0%,rgba(13,122,95,0.06),transparent 65%),
+             radial-gradient(ellipse 40% 28% at 92% 100%,rgba(21,88,192,0.05),transparent 65%);pointer-events:none;}
+.W{max-width:960px;margin:0 auto;padding:0 26px;position:relative;z-index:1;}
+
+.hero{padding:48px 0 38px;border-bottom:2px solid var(--border);}
+.hero-top{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.bc{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.bc em{color:var(--accent);font-style:normal;}
+.db{background:var(--accent);color:#fff;font-family:var(--mono);font-weight:700;font-size:11px;padding:3px 11px;border-radius:5px;}
+h1{font-size:clamp(1.8rem,4.2vw,2.9rem);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;}
+h1 .hl{color:var(--accent);}
+.tagline{font-size:15px;color:var(--text2);max-width:540px;line-height:1.65;margin-bottom:22px;}
+.chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 13px;font-family:var(--mono);font-size:11px;color:var(--text2);box-shadow:var(--sh);}
+.chip .dot{width:7px;height:7px;border-radius:50%;}
+.pt{margin-top:26px;display:flex;gap:5px;align-items:center;}
+.pd{flex:1;height:5px;border-radius:3px;background:var(--border2);}
+.pd.done{background:var(--accent);}
+.pd.now{background:var(--accent);box-shadow:0 0 7px var(--ag);}
+.pl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;}
+
+.sl{font-family:var(--mono);font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-weight:700;}
+.sl::after{content:'';flex:1;height:1.5px;background:var(--border2);}
+
+.og{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0;}
+@media(max-width:600px){.og{grid-template-columns:1fr 1fr;}}
+.oc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;}
+.oc:hover{transform:translateY(-2px);box-shadow:var(--shm);}
+.oi{font-size:20px;margin-bottom:7px;}
+.ol2{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.ov{font-size:14px;font-weight:700;}
+
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:560px){.tg{grid-template-columns:1fr;}}
+.ti{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--sh);transition:border-color .2s;}
+.ti:hover{border-color:var(--ag);}
+.tn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--al);padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.tt{font-size:13px;font-weight:700;}
+.ts{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+
+.cc{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--sh);}
+.ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cb{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.cb-core{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.cb-warn{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.cb-tip{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.cb-pow{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.cd{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:14px;}
+
+.code{background:#eef2f9;border:1.5px solid var(--border2);border-radius:8px;padding:15px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;overflow-x:auto;border-left:4px solid var(--accent);}
+.code .fn{color:var(--accent);font-weight:700;}.code .kw{color:var(--blue);font-weight:700;}
+.code .str{color:var(--orange);}.code .cm{color:var(--text3);}.code .num{color:var(--purple);}
+
+/* STAT METRIC GRID */
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
+@media(max-width:560px){.metric-grid{grid-template-columns:1fr 1fr;}}
+.metric-box{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center;box-shadow:var(--sh);}
+.metric-val{font-size:1.5rem;font-weight:900;color:var(--accent);letter-spacing:-1px;line-height:1;}
+.metric-name{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
+.metric-desc{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.4;}
+
+/* OUTPUT TABLE */
+.ot{width:100%;border-collapse:collapse;margin-top:10px;border-radius:8px;overflow:hidden;}
+.ot th{font-family:var(--mono);font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:1px;padding:9px 13px;text-align:left;background:var(--accent);}
+.ot td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;}
+.ot tr:last-child td{border-bottom:none;}
+.ot tr:nth-child(even) td{background:var(--card2);}
+.ot code{font-family:var(--mono);font-size:11px;background:var(--al);padding:2px 6px;border-radius:4px;color:var(--accent);}
+.ot .ok{color:var(--green);font-weight:700;}.ot .bad{color:var(--red);}
+
+/* FORMULA GRID */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fr{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;box-shadow:var(--sh);}
+.ff{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--al);padding:3px 8px;border-radius:4px;border:1px solid var(--ag);white-space:nowrap;flex-shrink:0;}
+.fd{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* EQUATION DISPLAY */
+.equation{background:var(--bl);border:1.5px solid rgba(21,88,192,0.2);border-radius:10px;padding:16px 20px;margin:12px 0;text-align:center;}
+.eq-main{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--blue);letter-spacing:0.5px;}
+.eq-sub{font-size:12px;color:var(--text3);margin-top:6px;}
+
+.outg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+@media(max-width:540px){.outg{grid-template-columns:1fr;}}
+.outi{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;display:flex;gap:10px;box-shadow:var(--sh);}
+.outc{width:22px;height:22px;border-radius:5px;background:var(--al);border:1.5px solid var(--ag);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:11px;font-weight:800;}
+.outt{font-size:13px;line-height:1.5;}
+
+.hb{display:flex;gap:3px;border-radius:8px;overflow:hidden;height:10px;margin-bottom:9px;box-shadow:var(--sh);}
+.hs{flex:1;}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-family:var(--mono);}
+.ld{width:10px;height:10px;border-radius:2px;}
+
+.tc{border:1.5px solid var(--border);border-radius:14px;margin-bottom:13px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s;}
+.tc:hover{box-shadow:var(--shm);}
+.th{display:flex;align-items:center;gap:13px;padding:15px 19px;cursor:pointer;background:var(--surface);user-select:none;}
+.tc.open .th{border-bottom:1.5px solid var(--border);}
+.tn2{font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:24px;font-weight:700;}
+.tb2{font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:5px;flex-shrink:0;font-weight:600;white-space:nowrap;}
+.bg{background:var(--al);color:var(--accent);border:1px solid var(--ag);}
+.bb{background:var(--pl);color:var(--purple);border:1px solid rgba(94,53,177,0.2);}
+.bp{background:var(--bl);color:var(--blue);border:1px solid rgba(21,88,192,0.2);}
+.bo{background:var(--ol);color:var(--orange);border:1px solid rgba(184,79,0,0.2);}
+.tw{flex:1;}
+.tm{font-size:14px;font-weight:700;}
+.ts2{font-size:11px;color:var(--text3);margin-top:2px;}
+.typ{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-weight:600;}
+.chev{color:var(--text3);font-size:12px;transition:transform .25s;flex-shrink:0;}
+.tc.open .chev{transform:rotate(180deg);}
+.tbody{display:none;padding:20px 21px 24px;background:var(--card2);border-top:1.5px solid var(--border);}
+.tc.open .tbody{display:block;animation:si .22s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+.goal{font-size:13px;color:var(--text2);line-height:1.68;margin-bottom:16px;padding:13px 16px;background:var(--al);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
+.steps{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;}
+.si2{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--text);}
+.sn{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--accent);color:#fff;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.form{background:#eef2f9;border:1.5px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.85;overflow-x:auto;margin-bottom:13px;}
+.form .fn{color:var(--accent);font-weight:700;}.form .kw{color:var(--blue);font-weight:700;}
+.form .str{color:var(--orange);}.form .cm{color:var(--text3);}.form .num{color:var(--purple);}
+.nb{display:flex;gap:10px;background:var(--bl);border:1px solid rgba(21,88,192,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.wb{display:flex;gap:10px;background:var(--ol);border:1px solid rgba(184,79,0,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.gb{display:flex;gap:10px;background:var(--al);border:1px solid var(--ag);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.rb{display:flex;gap:10px;background:var(--rl);border:1px solid rgba(176,17,43,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+.ni{font-size:14px;flex-shrink:0;}
+.cks{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);}
+.ck{font-size:11px;color:var(--text2);font-family:var(--mono);background:var(--surface);border:1.5px solid var(--border);border-radius:5px;padding:4px 10px;}
+.ck::before{content:'☐ ';color:var(--accent);}
+
+.tip{background:linear-gradient(135deg,var(--al),var(--bl));border:1.5px solid var(--ag);border-radius:14px;padding:20px 22px;margin:26px 0;display:flex;gap:14px;box-shadow:var(--sh);}
+.tpi{font-size:26px;flex-shrink:0;}
+.tpt{font-weight:800;font-size:15px;margin-bottom:5px;color:var(--accent);}
+.tpd{font-size:13px;color:var(--text2);line-height:1.65;}
+
+.nav{display:flex;justify-content:space-between;align-items:center;padding:26px 0 50px;border-top:2px solid var(--border);margin-top:40px;flex-wrap:wrap;gap:12px;}
+.nb2{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:11px 20px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;box-shadow:var(--sh);transition:all .2s;}
+.nb2:hover{border-color:var(--accent);color:var(--accent);background:var(--al);}
+.nb2.pr{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 14px var(--ag);}
+.nb2.pr:hover{background:#0b6650;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:480px){.tb2{display:none;}.th{gap:8px;}}
+</style>
+</head>
+<body><div class="W">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="bc">Excel for AI &amp; ML <em>›</em> Day 6 of 10</div>
+    <div class="db">DAY 6</div>
+  </div>
+  <h1>Regression<br><span class="hl">Analysis</span></h1>
+  <div class="tagline">Your first predictive model — built entirely in Excel. Understand the math, interpret the output, make real predictions, and diagnose model problems before they reach production.</div>
+  <div class="chips">
+    <div class="chip"><div class="dot" style="background:#0d7a5f"></div>Category: ML Models</div>
+    <div class="chip">⏱ 60 Minutes</div>
+    <div class="chip">📊 Difficulty: ●●●●</div>
+    <div class="chip">🎯 5 Tasks</div>
+    <div class="chip">🔧 ToolPak Required</div>
+  </div>
+  <div class="pt">
+    <div class="pd done"></div><div class="pd done"></div><div class="pd done"></div>
+    <div class="pd done"></div><div class="pd done"></div>
+    <div class="pd now"></div>
+    <div class="pd"></div><div class="pd"></div><div class="pd"></div><div class="pd"></div>
+    <div class="pl">Day 6 / 10</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="og">
+  <div class="oc"><div class="oi">📉</div><div class="ol2">Focus</div><div class="ov">Linear Regression</div></div>
+  <div class="oc"><div class="oi">🧩</div><div class="ol2">Topics</div><div class="ov">8 Regression Concepts</div></div>
+  <div class="oc"><div class="oi">✅</div><div class="ol2">Outcomes</div><div class="ov">4 Skills Mastered</div></div>
+  <div class="oc"><div class="oi">⭐</div><div class="ol2">Key Tool</div><div class="ov">LINEST + ToolPak</div></div>
+</div>
+
+<!-- TOPICS -->
+<div class="sl">📖 Topics Covered Today</div>
+<div class="tg">
+  <div class="ti"><div class="tn">01</div><div><div class="tt">Simple Linear Regression</div><div class="ts">SLOPE, INTERCEPT, FORECAST — y = mx + b from scratch</div></div></div>
+  <div class="ti"><div class="tn">02</div><div><div class="tt">ToolPak Regression Output</div><div class="ts">R², F-stat, p-values, coefficients, standard errors</div></div></div>
+  <div class="ti"><div class="tn">03</div><div><div class="tt">Multiple Linear Regression</div><div class="ts">3+ features — adjusted R², multicollinearity check</div></div></div>
+  <div class="ti"><div class="tn">04</div><div><div class="tt">Interpreting Coefficients</div><div class="ts">What each β means — unit change interpretation</div></div></div>
+  <div class="ti"><div class="tn">05</div><div><div class="tt">p-values & Significance</div><div class="ts">Which features actually matter? (p &lt; 0.05 rule)</div></div></div>
+  <div class="ti"><div class="tn">06</div><div><div class="tt">Residual Analysis</div><div class="ts">Plot residuals — diagnose model problems visually</div></div></div>
+  <div class="ti"><div class="tn">07</div><div><div class="tt">Making Predictions</div><div class="ts">FORECAST, TREND, manual β formula for new data</div></div></div>
+  <div class="ti"><div class="tn">08</div><div><div class="tt">Overfitting Concept</div><div class="ts">Too many features — when more hurts performance</div></div></div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sl">🧠 Key Concepts Deep Dive</div>
+
+<!-- Regression Equation -->
+<div class="cc">
+  <div class="ct">📐 The Regression Equation — What It Really Means <span class="cb cb-core">CORE MATH</span></div>
+  <div class="cd">Linear regression finds the straight line (or hyperplane in multiple dimensions) that minimises the sum of squared distances between predicted and actual values. Every coefficient β tells you: "for each 1-unit increase in this feature, the target increases by β units — all else equal."</div>
+  <div class="equation">
+    <div class="eq-main">ŷ = β₀ + β₁x₁ + β₂x₂ + β₃x₃ + ε</div>
+    <div class="eq-sub">ŷ = predicted score &nbsp;|&nbsp; β₀ = intercept &nbsp;|&nbsp; β₁…β₃ = coefficients &nbsp;|&nbsp; x₁…x₃ = features &nbsp;|&nbsp; ε = residual error</div>
+  </div>
+  <div class="code" style="margin-top:14px;">
+<span class="cm">// Simple regression (1 feature): ŷ = β₀ + β₁x₁</span>
+β₁ (slope)     = <span class="fn">SLOPE</span>(Score_range, StudyHours_range)
+β₀ (intercept) = <span class="fn">INTERCEPT</span>(Score_range, StudyHours_range)
+ŷ (prediction) = β₀ + β₁ * x₁
+
+<span class="cm">// One-shot prediction for new x value</span>
+=<span class="fn">FORECAST.LINEAR</span>(new_x, Score_range, StudyHours_range)
+
+<span class="cm">// Example: β₁ = 4.2 means:</span>
+<span class="cm">// "Each additional study hour predicts 4.2 more points on the exam"</span>
+
+<span class="cm">// TREND — predict multiple new values at once (array formula)</span>
+=<span class="fn">TREND</span>(known_y, known_x, new_x_values)
+
+<span class="cm">// Goodness of fit</span>
+=<span class="fn">RSQ</span>(Score_range, StudyHours_range)     <span class="cm">→ R² = % variance explained</span>
+  </div>
+</div>
+
+<!-- Reading ToolPak Output -->
+<div class="cc">
+  <div class="ct">📋 Reading the ToolPak Regression Output <span class="cb cb-warn">MUST UNDERSTAND EVERY NUMBER</span></div>
+  <div class="cd">The ToolPak Regression output has 3 sections: Summary Output (model quality), ANOVA table (overall significance), and Coefficients table (per-feature details). Most beginners only look at R² — professionals read all three sections.</div>
+  <table class="ot">
+    <tr><th>Metric</th><th>Where</th><th>What It Means</th><th>Good Value</th></tr>
+    <tr><td><strong>R Square</strong></td><td>Summary</td><td>% of target variance explained by the model</td><td class="ok">&gt; 0.6 for most tasks</td></tr>
+    <tr><td><strong>Adjusted R²</strong></td><td>Summary</td><td>R² penalised for extra features — more honest</td><td class="ok">Close to R², not much lower</td></tr>
+    <tr><td><strong>Standard Error</strong></td><td>Summary</td><td>Average prediction error in target units</td><td class="ok">Small relative to target range</td></tr>
+    <tr><td><strong>F Significance</strong></td><td>ANOVA</td><td>p-value of overall model — is any feature useful?</td><td class="ok">&lt; 0.05</td></tr>
+    <tr><td><strong>Coefficients</strong></td><td>Coefficients</td><td>β values — effect size per feature unit</td><td>Interpret sign &amp; magnitude</td></tr>
+    <tr><td><strong>P-value</strong></td><td>Coefficients</td><td>Is this feature's effect statistically real?</td><td class="ok">&lt; 0.05 = significant</td></tr>
+    <tr><td><strong>95% CI Lower/Upper</strong></td><td>Coefficients</td><td>Range the true coefficient likely falls in</td><td class="ok">Both bounds same sign as coeff</td></tr>
+    <tr><td><strong>Residuals</strong></td><td>Residual Output</td><td>actual − predicted per row</td><td class="ok">Random, no pattern</td></tr>
+  </table>
+</div>
+
+<!-- Residuals -->
+<div class="cc">
+  <div class="ct">📉 Residual Analysis — Diagnosing Your Model <span class="cb cb-pow">MODEL HEALTH CHECK</span></div>
+  <div class="cd">Residuals (actual − predicted) reveal everything about your model's health. A good model's residuals are random noise. Patterns in residuals mean your model is systematically wrong — and you CAN fix them once you know what the pattern means.</div>
+  <div class="code">
+<span class="cm">// Calculate residuals</span>
+Residual = Actual_Score - Predicted_Score
+         = [@Score] - (β₀ + β₁*[@StudyHours] + β₂*[@Attendance])
+
+<span class="cm">// Residual diagnostics — what patterns mean:</span>
+
+<span class="cm">// ✓ Random scatter around 0 → Model is good. Assumptions met.</span>
+
+<span class="cm">// ✗ Fan shape (variance increases) → Heteroscedasticity</span>
+<span class="cm">//   Fix: log-transform the target variable</span>
+
+<span class="cm">// ✗ Curve/arc pattern → Non-linear relationship missed</span>
+<span class="cm">//   Fix: add x² term (polynomial), or use decision tree</span>
+
+<span class="cm">// ✗ Systematic over/under by group → Missing category feature</span>
+<span class="cm">//   Fix: add the categorical variable (one-hot encoded)</span>
+
+<span class="cm">// ✗ Outlier residuals (|residual| > 3 × StdErr) → Influential points</span>
+<span class="cm">//   Fix: investigate individually — data error or genuine extreme case?</span>
+
+<span class="cm">// Standardised residual (z-score of residuals)</span>
+= (Residual - AVERAGE(Residuals)) / STDEV.S(Residuals)
+<span class="cm">// |Standardised residual| > 3 → potential outlier / influential point</span>
+  </div>
+</div>
+
+<!-- p-values -->
+<div class="cc">
+  <div class="ct">🎯 p-values — Which Features Actually Matter? <span class="cb cb-tip">FEATURE SELECTION</span></div>
+  <div class="cd">A p-value answers: "If this feature had NO real effect, how often would we see a coefficient this large just by chance?" p &lt; 0.05 means less than 5% chance — we accept it as statistically significant. Features with p &gt; 0.05 might be noise, not signal.</div>
+  <div class="code">
+<span class="cm">// p-value interpretation rules:</span>
+<span class="cm">// p < 0.001  → Very highly significant *** (extremely unlikely by chance)</span>
+<span class="cm">// p < 0.01   → Highly significant **</span>
+<span class="cm">// p < 0.05   → Significant *  ← standard threshold</span>
+<span class="cm">// p < 0.10   → Marginally significant . (context-dependent)</span>
+<span class="cm">// p ≥ 0.10   → Not significant — consider dropping feature</span>
+
+<span class="cm">// Adjusted R² test: does removing a non-significant feature improve it?</span>
+<span class="cm">// Step 1: note Adjusted R² with all features</span>
+<span class="cm">// Step 2: remove feature with highest p-value (> 0.05)</span>
+<span class="cm">// Step 3: re-run regression. If Adj R² goes UP → removing was correct</span>
+<span class="cm">// Step 4: repeat until all remaining features have p < 0.05</span>
+<span class="cm">// This process = "backward elimination" — one of the oldest feature selection methods</span>
+  </div>
+</div>
+
+<!-- OUTCOMES -->
+<div class="sl" style="margin-top:32px;">✅ Learning Outcomes</div>
+<div class="outg">
+  <div class="outi"><div class="outc">✓</div><div class="outt">Build and interpret simple linear regression with SLOPE/INTERCEPT</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Run ToolPak regression and read every output metric confidently</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Use p-values to select significant features (backward elimination)</div></div>
+  <div class="outi"><div class="outc">✓</div><div class="outt">Plot and interpret residuals to diagnose model problems</div></div>
+</div>
+
+<!-- HOUR BAR -->
+<div class="sl">⏰ 1-Hour Task Breakdown</div>
+<div class="hb">
+  <div class="hs" style="background:#b84f00;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:15"></div>
+  <div class="hs" style="background:#1558c0;flex:10"></div>
+  <div class="hs" style="background:#0d7a5f;flex:5"></div>
+</div>
+<div class="leg">
+  <div class="li"><div class="ld" style="background:#0d7a5f"></div>Project</div>
+  <div class="li"><div class="ld" style="background:#1558c0"></div>Practice</div>
+  <div class="li"><div class="ld" style="background:#b84f00"></div>Theory + Build</div>
+</div>
+
+<!-- ══ TASKS ══ -->
+
+<!-- TASK 1 -->
+<div class="tc open" id="t1">
+  <div class="th" onclick="tog('t1')">
+    <div class="tn2">01</div><div class="tb2 bo">0 – 15 min</div>
+    <div class="tw"><div class="tm">📐 Manual Simple Linear Regression</div><div class="ts2">Build ŷ = mx + b from scratch using SLOPE, INTERCEPT, FORECAST</div></div>
+    <div class="typ bo">Theory + Build</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Before using any automated tool, you must understand what regression actually computes. Building the equation manually with SLOPE() and INTERCEPT() proves you understand the math — not just the button. This intuition will serve you for every regression model you ever build.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create <strong>Day6_Regression.xlsx</strong>. In sheet "RawData", paste your cleaned 80-row dataset from Day 4/5 — columns: Score (target), StudyHours, Attendance, Income, Is_Eng, Is_Mkt, Is_Sci, Tenure_Days. Convert to Table named <strong>RegData</strong>.</div></div>
+      <div class="si2"><div class="sn">2</div><div>Create sheet "SimpleReg". Build a <strong>regression parameter panel</strong> in columns H–J:<br>
+        H2: "Slope (β₁)" &nbsp; I2: <code>=SLOPE(RegData[Score], RegData[StudyHours])</code><br>
+        H3: "Intercept (β₀)" &nbsp; I3: <code>=INTERCEPT(RegData[Score], RegData[StudyHours])</code><br>
+        H4: "R²" &nbsp; I4: <code>=RSQ(RegData[Score], RegData[StudyHours])</code><br>
+        H5: "Correlation r" &nbsp; I5: <code>=CORREL(RegData[Score], RegData[StudyHours])</code></div></div>
+      <div class="si2"><div class="sn">3</div><div>Add a "Predicted_Score" column to the table: <code>=I$3 + I$2 * [@StudyHours]</code> (using absolute $ for the intercept and slope cells). This is your manual regression prediction — ŷ = β₀ + β₁ × StudyHours.</div></div>
+      <div class="si2"><div class="sn">4</div><div>Add a "Residual" column: <code>=[@Score] - [@Predicted_Score]</code>. Calculate: AVERAGE(Residuals) — should equal exactly 0 (a mathematical property of OLS regression). STDEV(Residuals) = Standard Error of the model. Write these in your parameter panel.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Verify with FORECAST: In a separate area, for x = 2, 4, 6, 8 study hours, calculate:<br>
+        Manual: <code>=I$3 + I$2 * E2</code><br>
+        FORECAST: <code>=FORECAST.LINEAR(E2, RegData[Score], RegData[StudyHours])</code><br>
+        Both columns should match exactly — proving your manual formula is correct.</div></div>
+      <div class="si2"><div class="sn">6</div><div>Build the scatter chart with trendline: Select StudyHours and Score → Scatter → Add Trendline → Linear → Display equation + R². The equation on the chart should match your β₀ and β₁ cells exactly. This visual confirmation is the moment the math becomes real.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Regression parameters (simple, 1 feature)</span>
+β₁ = <span class="fn">SLOPE</span>(RegData[Score], RegData[StudyHours])
+β₀ = <span class="fn">INTERCEPT</span>(RegData[Score], RegData[StudyHours])
+R² = <span class="fn">RSQ</span>(RegData[Score], RegData[StudyHours])
+
+<span class="cm">// Manual prediction column</span>
+=<span class="fn">INTERCEPT</span>(...) + <span class="fn">SLOPE</span>(...) * [@StudyHours]
+
+<span class="cm">// Or using fixed parameter cells ($)</span>
+=$I$3 + $I$2 * [@StudyHours]
+
+<span class="cm">// Verify: average residual must equal zero</span>
+=<span class="fn">AVERAGE</span>(RegData[Residual])      <span class="cm">→ ≈ 0 (OLS mathematical property)</span>
+
+<span class="cm">// FORECAST for new data points</span>
+=<span class="fn">FORECAST.LINEAR</span>(<span class="num">5</span>, RegData[Score], RegData[StudyHours])
+<span class="cm">// "What score do we predict for a student who studies 5 hours/day?"</span>
+    </div>
+    <div class="nb"><div class="ni">💡</div><div><strong>Why build it manually first?</strong> When sklearn's LinearRegression gives you coefficients, you need to know: β₁=4.2 means "1 extra study hour = 4.2 more exam points, holding all other features constant." Without the intuition you just built, that number is meaningless. Now it isn't.</div></div>
+    <div class="cks">
+      <div class="ck">β₀ and β₁ calculated</div><div class="ck">Predicted_Score column built</div>
+      <div class="ck">Residual column added</div><div class="ck">AVERAGE(Residuals) ≈ 0</div>
+      <div class="ck">FORECAST matches manual formula</div><div class="ck">Scatter + trendline matches β values</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="tc" id="t2">
+  <div class="th" onclick="tog('t2')">
+    <div class="tn2">02</div><div class="tb2 bp">15 – 30 min</div>
+    <div class="tw"><div class="tm">🔬 ToolPak Regression — Full Output Walkthrough</div><div class="ts2">Run the regression tool and interpret every single number in the output</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">The ToolPak Regression tool generates 30+ numbers. Most analysts look at R² and stop. You're going to read every row — because the p-values, confidence intervals, and residual output contain the real intelligence about your model's reliability.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "ToolPakReg". Go to Data → Data Analysis → Regression. Set:<br>
+        • Y Input Range: Score column (including header)<br>
+        • X Input Range: StudyHours column (including header)<br>
+        • ✓ Labels (because you included headers)<br>
+        • ✓ Residuals, ✓ Residual Plots, ✓ Line Fit Plots<br>
+        • Output Range: click this sheet's A1<br>
+        Click OK. The full output appears.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Read Section 1 — Regression Statistics:</strong><br>
+        Multiple R = CORREL(Score, StudyHours) — same number you calculated<br>
+        R Square = RSQ() — % variance explained<br>
+        Adjusted R Square = penalised R² (lower because n=80, p=1)<br>
+        Standard Error = average prediction error in score points<br>
+        Observations = 80<br>
+        <em>Write your interpretation of each number in column N next to the output.</em></div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Read Section 2 — ANOVA table:</strong><br>
+        Significance F = p-value for the whole model (is any feature useful?)<br>
+        If Significance F &lt; 0.05 → your model is statistically better than predicting the mean<br>
+        F = (Regression MS) / (Residual MS) — signal-to-noise ratio of your model<br>
+        <em>Is your Significance F &lt; 0.05? If not, StudyHours alone doesn't predict Score.</em></div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Read Section 3 — Coefficients table (most important):</strong><br>
+        Intercept row: β₀, its standard error, t-stat, p-value, and 95% CI<br>
+        StudyHours row: β₁, standard error, t-stat, p-value, and 95% CI<br>
+        Check: does the p-value for StudyHours &lt; 0.05? → Feature is significant<br>
+        Check: does the 95% CI for β₁ NOT include zero? → Same conclusion<br>
+        <em>Write: "A 1-hour increase in daily study predicts __ more exam points (95% CI: __ to __)"</em></div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Annotate the residual plot:</strong> ToolPak generates a "StudyHours Residual Plot" automatically. Look at it carefully. Is the scatter random around zero? Or do you see a curve, fan shape, or cluster? Write your diagnosis next to the chart.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Manual equivalents of ToolPak output (verify understanding)</span>
+Multiple R    = <span class="fn">CORREL</span>(RegData[Score], RegData[StudyHours])
+R Square      = <span class="fn">RSQ</span>(RegData[Score], RegData[StudyHours])
+Adj R Square  = <span class="num">1</span> - (<span class="num">1</span>-R²)*(n-<span class="num">1</span>)/(n-k-<span class="num">1</span>)   <span class="cm">→ n=rows, k=features</span>
+Std Error     = <span class="fn">SQRT</span>(<span class="fn">SUMXMY2</span>(actual,pred)/(n-k-<span class="num">1</span>))
+
+<span class="cm">// p-value interpretation</span>
+<span class="cm">// If p-value of StudyHours = 0.0003 → highly significant ***</span>
+<span class="cm">// If p-value of StudyHours = 0.24   → NOT significant, consider dropping</span>
+
+<span class="cm">// Confidence interval check</span>
+<span class="cm">// β₁ Lower 95% = 2.8 and Upper 95% = 5.6</span>
+<span class="cm">// Both positive → we're confident the effect is positive ✓</span>
+<span class="cm">// If CI crosses zero → effect might actually be zero</span>
+    </div>
+    <div class="wb"><div class="ni">⚠️</div><div><strong>R² alone is NOT enough:</strong> A model with R²=0.75 but Significance F=0.18 means your model is not statistically better than guessing the mean — despite explaining 75% of variance in-sample. Always check Significance F before trusting R².</div></div>
+    <div class="cks">
+      <div class="ck">ToolPak regression run</div><div class="ck">All 3 sections annotated</div>
+      <div class="ck">p-value of StudyHours checked</div><div class="ck">95% CI interpreted</div>
+      <div class="ck">Residual plot diagnosed</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="tc" id="t3">
+  <div class="th" onclick="tog('t3')">
+    <div class="tn2">03</div><div class="tb2 bp">30 – 45 min</div>
+    <div class="tw"><div class="tm">🔢 Multiple Linear Regression + Backward Elimination</div><div class="ts2">Add 4 features, then prune to the strongest model using p-values</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Multiple regression adds more features to improve predictive power. But more features isn't always better — some are noise that inflates R² without adding real signal. Backward elimination is the systematic process of removing weak features until every remaining one genuinely contributes.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "MultiReg". Run ToolPak Regression with 4 features:<br>
+        Y Range: Score<br>
+        X Range: StudyHours, Attendance, Is_Eng, Is_Mkt (4 columns together)<br>
+        ✓ Labels, ✓ Residuals<br>
+        This is your <strong>full model</strong>. Record: R², Adjusted R², Standard Error, Significance F.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Read the coefficients table carefully:</strong> For each feature note its coefficient, p-value, and 95% CI. Create a summary table:<br>
+        Feature | Coefficient | p-value | Significant? | Keep/Drop<br>
+        Fill in "Keep" if p &lt; 0.05, "Drop" if p ≥ 0.05.</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Backward Elimination — Round 1:</strong> Remove the feature with the highest p-value (least significant). Re-run ToolPak with 3 features. Does Adjusted R² go up or down? Record both values.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Backward Elimination — Round 2:</strong> Check the new 3-feature model's p-values. Is anything still p ≥ 0.05? If yes, remove it. Re-run with 2 features. Compare Adjusted R² again.</div></div>
+      <div class="si2"><div class="sn">5</div><div>Build a <strong>model comparison table</strong> (your gold standard record):<br>
+        Model | Features | R² | Adj R² | Std Error | Sig F<br>
+        Full (4 features) | … | … | … | … | …<br>
+        Model 2 (3 features) | … | … | … | … | …<br>
+        Final (best model) | … | … | … | … | …<br>
+        The "best" model = highest Adjusted R² with all p-values &lt; 0.05.</div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Interpret your final model coefficients:</strong> For each feature in your best model, write one plain-English sentence:<br>
+        "Holding Attendance constant, each additional study hour predicts [β₁] more exam points."<br>
+        "Engineering students score [β_eng] points higher than the reference group (Fin), holding study hours and attendance constant."<br>
+        This is coefficient interpretation — the most important communication skill in regression.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Adjusted R² formula (penalises extra features)</span>
+Adj R² = <span class="num">1</span> - (<span class="num">1</span>-R²) * (n-<span class="num">1</span>) / (n-k-<span class="num">1</span>)
+<span class="cm">// n = number of rows, k = number of features</span>
+<span class="cm">// Adding a useless feature: R² barely increases but Adj R² DECREASES</span>
+<span class="cm">// Adding a useful feature: both R² and Adj R² increase</span>
+
+<span class="cm">// Backward elimination decision rule:</span>
+<span class="cm">// Step 1: Fit full model</span>
+<span class="cm">// Step 2: Find feature with MAX p-value</span>
+<span class="cm">// Step 3: If max p-value > 0.05 → remove it → re-fit</span>
+<span class="cm">// Step 4: Repeat until all remaining p-values < 0.05</span>
+
+<span class="cm">// Coefficient interpretation template:</span>
+<span class="cm">// "A 1-unit increase in [feature], holding all other features constant,</span>
+<span class="cm">//  is associated with a [β] unit [increase/decrease] in [target]."</span>
+    </div>
+    <div class="nb"><div class="ni">🧠</div><div><strong>Adjusted R² is the honest metric:</strong> Every time you add a feature — even a completely random one — R² will increase or stay the same. Adjusted R² penalises each added feature. If your Adjusted R² drops when you add a feature, that feature is hurting your model. Always use Adjusted R² when comparing models with different numbers of features.</div></div>
+    <div class="cks">
+      <div class="ck">4-feature full model run</div><div class="ck">Coefficient table annotated</div>
+      <div class="ck">Backward elimination done</div><div class="ck">Model comparison table built</div>
+      <div class="ck">Final coefficients interpreted in English</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="tc" id="t4">
+  <div class="th" onclick="tog('t4')">
+    <div class="tn2">04</div><div class="tb2 bp">45 – 55 min</div>
+    <div class="tw"><div class="tm">📊 Residual Analysis + Prediction Table</div><div class="ts2">Diagnose model health visually and make real predictions for new students</div></div>
+    <div class="typ bp">Practice</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Residual plots are the lie-detector test for your regression model. They reveal whether your model's assumptions hold — and if they don't, they tell you exactly how to fix it. Then you'll build a prediction table for 10 new unseen students — which is what "deploying" the model means in Excel.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "Residuals". Copy your final model's predicted values and residuals (from ToolPak Residual Output or your manual formula). You need 3 columns: Predicted_Score, Actual_Score, Residual.</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Build Residuals vs Fitted Plot:</strong><br>
+        X-axis = Predicted_Score (fitted values)<br>
+        Y-axis = Residual<br>
+        Insert → Scatter → Scatter Only<br>
+        Add a horizontal reference line at y=0: add a new series with X=min(Predicted) to max(Predicted) and Y=0. Format as a dashed grey line.<br>
+        Title: "Residuals vs Fitted Values"</div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Diagnose the plot:</strong> Add a text box with your diagnosis. Look for:<br>
+        ✓ Random cloud around zero → assumptions met, model is good<br>
+        ✗ Curve → add a quadratic term (StudyHours²)<br>
+        ✗ Fan/funnel → log-transform the target<br>
+        ✗ Systematic blocks → a categorical variable is missing<br>
+        Your honest assessment goes here — even if the news is bad.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Standardised residuals check:</strong> Add column "Std_Residual": <code>=([@Residual]-AVERAGE(Residuals))/STDEV.S(Residuals)</code>. Flag rows where |Std_Residual| &gt; 2: <code>=IF(ABS([@Std_Residual])>2,"INFLUENTIAL","OK")</code>. Count influential points — more than 5% of n is concerning.</div></div>
+      <div class="si2"><div class="sn">5</div><div><strong>Prediction table for 10 new students:</strong> Create a "NewStudents" area with 10 hypothetical rows of feature values (StudyHours, Attendance, Is_Eng, Is_Mkt). Use your final model's β coefficients to predict:<br>
+        <code>=Intercept + β_StudyHours*[@StudyHours] + β_Att*[@Attendance] + β_Eng*[@Is_Eng] + β_Mkt*[@Is_Mkt]</code></div></div>
+      <div class="si2"><div class="sn">6</div><div><strong>Add prediction confidence bounds:</strong><br>
+        Upper bound (95%): <code>=Predicted + 1.96 * StandardError</code><br>
+        Lower bound (95%): <code>=Predicted - 1.96 * StandardError</code><br>
+        This gives a range: "We predict this student scores 74 ± 8 points" — far more useful than a single point estimate.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Residual calculation</span>
+Residual = [@Score] - Predicted_Score
+
+<span class="cm">// Standardised residual (z-score)</span>
+Std_Res = ([@Residual] - <span class="fn">AVERAGE</span>(Residuals)) / <span class="fn">STDEV.S</span>(Residuals)
+
+<span class="cm">// Flag influential points</span>
+=<span class="fn">IF</span>(<span class="fn">ABS</span>([@Std_Res])><span class="num">2</span>, <span class="str">"INFLUENTIAL"</span>, <span class="str">"OK"</span>)
+
+<span class="cm">// Prediction for new student using final model coefficients</span>
+=Intercept + β₁*[@StudyHours] + β₂*[@Attendance] + β₃*[@Is_Eng] + β₄*[@Is_Mkt]
+
+<span class="cm">// Example with actual numbers</span>
+=<span class="num">42.1</span> + <span class="num">4.2</span>*[@StudyHours] + <span class="num">0.31</span>*[@Attendance] + <span class="num">6.8</span>*[@Is_Eng] + <span class="num">2.1</span>*[@Is_Mkt]
+
+<span class="cm">// 95% prediction interval</span>
+Upper = Predicted + <span class="num">1.96</span> * Standard_Error_of_model
+Lower = Predicted - <span class="num">1.96</span> * Standard_Error_of_model
+    </div>
+    <div class="gb"><div class="ni">✅</div><div><strong>Prediction intervals are what you give to stakeholders — not point estimates.</strong> Saying "this student will score 74" is overconfident. Saying "this student will score between 66 and 82 with 95% confidence" is honest. Prediction intervals account for model uncertainty — always include them in production ML outputs.</div></div>
+    <div class="cks">
+      <div class="ck">Residuals vs Fitted chart built</div><div class="ck">Pattern diagnosis written</div>
+      <div class="ck">Standardised residuals calculated</div><div class="ck">Influential points flagged</div>
+      <div class="ck">10-student prediction table done</div><div class="ck">95% confidence bounds added</div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="tc" id="t5">
+  <div class="th" onclick="tog('t5')">
+    <div class="tn2">05</div><div class="tb2 bg">55 – 60 min</div>
+    <div class="tw"><div class="tm">🏆 Regression Scoring Engine Dashboard</div><div class="ts2">Build a live input form that predicts any student's score instantly</div></div>
+    <div class="typ bg">Project</div><div class="chev">▼</div>
+  </div>
+  <div class="tbody">
+    <div class="goal">Deploy your regression model as a scoring engine. A stakeholder types in a student's features — the model instantly outputs the predicted score and confidence interval. This is what "serving a model" means in the real world. In Excel, it takes 5 minutes to build.</div>
+    <div class="steps">
+      <div class="si2"><div class="sn">1</div><div>Create sheet "ScoringEngine". Title: "🎯 Student Score Predictor — Regression Model". Subheading: "Enter student features below to generate a predicted exam score."</div></div>
+      <div class="si2"><div class="sn">2</div><div><strong>Input cells</strong> (highlight yellow — these are the only cells users edit):<br>
+        B4: Study Hours/Day (e.g., 4)<br>
+        B5: Attendance % (e.g., 85)<br>
+        B6: Department (dropdown: Eng/Mkt/Sci/Fin via Data Validation → List)<br>
+        <em>Set Data Validation on B4: Decimal between 0 and 12. On B5: Whole number 0–100.</em></div></div>
+      <div class="si2"><div class="sn">3</div><div><strong>Derived input cells</strong> (auto-calculated, grey background, locked):<br>
+        B9: Is_Eng: <code>=IF(B6="Eng",1,0)</code><br>
+        B10: Is_Mkt: <code>=IF(B6="Mkt",1,0)</code><br>
+        These convert the dropdown selection into the one-hot encoded values the model needs.</div></div>
+      <div class="si2"><div class="sn">4</div><div><strong>Output cells</strong> (green background):<br>
+        B13 "Predicted Score": <code>=ROUND(Intercept + β₁*B4 + β₂*B5 + β₃*B9 + β₄*B10, 1)</code><br>
+        B14 "95% Lower Bound": <code>=ROUND(B13 - 1.96*StdError, 1)</code><br>
+        B15 "95% Upper Bound": <code>=ROUND(B13 + 1.96*StdError, 1)</code><br>
+        B16 "Predicted Grade": <code>=IF(B13>=90,"A",IF(B13>=80,"B",IF(B13>=70,"C",IF(B13>=60,"D","F"))))</code></div></div>
+      <div class="si2"><div class="sn">5</div><div>Add a <strong>model info panel</strong> (bottom of sheet): Model Type: Linear Regression | Features: StudyHours, Attendance, Is_Eng, Is_Mkt | R²: [value] | Adj R²: [value] | Std Error: [value] | Trained on: 80 students | Last updated: [date]. This is your model card — production best practice.</div></div>
+      <div class="si2"><div class="sn">6</div><div>Test it: Type 6 hours, 90% attendance, "Eng" department → read the prediction. Change to 2 hours, 60% attendance, "Mkt" → prediction should drop significantly. Save as <strong>Day6_Complete.xlsx</strong>.</div></div>
+    </div>
+    <div class="form">
+<span class="cm">// Scoring engine prediction formula (replace values with your actual β from ToolPak)</span>
+=<span class="fn">ROUND</span>(<span class="num">42.1</span> + <span class="num">4.2</span>*B4 + <span class="num">0.31</span>*B5 + <span class="num">6.8</span>*B9 + <span class="num">2.1</span>*B10, <span class="num">1</span>)
+<span class="cm">// B4=StudyHours, B5=Attendance, B9=Is_Eng, B10=Is_Mkt</span>
+
+<span class="cm">// Grade from predicted score</span>
+=<span class="fn">IFS</span>(B13>=<span class="num">90</span>,<span class="str">"A ★"</span>, B13>=<span class="num">80</span>,<span class="str">"B"</span>, B13>=<span class="num">70</span>,<span class="str">"C"</span>, B13>=<span class="num">60</span>,<span class="str">"D"</span>, <span class="kw">TRUE</span>,<span class="str">"F"</span>)
+
+<span class="cm">// Department dropdown Data Validation (in-cell list)</span>
+<span class="cm">// Data → Data Validation → Allow: List → Source: Eng,Mkt,Sci,Fin</span>
+
+<span class="cm">// Model info (reference your ToolPak output cells)</span>
+R²      = <span class="fn">ROUND</span>(ToolPak_R2_cell, <span class="num">3</span>)
+Adj_R²  = <span class="fn">ROUND</span>(ToolPak_AdjR2_cell, <span class="num">3</span>)
+StdErr  = <span class="fn">ROUND</span>(ToolPak_StdErr_cell, <span class="num">2</span>)
+    </div>
+    <div class="gb"><div class="ni">🎖️</div><div><strong>You just deployed a machine learning model.</strong> A stakeholder with no statistics knowledge can now open this file, enter any student's features, and get a statistically grounded prediction with confidence bounds. That is what ML deployment means — making model predictions accessible to decision-makers. The scoring engine you built is architecturally identical to what API-based ML services do at scale.</div></div>
+    <div class="cks">
+      <div class="ck">ScoringEngine sheet built</div><div class="ck">Yellow input cells with validation</div>
+      <div class="ck">One-hot derived cells auto-calc</div><div class="ck">Prediction + CI + Grade output</div>
+      <div class="ck">Model card panel added</div><div class="ck">Day6_Complete.xlsx saved</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIP -->
+<div class="tip">
+  <div class="tpi">📉</div>
+  <div>
+    <div class="tpt">Day 6 Pro Tip — R² Alone Will Get You Fired</div>
+    <div class="tpd">A model with R²=0.85 but p-values all above 0.05, non-random residuals, and inflated due to 40 features on 50 rows is a terrible model — despite the impressive R². The professionals who get hired and trusted are the ones who report Adjusted R², Significance F, p-values per feature, residual diagnostics, and prediction intervals. R² is the first number you look at and the last one you trust.</div>
+  </div>
+</div>
+
+<!-- QUICK REF -->
+<div class="sl">📋 Day 6 Formula Quick Reference</div>
+<div class="fg" style="margin-bottom:38px;">
+  <div class="fr"><div class="ff">SLOPE(y, x)</div><div class="fd">β₁ — slope coefficient (effect per unit)</div></div>
+  <div class="fr"><div class="ff">INTERCEPT(y, x)</div><div class="fd">β₀ — intercept (predicted value when x=0)</div></div>
+  <div class="fr"><div class="ff">FORECAST.LINEAR(x,y,X)</div><div class="fd">Predict y for a new x value</div></div>
+  <div class="fr"><div class="ff">RSQ(y, x)</div><div class="fd">R² — goodness of fit (0 to 1)</div></div>
+  <div class="fr"><div class="ff">TREND(y, X, new_X)</div><div class="fd">Predict multiple new values at once</div></div>
+  <div class="fr"><div class="ff">LINEST(y, X, TRUE, TRUE)</div><div class="fd">Full regression stats as array (advanced)</div></div>
+  <div class="fr"><div class="ff">p-value &lt; 0.05</div><div class="fd">Feature is statistically significant → keep</div></div>
+  <div class="fr"><div class="ff">Adj R² goes up</div><div class="fd">Removing feature improved model → correct</div></div>
+  <div class="fr"><div class="ff">|Std Residual| &gt; 2</div><div class="fd">Influential point — investigate individually</div></div>
+  <div class="fr"><div class="ff">Pred ± 1.96 × StdErr</div><div class="fd">95% prediction interval for any forecast</div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a class="nb2" href="Day5_Charts_EDA.html">← Day 5: EDA</a>
+  <div style="font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;">Day 6 Complete ✓<br><span style="color:var(--accent);">Day 7: Classification →</span></div>
+  <a class="nb2 pr" href="#">Day 7: Classification →</a>
+</div>
+
+</div>
+<script>function tog(id){document.getElementById(id).classList.toggle('open');}</script>
+</body></html>
