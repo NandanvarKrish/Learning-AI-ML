@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pandas – Day 4 | Time Series & Advanced Indexing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFF1F5;--surface:#FFFFFF;--border:#FBCFE8;--accent:#DB2777;--accent2:#831843;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;
+    --text:#3B0A24;--muted:#BE185D;--code-bg:#1A0410;--code-text:#FBCFE8;--tag-bg:#FCE7F3;--tag-text:#831843;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(219,39,119,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#DB2777 0%,#831843 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#FBCFE8;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#DB2777;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#F9A8D4;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#5C1B3B;font-style:italic;} .op{color:#FBCFE8;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#831843,#DB2777);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#DB2777,#831843);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#DB2777,#7C3AED);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐼 Pandas</div><span class="sep">|</span><span class="day-label">Day 4 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">80%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:80%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pandas Full Course · Day 4</div>
+  <h1>Time Series &amp; <span>Advanced Indexing</span></h1>
+  <p>Master datetime handling, resampling, rolling windows, and MultiIndex — the tools behind every finance, IoT, and business trend analysis.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📅 Datetime Basics</span>
+    <span class="hero-pill">🗓️ DatetimeIndex</span>
+    <span class="hero-pill">🔃 Resampling</span>
+    <span class="hero-pill">📈 Rolling &amp; Expanding</span>
+    <span class="hero-pill">⏱️ Shift &amp; Lag</span>
+    <span class="hero-pill">🗂️ MultiIndex</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 — DATETIME BASICS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📅</div>
+    <div><h2>Working with Dates &amp; Times</h2><p>pd.Timestamp, pd.to_datetime, and datetime attributes</p></div>
+  </div>
+  <div class="section-body">
+    <p>Pandas has first-class datetime support built on top of NumPy's <code>datetime64</code>. The <strong>Timestamp</strong> object represents a single point in time, and <strong>Timedelta</strong> represents a duration.</p>
+
+    <h3>Creating and Parsing Dates</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+
+<span class="cm"># Single timestamp</span>
+ts = <span class="op">pd</span>.<span class="fn">Timestamp</span>(<span class="st">'2024-03-15'</span>)
+<span class="fn">print</span>(ts)              <span class="cm"># 2024-03-15 00:00:00</span>
+<span class="fn">print</span>(ts.year, ts.month, ts.day)   <span class="cm"># 2024 3 15</span>
+<span class="fn">print</span>(ts.day_name())   <span class="cm"># Friday</span>
+
+<span class="cm"># Parse a Series of date strings — handles many formats</span>
+dates = <span class="op">pd</span>.<span class="fn">to_datetime</span>([<span class="st">'2024-01-15'</span>, <span class="st">'2024-02-20'</span>, <span class="st">'15/03/2024'</span>])
+<span class="fn">print</span>(dates)
+
+<span class="cm"># Explicit format for speed &amp; correctness</span>
+<span class="op">pd</span>.<span class="fn">to_datetime</span>(<span class="st">'15-03-2024'</span>, format=<span class="st">'%d-%m-%Y'</span>)
+
+<span class="cm"># Bad dates → NaT instead of crashing</span>
+<span class="op">pd</span>.<span class="fn">to_datetime</span>([<span class="st">'2024-01-15'</span>, <span class="st">'not a date'</span>], errors=<span class="st">'coerce'</span>)
+
+<span class="cm"># Date ranges — generate sequences of dates</span>
+<span class="op">pd</span>.<span class="fn">date_range</span>(start=<span class="st">'2024-01-01'</span>, end=<span class="st">'2024-01-10'</span>)         <span class="cm"># daily</span>
+<span class="op">pd</span>.<span class="fn">date_range</span>(start=<span class="st">'2024-01-01'</span>, periods=<span class="nm">12</span>, freq=<span class="st">'MS'</span>)     <span class="cm"># 12 month starts</span>
+<span class="op">pd</span>.<span class="fn">date_range</span>(start=<span class="st">'2024-01-01'</span>, periods=<span class="nm">10</span>, freq=<span class="st">'B'</span>)      <span class="cm"># business days</span>
+<span class="op">pd</span>.<span class="fn">date_range</span>(start=<span class="st">'2024-01-01'</span>, periods=<span class="nm">5</span>, freq=<span class="st">'W'</span>)       <span class="cm"># weekly</span></pre>
+    </div>
+
+    <h3>The .dt Accessor — Extract Date Components</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'OrderDate'</span>: <span class="op">pd</span>.<span class="fn">to_datetime</span>([<span class="st">'2024-01-15'</span>,<span class="st">'2024-06-20'</span>,<span class="st">'2024-12-25'</span>])})
+
+df[<span class="st">'Year'</span>]     = df[<span class="st">'OrderDate'</span>].dt.year
+df[<span class="st">'Month'</span>]    = df[<span class="st">'OrderDate'</span>].dt.month
+df[<span class="st">'MonthName'</span>]= df[<span class="st">'OrderDate'</span>].dt.month_name()
+df[<span class="st">'Day'</span>]      = df[<span class="st">'OrderDate'</span>].dt.day
+df[<span class="st">'DayName'</span>]  = df[<span class="st">'OrderDate'</span>].dt.day_name()
+df[<span class="st">'Quarter'</span>]  = df[<span class="st">'OrderDate'</span>].dt.quarter
+df[<span class="st">'WeekOfYear'</span>]=df[<span class="st">'OrderDate'</span>].dt.isocalendar().week
+df[<span class="st">'IsWeekend'</span>]= df[<span class="st">'OrderDate'</span>].dt.dayofweek >= <span class="nm">5</span>   <span class="cm"># Sat=5, Sun=6</span>
+df[<span class="st">'DaysInMonth'</span>]=df[<span class="st">'OrderDate'</span>].dt.days_in_month
+
+<span class="fn">print</span>(df)
+
+<span class="cm"># Timedelta arithmetic</span>
+df[<span class="st">'NextWeek'</span>] = df[<span class="st">'OrderDate'</span>] + <span class="op">pd</span>.<span class="fn">Timedelta</span>(days=<span class="nm">7</span>)
+df[<span class="st">'LastMonth'</span>] = df[<span class="st">'OrderDate'</span>] - <span class="op">pd</span>.<span class="fn">DateOffset</span>(months=<span class="nm">1</span>)
+
+<span class="cm"># Difference between dates</span>
+delivery = <span class="op">pd</span>.<span class="fn">to_datetime</span>([<span class="st">'2024-01-20'</span>,<span class="st">'2024-06-25'</span>,<span class="st">'2025-01-02'</span>])
+df[<span class="st">'DaysToDeliver'</span>] = (delivery - df[<span class="st">'OrderDate'</span>]).dt.days</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Frequency Code</th><th>Meaning</th></tr>
+        <tr><td><code>D</code></td><td>Calendar day</td></tr>
+        <tr><td><code>B</code></td><td>Business day</td></tr>
+        <tr><td><code>W</code></td><td>Weekly</td></tr>
+        <tr><td><code>MS</code> / <code>M</code></td><td>Month start / Month end</td></tr>
+        <tr><td><code>QS</code> / <code>Q</code></td><td>Quarter start / Quarter end</td></tr>
+        <tr><td><code>YS</code> / <code>Y</code></td><td>Year start / Year end</td></tr>
+        <tr><td><code>H</code></td><td>Hourly</td></tr>
+        <tr><td><code>T</code> / <code>min</code></td><td>Minute</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 — DATETIMEINDEX -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🗓️</div>
+    <div><h2>DatetimeIndex — Dates as the Index</h2><p>The foundation of all time series operations</p></div>
+  </div>
+  <div class="section-body">
+    <p>To unlock resampling, rolling windows, and easy date slicing, set your date column as the DataFrame's <strong>index</strong>. This turns the DataFrame into a proper time series.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>rng_dates = <span class="op">pd</span>.<span class="fn">date_range</span>(<span class="st">'2024-01-01'</span>, periods=<span class="nm">10</span>, freq=<span class="st">'D'</span>)
+df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Date'</span>: rng_dates, <span class="st">'Sales'</span>: [<span class="nm">100</span>,<span class="nm">120</span>,<span class="nm">90</span>,<span class="nm">150</span>,<span class="nm">130</span>,<span class="nm">110</span>,<span class="nm">160</span>,<span class="nm">140</span>,<span class="nm">125</span>,<span class="nm">135</span>]})
+
+<span class="cm"># Set Date as index</span>
+df = df.<span class="fn">set_index</span>(<span class="st">'Date'</span>)
+<span class="fn">print</span>(df.index)   <span class="cm"># DatetimeIndex(['2024-01-01', ...], dtype='datetime64[ns]')</span>
+
+<span class="cm"># Slice by DATE STRING — extremely convenient!</span>
+<span class="fn">print</span>(df.<span class="fn">loc</span>[<span class="st">'2024-01-05'</span>])              <span class="cm"># single day</span>
+<span class="fn">print</span>(df.<span class="fn">loc</span>[<span class="st">'2024-01-03'</span>:<span class="st">'2024-01-07'</span>]) <span class="cm"># date range (inclusive!)</span>
+
+<span class="cm"># Slice by partial date — whole month/year at once</span>
+sales_2024 = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Sales'</span>:<span class="fn">range</span>(<span class="nm">365</span>)},
+    index=<span class="op">pd</span>.<span class="fn">date_range</span>(<span class="st">'2024-01-01'</span>, periods=<span class="nm">365</span>))
+<span class="fn">print</span>(sales_2024.<span class="fn">loc</span>[<span class="st">'2024-03'</span>])       <span class="cm"># all of March</span>
+<span class="fn">print</span>(sales_2024.<span class="fn">loc</span>[<span class="st">'2024'</span>].shape)   <span class="cm"># all of 2024</span>
+
+<span class="cm"># between_time — filter by time of day (needs actual timestamps)</span>
+<span class="cm"># at_time — filter for a specific time each day</span>
+
+<span class="cm"># asfreq — convert to a fixed frequency (introduces NaN if data missing)</span>
+sales_2024.<span class="fn">asfreq</span>(<span class="st">'W'</span>)   <span class="cm"># resample to weekly index, keeping only matching dates</span></pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Timezone Handling</div>
+      <code>df.tz_localize('Asia/Kolkata')</code> assigns a timezone to naive timestamps. <code>df.tz_convert('UTC')</code> converts between timezones. Always be explicit about timezones when working with international data.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 — RESAMPLING -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🔃</div>
+    <div><h2>Resampling — Changing Time Frequency</h2><p>Aggregate daily data into weekly/monthly, or expand sparse data</p></div>
+  </div>
+  <div class="section-body">
+    <p><strong>Resampling</strong> changes the frequency of time series data. <strong>Downsampling</strong> (daily→monthly) aggregates multiple periods into one. <strong>Upsampling</strong> (monthly→daily) creates more periods, needing fill logic.</p>
+
+    <div class="fbox">
+      <div class="ft">🔃 resample() vs groupby()</div>
+      <div class="fm">resample('M').sum()  →  groups by calendar month, aggregates</div>
+      <div class="fnote">resample() is groupby() specialised for time — it understands calendar rules (months have different lengths, etc).</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>rng_daily = <span class="op">pd</span>.<span class="fn">date_range</span>(<span class="st">'2024-01-01'</span>, periods=<span class="nm">90</span>, freq=<span class="st">'D'</span>)
+sales = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Revenue'</span>: <span class="op">np</span>.random.<span class="fn">randint</span>(<span class="nm">1000</span>,<span class="nm">5000</span>,<span class="nm">90</span>)}, index=rng_daily)
+
+<span class="cm"># DOWNSAMPLE: daily → weekly (sum revenue per week)</span>
+weekly = sales.<span class="fn">resample</span>(<span class="st">'W'</span>).<span class="fn">sum</span>()
+<span class="fn">print</span>(weekly.head())
+
+<span class="cm"># DOWNSAMPLE: daily → monthly, multiple stats</span>
+monthly = sales.<span class="fn">resample</span>(<span class="st">'M'</span>).<span class="fn">agg</span>([<span class="st">'sum'</span>,<span class="st">'mean'</span>,<span class="st">'min'</span>,<span class="st">'max'</span>])
+<span class="fn">print</span>(monthly)
+
+<span class="cm"># Different aggregations per column</span>
+sales[<span class="st">'Orders'</span>] = <span class="op">np</span>.random.<span class="fn">randint</span>(<span class="nm">10</span>,<span class="nm">50</span>,<span class="nm">90</span>)
+sales.<span class="fn">resample</span>(<span class="st">'M'</span>).<span class="fn">agg</span>({<span class="st">'Revenue'</span>:<span class="st">'sum'</span>, <span class="st">'Orders'</span>:<span class="st">'mean'</span>})
+
+<span class="cm"># UPSAMPLE: monthly → daily (need to fill the gaps)</span>
+monthly_data = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Value'</span>:[<span class="nm">100</span>,<span class="nm">200</span>,<span class="nm">150</span>]},
+    index=<span class="op">pd</span>.<span class="fn">date_range</span>(<span class="st">'2024-01-01'</span>, periods=<span class="nm">3</span>, freq=<span class="st">'MS'</span>))
+daily_upsampled = monthly_data.<span class="fn">resample</span>(<span class="st">'D'</span>).<span class="fn">ffill</span>()   <span class="cm"># forward fill gaps</span>
+daily_interp    = monthly_data.<span class="fn">resample</span>(<span class="st">'D'</span>).<span class="fn">interpolate</span>()  <span class="cm"># smooth interpolation</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Code</th><th>Frequency</th><th>Code</th><th>Frequency</th></tr>
+        <tr><td><code>D</code></td><td>Daily</td><td><code>Q</code></td><td>Quarterly (end)</td></tr>
+        <tr><td><code>W</code></td><td>Weekly</td><td><code>Y</code>/<code>A</code></td><td>Yearly</td></tr>
+        <tr><td><code>M</code></td><td>Month end</td><td><code>H</code></td><td>Hourly</td></tr>
+        <tr><td><code>MS</code></td><td>Month start</td><td><code>5min</code></td><td>Every 5 minutes</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 — ROLLING & EXPANDING -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📈</div>
+    <div><h2>Rolling &amp; Expanding Windows</h2><p>Moving averages, trend smoothing, and cumulative windows</p></div>
+  </div>
+  <div class="section-body">
+
+    <h3>rolling() — Fixed-Size Sliding Window</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>prices = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="nm">100</span>,<span class="nm">102</span>,<span class="nm">98</span>,<span class="nm">105</span>,<span class="nm">110</span>,<span class="nm">108</span>,<span class="nm">115</span>,<span class="nm">112</span>,<span class="nm">120</span>,<span class="nm">118</span>],
+                   index=<span class="op">pd</span>.<span class="fn">date_range</span>(<span class="st">'2024-01-01'</span>, periods=<span class="nm">10</span>))
+
+<span class="cm"># 3-day Simple Moving Average</span>
+<span class="fn">print</span>(prices.<span class="fn">rolling</span>(window=<span class="nm">3</span>).<span class="fn">mean</span>())
+<span class="cm"># First 2 values are NaN (not enough data yet for a 3-window)</span>
+
+<span class="cm"># Common technical indicators</span>
+sma_5  = prices.<span class="fn">rolling</span>(<span class="nm">5</span>).<span class="fn">mean</span>()      <span class="cm"># 5-day moving average</span>
+std_5  = prices.<span class="fn">rolling</span>(<span class="nm">5</span>).<span class="fn">std</span>()       <span class="cm"># 5-day rolling volatility</span>
+max_5  = prices.<span class="fn">rolling</span>(<span class="nm">5</span>).<span class="fn">max</span>()       <span class="cm"># 5-day rolling high</span>
+min_5  = prices.<span class="fn">rolling</span>(<span class="nm">5</span>).<span class="fn">min</span>()       <span class="cm"># 5-day rolling low</span>
+
+<span class="cm"># Bollinger Bands (common finance indicator)</span>
+sma_20 = prices.<span class="fn">rolling</span>(<span class="nm">5</span>).<span class="fn">mean</span>()
+std_20 = prices.<span class="fn">rolling</span>(<span class="nm">5</span>).<span class="fn">std</span>()
+upper_band = sma_20 + <span class="nm">2</span> * std_20
+lower_band = sma_20 - <span class="nm">2</span> * std_20
+
+<span class="cm"># min_periods — allow partial windows at the start</span>
+prices.<span class="fn">rolling</span>(window=<span class="nm">5</span>, min_periods=<span class="nm">1</span>).<span class="fn">mean</span>()   <span class="cm"># no leading NaN</span>
+
+<span class="cm"># Custom function on rolling window</span>
+prices.<span class="fn">rolling</span>(<span class="nm">3</span>).<span class="fn">apply</span>(<span class="kw">lambda</span> x: x.<span class="fn">max</span>() - x.<span class="fn">min</span>())   <span class="cm"># rolling range</span>
+
+<span class="cm"># Rolling on time-based window (not row count!)</span>
+prices.<span class="fn">rolling</span>(<span class="st">'3D'</span>).<span class="fn">mean</span>()   <span class="cm"># mean over the trailing 3 calendar days</span></pre>
+    </div>
+
+    <h3>expanding() — Growing Cumulative Window</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># expanding() includes ALL prior data, growing each step</span>
+<span class="fn">print</span>(prices.<span class="fn">expanding</span>().<span class="fn">mean</span>())
+<span class="cm"># Day1: mean(100)
+# Day2: mean(100,102)
+# Day3: mean(100,102,98)
+# ... window keeps growing, never resets</span>
+
+<span class="cm"># Common use: cumulative running average, year-to-date totals</span>
+sales_ytd = prices.<span class="fn">expanding</span>().<span class="fn">sum</span>()    <span class="cm"># running total</span>
+max_so_far = prices.<span class="fn">expanding</span>().<span class="fn">max</span>()  <span class="cm"># all-time high up to each point</span>
+
+<span class="cm"># Comparison: cumsum/cummax do similar simple jobs</span>
+prices.<span class="fn">cumsum</span>()    <span class="cm"># running total (like expanding().sum())</span>
+prices.<span class="fn">cummax</span>()    <span class="cm"># running maximum</span>
+prices.<span class="fn">cummin</span>()    <span class="cm"># running minimum</span>
+prices.<span class="fn">cumprod</span>()   <span class="cm"># running product</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Window Type</th><th>Behavior</th><th>Use Case</th></tr>
+        <tr><td><strong>rolling(n)</strong></td><td>Fixed-size window, slides forward, old data drops off</td><td>Moving averages, volatility</td></tr>
+        <tr><td><strong>expanding()</strong></td><td>Grows from the start, never drops old data</td><td>YTD totals, running max/min</td></tr>
+        <tr><td><strong>ewm()</strong></td><td>Exponentially weighted — recent data weighted more</td><td>Smoothing, trend detection (EMA)</td></tr>
+      </table>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Exponentially Weighted Moving Average — recent data matters more</span>
+ema = prices.<span class="fn">ewm</span>(span=<span class="nm">5</span>).<span class="fn">mean</span>()
+<span class="fn">print</span>(ema)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 — SHIFT & LAG -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">⏱️</div>
+    <div><h2>Shift, Lag &amp; Percentage Change</h2><p>Compare a value to its past or future — the core of trend analysis</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>sales = <span class="op">pd</span>.<span class="fn">Series</span>([<span class="nm">100</span>,<span class="nm">110</span>,<span class="nm">105</span>,<span class="nm">120</span>,<span class="nm">130</span>],
+                  index=<span class="op">pd</span>.<span class="fn">date_range</span>(<span class="st">'2024-01-01'</span>, periods=<span class="nm">5</span>, freq=<span class="st">'MS'</span>))
+
+<span class="cm"># shift() — move values forward/backward by n periods</span>
+<span class="fn">print</span>(sales.<span class="fn">shift</span>(<span class="nm">1</span>))    <span class="cm"># [NaN, 100, 110, 105, 120]  ← previous month's value</span>
+<span class="fn">print</span>(sales.<span class="fn">shift</span>(-<span class="nm">1</span>))   <span class="cm"># [110, 105, 120, 130, NaN] ← next month's value</span>
+
+<span class="cm"># Common use: Month-over-Month change</span>
+mom_change = sales - sales.<span class="fn">shift</span>(<span class="nm">1</span>)
+mom_pct    = sales.<span class="fn">pct_change</span>()          <span class="cm"># % change vs previous period — built-in!</span>
+<span class="fn">print</span>(mom_pct)
+<span class="cm"># Jan    NaN
+# Feb    0.1000  ← 10% growth
+# Mar   -0.0455  ← -4.5% decline
+# Apr    0.1429
+# May    0.0833</span>
+
+<span class="cm"># Year-over-Year comparison (shift by 12 for monthly data)</span>
+<span class="cm"># yoy_change = monthly_sales - monthly_sales.shift(12)</span>
+
+<span class="cm"># diff() — difference from n periods ago</span>
+<span class="fn">print</span>(sales.<span class="fn">diff</span>())        <span class="cm"># same as sales - sales.shift(1)</span>
+<span class="fn">print</span>(sales.<span class="fn">diff</span>(periods=<span class="nm">2</span>))   <span class="cm"># difference from 2 periods ago</span>
+
+<span class="cm"># Shift the INDEX instead of values (time shift)</span>
+sales.<span class="fn">shift</span>(<span class="nm">1</span>, freq=<span class="st">'MS'</span>)   <span class="cm"># shifts dates forward by 1 month, values stay aligned</span></pre>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">✅ pct_change() is a One-Liner for Growth Rates</div>
+      Instead of manually computing <code>(current - previous) / previous</code>, just use <code>series.pct_change()</code>. Use <code>periods=12</code> for year-over-year growth on monthly data, or <code>periods=4</code> for quarterly YoY.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 — MULTIINDEX -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🗂️</div>
+    <div><h2>MultiIndex — Hierarchical Indexing</h2><p>Multiple index levels for richer, more structured data</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>A <strong>MultiIndex</strong> allows a DataFrame to have multiple levels of row (or column) labels — useful for grouped time series, panel data, and pivot table outputs.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Creating a MultiIndex DataFrame</span>
+df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Region'</span> :[<span class="st">'North'</span>,<span class="st">'North'</span>,<span class="st">'South'</span>,<span class="st">'South'</span>],
+    <span class="st">'Quarter'</span>:[<span class="st">'Q1'</span>,<span class="st">'Q2'</span>,<span class="st">'Q1'</span>,<span class="st">'Q2'</span>],
+    <span class="st">'Revenue'</span>:[<span class="nm">1000</span>,<span class="nm">1200</span>,<span class="nm">800</span>,<span class="nm">950</span>]
+}).<span class="fn">set_index</span>([<span class="st">'Region'</span>,<span class="st">'Quarter'</span>])
+
+<span class="fn">print</span>(df)
+<span class="cm">#                 Revenue
+# Region Quarter
+# North  Q1          1000
+#        Q2          1200
+# South  Q1           800
+#        Q2           950</span>
+
+<span class="cm"># Access outer level</span>
+<span class="fn">print</span>(df.<span class="fn">loc</span>[<span class="st">'North'</span>])          <span class="cm"># all North rows</span>
+
+<span class="cm"># Access specific combination</span>
+<span class="fn">print</span>(df.<span class="fn">loc</span>[(<span class="st">'North'</span>, <span class="st">'Q1'</span>)])   <span class="cm"># single row → Series</span>
+<span class="fn">print</span>(df.<span class="fn">loc</span>[[(<span class="st">'North'</span>,<span class="st">'Q1'</span>), (<span class="st">'South'</span>,<span class="st">'Q2'</span>)]])
+
+<span class="cm"># xs() — cross-section, select by inner level across all outer groups</span>
+<span class="fn">print</span>(df.<span class="fn">xs</span>(<span class="st">'Q1'</span>, level=<span class="st">'Quarter'</span>))   <span class="cm"># Q1 for BOTH North and South</span>
+
+<span class="cm"># Swap level order</span>
+df_swapped = df.<span class="fn">swaplevel</span>()
+<span class="fn">print</span>(df_swapped.sort_index())
+
+<span class="cm"># Flatten MultiIndex back to columns</span>
+flat = df.<span class="fn">reset_index</span>()
+
+<span class="cm"># MultiIndex columns (from pivot_table with multiple aggfuncs)</span>
+pivot = <span class="op">pd</span>.<span class="fn">pivot_table</span>(flat, values=<span class="st">'Revenue'</span>, index=<span class="st">'Region'</span>,
+                       columns=<span class="st">'Quarter'</span>, aggfunc=[<span class="st">'sum'</span>,<span class="st">'mean'</span>])
+<span class="fn">print</span>(pivot.columns)   <span class="cm"># MultiIndex: [('sum','Q1'), ('sum','Q2'), ('mean','Q1'), ...]</span>
+<span class="fn">print</span>(pivot[<span class="st">'sum'</span>][<span class="st">'Q1'</span>])   <span class="cm"># access nested column levels</span>
+
+<span class="cm"># Flatten MultiIndex columns to single strings</span>
+pivot.columns = [<span class="st">'_'</span>.<span class="fn">join</span>(col) <span class="kw">for</span> col <span class="kw">in</span> pivot.columns]</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 Where MultiIndex Comes From</div>
+      MultiIndex naturally appears from: <code>groupby()</code> with multiple keys, <code>set_index()</code> with multiple columns, and <code>pivot_table()</code> with multiple aggregation functions or index/column levels. Use <code>reset_index()</code> anytime you want to flatten it back to regular columns.
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>Datetime, resampling, rolling windows, shift, MultiIndex. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DB2777">🏆</div>
+    <div><h2>Real-World Task — Stock Portfolio Time Series Dashboard</h2><p>Estimated time: 85–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Quant Analyst</strong> at <em>Meridian Capital</em>. Build a complete time-series analysis pipeline for 2 years of daily stock data across 3 companies — covering resampling, moving averages, trend detection, and a full MultiIndex report.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#DB2777">1</div><h4>Phase 1 — Generate Time Series Data</h4><span class="phase-time">~15 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Daily Multi-Stock Dataset</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+<span class="kw">import</span> numpy  <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(<span class="nm">11</span>)
+dates = <span class="op">pd</span>.<span class="fn">date_range</span>(<span class="st">'2023-01-01'</span>, <span class="st">'2024-12-31'</span>, freq=<span class="st">'B'</span>)  <span class="cm"># business days</span>
+companies = [<span class="st">'TechCo'</span>, <span class="st">'HealthX'</span>, <span class="st">'EnergyPlus'</span>]
+start_prices = {<span class="st">'TechCo'</span>:<span class="nm">500</span>, <span class="st">'HealthX'</span>:<span class="nm">250</span>, <span class="st">'EnergyPlus'</span>:<span class="nm">180</span>}
+
+frames = []
+<span class="kw">for</span> co <span class="kw">in</span> companies:
+    returns = rng.<span class="fn">normal</span>(<span class="nm">0.0004</span>, <span class="nm">0.015</span>, <span class="fn">len</span>(dates))
+    prices  = start_prices[co] * <span class="op">np</span>.<span class="fn">cumprod</span>(<span class="nm">1</span> + returns)
+    volume  = rng.<span class="fn">integers</span>(<span class="nm">10000</span>, <span class="nm">500000</span>, <span class="fn">len</span>(dates))
+    frames.<span class="fn">append</span>(<span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Date'</span>:dates, <span class="st">'Company'</span>:co, <span class="st">'Price'</span>:prices, <span class="st">'Volume'</span>:volume}))
+
+stocks = <span class="op">pd</span>.<span class="fn">concat</span>(frames, ignore_index=<span class="kw">True</span>)
+<span class="fn">print</span>(<span class="st">f"Shape: {stocks.shape}"</span>)
+stocks.<span class="fn">info</span>()</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Datetime Setup &amp; Resampling</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Pivoted Wide Price Table with DatetimeIndex</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>prices_wide = stocks.<span class="fn">pivot</span>(index=<span class="st">'Date'</span>, columns=<span class="st">'Company'</span>, values=<span class="st">'Price'</span>)
+<span class="fn">print</span>(prices_wide.head())
+<span class="fn">print</span>(<span class="fn">type</span>(prices_wide.index))   <span class="cm"># DatetimeIndex ✅</span>
+
+<span class="cm"># Slice: all of Q1 2024</span>
+q1_2024 = prices_wide.<span class="fn">loc</span>[<span class="st">'2024-01'</span>:<span class="st">'2024-03'</span>]
+<span class="fn">print</span>(<span class="st">f"Q1 2024: {len(q1_2024)} trading days"</span>)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Resample to Monthly and Weekly Views</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Monthly average price per company</span>
+monthly_avg = prices_wide.<span class="fn">resample</span>(<span class="st">'M'</span>).<span class="fn">mean</span>()
+
+<span class="cm"># Monthly volatility (std of daily returns, resampled)</span>
+daily_returns = prices_wide.<span class="fn">pct_change</span>()
+monthly_vol = daily_returns.<span class="fn">resample</span>(<span class="st">'M'</span>).<span class="fn">std</span>() * <span class="op">np</span>.<span class="fn">sqrt</span>(<span class="nm">21</span>)  <span class="cm"># ~21 trading days/month</span>
+
+<span class="cm"># Weekly OHLC-style summary for TechCo</span>
+techco_weekly = prices_wide[<span class="st">'TechCo'</span>].<span class="fn">resample</span>(<span class="st">'W'</span>).<span class="fn">agg</span>([<span class="st">'first'</span>,<span class="st">'max'</span>,<span class="st">'min'</span>,<span class="st">'last'</span>])
+techco_weekly.columns = [<span class="st">'Open'</span>,<span class="st">'High'</span>,<span class="st">'Low'</span>,<span class="st">'Close'</span>]
+<span class="fn">print</span>(techco_weekly.head())</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Rolling Windows &amp; Technical Indicators</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build 20-Day and 50-Day Moving Averages</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">for</span> co <span class="kw">in</span> companies:
+    stocks.<span class="fn">loc</span>[stocks[<span class="st">'Company'</span>]==co, <span class="st">'SMA20'</span>] = (
+        stocks.<span class="fn">loc</span>[stocks[<span class="st">'Company'</span>]==co, <span class="st">'Price'</span>].<span class="fn">rolling</span>(<span class="nm">20</span>).<span class="fn">mean</span>().values)
+    stocks.<span class="fn">loc</span>[stocks[<span class="st">'Company'</span>]==co, <span class="st">'SMA50'</span>] = (
+        stocks.<span class="fn">loc</span>[stocks[<span class="st">'Company'</span>]==co, <span class="st">'Price'</span>].<span class="fn">rolling</span>(<span class="nm">50</span>).<span class="fn">mean</span>().values)
+
+<span class="cm"># Better approach: use groupby + transform for rolling per group</span>
+stocks[<span class="st">'SMA20'</span>] = stocks.<span class="fn">groupby</span>(<span class="st">'Company'</span>)[<span class="st">'Price'</span>].<span class="fn">transform</span>(<span class="kw">lambda</span> x: x.<span class="fn">rolling</span>(<span class="nm">20</span>).<span class="fn">mean</span>())
+stocks[<span class="st">'SMA50'</span>] = stocks.<span class="fn">groupby</span>(<span class="st">'Company'</span>)[<span class="st">'Price'</span>].<span class="fn">transform</span>(<span class="kw">lambda</span> x: x.<span class="fn">rolling</span>(<span class="nm">50</span>).<span class="fn">mean</span>())
+
+<span class="cm"># Detect Golden Cross events (SMA20 crosses above SMA50)</span>
+stocks[<span class="st">'AboveCross'</span>] = stocks[<span class="st">'SMA20'</span>] > stocks[<span class="st">'SMA50'</span>]
+stocks[<span class="st">'GoldenCross'</span>] = (stocks.<span class="fn">groupby</span>(<span class="st">'Company'</span>)[<span class="st">'AboveCross'</span>].<span class="fn">diff</span>() == <span class="kw">True</span>)
+<span class="fn">print</span>(stocks[stocks[<span class="st">'GoldenCross'</span>]][[<span class="st">'Date'</span>,<span class="st">'Company'</span>,<span class="st">'Price'</span>]])</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Compute Rolling Volatility &amp; Bollinger Bands for TechCo</h5>
+          <p>Use a 20-day rolling window: SMA20 ± 2×rolling_std. Count how many days the price closed outside the bands (potential reversal signals).</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Month-over-Month and Year-over-Year Growth</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>mom_growth = monthly_avg.<span class="fn">pct_change</span>() * <span class="nm">100</span>
+yoy_growth = monthly_avg.<span class="fn">pct_change</span>(periods=<span class="nm">12</span>) * <span class="nm">100</span>
+<span class="fn">print</span>(<span class="st">"Latest MoM growth:\n"</span>, mom_growth.<span class="fn">iloc</span>[-<span class="nm">1</span>])
+<span class="fn">print</span>(<span class="st">"Latest YoY growth:\n"</span>, yoy_growth.<span class="fn">iloc</span>[-<span class="nm">1</span>])</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">4</div><h4>Phase 4 — MultiIndex Summary Table</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a MultiIndex Report (Company, Quarter)</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>stocks[<span class="st">'Quarter'</span>] = stocks[<span class="st">'Date'</span>].dt.<span class="fn">to_period</span>(<span class="st">'Q'</span>).<span class="fn">astype</span>(<span class="fn">str</span>)
+
+quarterly_summary = stocks.<span class="fn">groupby</span>([<span class="st">'Company'</span>,<span class="st">'Quarter'</span>]).<span class="fn">agg</span>(
+    avg_price = (<span class="st">'Price'</span>, <span class="st">'mean'</span>),
+    total_volume = (<span class="st">'Volume'</span>, <span class="st">'sum'</span>),
+    price_high = (<span class="st">'Price'</span>, <span class="st">'max'</span>),
+    price_low  = (<span class="st">'Price'</span>, <span class="st">'min'</span>)
+)
+<span class="fn">print</span>(quarterly_summary)
+
+<span class="cm"># Cross-section: compare all companies in Q1 2024</span>
+<span class="fn">print</span>(quarterly_summary.<span class="fn">xs</span>(<span class="st">'2024Q1'</span>, level=<span class="st">'Quarter'</span>))
+
+<span class="cm"># Access a single company across all quarters</span>
+<span class="fn">print</span>(quarterly_summary.<span class="fn">loc</span>[<span class="st">'TechCo'</span>])</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">5</div><h4>Phase 5 — Final Report</h4><span class="phase-time">~15 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Print the Meridian Capital Report</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED OUTPUT FORMAT</span></div>
+<pre>══════════════════════════════════════════════
+     MERIDIAN CAPITAL — TIME SERIES REPORT
+══════════════════════════════════════════════
+DATA COVERAGE
+  Period       : 2023-01-01 to 2024-12-31
+  Trading Days : ???
+  Companies    : TechCo, HealthX, EnergyPlus
+
+LATEST PRICES (as of last trading day)
+  TechCo      : ₹???.??
+  HealthX     : ₹???.??
+  EnergyPlus  : ₹???.??
+
+GOLDEN CROSS EVENTS DETECTED
+  TechCo      : ??? events
+  HealthX     : ??? events
+  EnergyPlus  : ??? events
+
+MONTHLY VOLATILITY (latest month, annualised)
+  TechCo      : ??.?%
+  HealthX     : ??.?%
+  EnergyPlus  : ??.?%
+
+GROWTH RATES (latest month)
+  MoM Growth  : TechCo ??.?%  HealthX ??.?%  EnergyPlus ??.?%
+  YoY Growth  : TechCo ??.?%  HealthX ??.?%  EnergyPlus ??.?%
+
+QUARTERLY HIGHLIGHTS (2024 Q4)
+  Best Performer : ??? (avg ₹???.??)
+  Highest Volume : ??? (??? shares)
+══════════════════════════════════════════════</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated 2 years of daily business-day data for 3 companies</li>
+        <li>Pivoted to wide format with proper DatetimeIndex</li>
+        <li>Sliced data using partial date strings (year, month)</li>
+        <li>Resampled to monthly average prices and weekly OHLC</li>
+        <li>Computed monthly volatility from resampled daily returns</li>
+        <li>Built 20-day and 50-day SMA using groupby + transform + rolling</li>
+        <li>Detected Golden Cross events using diff() on boolean comparison</li>
+        <li>Built Bollinger Bands using rolling mean ± 2×rolling std</li>
+        <li>Computed Month-over-Month and Year-over-Year growth with pct_change</li>
+        <li>Built MultiIndex (Company, Quarter) summary with named aggregation</li>
+        <li>Used xs() to cross-section a specific quarter across companies</li>
+        <li>Printed complete formatted final report</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 30 min)</div>
+      Build an <strong>Exponentially Weighted Moving Average (EWMA)</strong> crossover strategy: use <code>ewm(span=12).mean()</code> and <code>ewm(span=26).mean()</code> (the classic MACD setup) and compare signal timing vs the SMA20/SMA50 approach. Count how many trading signals each method generates.
+    </div>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Pandas Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Series &amp; DataFrames</span>
+    <span class="day-pill done">Day 2 · Data Cleaning</span>
+    <span class="day-pill done">Day 3 · GroupBy &amp; Merge</span>
+    <span class="day-pill done active">Day 4 · Time Series</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What does `pd.to_datetime(['2024-01-15','bad'], errors='coerce')` do?",opts:["Raises a ValueError immediately","Converts 'bad' into NaT while parsing the valid date normally","Skips the bad value entirely (returns 1 element)","Converts both to strings"],ans:1,explain:"errors='coerce' converts unparseable date strings into NaT (Not a Time) instead of raising an error — the datetime equivalent of NaN. This lets processing continue even with messy date data."},
+  {code:"df.loc['2024-03']", q:"If df has a DatetimeIndex, what does this select?",opts:["Only March 1st, 2024","All rows within March 2024 (partial-string indexing)","Raises a KeyError","All rows from 2024"],ans:1,explain:"Pandas supports partial-string indexing on a DatetimeIndex. '2024-03' matches ALL dates in March 2024, not just a specific day — a huge convenience for time series slicing."},
+  {q:"What is the difference between `resample('M')` and `groupby()`?",opts:["No difference","resample() is groupby() specialized for time — it understands calendar rules like varying month lengths","groupby() is faster","resample() only works on Series"],ans:1,explain:"resample() is essentially a time-aware groupby. It groups data by calendar periods (understanding that months have different lengths, leap years, etc.) and lets you aggregate accordingly."},
+  {code:"prices.rolling(window=3).mean()",q:"What happens to the first 2 values of the result?",opts:["They equal the original values","They are 0","They are NaN — not enough data yet for a full 3-window","They are dropped, shrinking the Series"],ans:2,explain:"rolling(window=3) needs 3 data points to compute a value. The first 2 positions don't have enough preceding data, so they return NaN. Use min_periods=1 to get values from the start with partial windows."},
+  {q:"What is the key difference between rolling() and expanding()?",opts:["rolling() is always slower","rolling() uses a FIXED-size window that slides; expanding() GROWS from the start, including all prior data","expanding() only works with sum()","They are identical"],ans:1,explain:"rolling(n) always looks at exactly n most recent values, dropping old data as it slides forward. expanding() starts small and keeps growing — it always includes ALL data from the beginning up to the current point."},
+  {code:"sales = pd.Series([100,110,105,120])\nprint(sales.pct_change())",q:"What is the second value (index 1)?",opts:["10","0.10","1.10","110"],ans:1,explain:"pct_change() computes (current - previous)/previous. (110-100)/100 = 0.10, representing 10% growth. The first value is always NaN since there's no prior period."},
+  {q:"What does `series.shift(1)` do?",opts:["Removes the first element","Moves all values forward by 1 position, introducing NaN at the start (creates a 'lag' of the previous value)","Shifts the index labels only","Reverses the series"],ans:1,explain:"shift(1) moves values down by one position — each value becomes what the PREVIOUS position held. This creates a lagged version of the series, commonly used to compare current vs prior period."},
+  {code:"prices.resample('D').ffill()",q:"When would you use this on monthly data being resampled to daily?",opts:["To downsample data (reduce frequency)","To upsample sparse monthly data to daily frequency, filling gaps with the last known monthly value","To remove missing values entirely","To compute a rolling average"],ans:1,explain:"When upsampling (low frequency → high frequency), new time periods are created with no data (NaN). ffill() fills those gaps with the most recent known value — e.g., every day in January gets January's monthly value until February's value appears."},
+  {q:"What does `.dt.dayofweek >= 5` typically identify?",opts:["Weekday business hours","Weekend days (Saturday=5, Sunday=6)","The first 5 days of any month","Holiday dates"],ans:1,explain:"dayofweek returns 0=Monday through 6=Sunday. Values 5 and 6 correspond to Saturday and Sunday — so this expression creates a boolean mask identifying weekend dates."},
+  {q:"What is a MultiIndex?",opts:["An index with duplicate values","A hierarchical index with multiple levels of row (or column) labels","An index sorted in multiple orders","A special type of DatetimeIndex"],ans:1,explain:"MultiIndex allows multiple levels of labels on an axis — like (Region, Quarter) as a combined row index. It naturally arises from groupby with multiple keys, set_index with multiple columns, or pivot_table with multiple aggregations."},
+  {code:"df.set_index(['Region','Quarter'])\ndf.xs('Q1', level='Quarter')",q:"What does xs() return here?",opts:["Only the first row of the DataFrame","Q1 data for ALL Regions — a cross-section across the outer level","An error — xs() requires the full tuple","The Q1 column only"],ans:1,explain:"xs() (cross-section) selects data at a particular value of ONE index level while keeping all values of the other levels. Here, it returns Q1 rows for every Region, effectively slicing 'across' the Region dimension."},
+  {q:"Which frequency code represents 'business day' (excludes weekends)?",opts:["'D'","'B'","'W'","'BD'"],ans:1,explain:"'B' stands for business day frequency in pd.date_range() and resample(). It automatically skips Saturdays and Sundays, which is standard for financial/trading data."},
+  {code:"monthly_avg.pct_change(periods=12)",q:"On monthly data, what does periods=12 compute?",opts:["12-month moving average","Month-over-Month growth","Year-over-Year (YoY) growth — compares each month to the same month 12 periods (1 year) earlier","12% growth threshold"],ans:2,explain:"With monthly data, shifting/comparing 12 periods back means comparing to the same month one year prior — this is exactly Year-over-Year growth calculation, a standard business metric."},
+  {q:"What does `series.ewm(span=5).mean()` compute?",opts:["A simple average of 5 values","An Exponentially Weighted Moving Average — recent values are weighted MORE than older ones","The same as rolling(5).mean()","A random sample of 5 values"],ans:1,explain:"EWM gives exponentially decreasing weight to older observations. Unlike a simple moving average (equal weight to all points in the window), EWM reacts faster to recent changes — useful for trend detection."},
+  {code:"stocks.groupby('Company')['Price'].transform(lambda x: x.rolling(20).mean())",q:"Why use groupby + transform here instead of just rolling(20) on the whole column?",opts:["It's identical either way","Without groupby, the rolling window would incorrectly span across different companies' data at the boundary","transform() is required syntax for rolling()","groupby makes it faster only"],ans:1,explain:"If you apply rolling(20) directly to a stacked DataFrame with multiple companies, the window at the start of each new company's data would incorrectly include the tail-end of the PREVIOUS company's prices. groupby ensures each company's rolling calculation stays within its own data."},
+  {q:"What is the purpose of `df.asfreq('W')`?",opts:["Aggregates data into weekly buckets like resample","Converts the index to a fixed weekly frequency, keeping only rows that exactly match — does NOT aggregate","Removes all data","Same as resample('W').mean()"],ans:1,explain:"asfreq() reindexes to the specified frequency WITHOUT aggregation — if a matching timestamp doesn't exist, you get NaN. This differs from resample() which aggregates multiple values within a period into one."},
+  {code:"df.reset_index()", q:"If df has a MultiIndex (Region, Quarter), what does this do?",opts:["Deletes the Region and Quarter data","Converts BOTH index levels into regular DataFrame columns, with a new default 0,1,2... index","Only resets the outer level","Raises an error on MultiIndex"],ans:1,explain:"reset_index() on a MultiIndex converts ALL index levels into regular columns and replaces the index with a simple 0,1,2,... RangeIndex. This 'flattens' the hierarchical structure back to a plain table."},
+  {q:"What does `pd.date_range('2024-01-01', periods=5, freq='W')` generate?",opts:["5 consecutive days","5 weekly timestamps, one per week","5 months","5 years"],ans:1,explain:"freq='W' generates weekly timestamps (by default, week-ending on Sunday). periods=5 means 5 dates will be generated, each 7 days apart from the previous."},
+  {q:"Why might `.dt.days_in_month` be useful for a sales dataset?",opts:["To sort dates","To normalize monthly totals by the number of days (e.g., comparing Feb's 28 days fairly to March's 31)","To detect leap years only","To calculate age"],ans:1,explain:"Different months have different lengths. When comparing 'average daily sales' or normalizing monthly totals, dividing by days_in_month ensures a fair comparison — February (28 days) isn't unfairly compared to a 31-day month."},
+  {q:"What column type results from `stocks['Date'].dt.to_period('Q')`?",opts:["A regular string column","A Period object representing the quarter (e.g., 2024Q1) — useful for grouping by quarter cleanly","A float representing quarter number","An error"],ans:1,explain:"to_period('Q') converts timestamps into Period objects representing the enclosing quarter (like '2024Q1'). This is ideal for groupby operations where you want one row per quarter rather than per exact date."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Time series takes practice — review resample, rolling, and shift! 📚"],[50,75,"Good progress! Focus on rolling vs expanding and MultiIndex. 💪"],[75,90,"Strong Day 4! Time series skills are solid. 🎉"],[90,101,"Outstanding! Day 4 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

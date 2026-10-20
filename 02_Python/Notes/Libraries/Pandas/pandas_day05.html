@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pandas – Day 5 | Capstone</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FCD34D;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#57330A;font-style:italic;} .op{color:#FDE68A;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .certificate{border:3px solid var(--gold);border-radius:16px;padding:40px;text-align:center;background:linear-gradient(135deg,#FFFBEB,#F0FDFA);margin-top:32px;position:relative;overflow:hidden;}
+  .certificate::before{content:'🐼';font-size:200px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;}
+  .certificate .cert-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+  .certificate h2{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);margin-bottom:8px;}
+  .certificate .cert-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin:16px 0;}
+  .certificate p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto 20px;}
+  .cert-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;}
+  .cert-skill{background:var(--accent);color:#fff;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐼 Pandas</div><span class="sep">|</span><span class="day-label">Day 5 of 5 · Final</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">100%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pandas Full Course · Day 5 · Capstone</div>
+  <h1>Advanced Tools &amp;<br><span>Capstone Project</span></h1>
+  <p>The final day. Master method chaining, window functions, performance tricks, and Pandas↔NumPy integration — then build a complete end-to-end business analytics pipeline.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔗 Method Chaining</span>
+    <span class="hero-pill">🪟 Window Functions</span>
+    <span class="hero-pill">⚡ Performance &amp; Vectorisation</span>
+    <span class="hero-pill">🧮 apply vs vectorised</span>
+    <span class="hero-pill">🎨 Styling &amp; Export</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Full Capstone</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎓 <strong>Final Day!</strong> You've covered Series/DataFrames → Cleaning → GroupBy/Merge → Time Series. Today closes the loop with professional patterns and one big capstone project that uses everything.</p>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 — METHOD CHAINING -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔗</div>
+    <div><h2>Method Chaining — Writing Professional Pandas Code</h2><p>Readable, functional-style pipelines instead of step-by-step reassignment</p></div>
+  </div>
+  <div class="section-body">
+    <p><strong>Method chaining</strong> links multiple Pandas operations in one fluent expression instead of creating intermediate variables at every step. It's the style used in professional codebases and matches how R's dplyr / SQL pipelines read.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># ❌ Step-by-step style — verbose, many intermediate variables</span>
+df1 = df.<span class="fn">dropna</span>(subset=[<span class="st">'Salary'</span>])
+df2 = df1[df1[<span class="st">'Salary'</span>] > <span class="nm">50000</span>]
+df3 = df2.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">mean</span>()
+df4 = df3.<span class="fn">sort_values</span>(ascending=<span class="kw">False</span>)
+<span class="fn">print</span>(df4)
+
+<span class="cm"># ✅ Method chaining — one fluent readable pipeline</span>
+result = (
+    df
+    .<span class="fn">dropna</span>(subset=[<span class="st">'Salary'</span>])
+    .<span class="fn">query</span>(<span class="st">'Salary > 50000'</span>)
+    .<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>]
+    .<span class="fn">mean</span>()
+    .<span class="fn">sort_values</span>(ascending=<span class="kw">False</span>)
+)
+<span class="fn">print</span>(result)
+
+<span class="cm"># pipe() — insert a custom function into a chain</span>
+<span class="kw">def</span> <span class="fn">add_bonus_col</span>(df, pct=<span class="nm">0.1</span>):
+    <span class="kw">return</span> df.<span class="fn">assign</span>(Bonus = df[<span class="st">'Salary'</span>] * pct)
+
+result2 = (
+    df
+    .<span class="fn">dropna</span>(subset=[<span class="st">'Salary'</span>])
+    .<span class="fn">pipe</span>(add_bonus_col, pct=<span class="nm">0.15</span>)
+    .<span class="fn">sort_values</span>(<span class="st">'Bonus'</span>, ascending=<span class="kw">False</span>)
+)
+
+<span class="cm"># assign() — add multiple derived columns fluently in a chain</span>
+result3 = (
+    df
+    .<span class="fn">assign</span>(
+        Bonus     = <span class="kw">lambda</span> x: x[<span class="st">'Salary'</span>] * <span class="nm">0.1</span>,
+        TotalComp = <span class="kw">lambda</span> x: x[<span class="st">'Salary'</span>] + x[<span class="st">'Bonus'</span>]
+    )
+    .<span class="fn">sort_values</span>(<span class="st">'TotalComp'</span>, ascending=<span class="kw">False</span>)
+    .<span class="fn">head</span>(<span class="nm">10</span>)
+)</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Why Chain?</div>
+      <ul>
+        <li>No intermediate variable clutter (df1, df2, df3...)</li>
+        <li>Reads top-to-bottom like a data pipeline / recipe</li>
+        <li>Easy to comment out or reorder individual steps</li>
+        <li>Matches modern data engineering style (dbt, dplyr, Spark)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 — WINDOW FUNCTIONS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🪟</div>
+    <div><h2>Window Functions — Rank, Cumulative, Group Comparisons</h2><p>SQL-style window functions for ranking and running calculations</p></div>
+  </div>
+  <div class="section-body">
+
+    <h3>Ranking Functions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'Dept'</span>  :[<span class="st">'Eng'</span>,<span class="st">'Eng'</span>,<span class="st">'Eng'</span>,<span class="st">'HR'</span>,<span class="st">'HR'</span>],
+    <span class="st">'Name'</span>  :[<span class="st">'Alice'</span>,<span class="st">'Bob'</span>,<span class="st">'Carol'</span>,<span class="st">'Dave'</span>,<span class="st">'Eve'</span>],
+    <span class="st">'Salary'</span>:[<span class="nm">95000</span>,<span class="nm">85000</span>,<span class="nm">90000</span>,<span class="nm">60000</span>,<span class="nm">65000</span>]
+})
+
+<span class="cm"># Overall rank (1 = highest salary)</span>
+df[<span class="st">'Rank'</span>] = df[<span class="st">'Salary'</span>].<span class="fn">rank</span>(ascending=<span class="kw">False</span>).<span class="fn">astype</span>(<span class="fn">int</span>)
+
+<span class="cm"># Rank WITHIN each department — the SQL "PARTITION BY" equivalent</span>
+df[<span class="st">'DeptRank'</span>] = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">rank</span>(ascending=<span class="kw">False</span>).<span class="fn">astype</span>(<span class="fn">int</span>)
+<span class="fn">print</span>(df)
+<span class="cm">#   Dept   Name  Salary  Rank  DeptRank
+# 0  Eng  Alice   95000     1         1
+# 1  Eng    Bob   85000     4         3
+# 2  Eng  Carol   90000     3         2
+# 3   HR   Dave   60000     5         2
+# 4   HR    Eve   65000     2         1   ← ranks reset per department!</span>
+
+<span class="cm"># Percentile rank</span>
+df[<span class="st">'PctRank'</span>] = df[<span class="st">'Salary'</span>].<span class="fn">rank</span>(pct=<span class="kw">True</span>)
+
+<span class="cm"># Top-N per group — a very common business question</span>
+top2_per_dept = (df.<span class="fn">sort_values</span>(<span class="st">'Salary'</span>, ascending=<span class="kw">False</span>)
+                    .<span class="fn">groupby</span>(<span class="st">'Dept'</span>)
+                    .<span class="fn">head</span>(<span class="nm">2</span>))
+<span class="fn">print</span>(top2_per_dept)</pre>
+    </div>
+
+    <h3>Cumulative &amp; Group-Relative Functions</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Cumulative sum WITHIN each group</span>
+df[<span class="st">'CumSalary'</span>] = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">cumsum</span>()
+
+<span class="cm"># Row number within group (like SQL ROW_NUMBER())</span>
+df[<span class="st">'RowInDept'</span>] = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>).<span class="fn">cumcount</span>() + <span class="nm">1</span>
+
+<span class="cm"># Percentage of group total</span>
+df[<span class="st">'PctOfDeptTotal'</span>] = df[<span class="st">'Salary'</span>] / df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">transform</span>(<span class="st">'sum'</span>)
+
+<span class="cm"># First/last value in group, broadcast to all rows</span>
+df[<span class="st">'DeptMaxSalary'</span>] = df.<span class="fn">groupby</span>(<span class="st">'Dept'</span>)[<span class="st">'Salary'</span>].<span class="fn">transform</span>(<span class="st">'max'</span>)
+df[<span class="st">'GapFromTop'</span>] = df[<span class="st">'DeptMaxSalary'</span>] - df[<span class="st">'Salary'</span>]</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Function</th><th>SQL Equivalent</th><th>Use</th></tr>
+        <tr><td><code>groupby().rank()</code></td><td>RANK() OVER (PARTITION BY...)</td><td>Rank within groups</td></tr>
+        <tr><td><code>groupby().cumsum()</code></td><td>SUM() OVER (... ROWS UNBOUNDED PRECEDING)</td><td>Running total per group</td></tr>
+        <tr><td><code>groupby().cumcount()</code></td><td>ROW_NUMBER() OVER (PARTITION BY...)</td><td>Row position within group</td></tr>
+        <tr><td><code>groupby().transform()</code></td><td>Window aggregate function</td><td>Broadcast group stat to every row</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 — PERFORMANCE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">⚡</div>
+    <div><h2>Performance — Vectorisation over apply() over loops</h2><p>Write Pandas code that scales to millions of rows</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="fbox">
+      <div class="ft">⚡ The Speed Hierarchy</div>
+      <div class="fm">1. Vectorised operations   (fastest — C-speed)</div>
+      <div class="fm">2. .apply() with a function (medium — Python loop internally)</div>
+      <div class="fm">3. .iterrows() / for loop   (slowest — avoid at all costs)</div>
+      <div class="fnote">Always look for a vectorised way first. Reach for apply() only when truly needed.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> time
+n = <span class="nm">100_000</span>
+df = <span class="op">pd</span>.<span class="fn">DataFrame</span>({<span class="st">'Price'</span>: <span class="op">np</span>.random.<span class="fn">uniform</span>(<span class="nm">10</span>,<span class="nm">1000</span>,n)})
+
+<span class="cm"># ❌ SLOWEST: iterrows() loop</span>
+t0 = time.<span class="fn">time</span>()
+result = []
+<span class="kw">for</span> idx, row <span class="kw">in</span> df.<span class="fn">iterrows</span>():
+    result.<span class="fn">append</span>(row[<span class="st">'Price'</span>] * <span class="nm">1.1</span>)
+<span class="fn">print</span>(<span class="st">f"iterrows: {time.time()-t0:.3f}s"</span>)   <span class="cm"># ~2-4 seconds!</span>
+
+<span class="cm"># 🐢 MEDIUM: apply()</span>
+t0 = time.<span class="fn">time</span>()
+df[<span class="st">'Price2'</span>] = df[<span class="st">'Price'</span>].<span class="fn">apply</span>(<span class="kw">lambda</span> x: x * <span class="nm">1.1</span>)
+<span class="fn">print</span>(<span class="st">f"apply:    {time.time()-t0:.3f}s"</span>)     <span class="cm"># ~0.02-0.05 seconds</span>
+
+<span class="cm"># ✅ FASTEST: vectorised</span>
+t0 = time.<span class="fn">time</span>()
+df[<span class="st">'Price3'</span>] = df[<span class="st">'Price'</span>] * <span class="nm">1.1</span>
+<span class="fn">print</span>(<span class="st">f"vector:   {time.time()-t0:.3f}s"</span>)     <span class="cm"># ~0.0005 seconds — 100-1000x faster!</span>
+
+<span class="cm"># More vectorisation examples</span>
+<span class="cm"># ❌ apply for conditional logic</span>
+df[<span class="st">'Tier'</span>] = df[<span class="st">'Price'</span>].<span class="fn">apply</span>(<span class="kw">lambda</span> x: <span class="st">'High'</span> <span class="kw">if</span> x > <span class="nm">500</span> <span class="kw">else</span> <span class="st">'Low'</span>)
+<span class="cm"># ✅ vectorised with np.where</span>
+df[<span class="st">'Tier'</span>] = <span class="op">np</span>.<span class="fn">where</span>(df[<span class="st">'Price'</span>] > <span class="nm">500</span>, <span class="st">'High'</span>, <span class="st">'Low'</span>)
+
+<span class="cm"># ❌ apply for string ops</span>
+df[<span class="st">'Upper'</span>] = df[<span class="st">'Name'</span>].<span class="fn">apply</span>(<span class="kw">lambda</span> x: x.upper())
+<span class="cm"># ✅ vectorised .str accessor</span>
+df[<span class="st">'Upper'</span>] = df[<span class="st">'Name'</span>].<span class="fn">str</span>.upper()</pre>
+    </div>
+
+    <h3>Memory Optimisation</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Check memory usage</span>
+df.<span class="fn">memory_usage</span>(deep=<span class="kw">True</span>)
+
+<span class="cm"># Downcast numeric types</span>
+df[<span class="st">'ID'</span>] = <span class="op">pd</span>.<span class="fn">to_numeric</span>(df[<span class="st">'ID'</span>], downcast=<span class="st">'integer'</span>)   <span class="cm"># int64 → int8/16/32 if it fits</span>
+df[<span class="st">'Price'</span>] = <span class="op">pd</span>.<span class="fn">to_numeric</span>(df[<span class="st">'Price'</span>], downcast=<span class="st">'float'</span>)  <span class="cm"># float64 → float32</span>
+
+<span class="cm"># Convert repeated strings to category (huge savings!)</span>
+df[<span class="st">'Dept'</span>] = df[<span class="st">'Dept'</span>].<span class="fn">astype</span>(<span class="st">'category'</span>)   <span class="cm"># e.g. 90% memory reduction for low-cardinality strings</span>
+
+<span class="cm"># Read only needed columns from a huge CSV</span>
+<span class="op">pd</span>.<span class="fn">read_csv</span>(<span class="st">'huge.csv'</span>, usecols=[<span class="st">'ID'</span>,<span class="st">'Price'</span>], dtype={<span class="st">'ID'</span>:<span class="st">'int32'</span>})
+
+<span class="cm"># Process large files in chunks</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> <span class="op">pd</span>.<span class="fn">read_csv</span>(<span class="st">'huge.csv'</span>, chunksize=<span class="nm">100000</span>):
+    process(chunk)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 — STYLING & EXPORT -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">🎨</div>
+    <div><h2>Styling, Formatting &amp; Export</h2><p>Present-ready output for stakeholders and reports</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Display options — control how DataFrames print</span>
+<span class="op">pd</span>.<span class="fn">set_option</span>(<span class="st">'display.max_rows'</span>, <span class="nm">100</span>)
+<span class="op">pd</span>.<span class="fn">set_option</span>(<span class="st">'display.max_columns'</span>, <span class="kw">None</span>)   <span class="cm"># show all columns</span>
+<span class="op">pd</span>.<span class="fn">set_option</span>(<span class="st">'display.float_format'</span>, <span class="st">'{:.2f}'</span>.<span class="fn">format</span>)
+
+<span class="cm"># Styling with .style — conditional formatting (renders in Jupyter/HTML)</span>
+styled = (df.<span class="fn">style</span>
+    .<span class="fn">format</span>({<span class="st">'Salary'</span>: <span class="st">'₹{:,.0f}'</span>, <span class="st">'Rating'</span>: <span class="st">'{:.1f}'</span>})
+    .<span class="fn">background_gradient</span>(subset=[<span class="st">'Salary'</span>], cmap=<span class="st">'Greens'</span>)
+    .<span class="fn">highlight_max</span>(subset=[<span class="st">'Salary'</span>], color=<span class="st">'lightgreen'</span>)
+    .<span class="fn">highlight_null</span>(color=<span class="st">'red'</span>)
+    .<span class="fn">bar</span>(subset=[<span class="st">'Rating'</span>], color=<span class="st">'#5CB85C'</span>)
+)
+
+<span class="cm"># Export to Excel with formatting</span>
+<span class="kw">with</span> <span class="op">pd</span>.<span class="fn">ExcelWriter</span>(<span class="st">'report.xlsx'</span>, engine=<span class="st">'xlsxwriter'</span>) <span class="kw">as</span> writer:
+    df.<span class="fn">to_excel</span>(writer, sheet_name=<span class="st">'Data'</span>, index=<span class="kw">False</span>)
+    summary.<span class="fn">to_excel</span>(writer, sheet_name=<span class="st">'Summary'</span>, index=<span class="kw">False</span>)
+
+<span class="cm"># Export styled HTML report</span>
+html = styled.<span class="fn">to_html</span>()
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">'report.html'</span>, <span class="st">'w'</span>) <span class="kw">as</span> f:
+    f.<span class="fn">write</span>(html)
+
+<span class="cm"># to_markdown — great for README/documentation</span>
+<span class="fn">print</span>(df.<span class="fn">head</span>().<span class="fn">to_markdown</span>())</pre>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Final Practice MCQs — 20 Questions</h2><p>Chaining, window functions, performance, and the full course. Pass: 16/20.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPSTONE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#B45309,#0D9488)">🏆</div>
+    <div><h2>Capstone Project — Full Business Analytics Pipeline</h2><p>Estimated time: 3–4 hours &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐ &nbsp;|&nbsp; Uses ALL 5 days</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>📋 Project Brief — UrbanMart Retail Analytics</h3>
+      <p>You are the <strong>Lead Data Analyst</strong> at <em>UrbanMart</em>, a multi-city retail chain. You've been given 2 years of raw, messy transaction data across customers, products, and stores. Build a <strong>complete end-to-end analytics pipeline</strong>: ingest and clean the data, merge related tables, engineer features, analyse trends over time, rank performance, and deliver an executive dashboard report — using everything from Days 1–5.</p>
+      <span class="cap-badge">Day 1: DataFrames &amp; Selection</span>
+      <span class="cap-badge">Day 2: Cleaning &amp; Types</span>
+      <span class="cap-badge">Day 3: GroupBy &amp; Merge</span>
+      <span class="cap-badge">Day 4: Time Series</span>
+      <span class="cap-badge">Day 5: Chaining &amp; Performance</span>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#B45309">1</div><h4>Phase 1 — Generate the Messy Multi-Table Dataset</h4><span class="phase-time">~25 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build 4 Related Tables with Realistic Messiness</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+<span class="kw">import</span> numpy  <span class="kw">as</span> <span class="op">np</span>
+
+rng = <span class="op">np</span>.random.<span class="fn">default_rng</span>(<span class="nm">2025</span>)
+
+<span class="cm"># TABLE 1: Stores</span>
+stores = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'StoreID'</span>: <span class="fn">range</span>(<span class="nm">1</span>,<span class="nm">9</span>),
+    <span class="st">'City'</span>   : [<span class="st">'Mumbai'</span>,<span class="st">'Delhi'</span>,<span class="st">'Bangalore'</span>,<span class="st">'Pune'</span>,
+                <span class="st">'Chennai'</span>,<span class="st">'Hyderabad'</span>,<span class="st">'Kolkata'</span>,<span class="st">'Jaipur'</span>],
+    <span class="st">'Region'</span> : [<span class="st">'West'</span>,<span class="st">'North'</span>,<span class="st">'South'</span>,<span class="st">'West'</span>,
+                <span class="st">'South'</span>,<span class="st">'South'</span>,<span class="st">'East'</span>,<span class="st">'North'</span>]
+})
+
+<span class="cm"># TABLE 2: Products</span>
+products = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'ProductID'</span>: <span class="fn">range</span>(<span class="nm">101</span>,<span class="nm">121</span>),
+    <span class="st">'Category'</span> : rng.<span class="fn">choice</span>([<span class="st">'Grocery'</span>,<span class="st">'Electronics'</span>,<span class="st">'Apparel'</span>,<span class="st">'Home'</span>], <span class="nm">20</span>),
+    <span class="st">'UnitCost'</span> : rng.<span class="fn">uniform</span>(<span class="nm">50</span>, <span class="nm">15000</span>, <span class="nm">20</span>).<span class="fn">round</span>(<span class="nm">2</span>)
+})
+products[<span class="st">'UnitPrice'</span>] = (products[<span class="st">'UnitCost'</span>] * rng.<span class="fn">uniform</span>(<span class="nm">1.2</span>,<span class="nm">1.8</span>,<span class="nm">20</span>)).<span class="fn">round</span>(<span class="nm">2</span>)
+
+<span class="cm"># TABLE 3: Customers (with messy fields)</span>
+n_cust = <span class="nm">300</span>
+customers = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'CustID'</span>    : <span class="fn">range</span>(<span class="nm">1</span>, n_cust+<span class="nm">1</span>),
+    <span class="st">'Name'</span>      : [<span class="st">f'  Customer_{i} '</span> <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>,n_cust+<span class="nm">1</span>)],
+    <span class="st">'SignupDate'</span>: <span class="op">pd</span>.<span class="fn">to_datetime</span>(<span class="st">'2023-01-01'</span>) + <span class="op">pd</span>.<span class="fn">to_timedelta</span>(rng.<span class="fn">integers</span>(<span class="nm">0</span>,<span class="nm">500</span>,n_cust), unit=<span class="st">'D'</span>),
+    <span class="st">'Segment'</span>   : rng.<span class="fn">choice</span>([<span class="st">'regular'</span>,<span class="st">'REGULAR'</span>,<span class="st">'premium'</span>,<span class="st">'PREMIUM'</span>,<span class="st">'vip'</span>], n_cust)
+})
+
+<span class="cm"># TABLE 4: Transactions (messy, 2 years, some invalid refs)</span>
+n_txn = <span class="nm">5000</span>
+transactions = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'TxnID'</span>    : <span class="fn">range</span>(<span class="nm">1</span>, n_txn+<span class="nm">1</span>),
+    <span class="st">'CustID'</span>   : rng.<span class="fn">choice</span>(<span class="fn">range</span>(<span class="nm">1</span>, n_cust+<span class="nm">15</span>), n_txn),  <span class="cm"># some invalid CustIDs</span>
+    <span class="st">'StoreID'</span>  : rng.<span class="fn">choice</span>(<span class="fn">range</span>(<span class="nm">1</span>,<span class="nm">9</span>), n_txn),
+    <span class="st">'ProductID'</span>: rng.<span class="fn">choice</span>(<span class="fn">range</span>(<span class="nm">101</span>,<span class="nm">121</span>), n_txn),
+    <span class="st">'Quantity'</span> : rng.<span class="fn">choice</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>,<span class="nm">5</span>,-<span class="nm">1</span>], n_txn, p=[<span class="nm">0.3</span>,<span class="nm">0.25</span>,<span class="nm">0.2</span>,<span class="nm">0.15</span>,<span class="nm">0.05</span>,<span class="nm">0.05</span>]),
+    <span class="st">'TxnDate'</span>  : <span class="op">pd</span>.<span class="fn">to_datetime</span>(<span class="st">'2023-01-01'</span>) + <span class="op">pd</span>.<span class="fn">to_timedelta</span>(rng.<span class="fn">integers</span>(<span class="nm">0</span>,<span class="nm">730</span>,n_txn), unit=<span class="st">'D'</span>),
+    <span class="st">'PaymentType'</span>: rng.<span class="fn">choice</span>([<span class="st">'Card'</span>,<span class="st">'card'</span>,<span class="st">'CASH'</span>,<span class="st">'cash'</span>,<span class="st">'UPI'</span>,<span class="st">'upi'</span>], n_txn)
+})
+
+<span class="cm"># Add 100 duplicate transactions</span>
+transactions = <span class="op">pd</span>.<span class="fn">concat</span>([transactions, transactions.<span class="fn">sample</span>(<span class="nm">100</span>, random_state=<span class="nm">1</span>)], ignore_index=<span class="kw">True</span>)
+
+<span class="fn">print</span>(<span class="st">f"Stores:{stores.shape} Products:{products.shape} Customers:{customers.shape} Transactions:{transactions.shape}"</span>)</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Clean Every Table</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Clean Customers &amp; Transactions Using Method Chains</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Clean customers with a chain</span>
+customers_clean = (
+    customers
+    .<span class="fn">assign</span>(
+        Name    = <span class="kw">lambda</span> x: x[<span class="st">'Name'</span>].<span class="fn">str</span>.<span class="fn">strip</span>(),
+        Segment = <span class="kw">lambda</span> x: x[<span class="st">'Segment'</span>].<span class="fn">str</span>.<span class="fn">lower</span>()
+    )
+)
+
+<span class="cm"># Clean transactions: dedupe, fix qty, standardise payment type</span>
+transactions_clean = (
+    transactions
+    .<span class="fn">drop_duplicates</span>(subset=<span class="st">'TxnID'</span>)                        <span class="cm"># remove dup rows</span>
+    .<span class="fn">query</span>(<span class="st">'Quantity > 0'</span>)                                <span class="cm"># drop invalid negative quantity</span>
+    .<span class="fn">assign</span>(PaymentType = <span class="kw">lambda</span> x: x[<span class="st">'PaymentType'</span>].<span class="fn">str</span>.<span class="fn">lower</span>())
+)
+
+<span class="fn">print</span>(<span class="st">f"Transactions: {len(transactions)} → {len(transactions_clean)} after cleaning"</span>)
+<span class="fn">print</span>(transactions_clean[<span class="st">'PaymentType'</span>].<span class="fn">value_counts</span>())</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Diagnose &amp; Handle Referential Integrity Issues</h5>
+          <p>Find transactions referencing CustIDs that don't exist in the customers table. Decide: keep as "Guest" purchases or drop? Document your decision and implement it.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Merge &amp; Feature Engineering</h4><span class="phase-time">~35 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build the Master Analytical Table</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>master = (
+    transactions_clean
+    .<span class="fn">merge</span>(products, on=<span class="st">'ProductID'</span>, how=<span class="st">'left'</span>)
+    .<span class="fn">merge</span>(stores, on=<span class="st">'StoreID'</span>, how=<span class="st">'left'</span>)
+    .<span class="fn">merge</span>(customers_clean, on=<span class="st">'CustID'</span>, how=<span class="st">'left'</span>, indicator=<span class="st">'cust_status'</span>)
+    .<span class="fn">assign</span>(
+        Revenue = <span class="kw">lambda</span> x: x[<span class="st">'Quantity'</span>] * x[<span class="st">'UnitPrice'</span>],
+        Profit  = <span class="kw">lambda</span> x: x[<span class="st">'Quantity'</span>] * (x[<span class="st">'UnitPrice'</span>] - x[<span class="st">'UnitCost'</span>]),
+        Segment = <span class="kw">lambda</span> x: x[<span class="st">'Segment'</span>].<span class="fn">fillna</span>(<span class="st">'guest'</span>)
+    )
+)
+<span class="fn">print</span>(<span class="st">f"Master table: {master.shape}"</span>)
+<span class="fn">print</span>(master[<span class="st">'cust_status'</span>].<span class="fn">value_counts</span>())</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Engineer Time and Ranking Features</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>master[<span class="st">'Year'</span>]    = master[<span class="st">'TxnDate'</span>].dt.year
+master[<span class="st">'Month'</span>]   = master[<span class="st">'TxnDate'</span>].dt.<span class="fn">to_period</span>(<span class="st">'M'</span>).<span class="fn">astype</span>(<span class="fn">str</span>)
+master[<span class="st">'Quarter'</span>] = master[<span class="st">'TxnDate'</span>].dt.<span class="fn">to_period</span>(<span class="st">'Q'</span>).<span class="fn">astype</span>(<span class="fn">str</span>)
+master[<span class="st">'DayOfWeek'</span>]=master[<span class="st">'TxnDate'</span>].dt.day_name()
+
+<span class="cm"># Store performance rank (window function)</span>
+store_rev = master.<span class="fn">groupby</span>(<span class="st">'StoreID'</span>)[<span class="st">'Revenue'</span>].<span class="fn">transform</span>(<span class="st">'sum'</span>)
+master[<span class="st">'StoreRevRank'</span>] = store_rev.<span class="fn">rank</span>(ascending=<span class="kw">False</span>, method=<span class="st">'dense'</span>).<span class="fn">astype</span>(<span class="fn">int</span>)
+
+<span class="cm"># Customer lifetime value so far (cumulative)</span>
+master = master.<span class="fn">sort_values</span>(<span class="st">'TxnDate'</span>)
+master[<span class="st">'CustCumRevenue'</span>] = master.<span class="fn">groupby</span>(<span class="st">'CustID'</span>)[<span class="st">'Revenue'</span>].<span class="fn">cumsum</span>()</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div><h4>Phase 4 — Time Series &amp; Trend Analysis</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Monthly Revenue Trend with Rolling Average</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>monthly_rev = (
+    master.<span class="fn">groupby</span>(<span class="st">'Month'</span>)[<span class="st">'Revenue'</span>]
+    .<span class="fn">sum</span>()
+    .<span class="fn">to_frame</span>()
+    .<span class="fn">assign</span>(
+        MoM_Growth   = <span class="kw">lambda</span> x: x[<span class="st">'Revenue'</span>].<span class="fn">pct_change</span>() * <span class="nm">100</span>,
+        Rolling3Month= <span class="kw">lambda</span> x: x[<span class="st">'Revenue'</span>].<span class="fn">rolling</span>(<span class="nm">3</span>).<span class="fn">mean</span>()
+    )
+)
+<span class="fn">print</span>(monthly_rev)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>City × Quarter Pivot Table with MultiIndex</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>city_quarter = master.<span class="fn">groupby</span>([<span class="st">'City'</span>,<span class="st">'Quarter'</span>]).<span class="fn">agg</span>(
+    revenue=(<span class="st">'Revenue'</span>,<span class="st">'sum'</span>), profit=(<span class="st">'Profit'</span>,<span class="st">'sum'</span>), orders=(<span class="st">'TxnID'</span>,<span class="st">'count'</span>)
+)
+<span class="fn">print</span>(city_quarter.<span class="fn">xs</span>(<span class="st">'2024Q4'</span>, level=<span class="st">'Quarter'</span>).<span class="fn">sort_values</span>(<span class="st">'revenue'</span>, ascending=<span class="kw">False</span>))
+
+pivot_city_month = <span class="op">pd</span>.<span class="fn">pivot_table</span>(master, values=<span class="st">'Revenue'</span>, index=<span class="st">'City'</span>,
+                               columns=<span class="st">'Quarter'</span>, aggfunc=<span class="st">'sum'</span>, fill_value=<span class="nm">0</span>, margins=<span class="kw">True</span>)</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">5</div><h4>Phase 5 — Customer Segmentation &amp; Rankings</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build an RFM-Style Customer Table</h5>
+          <p>Recency, Frequency, Monetary — the classic customer segmentation framework.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>snapshot_date = master[<span class="st">'TxnDate'</span>].<span class="fn">max</span>() + <span class="op">pd</span>.<span class="fn">Timedelta</span>(days=<span class="nm">1</span>)
+
+rfm = master.<span class="fn">groupby</span>(<span class="st">'CustID'</span>).<span class="fn">agg</span>(
+    Recency   = (<span class="st">'TxnDate'</span>, <span class="kw">lambda</span> x: (snapshot_date - x.<span class="fn">max</span>()).days),
+    Frequency = (<span class="st">'TxnID'</span>, <span class="st">'count'</span>),
+    Monetary  = (<span class="st">'Revenue'</span>, <span class="st">'sum'</span>)
+).<span class="fn">reset_index</span>()
+
+<span class="cm"># Score each dimension into quartiles (1=worst, 4=best)</span>
+rfm[<span class="st">'R_Score'</span>] = <span class="op">pd</span>.<span class="fn">qcut</span>(rfm[<span class="st">'Recency'</span>], <span class="nm">4</span>, labels=[<span class="nm">4</span>,<span class="nm">3</span>,<span class="nm">2</span>,<span class="nm">1</span>])   <span class="cm"># lower recency = better</span>
+rfm[<span class="st">'F_Score'</span>] = <span class="op">pd</span>.<span class="fn">qcut</span>(rfm[<span class="st">'Frequency'</span>].<span class="fn">rank</span>(method=<span class="st">'first'</span>), <span class="nm">4</span>, labels=[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>])
+rfm[<span class="st">'M_Score'</span>] = <span class="op">pd</span>.<span class="fn">qcut</span>(rfm[<span class="st">'Monetary'</span>], <span class="nm">4</span>, labels=[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>])
+
+rfm[<span class="st">'RFM_Score'</span>] = (rfm[<span class="st">'R_Score'</span>].<span class="fn">astype</span>(<span class="fn">int</span>) + rfm[<span class="st">'F_Score'</span>].<span class="fn">astype</span>(<span class="fn">int</span>) + rfm[<span class="st">'M_Score'</span>].<span class="fn">astype</span>(<span class="fn">int</span>))
+
+<span class="cm"># Segment based on total score</span>
+conditions = [rfm[<span class="st">'RFM_Score'</span>]>=<span class="nm">10</span>, rfm[<span class="st">'RFM_Score'</span>]>=<span class="nm">7</span>, rfm[<span class="st">'RFM_Score'</span>]>=<span class="nm">4</span>]
+choices    = [<span class="st">'Champions'</span>, <span class="st">'Loyal'</span>, <span class="st">'At Risk'</span>]
+rfm[<span class="st">'CustomerSegment'</span>] = <span class="op">np</span>.<span class="fn">select</span>(conditions, choices, default=<span class="st">'Lost'</span>)
+
+<span class="fn">print</span>(rfm[<span class="st">'CustomerSegment'</span>].<span class="fn">value_counts</span>())
+<span class="fn">print</span>(rfm.<span class="fn">nlargest</span>(<span class="nm">5</span>, <span class="st">'Monetary'</span>)[[<span class="st">'CustID'</span>,<span class="st">'Recency'</span>,<span class="st">'Frequency'</span>,<span class="st">'Monetary'</span>,<span class="st">'CustomerSegment'</span>]])</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">6</div><h4>Phase 6 — Final Executive Dashboard Report</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Export Everything &amp; Print the Final Report</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="cm"># Save all deliverables</span>
+master.<span class="fn">to_csv</span>(<span class="st">'urbanmart_master.csv'</span>, index=<span class="kw">False</span>)
+rfm.<span class="fn">to_csv</span>(<span class="st">'urbanmart_customer_segments.csv'</span>, index=<span class="kw">False</span>)
+
+<span class="kw">with</span> <span class="op">pd</span>.<span class="fn">ExcelWriter</span>(<span class="st">'urbanmart_dashboard.xlsx'</span>) <span class="kw">as</span> writer:
+    monthly_rev.<span class="fn">to_excel</span>(writer, sheet_name=<span class="st">'Monthly Trend'</span>)
+    pivot_city_month.<span class="fn">to_excel</span>(writer, sheet_name=<span class="st">'City x Quarter'</span>)
+    rfm.<span class="fn">to_excel</span>(writer, sheet_name=<span class="st">'Customer Segments'</span>, index=<span class="kw">False</span>)
+
+<span class="fn">print</span>(<span class="st">"All deliverables saved ✅"</span>)</pre></div>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">EXPECTED FINAL REPORT</span></div>
+<pre>═══════════════════════════════════════════════
+     URBANMART — EXECUTIVE DASHBOARD REPORT
+═══════════════════════════════════════════════
+DATA PIPELINE SUMMARY
+  Raw Transactions   : 5,100
+  After Cleaning     : ???  (removed ??? dupes, ??? invalid qty)
+  Guest Purchases    : ??? (CustID not in customer master)
+
+REVENUE OVERVIEW
+  Total Revenue      : ₹??,??,???
+  Total Profit       : ₹??,??,???
+  Profit Margin      : ??.?%
+  Avg Order Value    : ₹?,???
+
+TOP PERFORMERS
+  Best Store         : ??? in ??? (₹??,??,???)
+  Best Category      : ??? (₹??,??,???)
+  Best Month         : ??? (₹??,??,???)
+
+MONTHLY TREND (Last 3 Months)
+  ???: ₹??,??,???  (MoM: ??.?%)
+  ???: ₹??,??,???  (MoM: ??.?%)
+  ???: ₹??,??,???  (MoM: ??.?%)
+
+CUSTOMER SEGMENTS (RFM Analysis)
+  Champions  : ??? customers (₹??,??,??? revenue)
+  Loyal      : ??? customers (₹??,??,??? revenue)
+  At Risk    : ??? customers (₹??,??,??? revenue)
+  Lost       : ??? customers (₹??,??,??? revenue)
+
+REGIONAL BREAKDOWN
+  North : ₹??,??,???   South : ₹??,??,???
+  East  : ₹??,??,???   West  : ₹??,??,???
+
+FILES DELIVERED
+  ✅ urbanmart_master.csv
+  ✅ urbanmart_customer_segments.csv
+  ✅ urbanmart_dashboard.xlsx (3 sheets)
+═══════════════════════════════════════════════</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Capstone Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated 4 related tables: Stores, Products, Customers, Transactions with realistic messiness</li>
+        <li>Cleaned customers and transactions using method chaining (assign, query, str methods)</li>
+        <li>Removed duplicate transactions and invalid quantities</li>
+        <li>Diagnosed referential integrity issues (invalid CustIDs) using merge indicator</li>
+        <li>Built master table by merging all 4 tables with method chaining</li>
+        <li>Computed Revenue and Profit columns</li>
+        <li>Extracted Year, Month, Quarter, DayOfWeek from transaction dates</li>
+        <li>Built store revenue ranking using groupby + transform + rank</li>
+        <li>Computed customer cumulative revenue (running total) per customer</li>
+        <li>Built monthly revenue trend with MoM growth and 3-month rolling average</li>
+        <li>Built City × Quarter pivot table with margins</li>
+        <li>Used xs() to cross-section a specific quarter from MultiIndex groupby</li>
+        <li>Built complete RFM (Recency, Frequency, Monetary) customer segmentation</li>
+        <li>Used pd.qcut() to create quartile-based scores</li>
+        <li>Classified customers into 4 segments using np.select</li>
+        <li>Exported master data, customer segments, and multi-sheet Excel dashboard</li>
+        <li>Printed complete formatted executive report</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges — Prove Mastery</div>
+      <ol style="margin-top:8px;">
+        <li><strong>Cohort Retention</strong>: Group customers by signup month, track what % of each cohort made a purchase in each subsequent month. Build a cohort heatmap table.</li>
+        <li><strong>Product Affinity</strong>: Find which product categories are frequently bought together by the same customer within 7 days (market basket analysis basics).</li>
+        <li><strong>Anomaly Detection</strong>: Flag transactions where Revenue is more than 3 standard deviations from that store's mean transaction value.</li>
+        <li><strong>Forecast Prep</strong>: Build a clean monthly time series ready for forecasting — fill any missing months with 0, ensure a continuous DatetimeIndex with proper frequency.</li>
+      </ol>
+    </div>
+
+    <div class="certificate">
+      <div class="cert-title">Certificate of Completion</div>
+      <h2>Pandas Full Course</h2>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">This certifies that you have completed all 5 days of</div>
+      <div class="cert-name">🐼 Pandas Mastery Track</div>
+      <p>You have built expertise in data structures, cleaning, joining, time series, and building complete analytical pipelines — all in Pandas.</p>
+      <div class="cert-skills">
+        <span class="cert-skill">✓ Series &amp; DataFrames</span>
+        <span class="cert-skill">✓ loc / iloc</span>
+        <span class="cert-skill">✓ Data Cleaning</span>
+        <span class="cert-skill">✓ String Methods</span>
+        <span class="cert-skill">✓ GroupBy</span>
+        <span class="cert-skill">✓ Merge &amp; Join</span>
+        <span class="cert-skill">✓ Pivot Tables</span>
+        <span class="cert-skill">✓ Time Series</span>
+        <span class="cert-skill">✓ Window Functions</span>
+        <span class="cert-skill">✓ Full Pipeline</span>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--muted);">⭐ 100 MCQs passed &nbsp;|&nbsp; 5 Real-World Projects &nbsp;|&nbsp; 1 Full Analytics Capstone</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Pandas Full Course — Complete! 🎉</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Series &amp; DataFrames</span>
+    <span class="day-pill done">Day 2 · Data Cleaning</span>
+    <span class="day-pill done">Day 3 · GroupBy &amp; Merge</span>
+    <span class="day-pill done">Day 4 · Time Series</span>
+    <span class="day-pill done active">Day 5 · Capstone ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">Next up: <strong>Matplotlib</strong> — visualise everything you've analysed!</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What is the main advantage of method chaining over step-by-step reassignment?",opts:["It's always faster to execute","No intermediate variables clutter the code, and it reads as a clear top-to-bottom pipeline","It uses less memory always","It's required syntax in Pandas 2.0"],ans:1,explain:"Method chaining avoids creating df1, df2, df3... intermediate variables. The code reads like a recipe of transformations applied in sequence, matching modern data pipeline styles (dplyr, dbt, Spark)."},
+  {code:"df.groupby('Dept')['Salary'].rank(ascending=False)",q:"What does this compute?",opts:["Overall rank across the whole DataFrame","Rank of Salary WITHIN each department separately — ranks reset per group","A single rank value for each department","Sorts the DataFrame by Salary"],ans:1,explain:"groupby before rank() means ranking happens SEPARATELY within each group. Each department's salaries are ranked 1,2,3... independently — like SQL's RANK() OVER (PARTITION BY Dept)."},
+  {q:"What does `df.groupby('Dept').cumcount()` return?",opts:["Total count of rows per department","A 0-indexed row number WITHIN each group (like SQL ROW_NUMBER())","The cumulative sum of a column","The number of unique departments"],ans:1,explain:"cumcount() gives each row a sequential number (starting at 0) within its group. Row 0,1,2... for Eng; then 0,1,2... resets for HR. It's the Pandas equivalent of SQL's ROW_NUMBER() OVER (PARTITION BY...)."},
+  {q:"Approximately how much faster is a vectorised operation compared to a Python for-loop for the same task on 100,000 rows?",opts:["About 2x faster","About 10x faster","Typically 100-1000x faster","No difference — Pandas doesn't vectorise"],ans:2,explain:"Vectorised operations run compiled C code across the entire array at once. Python loops (including iterrows()) have massive per-iteration overhead. The speedup is typically 100-1000x for simple arithmetic, sometimes more."},
+  {q:"Which is the correct speed hierarchy from FASTEST to SLOWEST?",opts:["iterrows() > apply() > vectorised","apply() > vectorised > iterrows()","vectorised > apply() > iterrows()","They are all equally fast"],ans:2,explain:"Vectorised operations (using built-in Pandas/NumPy functions) are fastest because they run in C. apply() is next — a Python function called per element/row, but still has some optimization. iterrows() is slowest — explicit Python loop with heavy overhead per row."},
+  {code:"df['Tier'] = df['Price'].apply(lambda x: 'High' if x > 500 else 'Low')",q:"What is the FASTER vectorised equivalent?",opts:["df['Tier'] = df['Price'].map('High' if > 500 else 'Low')","df['Tier'] = np.where(df['Price'] > 500, 'High', 'Low')","df['Tier'] = df.query('Price > 500')","There is no vectorised alternative"],ans:1,explain:"np.where(condition, if_true, if_false) is the vectorised equivalent of an apply() with if-else logic. It runs at C speed across the whole array instead of calling a Python lambda for every single row."},
+  {q:"What does `pd.to_numeric(df['ID'], downcast='integer')` do?",opts:["Converts ID to a string","Automatically shrinks the integer dtype (e.g., int64→int8) to the smallest type that still fits the data, saving memory","Rounds the values to integers","Deletes non-numeric IDs"],ans:1,explain:"downcast='integer' finds the smallest integer subtype (int8, int16, int32) that can hold all the values without loss, reducing memory footprint — very useful for large datasets with small ID ranges."},
+  {code:"df['Dept'] = df['Dept'].astype('category')",q:"Why would you do this for a column with only 5 unique repeated values across 1 million rows?",opts:["To convert Dept into numbers","To dramatically reduce memory usage — category stores each unique value once plus integer codes, instead of repeating full strings","To make the column immutable","To enable string methods only"],ans:1,explain:"The 'category' dtype stores the unique values once and represents each row as a small integer code pointing to that value. For low-cardinality string columns (few unique values, many rows), this can reduce memory by 90%+ compared to storing the full string in every row."},
+  {q:"What does `pd.read_csv('huge.csv', chunksize=100000)` enable?",opts:["Reads only the first 100,000 rows","Returns an iterator that yields the file in chunks of 100,000 rows, letting you process files larger than memory","Compresses the file","Reads 100,000 columns at a time"],ans:1,explain:"chunksize returns a TextFileReader iterator instead of loading the whole file at once. You can loop through and process each chunk separately, enabling analysis of files too large to fit in memory all at once."},
+  {code:"df.style.background_gradient(subset=['Salary'], cmap='Greens')",q:"What does this do?",opts:["Changes the DataFrame's actual values","Applies a visual color gradient to the Salary column when rendered as HTML/Jupyter output — doesn't change underlying data","Sorts by Salary","Converts Salary to green text always"],ans:1,explain:".style methods create a Styler object for VISUAL presentation only — colors, highlighting, formatting — without modifying the actual DataFrame data. It's used for polished reports and Jupyter notebook display."},
+  {q:"In an RFM (Recency, Frequency, Monetary) analysis, what does 'Recency' measure?",opts:["Total number of purchases","Total money spent","How recently a customer made their last purchase (days since last order)","The customer's registration date"],ans:2,explain:"Recency measures how recently a customer engaged (e.g., days since their last purchase). Lower recency (more recent) is generally better/more valuable — a customer who bought yesterday is more engaged than one who bought a year ago."},
+  {code:"pd.qcut(rfm['Monetary'], 4, labels=[1,2,3,4])",q:"What does this do?",opts:["Cuts the data into 4 equal-WIDTH bins","Cuts the data into 4 equal-SIZE groups (quartiles) — each label gets roughly the same NUMBER of customers","Filters for only 4 customers","Removes outliers"],ans:1,explain:"qcut (quantile cut) creates bins with approximately EQUAL NUMBER of observations in each — quartiles by default with 4 bins. This differs from pd.cut() which creates bins of equal WIDTH regardless of how many points fall in each."},
+  {q:"What is the purpose of the `pipe()` method in a chain?",opts:["To filter rows","To insert a CUSTOM function into a method chain, keeping the fluent chaining style even for non-Pandas-native operations","To merge two DataFrames","To sort values"],ans:1,explain:"pipe(func, *args) lets you call your own custom function as part of a chain: df.pipe(my_function, arg1). It maintains the chaining flow instead of breaking it to call my_function(df) separately, which would require an intermediate variable."},
+  {code:"master.groupby('CustID')['Revenue'].cumsum()",q:"What does this compute for each customer's transaction row?",opts:["Total revenue for that customer only","A RUNNING TOTAL of revenue up to and including that transaction, resetting per customer","Average revenue per transaction","The single highest transaction value"],ans:1,explain:"cumsum() within a groupby computes a running/cumulative sum that resets for each group. For a customer's 3rd transaction, it shows total revenue from transactions 1+2+3 — building up a customer's cumulative lifetime value over time."},
+  {q:"Why use `indicator=True` when merging transactions with a customers table?",opts:["It makes the merge faster","It adds a column showing whether each row matched in both tables, only the left, or only the right — critical for finding orphaned/invalid foreign keys","It automatically fixes bad data","It's required syntax for merge()"],ans:1,explain:"indicator=True is essential for data quality checks. It reveals rows where the merge key (e.g., CustID) didn't find a match — often signaling data integrity issues like transactions referencing deleted or invalid customer records."},
+  {q:"What does `df.groupby('StoreID')['Revenue'].transform('sum')` return, in terms of shape?",opts:["One row per store (summary)","The SAME number of rows as the original DataFrame, with each row showing its store's total revenue repeated","A single total value","An error"],ans:1,explain:"transform() always returns a result matching the ORIGINAL DataFrame's row count. Every transaction row gets its store's total revenue value repeated — useful for ranking or comparing individual transactions against their store's total."},
+  {q:"When exporting a multi-sheet Excel report, which syntax is correct?",opts:["df.to_excel('out.xlsx', sheets=[df1,df2])","with pd.ExcelWriter('out.xlsx') as writer: df1.to_excel(writer, sheet_name='A'); df2.to_excel(writer, sheet_name='B')","pd.concat([df1,df2]).to_excel('out.xlsx')","df1.to_excel('out.xlsx'); df2.to_excel('out.xlsx')"],ans:1,explain:"Multiple sheets require an ExcelWriter context manager. Each DataFrame is written with its own to_excel() call, specifying a different sheet_name, all within the same 'with' block so they land in one file."},
+  {code:"master.groupby(['City','Quarter']).agg(revenue=('Revenue','sum')).xs('2024Q4', level='Quarter')",q:"What does the xs() call return?",opts:["Total revenue across all cities and quarters","Revenue for ALL cities specifically in Quarter 2024Q4 — a cross-section across the City dimension","Only the first city's data","An error since xs requires both levels"],ans:1,explain:"xs() with level='Quarter' fixes the Quarter dimension to '2024Q4' while keeping all values of the other index level (City). This returns a cross-section — one row per City, all showing their 2024Q4 revenue."},
+  {q:"What is the benefit of downcasting float64 to float32 for a large dataset?",opts:["Improves precision","Halves memory usage per value (4 bytes vs 8 bytes), which matters significantly for datasets with millions of rows","Makes calculations more accurate","Required for CSV export"],ans:1,explain:"float32 uses 4 bytes vs float64's 8 bytes — literally half the memory. For a column with 10 million rows, that's 40MB saved instead of 80MB. The tradeoff is reduced precision (~7 decimal digits vs ~15), usually acceptable for typical business data."},
+  {q:"Which describes the overall purpose of the Day 5 capstone project's pipeline structure?",opts:["To test only SQL knowledge","To demonstrate a complete, realistic, end-to-end analytics workflow: raw messy data → cleaning → merging → feature engineering → time analysis → segmentation → reporting","To only practice merge()","To avoid using groupby"],ans:1,explain:"The capstone mirrors a REAL analytics job: start with messy multi-table raw data, clean it, join related tables, engineer new features (revenue, time components, rankings), analyze trends over time, segment customers, and deliver a polished report — using every skill from Days 1-5 together."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review method chaining and window functions, then try again! 📚"],[50,75,"Almost there! Focus on performance and RFM concepts. 💪"],[75,90,"Strong finish! You've completed the Pandas course. 🎉"],[90,101,"Perfect score — Pandas Master achieved! 🏆🐼"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — Course Complete! 5 days × 20 MCQs = 100 total questions.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>
