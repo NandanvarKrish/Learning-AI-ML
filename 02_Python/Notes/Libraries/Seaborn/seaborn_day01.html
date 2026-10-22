@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn – Day 1 | Statistical Plots & Themes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FDF2F8;--surface:#FFFFFF;--border:#FBCFE8;--accent:#BE185D;--accent2:#831843;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;
+    --text:#3F0A24;--muted:#9D174D;--code-bg:#22040F;--code-text:#FBCFE8;--tag-bg:#FCE7F3;--tag-text:#831843;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(190,24,93,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#BE185D 0%,#831843 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#FBCFE8;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#EC4899;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#F9A8D4;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#831843;font-style:italic;} .op{color:#FBCFE8;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#831843,#BE185D);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .theme-swatch{display:inline-block;width:90px;height:40px;border-radius:6px;margin:4px;font-size:10px;color:#fff;display:flex;align-items:flex-end;padding:4px;font-family:'JetBrains Mono',monospace;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#BE185D,#831843);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#BE185D,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Day 1 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">20%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:20%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Full Course · Day 1</div>
+  <h1>Statistical Plots &amp; <span>Themes</span></h1>
+  <p>Seaborn is built on Matplotlib but designed for statistical graphics with DataFrames. Learn the philosophy, themes, palettes, and your first statistical plots.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🌊 What is Seaborn</span>
+    <span class="hero-pill">🎨 Themes &amp; Contexts</span>
+    <span class="hero-pill">🌈 Color Palettes</span>
+    <span class="hero-pill">📊 Figure-level vs Axes-level</span>
+    <span class="hero-pill">📈 relplot &amp; scatterplot</span>
+    <span class="hero-pill">📉 lineplot</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🌊</div>
+    <div><h2>What is Seaborn &amp; Why It Matters</h2><p>Statistical visualization, built for tidy DataFrames</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>Seaborn</strong> is a statistical data visualization library built on top of Matplotlib, created by Michael Waskom. While Matplotlib gives you full control over every pixel, Seaborn gives you <strong>beautiful defaults</strong> and <strong>DataFrame-native syntax</strong> for common statistical questions.</p>
+
+    <div class="fbox">
+      <div class="ft">🌊 Matplotlib vs Seaborn</div>
+      <div class="fm">Matplotlib: ax.scatter(df['x'], df['y'])         ← manual column access</div>
+      <div class="fm">Seaborn:    sns.scatterplot(data=df, x='x', y='y', hue='category')</div>
+      <div class="fnote">Seaborn understands "tidy" DataFrames directly — pass column NAMES, not raw arrays. hue/size/style auto-map extra dimensions.</div>
+    </div>
+
+    <h3>Installation &amp; Import Convention</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Install</span>
+pip install seaborn
+
+<span class="cm"># Standard imports — ALWAYS these three together</span>
+<span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+
+<span class="cm"># Seaborn ships with famous built-in practice datasets</span>
+tips     = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)       <span class="cm"># restaurant bills &amp; tips</span>
+titanic  = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'titanic'</span>)    <span class="cm"># passenger survival data</span>
+iris     = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'iris'</span>)       <span class="cm"># flower measurements</span>
+penguins = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'penguins'</span>)   <span class="cm"># penguin species data</span>
+flights  = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'flights'</span>)    <span class="cm"># monthly airline passengers</span>
+
+<span class="fn">print</span>(tips.head())
+<span class="cm">#    total_bill   tip     sex smoker  day    time  size
+# 0       16.99  1.01  Female     No  Sun  Dinner     2
+# 1       10.34  1.66    Male     No  Sun  Dinner     3</span></pre>
+    </div>
+
+    <h3>Why Every Data Scientist Uses Seaborn</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Feature</th><th>Benefit</th></tr>
+        <tr><td><strong>DataFrame-native</strong></td><td>Pass column names, not raw arrays — works directly with Pandas</td></tr>
+        <tr><td><strong>Automatic statistics</strong></td><td>Confidence intervals, regression lines, KDE — computed for you</td></tr>
+        <tr><td><strong>hue/size/style mapping</strong></td><td>Encode 3-4 extra dimensions with one parameter each</td></tr>
+        <tr><td><strong>Beautiful defaults</strong></td><td>Professional-looking charts without manual styling</td></tr>
+        <tr><td><strong>Faceting built in</strong></td><td>Small multiples (grids of related charts) in one function call</td></tr>
+        <tr><td><strong>Matplotlib compatible</strong></td><td>Every Seaborn plot returns Matplotlib objects — customize further with ax methods</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🎨</div>
+    <div><h2>Themes &amp; Contexts</h2><p>Global styling that transforms every chart instantly</p></div>
+  </div>
+  <div class="section-body">
+
+    <h3>set_style() — The Visual Theme</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># 5 built-in styles</span>
+<span class="op">sns</span>.<span class="fn">set_style</span>(<span class="st">'darkgrid'</span>)    <span class="cm"># default — gray bg, white gridlines</span>
+<span class="op">sns</span>.<span class="fn">set_style</span>(<span class="st">'whitegrid'</span>)   <span class="cm"># white bg, gray gridlines — good for print</span>
+<span class="op">sns</span>.<span class="fn">set_style</span>(<span class="st">'dark'</span>)        <span class="cm"># gray bg, no gridlines</span>
+<span class="op">sns</span>.<span class="fn">set_style</span>(<span class="st">'white'</span>)       <span class="cm"># clean white bg, no gridlines — minimal</span>
+<span class="op">sns</span>.<span class="fn">set_style</span>(<span class="st">'ticks'</span>)       <span class="cm"># white bg with tick marks — classic/scientific</span>
+
+<span class="cm"># Fine-tune specific style elements</span>
+<span class="op">sns</span>.<span class="fn">set_style</span>(<span class="st">'whitegrid'</span>, {<span class="st">'grid.linestyle'</span>: <span class="st">'--'</span>})
+
+<span class="cm"># Temporarily apply a style (reverts after the 'with' block)</span>
+<span class="kw">with</span> <span class="op">sns</span>.<span class="fn">axes_style</span>(<span class="st">'darkgrid'</span>):
+    fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>()
+    <span class="op">sns</span>.<span class="fn">lineplot</span>(data=flights, x=<span class="st">'year'</span>, y=<span class="st">'passengers'</span>, ax=ax)
+
+<span class="cm"># Remove specific spines cleanly</span>
+<span class="op">sns</span>.<span class="fn">despine</span>()                    <span class="cm"># removes top &amp; right spines (default)</span>
+<span class="op">sns</span>.<span class="fn">despine</span>(left=<span class="kw">True</span>)         <span class="cm"># also remove left spine</span>
+<span class="op">sns</span>.<span class="fn">despine</span>(offset=<span class="nm">10</span>, trim=<span class="kw">True</span>)   <span class="cm"># offset spines from the plot, trim to data range</span></pre>
+    </div>
+
+    <h3>set_context() — Scale for the Medium</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Context controls the SCALE of plot elements (font, lines, markers)
+# for different output media — NOT the color/style</span>
+<span class="op">sns</span>.<span class="fn">set_context</span>(<span class="st">'paper'</span>)      <span class="cm"># smallest — for academic papers</span>
+<span class="op">sns</span>.<span class="fn">set_context</span>(<span class="st">'notebook'</span>)   <span class="cm"># default — for Jupyter notebooks</span>
+<span class="op">sns</span>.<span class="fn">set_context</span>(<span class="st">'talk'</span>)       <span class="cm"># larger — for presentations/talks</span>
+<span class="op">sns</span>.<span class="fn">set_context</span>(<span class="st">'poster'</span>)     <span class="cm"># largest — for printed posters</span>
+
+<span class="cm"># Scale up/down from a context with font_scale</span>
+<span class="op">sns</span>.<span class="fn">set_context</span>(<span class="st">'talk'</span>, font_scale=<span class="nm">1.2</span>)
+
+<span class="cm"># set_theme() — the all-in-one modern setup call (style + context + palette)</span>
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>, context=<span class="st">'notebook'</span>, palette=<span class="st">'deep'</span>, font_scale=<span class="nm">1.1</span>)</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 sns.set_theme() — Do This First, Every Time</div>
+      Modern Seaborn code should start with one <code>sns.set_theme(...)</code> call that configures style, context, and palette together. This single line replaces separate calls and is the current best-practice entry point (introduced in Seaborn 0.11+).
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🌈</div>
+    <div><h2>Color Palettes</h2><p>Choosing colors that communicate the right kind of data</p></div>
+  </div>
+  <div class="section-body">
+
+    <h3>Built-in Palette Categories</h3>
+    <div class="theme-swatch" style="background:linear-gradient(90deg,#4C72B0,#DD8452,#55A868,#C44E52,#8172B3)">deep (qualitative)</div>
+    <div class="theme-swatch" style="background:linear-gradient(90deg,#023EFF,#FF7C00,#1AC938,#E8000B,#8B2BE2)">bright</div>
+    <div class="theme-swatch" style="background:linear-gradient(90deg,#001C7F,#B1400D,#12711C,#8C0800,#591E71)">dark</div>
+    <div class="theme-swatch" style="background:linear-gradient(90deg,#FFF7EC,#FDBB84,#B30000)">Oranges (sequential)</div>
+    <div class="theme-swatch" style="background:linear-gradient(90deg,#67001F,#F7F7F7,#053061)">RdBu (diverging)</div>
+    <div class="theme-swatch" style="background:linear-gradient(90deg,#440154,#3B528B,#21908C,#5DC863,#FDE725)">viridis (perceptual)</div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Named qualitative palettes</span>
+<span class="op">sns</span>.<span class="fn">set_palette</span>(<span class="st">'deep'</span>)       <span class="cm"># default Seaborn palette</span>
+<span class="op">sns</span>.<span class="fn">set_palette</span>(<span class="st">'pastel'</span>)
+<span class="op">sns</span>.<span class="fn">set_palette</span>(<span class="st">'bright'</span>)
+<span class="op">sns</span>.<span class="fn">set_palette</span>(<span class="st">'colorblind'</span>)   <span class="cm"># accessible for colorblind viewers</span>
+
+<span class="cm"># Sequential — for ordered numeric data (low → high)</span>
+<span class="op">sns</span>.<span class="fn">color_palette</span>(<span class="st">'Blues'</span>, as_cmap=<span class="kw">True</span>)
+<span class="op">sns</span>.<span class="fn">color_palette</span>(<span class="st">'viridis'</span>, as_cmap=<span class="kw">True</span>)
+
+<span class="cm"># Diverging — for data with a meaningful midpoint</span>
+<span class="op">sns</span>.<span class="fn">color_palette</span>(<span class="st">'RdBu'</span>, as_cmap=<span class="kw">True</span>)
+<span class="op">sns</span>.<span class="fn">color_palette</span>(<span class="st">'coolwarm'</span>, as_cmap=<span class="kw">True</span>)
+
+<span class="cm"># Custom palette from specific colors</span>
+custom = <span class="op">sns</span>.<span class="fn">color_palette</span>([<span class="st">'#BE185D'</span>,<span class="st">'#0891B2'</span>,<span class="st">'#D97706'</span>])
+<span class="op">sns</span>.<span class="fn">set_palette</span>(custom)
+
+<span class="cm"># Generate N evenly-spaced colors from a continuous colormap</span>
+palette_5 = <span class="op">sns</span>.<span class="fn">color_palette</span>(<span class="st">'viridis'</span>, n_colors=<span class="nm">5</span>)
+
+<span class="cm"># Preview any palette</span>
+<span class="op">sns</span>.<span class="fn">palplot</span>(<span class="op">sns</span>.<span class="fn">color_palette</span>(<span class="st">'deep'</span>))
+
+<span class="cm"># Apply directly to a specific plot (overrides global palette)</span>
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'day'</span>, palette=<span class="st">'Set2'</span>)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Palette Type</th><th>Use When</th><th>Examples</th></tr>
+        <tr><td><strong>Qualitative</strong></td><td>Categories with no order (species, regions)</td><td>deep, pastel, Set1, Set2</td></tr>
+        <tr><td><strong>Sequential</strong></td><td>Numeric data, one direction (low→high)</td><td>Blues, viridis, rocket</td></tr>
+        <tr><td><strong>Diverging</strong></td><td>Numeric data with meaningful zero/center</td><td>RdBu, coolwarm, vlag</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📊</div>
+    <div><h2>Figure-Level vs Axes-Level Functions</h2><p>Seaborn's most important architectural concept</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Every Seaborn plotting function is either <strong>axes-level</strong> (draws onto one Matplotlib Axes, like <code>ax.plot()</code>) or <strong>figure-level</strong> (manages its own Figure, can create multi-panel grids automatically).</p>
+
+    <div class="fbox">
+      <div class="ft">📊 The Critical Distinction</div>
+      <div class="fm">Axes-level:   sns.scatterplot(), sns.lineplot(), sns.boxplot()</div>
+      <div class="fm">Figure-level: sns.relplot(), sns.displot(), sns.catplot()</div>
+      <div class="fnote">Figure-level functions accept `col=` / `row=` to auto-create grids (facets) of subplots. Axes-level functions accept `ax=` to plot into an existing Matplotlib Axes you control.</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># AXES-LEVEL — plots onto a specific ax, integrates with existing Matplotlib code</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">7</span>,<span class="nm">5</span>))
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'time'</span>, ax=ax)
+ax.<span class="fn">set_title</span>(<span class="st">'Bill vs Tip'</span>)   <span class="cm"># customize freely with matplotlib methods after</span>
+
+<span class="cm"># FIGURE-LEVEL — manages the whole figure, can facet into a grid</span>
+g = <span class="op">sns</span>.<span class="fn">relplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'time'</span>,
+                col=<span class="st">'day'</span>,           <span class="cm"># creates ONE subplot per unique 'day' value automatically!</span>
+                kind=<span class="st">'scatter'</span>)
+<span class="cm"># relplot with col='day' produces 4 side-by-side charts, one per day — no manual subplots needed</span>
+
+g.<span class="fn">set_axis_labels</span>(<span class="st">'Total Bill (₹)'</span>, <span class="st">'Tip (₹)'</span>)
+g.<span class="fn">fig</span>.<span class="fn">suptitle</span>(<span class="st">'Tips by Day'</span>, y=<span class="nm">1.03</span>)   <span class="cm"># access the underlying Figure via .fig</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Figure-Level</th><th>Family</th><th>kind= options</th></tr>
+        <tr><td><code>relplot()</code></td><td>Relationships</td><td>'scatter', 'line'</td></tr>
+        <tr><td><code>displot()</code></td><td>Distributions</td><td>'hist', 'kde', 'ecdf'</td></tr>
+        <tr><td><code>catplot()</code></td><td>Categorical</td><td>'strip', 'box', 'violin', 'bar', 'count'</td></tr>
+        <tr><td><code>lmplot()</code></td><td>Regression</td><td>(scatter + regression line)</td></tr>
+        <tr><td><code>pairplot()</code></td><td>Pairwise relationships</td><td>(grid of all variable pairs)</td></tr>
+      </table>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Don't Pass ax= to Figure-Level Functions</div>
+      Figure-level functions (relplot, displot, catplot) manage their OWN figure and don't accept an <code>ax=</code> parameter — they return a Grid object (like FacetGrid), not an Axes. If you need to plot into an existing subplot, use the axes-level equivalent instead (scatterplot, histplot, boxplot).
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">📈</div>
+    <div><h2>relplot() &amp; scatterplot() — Relationships</h2><p>Exploring how two numeric variables relate</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Basic scatter — axes-level</span>
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+
+<span class="cm"># Encode extra dimensions — hue, size, style all in ONE call</span>
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=tips,
+                x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>,
+                hue=<span class="st">'day'</span>,        <span class="cm"># color by category</span>
+                size=<span class="st">'size'</span>,       <span class="cm"># marker size by party size</span>
+                style=<span class="st">'time'</span>,       <span class="cm"># marker shape by Lunch/Dinner</span>
+                palette=<span class="st">'deep'</span>,
+                sizes=(<span class="nm">30</span>, <span class="nm">200</span>))    <span class="cm"># min/max marker size range</span>
+
+<span class="cm"># Figure-level with automatic faceting into a grid</span>
+<span class="op">sns</span>.<span class="fn">relplot</span>(data=tips,
+            x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>,
+            hue=<span class="st">'smoker'</span>,
+            col=<span class="st">'time'</span>,       <span class="cm"># separate subplot per Time value (Lunch/Dinner)</span>
+            row=<span class="st">'sex'</span>,        <span class="cm"># AND separate row per Sex — full 2×2 grid!</span>
+            kind=<span class="st">'scatter'</span>,
+            height=<span class="nm">4</span>, aspect=<span class="nm">1.1</span>)   <span class="cm"># size of EACH facet</span>
+
+<span class="cm"># Wrap many categories into multiple rows</span>
+<span class="op">sns</span>.<span class="fn">relplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>,
+            col=<span class="st">'day'</span>, col_wrap=<span class="nm">2</span>)   <span class="cm"># 4 days → 2×2 grid instead of 1×4</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 The 4-Dimension Scatter</div>
+      With <code>x, y, hue, size, style</code> all set, a single scatterplot encodes <strong>5 variables</strong> at once — 2 positional + 3 aesthetic mappings. Use this power carefully; too many mappings become hard to read. 2-3 mapped dimensions is usually the sweet spot.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📉</div>
+    <div><h2>lineplot() — Trends with Automatic Confidence Intervals</h2><p>Seaborn's superpower: statistical aggregation built in</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Basic line plot</span>
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=flights, x=<span class="st">'year'</span>, y=<span class="st">'passengers'</span>)
+
+<span class="cm"># THE KEY FEATURE: when multiple y-values exist per x, Seaborn
+# automatically computes the MEAN and a 95% CONFIDENCE INTERVAL band!</span>
+fmri = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'fmri'</span>)
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=fmri, x=<span class="st">'timepoint'</span>, y=<span class="st">'signal'</span>)
+<span class="cm"># Shaded band = 95% CI computed automatically from repeated measurements
+# In pure Matplotlib you would need to manually compute this!</span>
+
+<span class="cm"># Multiple lines with hue, styled differently per category</span>
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=fmri, x=<span class="st">'timepoint'</span>, y=<span class="st">'signal'</span>,
+             hue=<span class="st">'region'</span>,      <span class="cm"># separate colored line per region</span>
+             style=<span class="st">'event'</span>,      <span class="cm"># separate linestyle per event type</span>
+             markers=<span class="kw">True</span>, dashes=<span class="kw">False</span>)
+
+<span class="cm"># Control the confidence interval calculation</span>
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=fmri, x=<span class="st">'timepoint'</span>, y=<span class="st">'signal'</span>, errorbar=<span class="st">'sd'</span>)     <span class="cm"># show ±1 std dev instead</span>
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=fmri, x=<span class="st">'timepoint'</span>, y=<span class="st">'signal'</span>, errorbar=(<span class="st">'ci'</span>, <span class="nm">99</span>))  <span class="cm"># 99% CI</span>
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=fmri, x=<span class="st">'timepoint'</span>, y=<span class="st">'signal'</span>, errorbar=<span class="kw">None</span>)     <span class="cm"># no band, just the mean line</span>
+
+<span class="cm"># estimator — change how repeated y-values are aggregated</span>
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=fmri, x=<span class="st">'timepoint'</span>, y=<span class="st">'signal'</span>, estimator=<span class="st">'median'</span>)</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 This Is Seaborn's Real Power</div>
+      In Matplotlib, if you have multiple noisy measurements per x-value, you must manually compute mean/CI and draw the shaded band with <code>fill_between()</code>. Seaborn's <code>lineplot()</code> detects duplicate x-values automatically and does this statistical aggregation for you in one function call.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">sns.set_theme()</div><div class="mc-desc">All-in-one global config</div><div class="mc-ex">style, context, palette</div></div>
+      <div class="mini-card"><div class="mc-name">sns.despine()</div><div class="mc-desc">Clean spine removal</div><div class="mc-ex">left, offset, trim</div></div>
+      <div class="mini-card"><div class="mc-name">sns.scatterplot()</div><div class="mc-desc">Axes-level scatter</div><div class="mc-ex">hue, size, style</div></div>
+      <div class="mini-card"><div class="mc-name">sns.relplot()</div><div class="mc-desc">Figure-level, auto-facets</div><div class="mc-ex">col, row, kind</div></div>
+      <div class="mini-card"><div class="mc-name">sns.lineplot()</div><div class="mc-desc">Trend + auto CI band</div><div class="mc-ex">errorbar='ci'</div></div>
+      <div class="mini-card"><div class="mc-name">sns.load_dataset()</div><div class="mc-desc">Built-in practice data</div><div class="mc-ex">'tips','titanic','iris'</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>Themes, palettes, figure/axes-level, relplot, lineplot. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#BE185D">🏆</div>
+    <div><h2>Real-World Task — Restaurant Analytics Explorer</h2><p>Estimated time: 70–85 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Data Analyst</strong> at a restaurant chain analytics firm. Using Seaborn's built-in 'tips' dataset, build a complete exploratory visualization suite examining bill amounts, tipping behavior, and time/day patterns.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#BE185D">1</div><h4>Phase 1 — Setup &amp; Theme</h4><span class="phase-time">~10 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Load Data and Set a Consistent Theme</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>, context=<span class="st">'notebook'</span>, palette=<span class="st">'deep'</span>)
+
+tips = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)
+<span class="fn">print</span>(tips.<span class="fn">shape</span>)
+<span class="fn">print</span>(tips.<span class="fn">describe</span>())
+
+<span class="cm"># Feature engineering: tip percentage</span>
+tips[<span class="st">'tip_pct'</span>] = (tips[<span class="st">'tip'</span>] / tips[<span class="st">'total_bill'</span>]) * <span class="nm">100</span></pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Build 4 Relationship Charts</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 1: Bill vs Tip Scatter with 3 Encoded Dimensions</h5>
+          <p>Build a scatterplot of total_bill vs tip, with hue='time', size='size', and style='smoker'. Add a title and clean up spines with despine().</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 2: Faceted Grid by Day</h5>
+          <p>Use relplot() with col='day', hue='sex' to build a 1×4 grid of scatterplots — one panel per day of the week.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Chart 3: 2×2 Faceted Grid (Time × Sex)</h5>
+          <p>Use relplot() with both row='time' and col='sex' to build a full 2×2 grid, colored by smoker status.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">4</div><div class="step-content">
+          <h5>Chart 4: Line Plot with Confidence Interval</h5>
+          <p>Create a synthetic "hour of day" column (map Lunch→13, Dinner→19, plus random jitter), then use lineplot() to show tip_pct trend with an automatic confidence band. Compare errorbar='ci' vs errorbar='sd'.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Palette Experimentation</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build the Same Chart 3 Different Ways</h5>
+          <p>Recreate the Chart 1 scatterplot three times with different palettes: 'deep' (default qualitative), 'colorblind' (accessible), and a custom 2-color palette you define yourself. Combine all 3 into a 1×3 Matplotlib subplot comparison figure using axes-level scatterplot() with ax= for each.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Loaded tips dataset and set a global theme with sns.set_theme()</li>
+        <li>Engineered a tip_pct column</li>
+        <li>Built a 3-dimension scatterplot (hue, size, style) with despine()</li>
+        <li>Built a col-faceted relplot grid (1×4 by day)</li>
+        <li>Built a row+col faceted relplot grid (2×2 by time×sex)</li>
+        <li>Built a lineplot with automatic confidence interval band</li>
+        <li>Compared errorbar='ci' vs errorbar='sd'</li>
+        <li>Rebuilt one chart with 3 different palettes side by side using axes-level calls with ax=</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 15 min)</div>
+      Use <code>col_wrap=2</code> with a relplot faceted by 'day' to force the 4-day grid into a 2×2 layout instead of 1×4, and compare readability between the two arrangements.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done active">Day 1 · Statistical Plots &amp; Themes</span>
+    <span class="day-pill">Day 2 · Distribution &amp; Categorical</span>
+    <span class="day-pill">Day 3 · Relationship &amp; Regression</span>
+    <span class="day-pill">Day 4 · Multi-Plot Grids</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What is Seaborn's relationship to Matplotlib?",opts:["A completely independent library with no connection","Seaborn is built ON TOP OF Matplotlib — it provides statistical, DataFrame-native functions but every plot ultimately uses Matplotlib objects underneath","Matplotlib is built on Seaborn","They are the same library with different names"],ans:1,explain:"Seaborn is a high-level statistical visualization library built on Matplotlib's foundation. It provides more convenient syntax for statistical graphics and works directly with Pandas DataFrames, but Matplotlib does the actual rendering underneath."},
+  {code:"sns.scatterplot(data=tips, x='total_bill', y='tip')",q:"What is the key syntactic difference from Matplotlib's ax.scatter()?",opts:["No difference at all","Seaborn accepts a DataFrame via data= and COLUMN NAMES (strings) for x/y, rather than requiring raw arrays extracted manually","Seaborn cannot plot scatter data","Matplotlib requires a DataFrame too"],ans:1,explain:"This is Seaborn's core convenience: pass the whole DataFrame once with data=df, then reference columns by their STRING names for x, y, hue, etc. Matplotlib requires you to manually extract arrays like df['total_bill'] yourself."},
+  {q:"What is the difference between sns.set_style() and sns.set_context()?",opts:["They are identical","set_style() controls visual theme (colors, gridlines, spines); set_context() controls the SCALE of elements (font size, line width) for different output media like paper/talk/poster","set_context() only works with figure-level functions","set_style() is deprecated"],ans:1,explain:"set_style() changes the aesthetic theme (darkgrid, whitegrid, ticks, etc — colors and gridlines). set_context() changes the SIZE SCALING of all plot elements for different output contexts (a poster needs bigger text than a paper figure), independent of the color theme."},
+  {q:"What does `sns.set_theme(style='whitegrid', context='talk', palette='deep')` accomplish?",opts:["Nothing — invalid syntax","Sets style, context, AND color palette all together in one modern convenience call — the recommended starting point for new Seaborn scripts","Only sets the style, ignoring other parameters","Creates a new dataset called 'theme'"],ans:1,explain:"set_theme() is Seaborn's modern all-in-one configuration function (introduced 0.11+), combining what used to require separate set_style(), set_context(), and set_palette() calls into a single, recommended entry point."},
+  {q:"What is the key difference between a Seaborn AXES-LEVEL function and a FIGURE-LEVEL function?",opts:["No real difference — purely naming convention","Axes-level functions (scatterplot, lineplot, boxplot) draw onto one specific Matplotlib Axes and accept ax=; figure-level functions (relplot, displot, catplot) manage their own Figure and can auto-create grids of subplots via col=/row=","Figure-level functions are always faster","Axes-level functions cannot use hue="],ans:1,explain:"Axes-level functions integrate into existing Matplotlib code (you control the figure/subplots, pass ax= to place the plot). Figure-level functions handle their own Figure creation and offer powerful automatic faceting (col=, row=) to create grids of related subplots in one call."},
+  {code:"sns.relplot(data=tips, x='total_bill', y='tip', col='day')",q:"What does col='day' accomplish?",opts:["Colors the points by day","Automatically creates ONE SEPARATE SUBPLOT for each unique value in the 'day' column, arranged side by side — no manual subplot creation needed","Sorts the data by day","Filters to show only one day"],ans:1,explain:"This is Seaborn's 'faceting' feature — figure-level functions can automatically split data into a grid of small multiples based on a categorical column. col='day' with 4 unique days creates a 1×4 grid of separate scatter plots automatically."},
+  {q:"Why can't you pass `ax=my_axes` to `sns.relplot()`?",opts:["It's just an arbitrary Seaborn limitation with no reason","relplot() is a FIGURE-LEVEL function that creates and manages its own entire Figure (potentially with multiple subplots via faceting) — it doesn't make sense to also constrain it to one pre-existing Axes","ax= only works with pandas objects","This actually works fine"],ans:1,explain:"Figure-level functions like relplot() might create MULTIPLE subplots (when faceting with col=/row=), so they need control over the whole Figure, not just one Axes slot. This is why they don't accept ax= — use the axes-level equivalent (scatterplot, lineplot) if you need to plot into an existing subplot."},
+  {q:"In `sns.scatterplot(data=tips, x='total_bill', y='tip', hue='day', size='size', style='time')`, how many total variables/dimensions are being visually encoded?",opts:["2 — just x and y","5 — x, y, hue (color), size (marker size), and style (marker shape)","3 — only the named parameters count","Unlimited"],ans:1,explain:"Each parameter maps a different DataFrame column to a visual aesthetic: x and y for position, hue for color, size for marker size, and style for marker shape/pattern — 5 distinct variables visualized in one scatter plot."},
+  {code:"sns.lineplot(data=fmri, x='timepoint', y='signal')",q:"If multiple rows share the same 'timepoint' value with different 'signal' values, what does lineplot() do automatically?",opts:["Raises an error for duplicate x-values","Automatically computes the MEAN signal for each timepoint AND draws a shaded confidence interval band around the line, all without any extra code","Plots only the first matching value","Averages ALL columns together"],ans:1,explain:"This is one of Seaborn's signature statistical features. When multiple y-values exist for the same x, lineplot() automatically aggregates them (default: mean) and displays a 95% confidence interval as a shaded band — a manual, multi-step process in pure Matplotlib."},
+  {q:"What does `errorbar='sd'` change compared to the default in sns.lineplot()?",opts:["Removes the shaded band entirely","Shows a ±1 standard deviation band around the mean instead of the default 95% confidence interval","Standardizes all the data first","Changes the line color"],ans:1,explain:"The errorbar parameter controls what the shaded uncertainty band represents. Default is 'ci' (95% confidence interval via bootstrap). 'sd' shows ±1 standard deviation instead — a different, often wider, representation of spread. errorbar=None removes the band entirely, showing just the line."},
+  {q:"Which palette TYPE would be most appropriate for visualizing 'species' categories (setosa, versicolor, virginica) with no inherent order?",opts:["Sequential (e.g., Blues)","Diverging (e.g., RdBu)","Qualitative (e.g., deep, Set2) — designed for unordered categorical distinctions","Any palette works equally well"],ans:2,explain:"Qualitative palettes use visually DISTINCT hues with no implied ordering, ideal for nominal categories like species names where there's no 'low to high' relationship. Sequential and diverging palettes imply ordering/direction, which would be misleading for unordered categories."},
+  {code:"sns.despine(left=True, offset=10)",q:"What does this combination do?",opts:["Removes only the top spine","Removes the default top AND right spines, ALSO removes the left spine, AND offsets the remaining spines 10 points away from the plot area for a cleaner look","Adds spines to all sides","Has no visible effect"],ans:1,explain:"despine() removes top and right spines by default. left=True additionally removes the left spine. offset=10 pushes the remaining (bottom) spine slightly away from the data area — a common refinement for a more polished, minimal chart appearance."},
+  {q:"What does `sns.load_dataset('tips')` provide?",opts:["An empty DataFrame template","One of Seaborn's built-in example datasets (restaurant bills, tips, and related info) — useful for practice, tutorials, and demonstrations without needing your own data file","A random number generator","A machine learning model"],ans:1,explain:"Seaborn bundles several classic example datasets (tips, iris, titanic, penguins, flights, fmri, etc.) accessible via load_dataset(). These are widely used in tutorials and documentation since they're clean, well-known, and immediately available without needing to source external files."},
+  {code:"sns.relplot(data=tips, x='total_bill', y='tip', row='time', col='sex', hue='smoker')",q:"How many total subplot panels will this create if 'time' has 2 unique values and 'sex' has 2 unique values?",opts:["1 panel","2 panels","4 panels — a 2×2 grid (2 rows × 2 columns), with color additionally showing smoker status within each panel","8 panels"],ans:2,explain:"row='time' (2 values) × col='sex' (2 values) creates a 2×2 grid of subplots = 4 panels total. Within EACH of those 4 panels, hue='smoker' further colors the points by smoking status — but this doesn't create additional panels, just additional color encoding within each."},
+  {q:"What is the purpose of `col_wrap=2` in a figure-level function call?",opts:["Wraps text labels","When faceting by a column with MANY unique values, col_wrap forces the resulting subplots to wrap into multiple ROWS (e.g., 2 per row) instead of one long single row — improves readability for many categories","Removes the wrapping and forces one row","Only works with row=, not col="],ans:1,explain:"Without col_wrap, faceting by a column with say 6 unique values creates one long row of 6 narrow subplots. col_wrap=2 forces them to wrap into a 3-row × 2-column grid instead, making each panel bigger and the overall layout more readable."},
+  {q:"Why might a data analyst choose 'colorblind' as their palette for a report shared widely within an organization?",opts:["It's the fastest palette to render","'colorblind' is specifically designed to remain distinguishable for people with common forms of color vision deficiency, making visualizations accessible to a wider audience","It only has 2 colors","It's required by Seaborn for all plots"],ans:1,explain:"The 'colorblind' palette uses colors chosen to remain distinguishable even for viewers with red-green or other common color vision deficiencies (affecting roughly 8% of men). Using it in shared/public reports is a good accessibility practice."},
+  {q:"What Python objects do you get back from `g = sns.relplot(...)` (a figure-level function)?",opts:["A single Matplotlib Axes object","A FacetGrid object (or similar Grid class) which contains the Figure and all the individual Axes created for faceting — accessed via g.fig and g.axes","A pandas DataFrame","A dictionary of colors"],ans:1,explain:"Figure-level functions return a Grid object (e.g., FacetGrid for relplot/displot, or a similar class for catplot). This object wraps the underlying Figure (accessible as g.fig) and all created Axes (g.axes), plus convenience methods like set_axis_labels()."},
+  {code:"g = sns.relplot(data=tips, x='total_bill', y='tip', col='day')\ng.set_axis_labels('Bill', 'Tip')\ng.fig.suptitle('Report Title')",q:"Why use g.fig.suptitle() instead of a regular title call?",opts:["This is a syntax error","Since relplot() returns a Grid object (not a plain Axes), you access the underlying Matplotlib Figure via the .fig attribute to add a title that spans ALL the faceted subplots","suptitle() doesn't work with Seaborn at all","g.fig is always None"],ans:1,explain:"The Grid object returned by figure-level functions wraps a Figure containing potentially multiple faceted subplots. To add one overall title spanning all facets (rather than a per-subplot title), you access the Figure object via g.fig and call the standard Matplotlib fig.suptitle()."},
+  {q:"What is the practical benefit of Seaborn's set_theme() approach over manually styling every individual Matplotlib chart?",opts:["set_theme() makes charts render faster computationally","Setting the theme ONCE at the start of a script ensures EVERY subsequent Seaborn (and often Matplotlib) plot automatically inherits consistent, professional styling — avoiding repetitive manual styling code on every single chart","There is no practical benefit","set_theme() only works for one chart at a time"],ans:1,explain:"This is a major productivity and consistency benefit: instead of manually setting colors, gridlines, fonts, and spines on every individual chart, one set_theme() call at the top of your script/notebook establishes global defaults that all following plots automatically follow — ensuring visual consistency across an entire analysis or report."},
+  {q:"When would you prefer using the AXES-LEVEL `sns.scatterplot()` over the FIGURE-LEVEL `sns.relplot(kind='scatter')`?",opts:["Never — always use relplot","When you need to combine the Seaborn plot with other Matplotlib elements within a specific existing subplot layout you're building manually (e.g., part of a custom multi-panel dashboard with plt.subplots())","scatterplot() doesn't support hue=","They produce completely different visual results"],ans:1,explain:"If you're building a custom dashboard with plt.subplots() and need precise control over exactly which panel gets which chart (mixing Seaborn statistical plots with other custom Matplotlib elements), the axes-level scatterplot(..., ax=my_specific_ax) integrates cleanly. relplot() would create its own separate figure, which isn't what you want when composing a custom multi-panel layout."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review figure-level vs axes-level, and themes, then try again! 📚"],[50,75,"Good progress! Focus on relplot faceting and lineplot CI bands. 💪"],[75,90,"Strong Day 1! Seaborn foundations are solid. 🎉"],[90,101,"Excellent! Day 1 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>
