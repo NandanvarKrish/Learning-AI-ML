@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 20</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 20 of 30</span>
+  <h1>Decorators</h1>
+  <p>Estimated time: about 1.5 hours &middot; Functions as objects, wrapping functions, @syntax, functools.wraps, decorators with arguments</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Functions Are Objects</h2>
+    <p>In Python, a function is a value like any other. You can store it in a variable, pass it to another function, and return it from a function. This idea is the foundation of decorators.</p>
+    <pre><code>def shout(text):
+    return text.upper() + "!"
+
+say = shout              # store the function in a variable (no parentheses)
+print(say("hello"))      # HELLO!
+
+def apply(func, value):  # pass a function as an argument
+    return func(value)
+
+print(apply(shout, "hi"))</code></pre>
+    <div class="output">HELLO!
+HI!</div>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A function is like a tool in a shop. You can keep it on a shelf, hand it to a colleague, or return it to the shelf. Passing <code>shout</code> around is like handing over the tool, not using it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Functions Defined Inside Functions</h2>
+    <p>You can define a function inside another function. The inner function can see the outer function's variables, which you met as closures on Day 9.</p>
+    <pre><code>def make_greeter(greeting):
+    def greet(name):
+        return f"{greeting}, {name}!"
+    return greet          # return the inner function itself
+
+hello = make_greeter("Hello")
+namaste = make_greeter("Namaste")
+print(hello("Sam"))
+print(namaste("Ali"))</code></pre>
+    <div class="output">Hello, Sam!
+Namaste, Ali!</div>
+    <p>Each returned function remembers the <code>greeting</code> it was created with.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Writing a Decorator by Hand</h2>
+    <p>A <strong>decorator</strong> is a function that takes a function, wraps it with extra behaviour, and returns the wrapper. The original function is not changed, but calls to it now go through the wrapper.</p>
+    <pre><code>def log_call(func):
+    def wrapper():
+        print("Calling", func.__name__)
+        result = func()
+        print("Finished", func.__name__)
+        return result
+    return wrapper
+
+def say_hi():
+    print("Hi there!")
+
+say_hi = log_call(say_hi)   # wrap it manually
+say_hi()</code></pre>
+    <div class="output">Calling say_hi
+Hi there!
+Finished say_hi</div>
+    <p>The line <code>say_hi = log_call(say_hi)</code> is what decorators automate.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: The @ Syntax</h2>
+    <p>Writing <code>@log_call</code> above a function definition does the same thing as <code>say_hi = log_call(say_hi)</code>. The @ line must come directly before the <code>def</code>.</p>
+    <pre><code>@log_call
+def say_bye():
+    print("Goodbye!")
+
+say_bye()</code></pre>
+    <div class="output">Calling say_bye
+Goodbye!
+Finished say_bye</div>
+    <div class="callout tip">
+      <strong>Key idea:</strong> <code>@decorator</code> is shorthand. It means "replace this function with decorator(this function)".</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Decorators with Arguments</h2>
+    <p>A wrapper should accept any arguments the original function receives. Use <code>*args</code> and <code>**kwargs</code> from Day 9 so the wrapper works with any signature.</p>
+    <pre><code>def log_call(func):
+    def wrapper(*args, **kwargs):
+        print(f"Calling {func.__name__} with {args} {kwargs}")
+        return func(*args, **kwargs)
+    return wrapper
+
+@log_call
+def add(a, b):
+    return a + b
+
+print(add(2, 3))
+print(add(a=10, b=5))</code></pre>
+    <div class="output">Calling add with (2, 3) {}
+5
+Calling add with () {'a': 10, 'b': 5}
+15</div>
+    <div class="callout warn">
+      <strong>Important:</strong> Always return the result of <code>func(...)</code> from the wrapper. Forgetting <code>return</code> makes the decorated function return <code>None</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Preserving Function Names with functools.wraps</h2>
+    <p>Without help, the wrapper replaces the original function's name and docstring. Use <code>functools.wraps</code> to copy them across.</p>
+    <pre><code>from functools import wraps
+
+def log_call(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        print("Calling", func.__name__)
+        return func(*args, **kwargs)
+    return wrapper
+
+@log_call
+def multiply(a, b):
+    """Multiply two numbers."""
+    return a * b
+
+print(multiply.__name__)
+print(multiply.__doc__)</code></pre>
+    <div class="output">multiply
+Multiply two numbers.</div>
+    <div class="callout tip">
+      <strong>Always use @wraps:</strong> It keeps debugging output, documentation, and help() accurate. Without it, <code>multiply.__name__</code> would read "wrapper".</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: A Practical Decorator: Timing</h2>
+    <p>This decorator measures how long a function takes. It uses <code>time.perf_counter()</code>, a precise clock.</p>
+    <pre><code>import time
+from functools import wraps
+
+def timed(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        elapsed = time.perf_counter() - start
+        print(f"{func.__name__} took {elapsed:.4f} seconds")
+        return result
+    return wrapper
+
+@timed
+def slow_sum(n):
+    return sum(range(n))
+
+print(slow_sum(1_000_000))</code></pre>
+    <div class="output">slow_sum took 0.0231 seconds
+499999500000</div>
+    <p>The exact time will differ on your computer, but the pattern is the same.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Decorators That Take Arguments</h2>
+    <p>Sometimes a decorator needs its own settings, such as "repeat this function 3 times". Add one more layer: an outer function that receives the settings and returns the decorator.</p>
+    <pre><code>from functools import wraps
+
+def repeat(times):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = None
+            for _ in range(times):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def hello():
+    print("Hello!")
+
+hello()</code></pre>
+    <div class="output">Hello!
+Hello!
+Hello!</div>
+    <div class="callout analogy">
+      <strong>Three layers:</strong> <code>repeat(3)</code> receives the settings, <code>decorator</code> receives the function, and <code>wrapper</code> runs each call. Work through them from the outside in.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 9: Stacking Decorators</h2>
+    <p>You can apply several decorators. They run from the closest to the function outwards.</p>
+    <pre><code>@log_call
+@timed
+def compute():
+    return 42
+
+compute()</code></pre>
+    <p>Here <code>timed</code> wraps <code>compute</code> first, and <code>log_call</code> wraps the result. The order can change behaviour, so keep track of it when stacking.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 20</h2>
+    <ol>
+      <li><strong>Forgetting return in the wrapper:</strong> the decorated function silently returns None.</li>
+      <li><strong>Calling the function in the decorator line:</strong> write <code>@log_call</code>, not <code>@log_call()</code>, for a simple decorator.</li>
+      <li><strong>Skipping @wraps:</strong> names and docstrings get lost, which confuses debugging and help().</li>
+      <li><strong>Hardcoding arguments in the wrapper:</strong> use <code>*args, **kwargs</code> so the wrapper fits any function.</li>
+      <li><strong>Forgetting the third layer:</strong> a decorator with arguments needs an extra outer function.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Greeting Wrapper</h3>
+      <p>Write a decorator <code>announce</code> that prints "Starting..." before and "Done." after the wrapped function. Apply it to a function that prints a greeting.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Preserve Metadata</h3>
+      <p>Apply your <code>announce</code> decorator with <code>@wraps</code>. Print the decorated function's name and docstring to check they are preserved.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Argument Logger</h3>
+      <p>Write a decorator that prints the arguments each time a function is called, then runs it. Test it on a function with two positional and one keyword argument.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Simple Login Check</h3>
+      <p>Create a decorator <code>require_login</code> that checks a global variable <code>logged_in</code>. If False, it prints "Please log in first" and does not run the function. Test with both values.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Retry Decorator</h3>
+      <p>Write <code>retry(times)</code>, a decorator with an argument, that calls the function again if it raises an exception, up to the given number of times. Test it on a function that fails randomly.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Cache Results</h3>
+      <p>Write a decorator that caches results in a dictionary keyed by the arguments, so repeated calls with the same input return the stored result. Test it on a slow function, such as one computing a large sum, and time the difference.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Decorator</th><th>Where you'll see it</th></tr>
+      <tr><td>Login or permission check</td><td>Web views that require a logged-in user or an admin role</td></tr>
+      <tr><td>Timing and logging</td><td>Measuring slow functions and recording API calls in production</td></tr>
+      <tr><td>Caching</td><td>Storing results of expensive calculations, such as <code>functools.lru_cache</code></td></tr>
+      <tr><td>Retry</td><td>Retrying network calls that fail temporarily</td></tr>
+      <tr><td>Route registration</td><td>Flask's <code>@app.route("/")</code> and similar web framework decorators</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django uses decorators heavily. <code>@login_required</code> protects a view, and <code>@require_POST</code> restricts which HTTP method is allowed. You'll use them from the start of your Django work.</div>
+  </section>
+
+  <section>
+    <h2>Day 20 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 20 of 30 &middot; Next: Day 21 - Week 3 Mini Project</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does a decorator take as input and return?",
+      options: ["A string and a number", "A function, and it returns a new (wrapper) function", "A list, and it returns a dictionary", "A class, and it returns a module"],
+      answer: 1,
+      explain: "A decorator receives a function and returns a wrapped version of it."
+    },
+    {
+      q: "What does @log_call above def say_hi(): do?",
+      options: ["Deletes say_hi", "Equivalent to say_hi = log_call(say_hi)", "Calls say_hi immediately", "Renames log_call"],
+      answer: 1,
+      explain: "The @ syntax is shorthand for reassigning the function through the decorator."
+    },
+    {
+      q: "Why does the wrapper use *args and **kwargs?",
+      options: ["To make the code shorter only", "So it accepts any arguments the original function takes", "To prevent errors", "Because Python requires it"],
+      answer: 1,
+      explain: "Using *args and **kwargs lets one wrapper handle any function signature."
+    },
+    {
+      q: "What goes wrong if the wrapper does not return the result of func(...)?",
+      options: ["Nothing", "The decorated function returns None", "Python raises a syntax error", "The function runs twice"],
+      answer: 1,
+      explain: "Without return, the value computed by the original function is lost, and callers get None."
+    },
+    {
+      q: "What does @wraps(func) do?",
+      options: ["Runs func twice", "Copies the original function's name and docstring onto the wrapper", "Converts func to a string", "Deletes the wrapper"],
+      answer: 1,
+      explain: "functools.wraps keeps metadata such as __name__ and __doc__ accurate."
+    },
+    {
+      q: "In @repeat(3), what does repeat(3) return?",
+      options: ["The function repeated 3 times", "A decorator function", "The number 3", "A list"],
+      answer: 1,
+      explain: "repeat(3) returns the decorator, which then receives the function."
+    },
+    {
+      q: "Which is the correct way to use a simple decorator named log_call?",
+      options: ["@log_call()", "@log_call", "log_call@", "#log_call"],
+      answer: 1,
+      explain: "Simple decorators are written without parentheses. Parentheses are needed only when the decorator takes its own arguments."
+    },
+    {
+      q: "Where must the @ line be placed?",
+      options: ["After the function body", "Directly above the def line", "Inside the function", "At the end of the file"],
+      answer: 1,
+      explain: "The decorator line goes directly above the def it decorates."
+    },
+    {
+      q: "Which concept from Day 9 does a decorator rely on?",
+      options: ["Global variables", "Closures, where the wrapper remembers the function it wraps", "Keyword-only parameters", "Lambda sorting"],
+      answer: 1,
+      explain: "The wrapper remembers func after the outer decorator has finished, which is a closure."
+    },
+    {
+      q: "What does this decorator stack do? @log_call @timed def compute(): ...",
+      options: ["Runs compute twice", "timed wraps compute first, then log_call wraps that result", "Removes both decorators", "Only log_call runs"],
+      answer: 1,
+      explain: "Decorators apply from the closest one outwards, so timed is applied first."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 21!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

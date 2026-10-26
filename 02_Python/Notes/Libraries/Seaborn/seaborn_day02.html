@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn – Day 2 | Distribution & Categorical Plots</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F5F3FF;--surface:#FFFFFF;--border:#DDD6FE;--accent:#6D28D9;--accent2:#4C1D95;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--rose:#BE185D;--teal:#0891B2;
+    --text:#1E0B3A;--muted:#7C3AED;--code-bg:#160A2E;--code-text:#DDD6FE;--tag-bg:#EDE9FE;--tag-text:#4C1D95;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(109,40,217,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#6D28D9 0%,#4C1D95 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#DDD6FE;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#A78BFA;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#C4B5FD;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#4C1D95;font-style:italic;} .op{color:#DDD6FE;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.rose{border-color:var(--rose);background:#FDF2F8;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.rose .callout-title{color:var(--rose);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#4C1D95,#6D28D9);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#6D28D9,#4C1D95);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#6D28D9,#BE185D);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Day 2 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">40%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:40%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Full Course · Day 2</div>
+  <h1>Distribution &amp; <span>Categorical Plots</span></h1>
+  <p>Master histplot, kdeplot, and ecdfplot for distributions, plus the full catplot family for categorical comparisons.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📊 histplot &amp; displot</span>
+    <span class="hero-pill">🌊 kdeplot</span>
+    <span class="hero-pill">📈 ecdfplot</span>
+    <span class="hero-pill">📦 catplot Family</span>
+    <span class="hero-pill">🎻 boxplot / violinplot</span>
+    <span class="hero-pill">📊 barplot / countplot</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📊</div>
+    <div><h2>histplot() &amp; displot() — Distributions</h2><p>Understanding how a single numeric variable is spread</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>)
+tips = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)
+penguins = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'penguins'</span>)
+
+<span class="cm"># Basic histogram — axes-level</span>
+<span class="op">sns</span>.<span class="fn">histplot</span>(data=tips, x=<span class="st">'total_bill'</span>)
+
+<span class="cm"># Styled with bins, KDE overlay, and hue split</span>
+<span class="op">sns</span>.<span class="fn">histplot</span>(data=tips, x=<span class="st">'total_bill'</span>,
+             bins=<span class="nm">25</span>,
+             kde=<span class="kw">True</span>,              <span class="cm"># overlay a smooth density curve on the histogram</span>
+             hue=<span class="st">'time'</span>,            <span class="cm"># separate colored histograms per Lunch/Dinner</span>
+             multiple=<span class="st">'layer'</span>)       <span class="cm"># 'layer', 'stack', 'dodge', 'fill' — how overlapping hues combine</span>
+
+<span class="cm"># Normalize to show density/percentage instead of raw counts</span>
+<span class="op">sns</span>.<span class="fn">histplot</span>(data=tips, x=<span class="st">'total_bill'</span>, stat=<span class="st">'density'</span>)   <span class="cm"># 'count','density','probability','percent'</span>
+
+<span class="cm"># 2D histogram — joint distribution of TWO variables as a heatmap</span>
+<span class="op">sns</span>.<span class="fn">histplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, cbar=<span class="kw">True</span>)
+
+<span class="cm"># FIGURE-LEVEL equivalent — displot, supports faceting</span>
+<span class="op">sns</span>.<span class="fn">displot</span>(data=tips, x=<span class="st">'total_bill'</span>, col=<span class="st">'time'</span>, kde=<span class="kw">True</span>, kind=<span class="st">'hist'</span>)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>multiple= value</th><th>Effect with hue=</th></tr>
+        <tr><td><code>'layer'</code> (default)</td><td>Histograms drawn on top of each other, semi-transparent</td></tr>
+        <tr><td><code>'stack'</code></td><td>Histograms stacked vertically (totals add up)</td></tr>
+        <tr><td><code>'dodge'</code></td><td>Bars placed side by side within each bin</td></tr>
+        <tr><td><code>'fill'</code></td><td>Stacked AND normalized to 100% per bin</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">🌊</div>
+    <div><h2>kdeplot() — Smooth Density Curves</h2><p>Continuous distribution shape without binning artifacts</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>A <strong>Kernel Density Estimate (KDE)</strong> plots a smooth curve estimating the probability density function of a variable — like a smoothed, continuous version of a histogram.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Basic KDE</span>
+<span class="op">sns</span>.<span class="fn">kdeplot</span>(data=tips, x=<span class="st">'total_bill'</span>)
+
+<span class="cm"># Filled area under the curve + multiple groups</span>
+<span class="op">sns</span>.<span class="fn">kdeplot</span>(data=tips, x=<span class="st">'total_bill'</span>, hue=<span class="st">'time'</span>,
+            fill=<span class="kw">True</span>,             <span class="cm"># shade under the curve</span>
+            alpha=<span class="nm">0.5</span>,
+            common_norm=<span class="kw">False</span>)      <span class="cm"># each group normalized independently (each integrates to 1)</span>
+
+<span class="cm"># Control smoothness with bandwidth adjustment</span>
+<span class="op">sns</span>.<span class="fn">kdeplot</span>(data=tips, x=<span class="st">'total_bill'</span>, bw_adjust=<span class="nm">0.5</span>)   <span class="cm"># smaller = more wiggly/detailed</span>
+<span class="op">sns</span>.<span class="fn">kdeplot</span>(data=tips, x=<span class="st">'total_bill'</span>, bw_adjust=<span class="nm">2</span>)     <span class="cm"># larger = smoother/more generalized</span>
+
+<span class="cm"># 2D KDE — bivariate density as contour-like shading</span>
+<span class="op">sns</span>.<span class="fn">kdeplot</span>(data=penguins, x=<span class="st">'bill_length_mm'</span>, y=<span class="st">'bill_depth_mm'</span>,
+            fill=<span class="kw">True</span>, cmap=<span class="st">'rocket'</span>)
+
+<span class="cm"># Combine histogram + KDE together (common pattern)</span>
+<span class="op">sns</span>.<span class="fn">histplot</span>(data=tips, x=<span class="st">'total_bill'</span>, kde=<span class="kw">True</span>, stat=<span class="st">'density'</span>)</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 KDE vs Histogram</div>
+      A histogram's shape depends heavily on bin width/count choices — the same data can look quite different with 10 vs 50 bins. KDE avoids this "binning artifact" by fitting a smooth curve, though it introduces its OWN parameter (bandwidth) that controls smoothness. Often best used TOGETHER: histogram for raw counts, KDE overlay for the underlying shape trend.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">📈</div>
+    <div><h2>ecdfplot() — Cumulative Distribution</h2><p>What fraction of data falls below each value</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>An <strong>ECDF (Empirical Cumulative Distribution Function)</strong> shows, for every x-value, what PROPORTION of the data is less than or equal to it. Unlike histograms, there's no binning choice needed — it shows every data point exactly.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Basic ECDF</span>
+<span class="op">sns</span>.<span class="fn">ecdfplot</span>(data=tips, x=<span class="st">'total_bill'</span>)
+
+<span class="cm"># Compare groups directly — great for comparing distributions precisely</span>
+<span class="op">sns</span>.<span class="fn">ecdfplot</span>(data=tips, x=<span class="st">'total_bill'</span>, hue=<span class="st">'time'</span>)
+
+<span class="cm"># Read specific insights directly from the plot:</span>
+<span class="cm"># "50% of dinner bills are below ₹X" = find y=0.5, read the x-value</span>
+<span class="cm"># "What % of bills are under ₹20?" = find x=20, read the y-value</span>
+
+<span class="cm"># Complementary ECDF (shows P(X > x) instead of P(X <= x))</span>
+<span class="op">sns</span>.<span class="fn">ecdfplot</span>(data=tips, x=<span class="st">'total_bill'</span>, complementary=<span class="kw">True</span>)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Chart</th><th>Best For</th><th>Limitation</th></tr>
+        <tr><td>Histogram</td><td>Intuitive shape at a glance</td><td>Shape depends on bin choice</td></tr>
+        <tr><td>KDE</td><td>Smooth shape, good for overlaying groups</td><td>Depends on bandwidth choice; can imply data where none exists</td></tr>
+        <tr><td>ECDF</td><td>Exact, no parameter choices, precise percentile reading</td><td>Less visually intuitive for shape (no obvious "peak")</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📦</div>
+    <div><h2>The catplot() Family — Categorical Comparisons</h2><p>One figure-level function, many chart kinds</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><code>catplot()</code> is the figure-level umbrella for ALL categorical plot types — switch chart type entirely just by changing <code>kind=</code>.</p>
+
+    <div class="fbox">
+      <div class="ft">📦 catplot() kind= Options</div>
+      <div class="fm">'strip'  → individual points, jittered (default)</div>
+      <div class="fm">'swarm'  → individual points, non-overlapping</div>
+      <div class="fm">'box'    → box plot (quartiles)</div>
+      <div class="fm">'violin' → violin plot (density shape)</div>
+      <div class="fm">'bar'    → mean + confidence interval bars</div>
+      <div class="fm">'point'  → mean as connected point markers</div>
+      <div class="fm">'count'  → count of observations per category</div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Same data, different kind= — instantly different chart type</span>
+<span class="op">sns</span>.<span class="fn">catplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, kind=<span class="st">'box'</span>)
+<span class="op">sns</span>.<span class="fn">catplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, kind=<span class="st">'violin'</span>)
+<span class="op">sns</span>.<span class="fn">catplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, kind=<span class="st">'swarm'</span>)
+<span class="op">sns</span>.<span class="fn">catplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, kind=<span class="st">'bar'</span>)
+
+<span class="cm"># With hue AND faceting — categorical + relationship + facet, all at once</span>
+<span class="op">sns</span>.<span class="fn">catplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>,
+            hue=<span class="st">'sex'</span>, col=<span class="st">'time'</span>,
+            kind=<span class="st">'box'</span>, height=<span class="nm">5</span>)
+
+<span class="cm"># count — great for categorical frequency (no y= needed)</span>
+<span class="op">sns</span>.<span class="fn">catplot</span>(data=tips, x=<span class="st">'day'</span>, kind=<span class="st">'count'</span>, hue=<span class="st">'time'</span>)</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🎻</div>
+    <div><h2>boxplot(), violinplot() &amp; swarmplot() — Axes-Level</h2><p>The individual functions behind catplot's kind= options</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Axes-level box plot with all the Seaborn conveniences</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+<span class="op">sns</span>.<span class="fn">boxplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, hue=<span class="st">'smoker'</span>, ax=ax)
+
+<span class="cm"># Violin plot with split (compares 2 hue groups within each violin's two halves)</span>
+<span class="op">sns</span>.<span class="fn">violinplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>,
+               hue=<span class="st">'sex'</span>, split=<span class="kw">True</span>,     <span class="cm"># each violin split in half by sex — powerful comparison</span>
+               inner=<span class="st">'quartile'</span>)         <span class="cm"># show quartile lines inside</span>
+
+<span class="cm"># Swarm plot — every individual point, non-overlapping (best for smaller datasets)</span>
+<span class="op">sns</span>.<span class="fn">swarmplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, hue=<span class="st">'time'</span>, size=<span class="nm">4</span>)
+
+<span class="cm"># Strip plot — like swarm but points can overlap (jittered), faster for big data</span>
+<span class="op">sns</span>.<span class="fn">stripplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, jitter=<span class="kw">True</span>, alpha=<span class="nm">0.5</span>)
+
+<span class="cm"># POWERFUL COMBO: overlay swarm points ON TOP of a box plot</span>
+fig, ax = <span class="op">plt</span>.<span class="fn">subplots</span>(figsize=(<span class="nm">8</span>,<span class="nm">5</span>))
+<span class="op">sns</span>.<span class="fn">boxplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, color=<span class="st">'lightgray'</span>, ax=ax)
+<span class="op">sns</span>.<span class="fn">swarmplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, color=<span class="st">'#6D28D9'</span>, size=<span class="nm">3</span>, ax=ax)
+<span class="cm"># Shows BOTH the summary statistics AND every individual data point!</span></pre>
+    </div>
+
+    <div class="callout rose">
+      <div class="callout-title">💡 Box + Swarm — A Best-Practice Combo</div>
+      Overlaying individual points (swarmplot/stripplot) on top of a summary chart (boxplot) gives viewers BOTH the statistical summary AND the raw data distribution — showing sample size, gaps, clusters, and outliers that summary statistics alone can hide. This is a very common, highly-regarded pattern in scientific and business reporting.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>barplot() &amp; countplot()</h2><p>Aggregated means and simple frequency counts</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># barplot: shows the MEAN of y for each x category, with a confidence interval</span>
+<span class="op">sns</span>.<span class="fn">barplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, hue=<span class="st">'sex'</span>,
+            errorbar=<span class="st">'ci'</span>,          <span class="cm"># confidence interval, shown as error bars (whiskers)</span>
+            estimator=<span class="st">'mean'</span>)      <span class="cm"># could also be 'median', 'sum', etc.</span>
+
+<span class="cm"># countplot: counts OBSERVATIONS per category — no y= needed at all!</span>
+<span class="op">sns</span>.<span class="fn">countplot</span>(data=tips, x=<span class="st">'day'</span>, hue=<span class="st">'smoker'</span>)
+
+<span class="cm"># Horizontal orientation — great for many/long category names</span>
+<span class="op">sns</span>.<span class="fn">barplot</span>(data=tips, y=<span class="st">'day'</span>, x=<span class="st">'total_bill'</span>, orient=<span class="st">'h'</span>)
+
+<span class="cm"># Order categories explicitly (instead of alphabetical/appearance order)</span>
+<span class="op">sns</span>.<span class="fn">barplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>,
+            order=[<span class="st">'Thur'</span>,<span class="st">'Fri'</span>,<span class="st">'Sat'</span>,<span class="st">'Sun'</span>])   <span class="cm"># chronological instead of alphabetical</span></pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ barplot() Shows the MEAN, Not Raw Counts</div>
+      A common beginner mistake: <code>barplot(x='day', y='total_bill')</code> shows the AVERAGE bill per day (with confidence interval), NOT how many records exist per day. For frequency/count of rows, use <code>countplot()</code> instead, which needs no y= parameter at all.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">sns.histplot()</div><div class="mc-desc">Binned frequency distribution</div><div class="mc-ex">bins, kde=True, multiple=</div></div>
+      <div class="mini-card"><div class="mc-name">sns.kdeplot()</div><div class="mc-desc">Smooth density curve</div><div class="mc-ex">fill=True, bw_adjust</div></div>
+      <div class="mini-card"><div class="mc-name">sns.ecdfplot()</div><div class="mc-desc">Cumulative % below x</div><div class="mc-ex">no binning needed</div></div>
+      <div class="mini-card"><div class="mc-name">sns.catplot()</div><div class="mc-desc">Figure-level, all kinds</div><div class="mc-ex">kind='box'/'violin'/'bar'</div></div>
+      <div class="mini-card"><div class="mc-name">sns.violinplot(split=True)</div><div class="mc-desc">Compare 2 hue groups per category</div><div class="mc-ex">inner='quartile'</div></div>
+      <div class="mini-card"><div class="mc-name">sns.countplot()</div><div class="mc-desc">Row counts per category</div><div class="mc-ex">no y= needed</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>histplot, kdeplot, ecdfplot, catplot family. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#6D28D9">🏆</div>
+    <div><h2>Real-World Task — Penguin Species Comparison Study</h2><p>Estimated time: 80–95 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Research Data Analyst</strong> studying penguin morphology. Using Seaborn's built-in 'penguins' dataset, build a complete distribution and categorical comparison suite across the 3 species (Adelie, Chinstrap, Gentoo).</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#6D28D9">1</div><h4>Phase 1 — Setup &amp; Cleaning</h4><span class="phase-time">~10 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Load and Clean the Data</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>, palette=<span class="st">'Set2'</span>)
+
+penguins = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'penguins'</span>).<span class="fn">dropna</span>()   <span class="cm"># drop rows with missing measurements</span>
+<span class="fn">print</span>(penguins[<span class="st">'species'</span>].<span class="fn">value_counts</span>())
+<span class="fn">print</span>(penguins.<span class="fn">describe</span>())</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Distribution Analysis</h4><span class="phase-time">~35 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 1: Body Mass Distribution — 3 Ways</h5>
+          <p>Build a 1×3 Matplotlib subplot figure showing body_mass_g distribution as: (1) histplot with hue='species' and multiple='layer', (2) kdeplot with hue='species' and fill=True, (3) ecdfplot with hue='species'. Compare what each reveals.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 2: Bill Dimensions 2D KDE</h5>
+          <p>Build a 2D kdeplot of bill_length_mm vs bill_depth_mm, with hue='species' to see how the 3 species cluster in this 2D measurement space.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Categorical Comparison</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 3: Flipper Length by Species — Box + Swarm Combo</h5>
+          <p>Build a boxplot of flipper_length_mm by species (light gray), with swarmplot points overlaid in species-matched colors.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 4: Split Violin by Sex</h5>
+          <p>Build a violinplot of body_mass_g by species, split=True by sex, with inner='quartile'. Interpret: which species shows the biggest male/female size difference?</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Chart 5: Faceted catplot Grid</h5>
+          <p>Use catplot() with kind='bar', x='species', y='body_mass_g', hue='sex', col='island' to compare average body mass across species, sex, AND island of origin in one figure-level call.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Loaded and cleaned the penguins dataset (dropna)</li>
+        <li>Built a 1×3 comparison of histplot/kdeplot/ecdfplot for body mass by species</li>
+        <li>Built a 2D KDE of bill dimensions showing species clustering</li>
+        <li>Built a box+swarm combo chart for flipper length by species</li>
+        <li>Built a split violin plot of body mass by species and sex</li>
+        <li>Built a faceted catplot bar chart (species × sex × island)</li>
+        <li>Interpreted which species shows the largest sex-based size difference</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 15 min)</div>
+      Add a countplot showing how many penguins of each species were recorded per island, with hue='species', to reveal that some species only appear on specific islands — a useful data-completeness insight before deeper analysis.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Statistical Plots &amp; Themes</span>
+    <span class="day-pill done active">Day 2 · Distribution &amp; Categorical</span>
+    <span class="day-pill">Day 3 · Relationship &amp; Regression</span>
+    <span class="day-pill">Day 4 · Multi-Plot Grids</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"sns.histplot(data=tips, x='total_bill', bins=25, kde=True)",q:"What does kde=True add to this histogram?",opts:["Nothing visible","Overlays a smooth kernel density estimate curve on top of the histogram bars, showing the underlying distribution shape","Removes the bars entirely","Changes bin count automatically"],ans:1,explain:"kde=True adds a smooth density curve overlay on top of the histogram bars. This combines the intuitive 'raw counts' view of a histogram with the smooth shape estimate of a KDE, in one chart."},
+  {code:"sns.histplot(data=tips, x='total_bill', hue='time', multiple='stack')",q:"What does multiple='stack' do differently than the default 'layer'?",opts:["No visible difference","Instead of drawing overlapping semi-transparent histograms, it STACKS the hue groups' bars on top of each other so the total height represents the combined count","Removes the hue coloring","Creates separate figures per hue"],ans:1,explain:"'layer' (default) draws each hue group's histogram overlapping and semi-transparent. 'stack' instead stacks bars vertically so segment heights show each group's contribution and total bar height shows the combined total — useful for part-to-whole comparison across bins."},
+  {q:"What is a Kernel Density Estimate (KDE) plot conceptually?",opts:["A type of bar chart","A smooth, continuous curve estimating the probability density of a variable — essentially a smoothed alternative to a histogram that avoids binning artifacts","A 3D surface plot","A scatter plot variant"],ans:1,explain:"KDE plots fit a smooth curve to approximate the underlying probability density function of the data, using a kernel (usually Gaussian) centered at each data point, summed together. It shows distribution SHAPE without needing to choose bin boundaries like a histogram does."},
+  {code:"sns.kdeplot(data=tips, x='total_bill', bw_adjust=0.5)",q:"What effect does bw_adjust=0.5 have compared to the default (1.0)?",opts:["Makes the curve smoother/flatter","Makes the curve MORE detailed/wiggly (narrower bandwidth means less smoothing) — potentially revealing more fine structure but also more noise","Has no visible effect","Removes the curve entirely"],ans:1,explain:"bw_adjust scales the KDE's bandwidth (smoothing parameter). Values BELOW 1 make the bandwidth narrower, producing a MORE detailed/wiggly curve that follows the data more closely (potentially overfitting noise). Values above 1 smooth the curve more, potentially oversimplifying real structure."},
+  {q:"What does an ECDF (Empirical Cumulative Distribution Function) plot show at any given x-value?",opts:["The count of data points exactly at that x-value","The PROPORTION (0 to 1) of all data points that are LESS THAN OR EQUAL TO that x-value","The mean of the data","The mode of the data"],ans:1,explain:"An ECDF's y-value at any x tells you what fraction of the dataset falls at or below that x. For example, if ecdf(20)=0.6, then 60% of the data is ≤ 20. This makes precise percentile reading straightforward, unlike histograms."},
+  {q:"What is a key advantage of ECDF plots over histograms?",opts:["ECDFs are always prettier","ECDFs require NO binning choice (no bin width/count parameter) and show every individual data point's contribution exactly, making them ideal for precise distribution comparison","Histograms cannot show multiple groups","ECDFs only work with categorical data"],ans:1,explain:"Histograms require choosing a bin width/count, which can change the visual impression of the data's shape. ECDFs have no such parameter — they plot the EXACT cumulative proportion at every data point, making comparisons between groups more objective and precise (e.g., for statistical tests like Kolmogorov-Smirnov)."},
+  {code:"sns.catplot(data=tips, x='day', y='total_bill', kind='violin')",q:"What determines the specific chart TYPE produced by catplot()?",opts:["The x and y parameters alone","The kind= parameter — catplot() is a figure-level UMBRELLA function where kind='box'/'violin'/'bar'/'strip'/'swarm'/'count'/'point' selects which categorical chart type to draw","catplot() can only draw violin plots","The color palette determines the chart type"],ans:1,explain:"catplot() is designed as a single figure-level entry point for ALL categorical plot types. Simply changing kind= ('strip','swarm','box','violin','bar','point','count') switches the entire chart type while keeping the same faceting/data interface consistent."},
+  {q:"Why might you overlay a swarmplot() on top of a boxplot() for the same data (both plotted with the same x, y, and shared ax)?",opts:["This is not possible in Seaborn","Combining them shows BOTH the summary statistics (median, quartiles, outliers from the box) AND every individual raw data point (from the swarm) — revealing sample size, gaps, and clustering that the box plot summary alone would hide","Swarmplot replaces boxplot entirely when combined","It only works with categorical y-axis"],ans:1,explain:"This is a well-regarded, common visualization pattern: the boxplot gives quick summary statistics at a glance, while the swarm points reveal the ACTUAL underlying data — showing exactly how many observations exist, whether they're clustered or spread, and highlighting individual outliers precisely."},
+  {code:"sns.violinplot(data=tips, x='day', y='total_bill', hue='sex', split=True)",q:"What does split=True do?",opts:["Creates 2 separate figures","Divides EACH violin shape in half, with one hue category's distribution shown on the left half and the other hue category's distribution shown on the right half of the SAME violin — enabling direct visual comparison within each category","Splits the data randomly into train/test","Removes half the data points"],ans:1,explain:"split=True is designed for comparing exactly 2 hue groups. Instead of drawing 2 full separate violins side by side for each x-category, it draws ONE violin per category, split down the middle — left half shows one hue group's density, right half shows the other. This makes direct shape comparison easier since they share the same vertical axis position."},
+  {q:"What is the key difference between what sns.barplot() and sns.countplot() display, given the same categorical x variable?",opts:["They are identical functions with different names","barplot() shows the MEAN (or other aggregate) of a specified y= numeric variable per category, with a confidence interval; countplot() shows the raw NUMBER OF ROWS/OBSERVATIONS per category, requiring no y= parameter at all","countplot() requires a y= parameter, barplot() does not","barplot() only works with numeric x-axis"],ans:1,explain:"This is a very common point of confusion. barplot(x='day', y='total_bill') shows the AVERAGE total_bill for each day (with error bars for the confidence interval). countplot(x='day') shows how MANY ROWS exist for each day — pure frequency, no y= variable involved at all."},
+  {q:"What does `stat='density'` change in sns.histplot() compared to the default `stat='count'`?",opts:["Nothing changes visually","Instead of the y-axis showing raw observation COUNTS per bin, it shows a normalized DENSITY value such that the total area under all bars integrates to 1 — useful for comparing distributions with different sample sizes","It converts the histogram to a KDE","It removes outliers"],ans:1,explain:"stat='density' normalizes the histogram so that the area under the bars sums to 1 (like a probability density), rather than showing raw counts. This is especially useful when comparing two groups with very different total sample sizes — comparing raw counts would be misleading, but density puts them on the same normalized scale."},
+  {code:"sns.kdeplot(data=penguins, x='bill_length_mm', y='bill_depth_mm', fill=True)",q:"What type of visualization does this create?",opts:["A 1D KDE curve","A BIVARIATE (2D) kernel density estimate, shown as filled contour-like shading representing the joint density of the two variables together, revealing clusters in 2D space","A scatter plot only","A line plot"],ans:1,explain:"When both x and y are specified in kdeplot(), Seaborn computes a 2D (bivariate) density estimate, visualized as filled contour-like regions. This is excellent for revealing clusters — e.g., seeing whether different penguin species occupy distinct regions of bill_length × bill_depth space."},
+  {q:"Between swarmplot() and stripplot(), which is generally better suited for LARGE datasets (thousands of points), and why?",opts:["swarmplot(), because it's faster","stripplot(), because it allows points to overlap with jitter rather than computing non-overlapping positions for every point, which becomes computationally expensive and visually cluttered for swarmplot with very large N","Neither works with large datasets","They perform identically regardless of size"],ans:1,explain:"swarmplot() algorithmically arranges every point to avoid overlap, which becomes slow and visually crowded/unreadable with thousands of points. stripplot() simply adds random jitter and allows overlap, making it far more practical and performant for large datasets, though individual points become less distinguishable."},
+  {q:"In a real-world dataset with 3 penguin species distributed unevenly across islands, what would a countplot with x='island', hue='species' reveal that a single overall count would not?",opts:["Nothing useful","The BREAKDOWN of how many of each species were recorded specifically on each island — potentially revealing that certain species only exist on certain islands, an important data structure insight before further analysis","The exact body mass measurements","The correlation between measurements"],ans:1,explain:"Faceting a count by both island (x-axis) and species (hue) reveals the joint distribution — for example, discovering that Gentoo penguins only appear on one specific island while Adelie appears on all three. This kind of structural insight is crucial context before running further statistical comparisons."},
+  {q:"What does `inner='quartile'` do within a violinplot()?",opts:["Removes the violin shape entirely","Displays quartile reference lines (25th, 50th/median, 75th percentiles) drawn INSIDE each violin shape, adding precise numeric reference points to the smooth density silhouette","Splits the violin into quarters visually","Changes the color to a quartile-based palette"],ans:1,explain:"The inner= parameter controls what's drawn inside each violin body. 'quartile' draws three horizontal reference lines at the 25th, 50th, and 75th percentiles — combining the violin's smooth shape information with the box plot's precise quartile markers in one visualization."},
+  {q:"Why would displot() (figure-level) be preferred over histplot() (axes-level) when you want a histogram FACETED by a categorical column like 'time'?",opts:["histplot() cannot use hue=","displot() supports col=/row= for automatic faceting into a grid of separate subplot histograms, one per category value, which histplot() (being axes-level, single-Axes) does not support directly","There's no difference in capability","displot() is faster to compute"],ans:1,explain:"displot() is the figure-level counterpart to histplot()/kdeplot()/ecdfplot(), supporting col=/row= faceting to automatically create a grid of separate distribution plots split by a categorical variable — capability that axes-level histplot() (which draws onto one single Axes) doesn't have built in."},
+  {q:"If comparing body mass distributions across 3 penguin species, why might using kdeplot() with fill=True and hue='species' at low alpha values be more effective than 3 separate histograms in 3 separate subplots?",opts:["It technically shows less information","Overlaying all 3 semi-transparent KDE curves in ONE plot allows direct visual comparison of shape, peak location, and spread ACROSS groups simultaneously, which is harder to do when the eye must jump between 3 separate subplot panels","Separate histograms always show more detail","fill=True removes the ability to compare groups"],ans:1,explain:"Overlaying multiple KDE curves (with transparency via alpha or fill) in ONE shared axes lets viewers directly compare peak positions, spread, and overlap between groups at a glance. Separate subplots require mental comparison across panels, which is cognitively harder than a single overlaid view — though overlaying works best with a modest number of groups (2-4) to avoid clutter."},
+  {q:"What does `errorbar='ci'` specifically represent in sns.barplot()?",opts:["The standard deviation of individual data points","A 95% confidence interval (by default) around the estimated mean for each category, shown as error bar whiskers — indicating the uncertainty in the ESTIMATE of the mean, not the spread of raw data","The exact minimum and maximum values","A measure unrelated to statistics"],ans:1,explain:"The error bars on a barplot represent uncertainty in the ESTIMATED MEAN (via bootstrap resampling by default), not the raw data's spread. This is an important distinction from a box plot's IQR, which shows the spread of the actual observations rather than confidence in a summary statistic."},
+  {q:"When would ecdfplot() be more useful than kdeplot() for answering a specific business question like 'what percentage of our bills are under ₹20'?",opts:["kdeplot() would always be better for this","ECDF plots let you directly read off the EXACT cumulative proportion at any given x-value (find x=20, read the y-value as the percentage), which is precisely the kind of percentile-based question ECDFs are built to answer — KDE only shows relative density shape, not cumulative percentages","Neither chart can answer this question","Both give identical answers"],ans:1,explain:"ECDFs are purpose-built for exactly this type of question: locate x=20 on the horizontal axis, trace up to the curve, and read the y-value as the exact proportion of data ≤ 20. A KDE plot shows density SHAPE (where data concentrates) but doesn't directly give cumulative percentage answers without additional calculation."},
+  {q:"What's the risk of using a KDE plot to represent a distribution that has a hard boundary (e.g., data that can never be negative, like age or price)?",opts:["There is no risk","KDE curves can extend slightly beyond the natural data boundary (e.g., showing a small density below zero for a variable that can never be negative), potentially implying impossible values exist — a known limitation of kernel smoothing near boundaries","KDE plots cannot be used with bounded data at all","This only affects histograms, not KDE"],ans:1,explain:"Because KDE works by placing smooth kernels (typically Gaussian, which have infinite support) at each data point, the resulting curve can extend past natural boundaries like zero, visually implying that negative values have nonzero density even when that's impossible for the real-world variable. This is a recognized limitation to keep in mind when interpreting or presenting KDE plots for bounded quantities."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review histplot/kdeplot/ecdfplot and catplot, then try again! 📚"],[50,75,"Good progress! Focus on the box+swarm combo and split violins. 💪"],[75,90,"Strong Day 2! Distribution/categorical skills are solid. 🎉"],[90,101,"Excellent! Day 2 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

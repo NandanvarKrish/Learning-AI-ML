@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 22</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .check { list-style: none; padding-left: 0; }
+  .check li::before { content: "\2610  "; color: var(--py-yellow); }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 22 of 30</span>
+  <h1>Deployment Basics</h1>
+  <p>Estimated time: about 1.5 hours &middot; How a Django site runs in production: WSGI and Gunicorn, a reverse proxy, static files, running migrations on release, process management, and a launch checklist</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What Happens When a Site Goes Live</h2>
+    <p>On your laptop, <code>runserver</code> handles everything. It is convenient but not built for real traffic or safety. A production site is a small team of programs, each with one job:</p>
+    <div class="tree">Visitor's browser
+      │  HTTPS (port 443)
+      ▼
+Reverse proxy (Nginx or similar)
+  ├── serves /static/ and /media/ files directly
+  └── forwards everything else
+      │  HTTP (internal)
+      ▼
+Application server (Gunicorn)
+  │  runs several copies of your Django code
+  ▼
+Django project  ──►  Database (PostgreSQL)</div>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A restaurant has a host at the door (the reverse proxy), several kitchen staff working in parallel (the application server), and the recipe book and pantry (Django and the database). Each does one job well.</div>
+    <p>Django is the kitchen, not the front door. Its job is to produce responses; the surrounding programs handle connections, encryption, and static files.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: WSGI and Gunicorn</h2>
+    <p>Django exposes a standard entry point called WSGI in <code>mysite/wsgi.py</code>, which you saw on Day 1. An application server such as Gunicorn loads that entry point and runs several worker processes, so multiple requests can run at once:</p>
+    <pre><code>pip install gunicorn
+gunicorn mysite.wsgi:application --bind 127.0.0.1:8000 --workers 3</code></pre>
+    <div class="output">[INFO] Starting gunicorn
+[INFO] Listening at: http://127.0.0.1:8000 (...)
+[INFO] Booting worker with pid: ...
+[INFO] Booting worker with pid: ...
+[INFO] Booting worker with pid: ...</div>
+    <p>A common starting point for the number of workers is about two per CPU core, plus one. Measure before changing it, because too many workers use memory without speeding anything up.</p>
+    <div class="callout warn">
+      <strong>Do not use runserver in production:</strong> Django's own development server is not designed for security or load. Always put Gunicorn (or a similar server) behind a reverse proxy.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: The Reverse Proxy</h2>
+    <p>A reverse proxy such as Nginx accepts connections from the internet, handles HTTPS, and passes the requests to Gunicorn. It is also the fastest way to serve static files:</p>
+    <pre><code># /etc/nginx/sites-available/mini-blog  (example)
+server {
+    listen 80;
+    server_name example.com www.example.com;
+    return 301 https://$host$request_uri;        # redirect plain HTTP to HTTPS
+}
+
+server {
+    listen 443 ssl;
+    server_name example.com www.example.com;
+    # ssl_certificate and ssl_certificate_key lines go here (from your certificate provider)
+
+    location /static/ {
+        alias /srv/mini-blog/staticfiles/;       # collectstatic output (Day 5)
+    }
+
+    location /media/ {
+        alias /srv/mini-blog/media/;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;        # Gunicorn
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}</code></pre>
+    <div class="callout tip">
+      <strong>Why the forwarded headers matter:</strong> Django sees only the connection from Nginx. The <code>X-Forwarded-Proto</code> header tells it the visitor used HTTPS. Set <code>SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")</code> in production settings, so Django knows the request is secure.</div>
+    <div class="callout warn">
+      <strong>Trust only your proxy:</strong> Set <code>SECURE_PROXY_SSL_HEADER</code> only when your proxy overwrites this header. Otherwise, a visitor could send the header themselves.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Static Files in Production</h2>
+    <p>Run <code>collectstatic</code> (Day 5) on every release, so the proxy has a complete folder to serve:</p>
+    <pre><code>export DJANGO_SETTINGS_MODULE=mysite.settings.prod
+python manage.py collectstatic --noinput</code></pre>
+    <div class="output">142 static files copied to '/srv/mini-blog/staticfiles'.</div>
+    <p>Two alternatives are common. <strong>WhiteNoise</strong> is a middleware that serves static files from Django itself, which suits small sites with no separate proxy for assets. A <strong>CDN</strong> (content delivery network) copies static files to servers near visitors, which suits large sites.</p>
+    <div class="callout tip">
+      <strong>Media files are different:</strong> Uploads change at runtime and are not part of the release. Keep them on a persistent location, or cloud storage for larger sites, so a new deploy never wipes them.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Releasing a New Version</h2>
+    <p>Each release follows the same order, so the site never runs new code with an old database or missing static files:</p>
+    <ol>
+      <li>Get the new code, and install packages from <code>requirements.txt</code>.</li>
+      <li>Run <code>collectstatic</code> to refresh the static files.</li>
+      <li>Run <code>migrate</code> to update the database (Day 2).</li>
+      <li>Restart Gunicorn so it loads the new code.</li>
+    </ol>
+    <pre><code>pip install -r requirements.txt
+python manage.py collectstatic --noinput
+python manage.py migrate --noinput
+sudo systemctl restart mini-blog</code></pre>
+    <div class="callout warn">
+      <strong>Migrations come before the restart:</strong> If the new code expects a new column, it must exist before the new code runs. Also, make migrations backward-compatible when you can, because a rollback may run the old code against the new database.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Keeping Gunicorn Running</h2>
+    <p>On a Linux server, <strong>systemd</strong> starts Gunicorn at boot and restarts it after a crash. Create a service file:</p>
+    <pre><code># /etc/systemd/system/mini-blog.service  (example)
+[Unit]
+Description=Mini Blog Gunicorn service
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/srv/mini-blog
+EnvironmentFile=/etc/mini-blog.env
+ExecStart=/srv/mini-blog/venv/bin/gunicorn mysite.wsgi:application --bind 127.0.0.1:8000 --workers 3
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+    <p>The <code>EnvironmentFile</code> line loads the secrets from Day 21 (such as <code>DJANGO_SECRET_KEY</code>) from a file that only the server can read. Enable and start it with:</p>
+    <pre><code>sudo systemctl enable --now mini-blog
+sudo systemctl status mini-blog</code></pre>
+    <div class="callout tip">
+      <strong>Other options:</strong> Platform-as-a-service hosts and containers handle the same jobs (running Gunicorn, restarting it, and injecting environment variables) with their own configuration. The concepts here carry over.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Logs, Backups, and Rollback</h2>
+    <table>
+      <tr><th>Practice</th><th>Why</th></tr>
+      <tr><td>Read logs regularly (<code>journalctl -u mini-blog</code>)</td><td>Errors you ignore today become outages tomorrow</td></tr>
+      <tr><td>Back up the database on a schedule</td><td>Mistakes, attacks, and hardware failures happen; a tested backup is the only recovery</td></tr>
+      <tr><td>Test restoring a backup</td><td>An untested backup may not work when you need it</td></tr>
+      <tr><td>Keep the previous release available</td><td>Lets you roll back quickly if the new one fails</td></tr>
+      <tr><td>Monitor uptime and errors</td><td>Tells you about problems before visitors report them</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Backups are the last line of defence:</strong> A backup you have never restored is a hope, not a plan. Schedule a restore test on a separate server at least once.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: The Launch Checklist</h2>
+    <p>Work through this list before the first public visit:</p>
+    <ul class="check">
+      <li><code>DEBUG = False</code> and <code>ALLOWED_HOSTS</code> lists your real domains only.</li>
+      <li>The secret key comes from the environment, and is unique to production.</li>
+      <li><code>python manage.py check --deploy</code> shows no warnings you haven't accepted.</li>
+      <li>HTTPS works, and plain HTTP redirects to it.</li>
+      <li><code>collectstatic</code> has run, and static files load on every page.</li>
+      <li>Migrations have been applied, and the admin login works.</li>
+      <li>Email sends in production (test with a real address you own).</li>
+      <li>Custom 404 and 500 pages appear (Day 12).</li>
+      <li>A database backup has run and been restored successfully at least once.</li>
+      <li>Logs are readable, and someone is notified of errors.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 22</h2>
+    <ol>
+      <li><strong>Running runserver in production:</strong> use Gunicorn behind a reverse proxy.</li>
+      <li><strong>Forgetting collectstatic:</strong> styles and scripts go missing on the live site.</li>
+      <li><strong>Restarting before migrating:</strong> the new code runs against an old database.</li>
+      <li><strong>Trusting proxy headers from anyone:</strong> configure the proxy and <code>SECURE_PROXY_SSL_HEADER</code> together.</li>
+      <li><strong>Storing uploads in the release folder:</strong> a redeploy can delete them.</li>
+      <li><strong>Skipping backup restore tests:</strong> the first real restore is the wrong time to find out it fails.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>You can practise most of this locally, without a public server.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Run with Gunicorn</h3>
+      <p>Install Gunicorn in your virtual environment, then run it with the prod settings and a placeholder secret key. Visit the site at <code>127.0.0.1:8000</code> and record the startup lines.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Static Files Check</h3>
+      <p>Run <code>collectstatic</code>, then start Gunicorn. Note which static files you expect the proxy to serve, and explain why Gunicorn alone is not ideal for them.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Write a Service File</h3>
+      <p>Write the systemd unit from Lesson 6 for your project, using your own paths. Check it with <code>systemd-analyze verify</code> if you have a Linux machine, or review it line by line otherwise.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Release Script</h3>
+      <p>Write a short shell script that runs the four release steps in the correct order and stops on the first error (add <code>set -e</code> at the top).</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Launch Checklist</h3>
+      <p>Go through the checklist for <code>mini-blog</code>. Mark each item done or not done, and list the three items you would fix first.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Setup</th><th>Where you'll see it</th></tr>
+      <tr><td>Gunicorn behind Nginx</td><td>A very common pattern for Django sites of all sizes</td></tr>
+      <tr><td>Static files on a CDN</td><td>News and e-commerce sites serving images and scripts worldwide</td></tr>
+      <tr><td>Migrations on release</td><td>Every team that ships updates without downtime</td></tr>
+      <tr><td>Backups and restore tests</td><td>Any business whose data would be costly to lose</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Tomorrow you'll build a JSON API. Deployment is the same for an API: the same server, proxy, and environment variables serve it.</div>
+  </section>
+
+  <section>
+    <h2>Day 22 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 22 of 30 &middot; Next: Day 23 - Building a JSON API</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the job of the reverse proxy (such as Nginx) in front of Django?",
+      options: ["Write the database", "Accept connections, handle HTTPS, serve static files, and forward other requests to Gunicorn", "Replace Django's views", "Store passwords"],
+      answer: 1,
+      explain: "The proxy is the public front door, and it handles encryption and static files efficiently."
+    },
+    {
+      q: "What is WSGI?",
+      options: ["A database engine", "The standard interface between a Python web application and its server", "A CSS framework", "An email protocol"],
+      answer: 1,
+      explain: "WSGI is the standard entry point that servers such as Gunicorn use to run Django."
+    },
+    {
+      q: "Why should runserver not be used in production?",
+      options: ["It is too fast", "It is not designed for security or load; Gunicorn behind a proxy is the appropriate choice", "It cannot read settings", "It deletes static files"],
+      answer: 1,
+      explain: "The development server is meant for local work, not for handling real traffic safely."
+    },
+    {
+      q: "Why must collectstatic run on every release?",
+      options: ["It creates a superuser", "The proxy needs a complete, up-to-date folder of static files", "It runs the tests", "It clears the database"],
+      answer: 1,
+      explain: "Static files change between releases, and the served copy must match the new code."
+    },
+    {
+      q: "What is the correct order for a release?",
+      options: ["Restart, migrate, collectstatic, install", "Install packages, collectstatic, migrate, restart", "Migrate, restart, install, collectstatic", "Restart, install, migrate, collectstatic"],
+      answer: 1,
+      explain: "Install first, prepare static files and the database, then restart so the new code loads."
+    },
+    {
+      q: "Why are media uploads not part of the release folder?",
+      options: ["They are too small", "Uploads change while the site runs, and redeploying could delete them", "Django forbids media files", "They are always encrypted"],
+      answer: 1,
+      explain: "Keeping uploads separate prevents a new release from wiping user data."
+    },
+    {
+      q: "What does SECURE_PROXY_SSL_HEADER tell Django?",
+      options: ["Where the logs are", "That the connection was HTTPS, based on a header set by the trusted proxy", "The database password", "The number of workers"],
+      answer: 1,
+      explain: "It lets Django treat requests as secure when the proxy has terminated HTTPS and forwarded the header."
+    },
+    {
+      q: "Why is it risky to trust X-Forwarded-Proto from any visitor?",
+      options: ["It slows the site", "A visitor could send the header themselves and fool Django into thinking a request is secure", "Headers are always ignored", "It causes migrations to fail"],
+      answer: 1,
+      explain: "Only trust forwarded headers from a proxy that overwrites them."
+    },
+    {
+      q: "What does systemd do for a Gunicorn service?",
+      options: ["Writes the templates", "Starts Gunicorn at boot and restarts it if it crashes", "Creates the database", "Sends marketing emails"],
+      answer: 1,
+      explain: "systemd manages the service so the site comes back automatically after a reboot or crash."
+    },
+    {
+      q: "Why is a backup that has never been restored risky?",
+      options: ["Backups are always corrupted", "You cannot know it works until you try, and the first real restore is too late to find problems", "Restoring is illegal", "Backups slow the server"],
+      answer: 1,
+      explain: "Restore tests prove that backups are complete and usable before a disaster happens."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 23!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

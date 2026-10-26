@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 22</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 22 of 30</span>
+  <h1>Dates and JSON</h1>
+  <p>Estimated time: about 1.5 hours &middot; datetime and timedelta, formatting and parsing dates, reading and writing JSON</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Dates Need Care</h2>
+    <p>Dates look simple, but they hide complexity: months have different lengths, leap years add a day, and time zones shift clocks. Python's <code>datetime</code> module handles these details so you don't have to.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Storing a date as plain text is like writing a recipe in pencil on a napkin. Using <code>datetime</code> is like using a calendar app that knows which months have 30 days and when February has 29.</div>
+    <pre><code>import datetime
+
+today = datetime.date.today()
+print(today)
+print(today.year, today.month, today.day)</code></pre>
+    <div class="output">2026-10-20
+2026 10 20</div>
+    <p>Your output shows the date on your own computer when you run it.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: date, time, and datetime</h2>
+    <table>
+      <tr><th>Type</th><th>Holds</th><th>Example</th></tr>
+      <tr><td><code>date</code></td><td>Year, month, day</td><td><code>datetime.date(2026, 10, 20)</code></td></tr>
+      <tr><td><code>time</code></td><td>Hour, minute, second</td><td><code>datetime.time(14, 30)</code></td></tr>
+      <tr><td><code>datetime</code></td><td>Both date and time</td><td><code>datetime.datetime(2026, 10, 20, 14, 30)</code></td></tr>
+    </table>
+    <pre><code>from datetime import date, datetime
+
+d = date(2026, 1, 26)
+print(d)                          # 2026-01-26
+
+moment = datetime(2026, 1, 26, 9, 45)
+print(moment)                     # 2026-01-26 09:45:00
+print(moment.hour, moment.minute) # 9 45</code></pre>
+    <div class="output">2026-01-26
+2026-01-26 09:45:00
+9 45</div>
+    <div class="callout tip">
+      <strong>Naming note:</strong> <code>from datetime import datetime</code> imports the class. The module itself is also called <code>datetime</code>, so keep track of which one you're using.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Date Arithmetic with timedelta</h2>
+    <p>A <code>timedelta</code> represents a duration. Subtracting two dates gives a timedelta, and adding a timedelta to a date moves it forward or back.</p>
+    <pre><code>from datetime import date, timedelta
+
+borrowed = date(2026, 10, 1)
+due = borrowed + timedelta(days=14)
+print("Due:", due)
+
+days_late = (date(2026, 10, 20) - due).days
+print("Days late:", days_late)</code></pre>
+    <div class="output">Due: 2026-10-15
+Days late: 5</div>
+    <div class="callout warn">
+      <strong>Careful:</strong> <code>(later - earlier)</code> gives a timedelta, which can be negative if the order is reversed. Use <code>.days</code> to get the whole number of days.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Formatting with strftime</h2>
+    <p><code>strftime</code> turns a date into text using format codes. <code>strptime</code> does the reverse, turning text into a date.</p>
+    <table>
+      <tr><th>Code</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td><code>%Y</code></td><td>Four-digit year</td><td>2026</td></tr>
+      <tr><td><code>%m</code></td><td>Month, two digits</td><td>01</td></tr>
+      <tr><td><code>%d</code></td><td>Day, two digits</td><td>26</td></tr>
+      <tr><td><code>%B</code></td><td>Full month name</td><td>January</td></tr>
+      <tr><td><code>%A</code></td><td>Full weekday name</td><td>Monday</td></tr>
+      <tr><td><code>%H:%M</code></td><td>Hour and minute, 24-hour</td><td>14:30</td></tr>
+    </table>
+    <pre><code>from datetime import datetime
+
+moment = datetime(2026, 1, 26, 14, 30)
+print(moment.strftime("%d/%m/%Y"))        # 26/01/2026
+print(moment.strftime("%A, %B %d, %Y"))   # Monday, January 26, 2026
+
+parsed = datetime.strptime("15-08-2026", "%d-%m-%Y")
+print(parsed.date())                      # 2026-08-15</code></pre>
+    <div class="output">26/01/2026
+Monday, January 26, 2026
+2026-08-15</div>
+    <div class="callout tip">
+      <strong>Tip:</strong> Always pass the exact format to <code>strptime</code>. If the text doesn't match, Python raises <code>ValueError</code>, which you can catch with the Day 12 pattern.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Dates in Comparisons and Sorting</h2>
+    <p>Date objects compare and sort correctly, just like numbers. This makes them useful with the <code>__lt__</code> and <code>sorted()</code> ideas from Day 17.</p>
+    <pre><code>from datetime import date
+
+dates = [date(2026, 5, 1), date(2025, 12, 25), date(2026, 2, 14)]
+print(sorted(dates))
+print(date(2026, 1, 1) < date(2026, 6, 1))</code></pre>
+    <div class="output">[datetime.date(2025, 12, 25), datetime.date(2026, 2, 14), datetime.date(2026, 5, 1)]
+True</div>
+    <p>Don't sort dates stored as text such as <code>"15-08-2026"</code>, because the text sorts by the first characters, not by the actual date. Convert to date objects first.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: What Is JSON?</h2>
+    <p>JSON (JavaScript Object Notation) is a text format for structured data. It's the most common format for sending data between programs on the web. It looks very much like a Python dictionary and list.</p>
+    <pre><code>{
+    "name": "Sam",
+    "age": 25,
+    "courses": ["Python", "Networking"],
+    "active": true,
+    "manager": null
+}</code></pre>
+    <table>
+      <tr><th>JSON</th><th>Python</th></tr>
+      <tr><td>object <code>{}</code></td><td>dict</td></tr>
+      <tr><td>array <code>[]</code></td><td>list</td></tr>
+      <tr><td>string</td><td>str</td></tr>
+      <tr><td>number</td><td>int or float</td></tr>
+      <tr><td><code>true</code>, <code>false</code></td><td><code>True</code>, <code>False</code></td></tr>
+      <tr><td><code>null</code></td><td><code>None</code></td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Watch the difference:</strong> JSON uses lowercase <code>true</code>, <code>false</code>, and <code>null</code>. Python uses <code>True</code>, <code>False</code>, and <code>None</code>. The <code>json</code> module converts between them for you.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Reading and Writing JSON</h2>
+    <p>The <code>json</code> module has two pairs of functions. The ones ending in <code>s</code> work with text strings, and the others work with files.</p>
+    <table>
+      <tr><th>Function</th><th>Direction</th></tr>
+      <tr><td><code>json.dumps(obj)</code></td><td>Python object to JSON string</td></tr>
+      <tr><td><code>json.loads(text)</code></td><td>JSON string to Python object</td></tr>
+      <tr><td><code>json.dump(obj, f)</code></td><td>Python object to JSON file</td></tr>
+      <tr><td><code>json.load(f)</code></td><td>JSON file to Python object</td></tr>
+    </table>
+    <pre><code>import json
+
+person = {"name": "Sam", "age": 25, "active": True}
+
+text = json.dumps(person, indent=2)
+print(text)
+
+back = json.loads(text)
+print(back["name"])</code></pre>
+    <div class="output">{
+  "name": "Sam",
+  "age": 25,
+  "active": true
+}
+Sam</div>
+    <p>Writing to and reading from a file uses the same idea with <code>dump</code> and <code>load</code>:</p>
+    <pre><code>import json
+
+contacts = [{"name": "Ali", "phone": "9876543210"}]
+
+with open("contacts.json", "w") as f:
+    json.dump(contacts, f, indent=2)
+
+with open("contacts.json") as f:
+    loaded = json.load(f)
+
+print(loaded[0]["name"])</code></pre>
+    <div class="output">Ali</div>
+    <div class="callout tip">
+      <strong>Compared with CSV (Day 11):</strong> JSON keeps nested structures, such as a list inside a dictionary. CSV is flat, with one row per record. Use JSON when your data has nesting.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Handling Bad JSON and Dates</h2>
+    <p>Input from users or other programs is not always valid. Catch the errors, as you learned on Day 12.</p>
+    <pre><code>import json
+from datetime import datetime
+
+try:
+    data = json.loads("{name: 'Sam'}")    # invalid: keys need double quotes
+except json.JSONDecodeError as e:
+    print("Bad JSON:", e)
+
+try:
+    day = datetime.strptime("2026-13-01", "%Y-%m-%d")
+except ValueError:
+    print("Bad date: month 13 does not exist")</code></pre>
+    <div class="output">Bad JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+Bad date: month 13 does not exist</div>
+    <p><code>json.JSONDecodeError</code> is a subclass of <code>ValueError</code>, which is why the earlier ideas on inheritance from Day 16 apply here.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 22</h2>
+    <ol>
+      <li><strong>Confusing the datetime module and class:</strong> <code>datetime.datetime</code> and <code>datetime</code> imported by name refer to different things.</li>
+      <li><strong>Wrong strptime format:</strong> the format must match the text exactly, including separators.</li>
+      <li><strong>Sorting date text:</strong> convert to date objects before sorting.</li>
+      <li><strong>Writing Python values as JSON by hand:</strong> use <code>json.dumps</code> so True becomes true automatically.</li>
+      <li><strong>Forgetting that JSON keys are strings:</strong> a dictionary with integer keys comes back with string keys after a round trip.</li>
+      <li><strong>Dates are not JSON-serializable by default:</strong> convert with <code>.isoformat()</code> before dumping.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Days Until Your Birthday</h3>
+      <p>Ask the user for their birth date in the format YYYY-MM-DD. Calculate how many days until their next birthday. Handle the case where the birthday is today.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Library Due Date</h3>
+      <p>Given a borrow date, compute the due date 14 days later, and print both in the format "26 Jan 2026". Then compute how many days late a return on a given date would be.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Parse Log Timestamps</h3>
+      <p>Given the string <code>"2026-03-15 08:42:10"</code>, parse it with <code>strptime</code>, then print the weekday name and the time in 12-hour format using <code>strftime</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Save and Load Books</h3>
+      <p>Store three books as a list of dictionaries (title, author, year). Write them to <code>books.json</code> with indent=2, then read them back and print the titles sorted by year.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Nested JSON</h3>
+      <p>Create a dictionary for a student with a list of subjects, each with a name and a mark. Convert it to JSON and print it. Then load it back and compute the average mark.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Safe Date Input</h3>
+      <p>Write <code>get_date()</code> that keeps asking until the user enters a valid date in DD/MM/YYYY format, using <code>try</code> and <code>except ValueError</code>. Test with "31/02/2026" to see it rejected.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Date arithmetic</td><td>Due dates, subscription renewals, delivery estimates, age calculations</td></tr>
+      <tr><td>strftime and strptime</td><td>Showing dates to users in local formats, reading dates from logs and forms</td></tr>
+      <tr><td>JSON</td><td>Web APIs, configuration files, data exchange between apps and services</td></tr>
+      <tr><td>Nested JSON</td><td>Order details with line items, user profiles with addresses and preferences</td></tr>
+      <tr><td>Parsing with error handling</td><td>Importing data from external systems that may send malformed records</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django stores date and time fields as <code>DateField</code> and <code>DateTimeField</code>, and its REST API responses are JSON. Today's skills apply directly.</div>
+  </section>
+
+  <section>
+    <h2>Day 22 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 22 of 30 &middot; Next: Day 23 - Calling APIs with requests</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does date(2026, 1, 1) + timedelta(days=14) give?",
+      options: ["2026-01-14", "2026-01-15", "2026-02-01", "2026-01-41"],
+      answer: 1,
+      explain: "Adding 14 days to January 1 gives January 15."
+    },
+    {
+      q: "Which format code gives a four-digit year?",
+      options: ["%y", "%Y", "%m", "%D"],
+      answer: 1,
+      explain: "%Y is the four-digit year. %y gives only the last two digits."
+    },
+    {
+      q: "What does strptime do?",
+      options: ["Converts a date to text", "Converts text to a datetime object", "Gets the current time", "Adds time to a date"],
+      answer: 1,
+      explain: "strptime parses text into a datetime, while strftime does the reverse."
+    },
+    {
+      q: "What error does strptime raise when the text does not match the format?",
+      options: ["KeyError", "ValueError", "TypeError", "IndexError"],
+      answer: 1,
+      explain: "A mismatch between text and format raises ValueError, which you can catch."
+    },
+    {
+      q: "Which JSON value becomes None in Python?",
+      options: ["true", "false", "null", "0"],
+      answer: 2,
+      explain: "JSON null converts to Python None."
+    },
+    {
+      q: "What does json.dumps do?",
+      options: ["Reads a JSON file", "Converts a Python object to a JSON string", "Deletes a JSON file", "Checks a file exists"],
+      answer: 1,
+      explain: "dumps means dump to string. It turns a Python object into JSON text."
+    },
+    {
+      q: "What is the difference between json.load and json.loads?",
+      options: ["There is none", "load reads from a file, while loads reads from a string", "loads is faster only", "load is for numbers only"],
+      answer: 1,
+      explain: "The s at the end means string. load works with file objects, and loads works with text."
+    },
+    {
+      q: "Why must dates be converted before sorting if they are stored as text?",
+      options: ["Text cannot be sorted", "Text sorts by characters, not by actual date order", "Dates always sort correctly as text", "Sorting requires numbers only"],
+      answer: 1,
+      explain: "Text such as 15-08-2026 sorts by its first characters, which gives the wrong order for dates."
+    },
+    {
+      q: "What does (date_b - date_a).days return?",
+      options: ["The number of years", "The whole number of days between the dates", "The weekday", "A string"],
+      answer: 1,
+      explain: "Subtracting dates gives a timedelta, and .days gives the number of whole days."
+    },
+    {
+      q: "Which format code produces the full month name, such as January?",
+      options: ["%m", "%b", "%B", "%M"],
+      answer: 2,
+      explain: "%B is the full month name. %m is the two-digit month number, and %M is minutes."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 23!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

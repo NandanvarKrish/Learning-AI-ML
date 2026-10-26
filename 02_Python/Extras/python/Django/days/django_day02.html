@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 2</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 2 of 30</span>
+  <h1>Models and the ORM</h1>
+  <p>Estimated time: about 1.5 hours &middot; Defining models, field types, migrations, saving and querying data, and the ORM without writing SQL</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What Is a Model?</h2>
+    <p>A <strong>model</strong> is a Python class that describes one kind of data your site stores. Each model becomes a database table, and each attribute becomes a column.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A model is a form template. The template says what boxes exist (title, date, body) and what kind of answer each box accepts. Each saved form is one row in the table.</div>
+    <p>Django's <strong>ORM</strong> (Object-Relational Mapper) translates Python into SQL for you. Instead of writing <code>INSERT INTO blog_post ...</code>, you write <code>Post.objects.create(...)</code>.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Writing Your First Model</h2>
+    <p>Open <code>blog/models.py</code> from Day 1 and define a <code>Post</code> class:</p>
+    <pre><code># blog/models.py
+from django.db import models
+
+class Post(models.Model):
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]     # newest first by default
+
+    def __str__(self):
+        return self.title</code></pre>
+    <table>
+      <tr><th>Field type</th><th>Stores</th><th>Notes</th></tr>
+      <tr><td><code>CharField(max_length=...)</code></td><td>Short text</td><td><code>max_length</code> is required</td></tr>
+      <tr><td><code>TextField()</code></td><td>Long text</td><td>No length limit</td></tr>
+      <tr><td><code>IntegerField()</code></td><td>Whole numbers</td><td>Use <code>DecimalField</code> for money</td></tr>
+      <tr><td><code>BooleanField()</code></td><td>True or False</td><td>Give it a default</td></tr>
+      <tr><td><code>DateField()</code> / <code>DateTimeField()</code></td><td>Dates and times</td><td><code>auto_now_add=True</code> sets the value on creation</td></tr>
+      <tr><td><code>EmailField()</code> / <code>URLField()</code></td><td>Validated text</td><td>Checks format automatically</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Why <code>__str__</code>?</strong> It controls how an object appears in the admin panel, in the shell, and in error messages. Always define it. This is the same <code>__str__</code> method from the Python classes lesson on Day 16.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Migrations</h2>
+    <p>A model is only a plan. A <strong>migration</strong> is the step that turns the plan into real database tables. Django does this in two commands:</p>
+    <ol>
+      <li><code>makemigrations</code> reads your models and writes a migration file describing the change.</li>
+      <li><code>migrate</code> applies the migration files to the database.</li>
+    </ol>
+    <pre><code>python manage.py makemigrations blog
+python manage.py migrate</code></pre>
+    <div class="output">Migrations for 'blog':
+  blog/migrations/0001_initial.py
+    + Create model Post</div>
+    <pre><code>python manage.py migrate blog</code></pre>
+    <div class="output">Operations to perform:
+  Apply all migrations: blog
+Running migrations:
+  Applying blog.0001_initial... OK</div>
+    <div class="callout warn">
+      <strong>Rule:</strong> Whenever you change a model, run <code>makemigrations</code> and then <code>migrate</code>. Django does not update the database automatically. If you skip this step, you'll see errors such as "no such column".</div>
+    <p>The file <code>blog/migrations/0001_initial.py</code> is part of your code. Commit it to Git, so anyone who clones the project can recreate the same tables.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Creating and Saving Objects</h2>
+    <p>Open the Django shell, which loads your project so you can experiment with real data:</p>
+    <pre><code>python manage.py shell</code></pre>
+    <pre><code>&gt;&gt;&gt; from blog.models import Post
+&gt;&gt;&gt; p = Post.objects.create(title="Hello Django", body="My first post.")
+&gt;&gt;&gt; p
+&lt;Post: Hello Django&gt;</code></pre>
+    <div class="output">&lt;Post: Hello Django&gt;</div>
+    <p>There are two common ways to save:</p>
+    <pre><code>&gt;&gt;&gt; p2 = Post(title="Second post", body="Built with save()")
+&gt;&gt;&gt; p2.save()          # writes the row to the database
+&gt;&gt;&gt; p2.id
+2</code></pre>
+    <div class="output">2</div>
+    <p><code>create()</code> builds and saves in one step. Creating the object with <code>Post(...)</code> and then calling <code>save()</code> does the same thing in two steps, which is useful when you want to change the object first.</p>
+    <div class="callout tip">
+      <strong>Note:</strong> <code>id</code> is added automatically as the primary key. The number you see depends on how many rows already exist in your database.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Querying with the ORM</h2>
+    <p>Every model has a <code>objects</code> manager, which is your gateway to the database.</p>
+    <pre><code>&gt;&gt;&gt; Post.objects.all()
+&lt;QuerySet [&lt;Post: Second post&gt;, &lt;Post: Hello Django&gt;]&gt;
+&gt;&gt;&gt; Post.objects.count()
+2
+&gt;&gt;&gt; Post.objects.get(id=1)
+&lt;Post: Hello Django&gt;</code></pre>
+    <div class="output">&lt;QuerySet [&lt;Post: Second post&gt;, &lt;Post: Hello Django&gt;]&gt;
+2
+&lt;Post: Hello Django&gt;</div>
+    <p>The ordering shown comes from <code>ordering = ["-created_at"]</code>, so newer posts appear first.</p>
+    <div class="callout warn">
+      <strong>Careful with <code>get()</code>:</strong> it raises <code>Post.DoesNotExist</code> when nothing matches, and <code>MultipleObjectsReturned</code> when several things match. Use <code>filter()</code> when you expect a list, and <code>get()</code> only when you expect exactly one row.</div>
+
+    <h3>Filtering with lookups</h3>
+    <p>Lookups use double underscores to say how to compare:</p>
+    <pre><code>&gt;&gt;&gt; Post.objects.filter(is_published=False)
+&gt;&gt;&gt; Post.objects.filter(title__startswith="Hello")
+&gt;&gt;&gt; Post.objects.filter(title__icontains="django")
+&gt;&gt;&gt; Post.objects.filter(id__gt=1)
+&gt;&gt;&gt; Post.objects.exclude(title="Second post")
+&gt;&gt;&gt; Post.objects.filter(is_published=False).order_by("title")</code></pre>
+    <table>
+      <tr><th>Lookup</th><th>Meaning</th></tr>
+      <tr><td><code>exact</code> (the default)</td><td>Exact match, case-sensitive</td></tr>
+      <tr><td><code>iexact</code>, <code>icontains</code></td><td>Case-insensitive versions</td></tr>
+      <tr><td><code>contains</code>, <code>startswith</code>, <code>endswith</code></td><td>Text matching</td></tr>
+      <tr><td><code>gt</code>, <code>gte</code>, <code>lt</code>, <code>lte</code></td><td>Greater or less than</td></tr>
+      <tr><td><code>in</code></td><td>Matches any value in a list</td></tr>
+    </table>
+    <p>Querysets are lazy: <code>filter()</code> doesn't hit the database until you loop over the results, slice them, or call something like <code>count()</code>. You can chain them freely.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Updating and Deleting</h2>
+    <pre><code>&gt;&gt;&gt; p = Post.objects.get(id=1)
+&gt;&gt;&gt; p.title = "Hello, Django World"
+&gt;&gt;&gt; p.save()
+
+&gt;&gt;&gt; Post.objects.filter(is_published=False).update(is_published=True)
+2
+
+&gt;&gt;&gt; p2 = Post.objects.get(id=2)
+&gt;&gt;&gt; p2.delete()
+(1, {'blog.Post': 1})</code></pre>
+    <div class="output">2
+(1, {'blog.Post': 1})</div>
+    <p><code>update()</code> changes many rows in one query and returns how many rows changed. <code>delete()</code> returns a tuple: the total objects removed and a breakdown per model.</p>
+    <div class="callout warn">
+      <strong>Destructive:</strong> <code>Post.objects.all().delete()</code> removes every post with no undo. Double-check your filter before running any <code>delete()</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Connecting Models with Foreign Keys (Preview)</h2>
+    <p>Most real data is related. A post has one author, and an author has many posts. You express that with a <code>ForeignKey</code>, which you'll meet in full on Day 3.</p>
+    <pre><code>class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+class Post(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="posts")
+    title = models.CharField(max_length=200)</code></pre>
+    <p>Notice <code>on_delete</code>. It tells Django what to do when the author is deleted. <code>CASCADE</code> deletes the posts too. You'll learn the other options on Day 3.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 2</h2>
+    <ol>
+      <li><strong>Changing a model and forgetting migrations:</strong> run <code>makemigrations</code> and <code>migrate</code> after every model change.</li>
+      <li><strong>Using <code>get()</code> for lists:</strong> use <code>filter()</code> when more than one result is possible.</li>
+      <li><strong>Forgetting to save:</strong> changing an attribute on an object does nothing to the database until you call <code>save()</code>.</li>
+      <li><strong>Editing old migration files:</strong> create a new migration instead. Old ones describe history that's already been applied.</li>
+      <li><strong>Missing <code>max_length</code>:</strong> <code>CharField</code> requires it, and <code>makemigrations</code> will report an error.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Continue in your <code>mysite</code> project from Day 1.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Create the Model</h3>
+      <p>Add the <code>Post</code> model from Lesson 2 to <code>blog/models.py</code>. Run <code>makemigrations</code> and <code>migrate</code>, then check the output matches the migration lines shown above.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Add Three Posts</h3>
+      <p>In the shell, create three posts with different titles using both <code>create()</code> and <code>save()</code>. Then run <code>Post.objects.count()</code> and confirm it returns 3.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Filter Practice</h3>
+      <p>Write queries that return: all posts whose title contains "post" (any case), posts with an id greater than 1, and posts ordered alphabetically by title.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Publish a Post</h3>
+      <p>Get one post by id, set <code>is_published</code> to True, save it, and confirm the change with a fresh query.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Add a Field</h3>
+      <p>Add a new field <code>views = models.IntegerField(default=0)</code> to <code>Post</code>. Create a migration, apply it, and confirm existing posts show <code>0</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Model idea</th><th>Where you'll see it</th></tr>
+      <tr><td>Post, Article, Comment</td><td>Blogs, news sites, and forums</td></tr>
+      <tr><td>Product with price and stock</td><td>Online shops</td></tr>
+      <tr><td>User profile</td><td>Social networks and account systems</td></tr>
+      <tr><td>Order and OrderItem</td><td>E-commerce checkouts and invoices</td></tr>
+      <tr><td>Task (from your capstone)</td><td>Project management and to-do apps</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Link to the capstone:</strong> Your Day 30 Python <code>Task</code> class becomes a Django model with the same fields. The file storage you wrote is replaced by this ORM.</div>
+  </section>
+
+  <section>
+    <h2>Day 2 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 2 of 30 &middot; Next: Day 3 - The Admin Panel and Relationships</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does a Django model become in the database?",
+      options: ["A view", "A table", "A URL", "A template"],
+      answer: 1,
+      explain: "Each model class maps to a database table, and each field maps to a column."
+    },
+    {
+      q: "Which command creates the migration file for model changes?",
+      options: ["python manage.py migrate", "python manage.py makemigrations", "python manage.py runserver", "python manage.py shell"],
+      answer: 1,
+      explain: "makemigrations reads the models and writes a migration file. migrate then applies it."
+    },
+    {
+      q: "What does auto_now_add=True do on a DateTimeField?",
+      options: ["Updates the value on every save", "Sets the value once, when the object is created", "Deletes old values", "Makes the field optional"],
+      answer: 1,
+      explain: "auto_now_add sets the timestamp when the row is first created and leaves it alone afterwards."
+    },
+    {
+      q: "What does Post.objects.create(title='Hi', body='...') do?",
+      options: ["Only builds the object in memory", "Builds the object and saves it to the database in one step", "Deletes Post objects", "Returns a list of all posts"],
+      answer: 1,
+      explain: "create() is shorthand for building an instance and calling save()."
+    },
+    {
+      q: "Which lookup finds titles that contain 'django' in any letter case?",
+      options: ["title__exact='django'", "title__icontains='django'", "title__gt='django'", "title__in='django'"],
+      answer: 1,
+      explain: "icontains performs a case-insensitive substring match."
+    },
+    {
+      q: "When should you use get() instead of filter()?",
+      options: ["When you expect a list of results", "When you expect exactly one matching object", "Always", "Never"],
+      answer: 1,
+      explain: "get() returns one object and raises an error when zero or several match. filter() always returns a queryset."
+    },
+    {
+      q: "Why must you call save() after changing an attribute such as post.title?",
+      options: ["Python requires it for all variables", "The database is only updated when you save the object", "It makes the title bold", "It deletes the old title"],
+      answer: 1,
+      explain: "Changing an attribute only affects the Python object until save() writes it to the database."
+    },
+    {
+      q: "What is the difference between a queryset's filter() and the model's get()?",
+      options: ["There is no difference", "filter() returns a queryset of zero or more objects; get() returns a single object", "get() is faster in all cases", "filter() deletes non-matching rows"],
+      answer: 1,
+      explain: "A queryset can hold any number of results, while get() returns one object or raises an exception."
+    },
+    {
+      q: "Why should you not edit an existing migration file after it has been applied?",
+      options: ["Migration files are binary", "It describes history that other databases may already have applied", "Django deletes them", "They must be in Python 2 syntax"],
+      answer: 1,
+      explain: "Applied migrations are a record of what changed. Changing them causes inconsistencies, so create a new migration."
+    },
+    {
+      q: "What does __str__ on a model control?",
+      options: ["How the table is named", "How an object is displayed, such as in the admin and the shell", "Which fields are required", "The database password"],
+      answer: 1,
+      explain: "__str__ provides the human-readable text for an object wherever Django shows it."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 3!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

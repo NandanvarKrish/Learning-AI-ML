@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 28</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 28 of 30</span>
+  <h1>Docker for Django</h1>
+  <p>Estimated time: about 1.5 hours &middot; Packaging the app in a container, running Gunicorn and Postgres together with Compose, and keeping secrets out of the image</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: The "Works on My Machine" Problem</h2>
+    <p>Your project depends on a Python version, installed packages, system libraries, and settings. Moving it to a server means recreating all of that by hand, and small differences cause bugs.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A shipping container holds the goods and everything they need to travel. It doesn't matter which ship or truck carries it, because the container looks the same everywhere. A Docker image is that container for your app.</div>
+    <table>
+      <tr><th>Term</th><th>Meaning</th></tr>
+      <tr><td>Image</td><td>A read-only snapshot: OS layer, Python, packages, and your code</td></tr>
+      <tr><td>Container</td><td>A running copy of an image</td></tr>
+      <tr><td>Dockerfile</td><td>The recipe that builds the image, step by step</td></tr>
+      <tr><td>Compose</td><td>A file that runs several containers together, such as web and database</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 2: The Dockerfile</h2>
+    <p>Each instruction in a Dockerfile adds a layer. Put the things that change least near the top, so Docker can reuse cached layers:</p>
+    <pre><code># Dockerfile
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install dependencies first, so this layer is cached until requirements change
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Then copy the code, which changes often
+COPY . .
+
+# Collect static files at build time, using a throwaway key that never ships
+RUN DJANGO_SECRET_KEY=build-only-not-secret \
+    DJANGO_SETTINGS_MODULE=config.settings.prod \
+    python manage.py collectstatic --noinput
+
+RUN useradd --create-home appuser
+USER appuser
+
+EXPOSE 8000
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]</code></pre>
+    <div class="callout tip">
+      <strong>Why the order matters:</strong> If you copy all the code before installing requirements, every small code change forces a full reinstall. Copying <code>requirements.txt</code> first keeps rebuilds fast.</div>
+    <div class="callout warn">
+      <strong>Build-time key only:</strong> The <code>collectstatic</code> step needs a secret key to load settings, but that key is baked into an image layer. Use a clearly fake value like the one above, and never a real secret.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: .dockerignore</h2>
+    <p>Without a <code>.dockerignore</code> file, Docker copies everything in the folder into the image, including local virtual environments, Git history, and your <code>.env</code> file with real secrets:</p>
+    <pre><code># .dockerignore
+.git
+.venv
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+media/
+staticfiles/</code></pre>
+    <div class="callout warn">
+      <strong>Secrets never go in the image:</strong> Anyone who can pull the image can read every file in it. Pass secrets at run time instead, as shown in Lesson 5.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Building and Running One Container</h2>
+    <p>Build the image, then run it. The <code>-e</code> flags inject settings at run time:</p>
+    <pre><code>docker build -t mini-blog:1.0 .
+
+docker run --rm -p 8000:8000 \
+  -e DJANGO_SECRET_KEY="a-long-random-value-you-generated" \
+  -e DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1" \
+  mini-blog:1.0</code></pre>
+    <div class="output">[INFO] Starting gunicorn 22.0.0
+[INFO] Listening at: http://0.0.0.0:8000 (1)
+[INFO] Booting worker with pid: 7</div>
+    <p>Open <code>http://localhost:8000</code> in your browser. The app runs inside the container, and the port mapping <code>8000:8000</code> sends your browser's traffic to it.</p>
+    <div class="callout tip">
+      <strong>Generate a real key:</strong> Create one with <code>python -c "import secrets; print(secrets.token_urlsafe(50))"</code>, then keep it in a password manager or your server's secret store.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Environment Variables and Settings</h2>
+    <p>The settings you built on Day 21 read from the environment. Inside a container, that's the only way to change them, which fits well:</p>
+    <pre><code># config/settings/prod.py
+import os
+
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]          # fails loudly if missing
+DEBUG = False
+ALLOWED_HOSTS = os.environ["DJANGO_ALLOWED_HOSTS"].split(",")
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["POSTGRES_DB"],
+        "USER": os.environ["POSTGRES_USER"],
+        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
+        "HOST": os.environ.get("POSTGRES_HOST", "db"),
+        "PORT": "5432",
+    }
+}</code></pre>
+    <p>Keep the variables in an env file that is never committed, and load it with <code>--env-file</code>:</p>
+    <pre><code># .env.prod   (listed in .gitignore and .dockerignore)
+DJANGO_SECRET_KEY=replace-me
+DJANGO_ALLOWED_HOSTS=example.com
+POSTGRES_DB=blog
+POSTGRES_USER=blog
+POSTGRES_PASSWORD=replace-me
+
+docker run --rm -p 8000:8000 --env-file .env.prod mini-blog:1.0</code></pre>
+    <div class="callout warn">
+      <strong>Local Postgres password:</strong> The sample values are placeholders. Choose your own passwords, and never reuse them on a public server.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Compose with Web and Database</h2>
+    <p>Compose runs the app and Postgres together, on a private network where the app reaches the database by its service name <code>db</code>:</p>
+    <pre><code># docker-compose.yml
+services:
+  db:
+    image: postgres:16
+    env_file: .env.prod
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    env_file: .env.prod
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - media:/app/media
+
+volumes:
+  pgdata:
+  media:</code></pre>
+    <pre><code>docker compose up --build -d
+docker compose exec web python manage.py createsuperuser
+docker compose logs -f web</code></pre>
+    <div class="output">[+] Running 3/3
+ ✔ Network mini-blog_default  Created
+ ✔ Container mini-blog-db-1   Started
+ ✔ Container mini-blog-web-1  Started</div>
+    <div class="callout tip">
+      <strong>Named volumes keep data:</strong> <code>pgdata</code> stores the database files and <code>media</code> stores uploads (Day 5). Removing the containers with <code>docker compose down</code> keeps them. Only <code>down -v</code> deletes them.</div>
+    <div class="callout warn">
+      <strong>depends_on is not "ready":</strong> It only waits for the container to start, not for Postgres to accept connections. For a first run, retry the migration, or add a healthcheck to <code>db</code> and use <code>condition: service_healthy</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Static Files and Uploads in Containers</h2>
+    <p>Gunicorn doesn't serve static files well (Day 5). In production, put Nginx in front (Day 22), or use a package such as WhiteNoise to serve the <code>collectstatic</code> output from the app itself:</p>
+    <pre><code># settings/prod.py
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}</code></pre>
+    <div class="callout tip">
+      <strong>Uploads need a volume:</strong> Files saved to <code>media/</code> live inside the container. Without a volume, they vanish when the container is replaced. Mount one, as Compose does above.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Checking the Container</h2>
+    <p>Before calling the deployment done, run the checks you learned on Day 21 and Day 22 inside the container:</p>
+    <pre><code>docker compose exec web python manage.py check --deploy
+docker compose exec web python manage.py showmigrations
+docker compose ps</code></pre>
+    <table>
+      <tr><th>Command</th><th>What it tells you</th></tr>
+      <tr><td><code>check --deploy</code></td><td>Security settings still missing or weak</td></tr>
+      <tr><td><code>showmigrations</code></td><td>Whether every migration was applied</td></tr>
+      <tr><td><code>compose ps</code></td><td>Whether each service is running or restarting</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Restart policy:</strong> Add <code>restart: unless-stopped</code> to both services so they come back after a server reboot.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 28</h2>
+    <ol>
+      <li><strong>Copying <code>.env</code> or secrets into the image:</strong> add them to <code>.dockerignore</code> and pass them at run time.</li>
+      <li><strong>Running as root:</strong> create an unprivileged user and switch to it with <code>USER</code>.</li>
+      <li><strong>Forgetting the volume for Postgres or media:</strong> data is lost when the container is removed.</li>
+      <li><strong>Using <code>DEBUG = True</code> in the image:</strong> the production settings module must set it to <code>False</code>.</li>
+      <li><strong>Connecting to <code>localhost</code> for the database:</strong> inside a container, <code>localhost</code> means the container itself. Use the service name <code>db</code>.</li>
+      <li><strong>Putting the source copy before requirements:</strong> every code change then reinstalls all packages.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project from the last few days.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Write the Dockerfile</h3>
+      <p>Create the Dockerfile and <code>.dockerignore</code> from Lessons 2 and 3. Build the image with <code>docker build -t mini-blog:1.0 .</code></p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Run One Container</h3>
+      <p>Run the image with a generated secret key and <code>DJANGO_ALLOWED_HOSTS=localhost</code>. Open the site in your browser. Note that it cannot reach a database yet, which is the next step.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Compose Stack</h3>
+      <p>Write <code>docker-compose.yml</code> with <code>db</code> and <code>web</code>, plus a <code>.env.prod</code> file. Run <code>docker compose up --build -d</code>, then <code>migrate</code> and <code>createsuperuser</code> inside the container.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Persistence Test</h3>
+      <p>Create a post in the admin, run <code>docker compose down</code>, then <code>docker compose up -d</code>. Confirm the post is still there. Then confirm <code>down -v</code> would remove it.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Check the Container</h3>
+      <p>Run <code>check --deploy</code> inside the web container and fix at least one warning that is relevant to your setup.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Pattern</th><th>Where you'll see it</th></tr>
+      <tr><td>Image per release</td><td>Tagged images such as <code>blog:1.4.2</code> rolled out to several servers</td></tr>
+      <tr><td>Compose for small servers</td><td>A single VPS running the app, database, and reverse proxy</td></tr>
+      <tr><td>Env-based config</td><td>The same image used for staging and production with different variables</td></tr>
+      <tr><td>Container platforms</td><td>Cloud services that run containers and scale them automatically</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Looking ahead:</strong> Tomorrow you'll keep the app healthy after it ships: logging, error tracking, performance checks, and an automated pipeline that runs tests on every change.</div>
+  </section>
+
+  <section>
+    <h2>Day 28 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 28 of 30 &middot; Next: Day 29 - Monitoring, Performance and CI Basics</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is a Docker image?",
+      options: ["A running container", "A read-only snapshot of the OS, Python, packages, and code", "A database backup", "A web browser"],
+      answer: 1,
+      explain: "An image is the packaged snapshot. A container is a running copy of an image."
+    },
+    {
+      q: "Why copy requirements.txt and install packages before copying the rest of the code?",
+      options: ["Docker requires it", "So the dependency layer stays cached when only code changes", "It makes the image smaller", "It enables DEBUG mode"],
+      answer: 1,
+      explain: "Docker reuses cached layers. Installing dependencies first avoids reinstalling them on every code change."
+    },
+    {
+      q: "What belongs in .dockerignore?",
+      options: ["The Dockerfile itself only", ".git, virtual environments, and .env files with secrets", "requirements.txt", "The templates folder"],
+      answer: 1,
+      explain: "Exclude files that are unnecessary or secret, so they never enter the image."
+    },
+    {
+      q: "How should secrets reach a running container?",
+      options: ["Written into the Dockerfile", "Copied in with COPY .env", "Passed at run time as environment variables", "Stored in settings.py"],
+      answer: 2,
+      explain: "Run-time variables keep secrets out of the image, where anyone who pulls it could read them."
+    },
+    {
+      q: "Why should the container run as a non-root user?",
+      options: ["It makes the app faster", "It limits damage if the app is compromised", "Django requires it", "It enables HTTPS"],
+      answer: 1,
+      explain: "An unprivileged user cannot change system files, which reduces the impact of an attack."
+    },
+    {
+      q: "Inside a Compose network, how should Django reach the Postgres service named db?",
+      options: ["Using localhost", "Using the host name db", "Using 127.0.0.2", "Using the Windows host name"],
+      answer: 1,
+      explain: "Compose services reach each other by service name. localhost refers to the container itself."
+    },
+    {
+      q: "What does a named volume such as pgdata provide?",
+      options: ["A faster CPU", "Storage that survives removing and recreating containers", "A new Python version", "Automatic backups to the cloud"],
+      answer: 1,
+      explain: "Named volumes keep data outside the container's writable layer, so it persists across restarts and recreations."
+    },
+    {
+      q: "Why is depends_on not enough to guarantee the database is ready?",
+      options: ["It only waits for the container to start, not for Postgres to accept connections", "It is deprecated", "It deletes the database", "It only works on Windows"],
+      answer: 0,
+      explain: "depends_on controls start order. A healthcheck with condition service_healthy waits for the database to be ready."
+    },
+    {
+      q: "Why must a build-time collectstatic step not use a real secret key?",
+      options: ["Real keys cannot be used in Python", "The key would be stored in an image layer that others might pull", "collectstatic deletes keys", "Keys are only for the admin"],
+      answer: 1,
+      explain: "Anything written into an image layer can be read by anyone who has the image."
+    },
+    {
+      q: "Which command shows whether all migrations were applied inside the running web container?",
+      options: ["docker compose exec web python manage.py showmigrations", "docker build showmigrations", "docker compose showmigrations", "python manage.py docker"],
+      answer: 0,
+      explain: "docker compose exec runs the command inside the web service's container."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 29!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

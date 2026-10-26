@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 25</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 25 of 30</span>
+  <h1>Viewsets and Routers</h1>
+  <p>Estimated time: about 1.5 hours &middot; ModelViewSet, customising querysets and saving, custom actions, DefaultRouter, search, ordering, and pagination settings for APIs</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: From Several Views to One Class</h2>
+    <p>On Day 23 you wrote separate functions for listing, fetching, and creating. A <strong>viewset</strong> groups all the endpoints for one resource into a single class, and a <strong>router</strong> generates the URLs for you.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A viewset is a service counter that handles every request about one kind of item: list, look up, order, change, or cancel. The router is the signboard that tells customers which door leads to which counter.</div>
+    <table>
+      <tr><th>Approach</th><th>Code you write</th></tr>
+      <tr><td>Individual views (Day 23)</td><td>One function or class per endpoint, plus each URL</td></tr>
+      <tr><td>ViewSet with a router</td><td>One class with a serializer and queryset; URLs are generated</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 2: A ModelViewSet</h2>
+    <p>A <code>ModelViewSet</code> provides list, create, retrieve, update, partial update, and destroy. You give it a queryset and a serializer:</p>
+    <pre><code># blog/api_views.py
+from rest_framework import viewsets
+from .models import Post
+from .serializers import PostSerializer
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.select_related("author").prefetch_related("tags")
+    serializer_class = PostSerializer</code></pre>
+    <div class="callout warn">
+      <strong>Open by default:</strong> This class lets anyone read, create, change, and delete posts, including drafts. Lessons 3 and 4 add the rules that restrict it. Until then, don't deploy it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Customising the Queryset and Saving</h2>
+    <p>Override <code>get_queryset()</code> to decide which objects each visitor may see, and <code>perform_create()</code> to set values that come from the request rather than the client:</p>
+    <pre><code>class PostViewSet(viewsets.ModelViewSet):
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        qs = Post.objects.select_related("author").prefetch_related("tags")
+        if self.request.user.is_staff:
+            return qs                              # staff see drafts too
+        return qs.filter(is_published=True)        # everyone else sees published only
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user.author)   # set by the server, not the client</code></pre>
+    <div class="callout tip">
+      <strong>Filtering applies to detail views too:</strong> <code>get_object()</code> uses <code>get_queryset()</code>, so a draft requested by an anonymous visitor returns 404, as if it doesn't exist.</div>
+    <div class="callout warn">
+      <strong>Never trust a client-supplied author:</strong> If the client could send <code>author</code> in the body, one user could post as another. Setting it in <code>perform_create</code> keeps ownership under server control.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Permissions</h2>
+    <p>Set who may do what with <code>permission_classes</code>. The Day 16 and Day 17 ideas apply directly:</p>
+    <pre><code>from rest_framework import permissions
+
+class PostViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # ...queryset and methods as before...</code></pre>
+    <table>
+      <tr><th>Permission class</th><th>Effect</th></tr>
+      <tr><td><code>AllowAny</code></td><td>Anyone may call every method</td></tr>
+      <tr><td><code>IsAuthenticated</code></td><td>Only signed-in users may call any method</td></tr>
+      <tr><td><code>IsAuthenticatedOrReadOnly</code></td><td>Anyone may read; only signed-in users may write</td></tr>
+      <tr><td><code>IsAdminUser</code></td><td>Only staff users may call any method</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Object-level checks:</strong> DRF calls <code>has_object_permission</code> on custom permission classes. You can write one that allows only the author to edit their own post, as you did with ownership checks on Day 17.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Custom Actions</h2>
+    <p>Sometimes an endpoint does more than the standard five actions. The <code>@action</code> decorator adds one, such as publishing a post:</p>
+    <pre><code>from rest_framework.decorators import action
+from rest_framework.response import Response
+
+class PostViewSet(viewsets.ModelViewSet):
+    # ...other code...
+
+    @action(detail=True, methods=["post"])
+    def publish(self, request, pk=None):
+        post = self.get_object()
+        post.publish()                     # the model method from Day 10
+        return Response({"status": "published"})</code></pre>
+    <p><code>detail=True</code> means the action works on one object, and the URL includes its id: <code>/api/posts/&lt;id&gt;/publish/</code>. Use <code>detail=False</code> for actions on the whole collection.</p>
+    <div class="callout warn">
+      <strong>Use POST for actions that change data:</strong> Publishing changes the post, so it must not be a GET. Otherwise a link in an email could publish something by accident.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: DefaultRouter</h2>
+    <p>A router creates the URLs from the viewset automatically. Register the viewset, and include the router's URLs:</p>
+    <pre><code># blog/urls.py
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+from .api_views import PostViewSet
+
+router = DefaultRouter()
+router.register("posts", PostViewSet, basename="post")
+
+urlpatterns = [
+    path("api/", include(router.urls)),
+]</code></pre>
+    <table>
+      <tr><th>Address</th><th>Method</th><th>Action</th><th>Name</th></tr>
+      <tr><td><code>/api/posts/</code></td><td>GET</td><td>list</td><td><code>post-list</code></td></tr>
+      <tr><td><code>/api/posts/</code></td><td>POST</td><td>create</td><td><code>post-list</code></td></tr>
+      <tr><td><code>/api/posts/&lt;pk&gt;/</code></td><td>GET</td><td>retrieve</td><td><code>post-detail</code></td></tr>
+      <tr><td><code>/api/posts/&lt;pk&gt;/</code></td><td>PUT / PATCH</td><td>update / partial update</td><td><code>post-detail</code></td></tr>
+      <tr><td><code>/api/posts/&lt;pk&gt;/</code></td><td>DELETE</td><td>destroy</td><td><code>post-detail</code></td></tr>
+      <tr><td><code>/api/posts/&lt;pk&gt;/publish/</code></td><td>POST</td><td>custom action</td><td><code>post-publish</code></td></tr>
+    </table>
+    <div class="output">&gt;&gt;&gt; from django.urls import reverse
+&gt;&gt;&gt; reverse("post-list")
+'/api/posts/'
+&gt;&gt;&gt; reverse("post-detail", args=[1])
+'/api/posts/1/'</div>
+    <div class="callout tip">
+      <strong>The basename:</strong> The <code>basename</code> is used to build URL names such as <code>post-list</code>. Set it explicitly, so the names stay the same if the model is renamed.</div>
+    <p><code>DefaultRouter</code> also adds an index view at <code>/api/</code> that links to each list endpoint. The browsable API (from Day 23) uses these URLs to build its pages.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Searching, Ordering, and Pagination</h2>
+    <p>DRF includes filter backends that read query parameters. Add them to the viewset:</p>
+    <pre><code>from rest_framework import filters
+
+class PostViewSet(viewsets.ModelViewSet):
+    # ...queryset, permissions, and methods...
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "body"]
+    ordering_fields = ["created_at", "title"]
+    ordering = ["-created_at"]</code></pre>
+    <p>Clients can now call <code>/api/posts/?search=django&amp;ordering=title</code>, and the same whitelisting idea from Day 19 applies: only the listed ordering fields are accepted.</p>
+    <p>Pagination is set once for the whole project, in <code>settings.py</code>:</p>
+    <pre><code>REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 5,
+}</code></pre>
+    <div class="output">{
+  "count": 12,
+  "next": "http://127.0.0.1:8000/api/posts/?page=2",
+  "previous": null,
+  "results": [ ... five posts ... ]
+}</div>
+    <p>The wrapper with <code>count</code>, <code>next</code>, and <code>previous</code> is the list shape that Day 23's <code>{"results": [...]}</code> was preparing for.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Testing a Viewset</h2>
+    <p>DRF provides <code>APITestCase</code> with a client that handles JSON, and <code>force_authenticate</code> to act as a particular user:</p>
+    <pre><code>from django.urls import reverse
+from rest_framework.test import APITestCase
+
+class PostApiTests(APITestCase):
+    def setUp(self):
+        self.author = Author.objects.create(name="Asha", email="asha@example.com")
+        self.user = User.objects.create_user(username="asha", password="x-pass-123")
+        self.author.user = self.user
+        self.author.save()
+
+    def test_anonymous_can_list_published(self):
+        response = self.client.get(reverse("post-list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_anonymous_cannot_create(self):
+        response = self.client.post(reverse("post-list"), {"title": "x"}, format="json")
+        self.assertIn(response.status_code, (401, 403))
+
+    def test_signed_in_user_creates_post_for_themselves(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(reverse("post-list"),
+                                    {"title": "Made via API", "body": "Hi", "is_published": True},
+                                    format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["author"], self.author.pk)</code></pre>
+    <div class="callout tip">
+      <strong>Why 401 or 403:</strong> Which code you get depends on the authentication classes configured. Both mean the request was refused, so the test accepts either.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 25</h2>
+    <ol>
+      <li><strong>Shipping a ModelViewSet with no permissions:</strong> anyone can change or delete data.</li>
+      <li><strong>Letting the client set the author:</strong> set ownership in <code>perform_create</code>.</li>
+      <li><strong>Using GET for actions that change data:</strong> use POST, as the publish action does.</li>
+      <li><strong>Forgetting <code>basename</code> when the queryset is customised:</strong> the router cannot infer names from a queryset that is set in <code>get_queryset</code>.</li>
+      <li><strong>Forgetting the search and ordering whitelist:</strong> clients can sort by fields you meant to hide.</li>
+      <li><strong>Testing only the success path:</strong> check anonymous and wrong-user access as well.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project with Django REST framework installed.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Build the Viewset</h3>
+      <p>Create <code>PostViewSet</code> with <code>get_queryset</code> and <code>perform_create</code>. Register it with a <code>DefaultRouter</code> and visit <code>/api/posts/</code> in the browser.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Permissions</h3>
+      <p>Add <code>IsAuthenticatedOrReadOnly</code>. Confirm anonymous visitors can read but not create, and that a signed-in user can create.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Publish Action</h3>
+      <p>Add the <code>publish</code> action. Create a draft through the API, call the publish URL with POST, and confirm the post is now published.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Search and Pagination</h3>
+      <p>Add the search and ordering backends, set <code>PAGE_SIZE</code> to 2, and create at least three posts. Confirm <code>?search=</code> and the Next link work.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Test the Rules</h3>
+      <p>Write the three tests from Lesson 8 and add one that a draft is not returned to an anonymous visitor. Run <code>python manage.py test</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Viewset pattern</th><th>Where you'll see it</th></tr>
+      <tr><td>ModelViewSet with permissions</td><td>Mobile apps managing a user's own orders or messages</td></tr>
+      <tr><td>Custom actions</td><td>Approve, cancel, or resend buttons that call the API</td></tr>
+      <tr><td>Routers</td><td>Large APIs with dozens of resources and consistent URLs</td></tr>
+      <tr><td>Search and pagination</td><td>Product catalogues and feeds that load in pages</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Tomorrow you'll secure the API with authentication tokens, so clients can prove who they are without a browser session.</div>
+  </section>
+
+  <section>
+    <h2>Day 25 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 25 of 30 &middot; Next: Day 26 - API Authentication and Permissions</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which actions does a ModelViewSet provide by default?",
+      options: ["Only list and detail", "List, create, retrieve, update, partial update, and destroy", "Only create and delete", "Only the admin actions"],
+      answer: 1,
+      explain: "ModelViewSet covers the standard set of six actions for a model."
+    },
+    {
+      q: "What does get_queryset() control?",
+      options: ["The database password", "Which objects each request is allowed to see", "The response format", "The URL names"],
+      answer: 1,
+      explain: "get_queryset() decides the objects, which also applies to retrieve, update, and delete."
+    },
+    {
+      q: "Why set the author in perform_create instead of trusting the client's author field?",
+      options: ["It is faster", "Otherwise a client could post or edit as another user", "DRF forbids author fields", "Authors are optional"],
+      answer: 1,
+      explain: "Server-side ownership prevents clients from impersonating other users."
+    },
+    {
+      q: "Which permission class lets anyone read but only signed-in users write?",
+      options: ["AllowAny", "IsAuthenticatedOrReadOnly", "IsAdminUser", "IsAuthenticated"],
+      answer: 1,
+      explain: "IsAuthenticatedOrReadOnly allows safe methods for everyone and writes for signed-in users."
+    },
+    {
+      q: "What does @action(detail=True, methods=['post']) create?",
+      options: ["A read-only list", "A POST endpoint that works on one object, with its id in the URL", "A new model", "A signal"],
+      answer: 1,
+      explain: "detail=True includes the object's id, and methods sets the allowed HTTP method."
+    },
+    {
+      q: "Why should an action that publishes a post use POST rather than GET?",
+      options: ["GET is slower", "It changes data, and GET requests can be triggered accidentally by links", "POST is required by DRF for all actions", "GET cannot return JSON"],
+      answer: 1,
+      explain: "Actions that change data should never be triggered by a plain link or page visit."
+    },
+    {
+      q: "What does a DefaultRouter generate?",
+      options: ["Database tables", "URL patterns for the viewset's actions, plus an index view", "Migrations", "Email templates"],
+      answer: 1,
+      explain: "The router creates list and detail URLs and any custom actions automatically."
+    },
+    {
+      q: "Why set basename explicitly when registering a viewset?",
+      options: ["It is required for all viewsets", "It sets the names used to reverse URLs, such as post-list, even if the queryset changes", "It changes the database table", "It turns off permissions"],
+      answer: 1,
+      explain: "basename fixes the URL names, which the router cannot always infer from a customised queryset."
+    },
+    {
+      q: "Which setting enables page-based results for every list endpoint?",
+      options: ["DEFAULT_PAGINATION_CLASS together with PAGE_SIZE", "STATIC_ROOT", "SESSION_COOKIE_AGE", "EMAIL_BACKEND"],
+      answer: 0,
+      explain: "REST_FRAMEWORK pagination settings apply the chosen paginator and page size to all list views."
+    },
+    {
+      q: "What do force_authenticate and APITestCase help you do?",
+      options: ["Deploy the site", "Test API endpoints as a chosen user, sending JSON easily", "Create migrations", "Compress static files"],
+      answer: 1,
+      explain: "APITestCase gives an API-friendly client, and force_authenticate simulates a logged-in user."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 26!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

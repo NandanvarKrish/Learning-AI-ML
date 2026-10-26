@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 21</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 21 of 30</span>
+  <h1>Settings for Development and Production</h1>
+  <p>Estimated time: about 1.5 hours &middot; Splitting settings into base, development, and production modules, reading secrets from the environment, and the security settings a live site needs</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: One File Cannot Serve Two Worlds</h2>
+    <p>Your <code>settings.py</code> currently mixes two very different needs. On your laptop, you want <code>DEBUG = True</code>, console email, and a local database. On a live site, you need <code>DEBUG = False</code>, strict hosts, HTTPS, and real secrets. Keeping both in one file means someone eventually ships the wrong setting.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A pilot's flight checklist differs for a training flight and a passenger flight. The aircraft is the same, but the safety settings change with the purpose.</div>
+    <p>The fix is to share common settings in one place, and keep environment-specific settings in separate files.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Splitting Settings into a Package</h2>
+    <p>Turn <code>settings.py</code> into a package with a shared base and two environment files:</p>
+    <div class="tree">mysite/
+└── settings/
+    ├── __init__.py    # empty
+    ├── base.py        # shared settings for every environment
+    ├── dev.py         # development: DEBUG on, local conveniences
+    └── prod.py        # production: secure, reads secrets from the environment</div>
+    <pre><code># mysite/settings/base.py
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "blog",
+]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "mysite.urls"
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"</code></pre>
+    <div class="callout tip">
+      <strong>Counting the parents:</strong> <code>base.py</code> sits in <code>mysite/settings/</code>, so <code>BASE_DIR</code> needs three <code>.parent</code> steps to reach the project root. Check it with <code>print(BASE_DIR)</code> after the change.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Development and Production Modules</h2>
+    <p>Each environment file starts by importing the base, then overrides what differs:</p>
+    <pre><code># mysite/settings/dev.py
+from .base import *
+
+DEBUG = True
+SECRET_KEY = "dev-only-insecure-key-change-me"   # fine locally, never in production
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}</code></pre>
+    <pre><code># mysite/settings/prod.py
+import os
+from .base import *
+
+DEBUG = False
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ["EMAIL_HOST"]
+EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587</code></pre>
+    <div class="callout warn">
+      <strong>Fail loudly on missing secrets:</strong> <code>os.environ["DJANGO_SECRET_KEY"]</code> raises a <code>KeyError</code> if the variable is missing, so the site refuses to start with an unsafe default. Avoid <code>os.environ.get("DJANGO_SECRET_KEY", "fallback")</code> for secrets, because a missing variable would then silently use the fallback.</div>
+    <div class="output">KeyError: 'DJANGO_SECRET_KEY'</div>
+    <p>That error is the correct behaviour: the production server will not start until the secret is set.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Choosing the Settings Module</h2>
+    <p>Django reads the <code>DJANGO_SETTINGS_MODULE</code> environment variable to decide which settings to load. <code>manage.py</code> sets a default, which you can override:</p>
+    <pre><code># manage.py (the default line, already present)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings.dev")</code></pre>
+    <pre><code># Development (uses the default)
+python manage.py runserver
+
+# Production (explicit)
+export DJANGO_SETTINGS_MODULE=mysite.settings.prod
+export DJANGO_SECRET_KEY="a-long-random-value"
+export DJANGO_ALLOWED_HOSTS="example.com,www.example.com"
+python manage.py check --deploy</code></pre>
+    <div class="callout tip">
+      <strong>Generate a real secret key</strong> with a short Python command, such as <code>python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"</code>. Store the result in your hosting platform's secret manager, not in Git.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Production Security Settings</h2>
+    <p>A live site needs extra protections on top of <code>DEBUG = False</code>:</p>
+    <pre><code># mysite/settings/prod.py (security section)
+SECURE_SSL_REDIRECT = True             # send HTTP visitors to HTTPS
+SESSION_COOKIE_SECURE = True           # session cookie only over HTTPS (Day 11)
+CSRF_COOKIE_SECURE = True              # CSRF cookie only over HTTPS (Day 6)
+SECURE_HSTS_SECONDS = 3600             # tell browsers to use HTTPS for an hour (raise later)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_CONTENT_TYPE_NOSNIFF = True     # stop browsers guessing file types
+X_FRAME_OPTIONS = "DENY"               # prevent the site being embedded in other sites
+CSRF_TRUSTED_ORIGINS = ["https://example.com"]</code></pre>
+    <table>
+      <tr><th>Setting</th><th>Protects against</th></tr>
+      <tr><td><code>SECURE_SSL_REDIRECT</code></td><td>Visitors sending data over plain HTTP</td></tr>
+      <tr><td><code>SESSION_COOKIE_SECURE</code> and <code>CSRF_COOKIE_SECURE</code></td><td>Cookies being read on unencrypted connections</td></tr>
+      <tr><td><code>SECURE_HSTS_SECONDS</code></td><td>Downgrade attacks that try to switch the visitor to HTTP</td></tr>
+      <tr><td><code>X_FRAME_OPTIONS</code></td><td>Clickjacking, where your page is hidden inside another site</td></tr>
+      <tr><td><code>CSRF_TRUSTED_ORIGINS</code></td><td>Form submissions from unexpected domains</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Raise HSTS slowly:</strong> A long <code>SECURE_HSTS_SECONDS</code> makes browsers insist on HTTPS for that time, even if you later break HTTPS. Start with a short value, check that everything works, then increase it over several weeks.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Keeping Database Settings Flexible</h2>
+    <p>Development often uses SQLite, while production uses PostgreSQL. Read the production details from the environment, so the same code runs everywhere:</p>
+    <pre><code># mysite/settings/prod.py
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["DB_NAME"],
+        "USER": os.environ["DB_USER"],
+        "PASSWORD": os.environ["DB_PASSWORD"],
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
+    }
+}</code></pre>
+    <div class="callout tip">
+      <strong>Helper libraries:</strong> Packages such as <code>django-environ</code> and <code>dj-database-url</code> can parse a single <code>DATABASE_URL</code> variable. The approach here uses only the standard library, which keeps dependencies minimal.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Checking Your Setup</h2>
+    <p>Two commands catch most mistakes before a site goes live:</p>
+    <pre><code>python manage.py check
+python manage.py check --deploy --settings=mysite.settings.prod</code></pre>
+    <div class="output">?: (security.W004) You have not set a value for the SECURE_HSTS_SECONDS setting. If your entire site is served only over SSL, you may want to consider setting a value and enabling HTTP Strict Transport Security.</div>
+    <p>Each warning names a setting and explains the risk. Read them all, fix what applies, and document any you consciously accept.</p>
+    <div class="callout tip">
+      <strong>Test the production settings locally:</strong> Run <code>collectstatic</code> and the server with the prod module, using temporary environment values. Problems such as missing static files show up here, not after deployment.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Keeping Secrets Out of Git</h2>
+    <ul>
+      <li>Add <code>.env</code> files and any local secrets to <code>.gitignore</code> (Day 29).</li>
+      <li>Never hard-code secret keys, passwords, or API tokens in <code>settings.py</code>.</li>
+      <li>If a secret is ever committed, change it immediately. Deleting it from history does not make it safe, because copies may already exist.</li>
+      <li>Use different secret keys for each environment, so a leak in development cannot compromise production.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 21</h2>
+    <ol>
+      <li><strong>Leaving DEBUG = True in production:</strong> it shows code and settings to anyone who triggers an error.</li>
+      <li><strong>Using a fallback for a missing secret:</strong> the site runs with an insecure key without anyone noticing.</li>
+      <li><strong>Wrong BASE_DIR after moving settings:</strong> static files and the database go to the wrong folder.</li>
+      <li><strong>Forgetting ALLOWED_HOSTS:</strong> production refuses every request, or accepts ones meant for another domain.</li>
+      <li><strong>Enabling HSTS for a long time too early:</strong> a broken HTTPS setup then blocks visitors in their browsers.</li>
+      <li><strong>Committing the production settings values:</strong> keep them in the environment or a secret manager.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Split the Settings</h3>
+      <p>Create the <code>settings</code> package with <code>base.py</code>, <code>dev.py</code>, and <code>prod.py</code>. Move the shared settings to base and confirm <code>python manage.py runserver</code> still works.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Check BASE_DIR</h3>
+      <p>Print <code>BASE_DIR</code> from the dev settings and confirm it points to your project folder. Explain in one sentence why three <code>.parent</code> steps are needed.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Fail Loudly</h3>
+      <p>Run <code>DJANGO_SETTINGS_MODULE=mysite.settings.prod python manage.py check</code> without setting <code>DJANGO_SECRET_KEY</code>. Record the error, then set a temporary value and confirm the check passes.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Deploy Check</h3>
+      <p>Run <code>check --deploy</code> with the prod settings and list every warning. Choose three to fix and explain each in one sentence.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Secret Hygiene</h3>
+      <p>Search your project for any password or key typed directly into a settings file. Move each one to an environment variable and add a <code>.env</code> entry to <code>.gitignore</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Practice</th><th>Where you'll see it</th></tr>
+      <tr><td>Split settings modules</td><td>Almost every professional Django project has base, development, and production files</td></tr>
+      <tr><td>Environment-based secrets</td><td>Cloud platforms that inject keys at deploy time</td></tr>
+      <tr><td>HTTPS and cookie security</td><td>Banking, healthcare, and any site with logins</td></tr>
+      <tr><td><code>check --deploy</code></td><td>Release checklists before every launch</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Tomorrow's deployment basics build directly on these settings. The production module you wrote today becomes the configuration your server uses.</div>
+  </section>
+
+  <section>
+    <h2>Day 21 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 21 of 30 &middot; Next: Day 22 - Deployment Basics</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Why split settings into base, dev, and prod modules?",
+      options: ["Python requires three files", "Shared settings stay in one place, while each environment overrides only what differs", "It makes the site faster", "Django deletes one file automatically"],
+      answer: 1,
+      explain: "A shared base avoids duplication, and the environment modules hold the differences."
+    },
+    {
+      q: "Which setting tells Django which settings module to load?",
+      options: ["SETTINGS_FILE", "DJANGO_SETTINGS_MODULE", "PYTHON_SETTINGS", "DJANGO_CONFIG"],
+      answer: 1,
+      explain: "DJANGO_SETTINGS_MODULE names the module, such as mysite.settings.prod."
+    },
+    {
+      q: "Why is os.environ['DJANGO_SECRET_KEY'] better than os.environ.get with a fallback for a secret?",
+      options: ["It is shorter", "A missing secret raises an error, so the site will not run with an unsafe default", "It encrypts the key", "The fallback is faster"],
+      answer: 1,
+      explain: "Failing loudly prevents accidentally running production with a known or weak key."
+    },
+    {
+      q: "What does SECURE_SSL_REDIRECT = True do?",
+      options: ["Makes the site faster", "Sends visitors who use plain HTTP to HTTPS", "Deletes old sessions", "Encrypts the database"],
+      answer: 1,
+      explain: "It redirects HTTP requests to HTTPS, so data is not sent unencrypted."
+    },
+    {
+      q: "Which setting protects against your page being embedded in another site (clickjacking)?",
+      options: ["X_FRAME_OPTIONS", "SESSION_AGE", "STATIC_ROOT", "EMAIL_HOST"],
+      answer: 0,
+      explain: "X_FRAME_OPTIONS = 'DENY' stops browsers from displaying your pages inside frames."
+    },
+    {
+      q: "Why raise SECURE_HSTS_SECONDS slowly?",
+      options: ["Larger values slow down the site", "Browsers remember the HTTPS requirement, so a broken HTTPS setup could block visitors for that time", "HSTS only works with small numbers", "It must match the database timeout"],
+      answer: 1,
+      explain: "Once browsers receive a long HSTS value, they insist on HTTPS, so mistakes are hard to undo quickly."
+    },
+    {
+      q: "What is the main danger of leaving DEBUG = True in production?",
+      options: ["Pages load slowly", "Error pages reveal code and settings to anyone who triggers an error", "Static files stop working", "Emails are not sent"],
+      answer: 1,
+      explain: "Detailed debug pages expose sensitive information, which attackers can use."
+    },
+    {
+      q: "Why must ALLOWED_HOSTS be set correctly in production?",
+      options: ["It controls the database name", "Django refuses requests for hosts not in the list, protecting against host header attacks", "It sets the email sender", "It is only for the admin"],
+      answer: 1,
+      explain: "ALLOWED_HOSTS limits which domain names Django will serve, guarding against spoofed host headers."
+    },
+    {
+      q: "Which command checks production security settings?",
+      options: ["python manage.py check --deploy", "python manage.py deploy", "python manage.py secure", "python manage.py test --prod"],
+      answer: 0,
+      explain: "check --deploy reports warnings about settings that need attention before going live."
+    },
+    {
+      q: "What should happen if a secret key is accidentally committed to Git?",
+      options: ["Nothing, if you delete the file later", "Change the secret immediately, because copies in history may already exist", "Only tell the team", "Remove the comment above it"],
+      answer: 1,
+      explain: "Deleting a secret from the latest version does not remove it from history, so the secret must be replaced."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 22!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

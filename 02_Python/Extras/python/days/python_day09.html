@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 9</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 9 of 30</span>
+  <h1>Functions in Depth</h1>
+  <p>Estimated time: about 1.5 hours &middot; *args, **kwargs, unpacking, global and nonlocal, closures</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Flexible Arguments with *args</h2>
+    <p>Sometimes you don't know how many values a caller will pass. A parameter named <code>*args</code> collects any extra positional arguments into a tuple.</p>
+    <pre><code>def total(*numbers):
+    print(type(numbers))     # tuple
+    return sum(numbers)
+
+print(total(1, 2))
+print(total(5, 10, 15, 20))
+print(total())</code></pre>
+    <div class="output">&lt;class 'tuple'&gt;
+3
+50
+0</div>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> <code>*args</code> is like a bag at the checkout. Whatever the customer hands over goes into the bag, and the cashier counts everything inside.
+    </div>
+    <p>The name <code>args</code> is a convention. The important part is the single star <code>*</code>.</p>
+    <div class="callout warn">
+      <strong>Rule:</strong> Regular parameters come first, then <code>*args</code>. For example, <code>def f(name, *scores)</code> is valid, while <code>def f(*scores, name)</code> needs a keyword argument to call correctly.
+    </div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Flexible Keyword Arguments with **kwargs</h2>
+    <p><code>**kwargs</code> collects extra keyword arguments into a dictionary. Keys are the argument names, and values are what was passed.</p>
+    <pre><code>def make_profile(**details):
+    for key, value in details.items():
+        print(f"{key}: {value}")
+
+make_profile(name="Sam", age=25, city="Surat")</code></pre>
+    <div class="output">name: Sam
+age: 25
+city: Surat</div>
+    <p>Both can be combined. The conventional order is regular parameters, then <code>*args</code>, then <code>**kwargs</code>.</p>
+    <pre><code>def report(title, *values, **options):
+    print("Title:", title)
+    print("Values:", values)
+    print("Options:", options)
+
+report("Sales", 10, 20, unit="Rs", round_to=2)</code></pre>
+    <div class="output">Title: Sales
+Values: (10, 20)
+Options: {'unit': 'Rs', 'round_to': 2}</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Unpacking Arguments with * and **</h2>
+    <p>The same star symbols work in the other direction, when calling a function. <code>*</code> spreads a list or tuple into separate positional arguments, and <code>**</code> spreads a dictionary into keyword arguments.</p>
+    <pre><code>def add3(a, b, c):
+    return a + b + c
+
+nums = [1, 2, 3]
+print(add3(*nums))            # same as add3(1, 2, 3)
+
+settings = {"a": 10, "b": 20, "c": 30}
+print(add3(**settings))       # same as add3(a=10, b=20, c=30)</code></pre>
+    <div class="output">6
+60</div>
+    <div class="callout tip">
+      <strong>Memory aid:</strong> In a <em>definition</em>, <code>*</code> and <code>**</code> collect values into a tuple or dictionary. In a <em>call</em>, they spread them out.
+    </div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Keyword-Only and Positional-Only Parameters</h2>
+    <p>You can force certain arguments to be passed a particular way. A bare <code>*</code> in the definition means every parameter after it must be passed by keyword.</p>
+    <pre><code>def send(message, *, urgent=False):
+    prefix = "URGENT: " if urgent else ""
+    print(prefix + message)
+
+send("Server down", urgent=True)
+# send("Server down", True)    # TypeError: takes 1 positional argument</code></pre>
+    <div class="output">URGENT: Server down</div>
+    <p>This makes calls clearer. <code>send("Hi", True)</code> is unclear, but <code>send("Hi", urgent=True)</code> explains itself.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Return Patterns</h2>
+    <p>Good functions return something predictable. These are the patterns you'll see most often.</p>
+
+    <h3>Returning early (guard clauses)</h3>
+    <pre><code>def discount_for(age):
+    if age < 0:
+        return None          # invalid input, stop early
+    if age >= 60:
+        return 0.2
+    return 0.0
+
+print(discount_for(65))      # 0.2
+print(discount_for(-1))      # None</code></pre>
+    <div class="output">0.2
+None</div>
+    <p>Guard clauses keep the main logic un-indented and easy to read.</p>
+
+    <h3>Returning a dictionary for named results</h3>
+    <pre><code>def summary(scores):
+    return {
+        "count": len(scores),
+        "average": sum(scores) / len(scores),
+        "best": max(scores),
+    }
+
+result = summary([70, 85, 90])
+print(result["average"])     # 81.666...
+print(result["best"])        # 90</code></pre>
+    <div class="output">81.66666666666667
+90</div>
+    <div class="callout tip">
+      <strong>When to use which:</strong> Return one value for a simple result. Return a tuple for a small fixed set of values. Return a dictionary when the caller benefits from named fields.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Scope in Depth: global and nonlocal</h2>
+    <p>Day 8 showed that assigning to a name inside a function creates a local variable. Two keywords change that behaviour.</p>
+
+    <h3>global: change a module-level variable</h3>
+    <pre><code>counter = 0
+
+def increment():
+    global counter
+    counter += 1
+
+increment()
+increment()
+print(counter)     # 2</code></pre>
+    <div class="output">2</div>
+    <div class="callout warn">
+      <strong>Use sparingly:</strong> Global changes make code harder to test and follow. Prefer passing values in and returning results out, as you practised on Day 8.
+    </div>
+
+    <h3>nonlocal: change a variable from an enclosing function</h3>
+    <pre><code>def make_counter():
+    count = 0
+    def step():
+        nonlocal count
+        count += 1
+        return count
+    return step
+
+next_number = make_counter()
+print(next_number())   # 1
+print(next_number())   # 2
+print(next_number())   # 3</code></pre>
+    <div class="output">1
+2
+3</div>
+    <p>This is a <strong>closure</strong>: the inner function remembers <code>count</code> between calls, even though <code>make_counter</code> has finished. Closures power decorators, which you'll meet on Day 20.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Lambda Functions (Short Preview)</h2>
+    <p>A lambda is a small, unnamed function written in one line. It's useful as a quick key or callback. Full coverage comes on Day 10.</p>
+    <pre><code>square = lambda x: x * x
+print(square(7))             # 49
+
+pairs = [(1, "one"), (3, "three"), (2, "two")]
+pairs.sort(key=lambda p: p[0])
+print(pairs)</code></pre>
+    <div class="output">49
+[(1, 'one'), (2, 'two'), (3, 'three')]</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 9</h2>
+    <ol>
+      <li><strong>Wrong parameter order:</strong> <code>*args</code> must come before <code>**kwargs</code>, and regular parameters before both.</li>
+      <li><strong>Treating args as a list:</strong> <code>*args</code> is a tuple, so you can't assign to its items.</li>
+      <li><strong>Forgetting the star when unpacking:</strong> <code>add3(nums)</code> passes one list; <code>add3(*nums)</code> passes three values.</li>
+      <li><strong>Using global without need:</strong> pass arguments and return results instead.</li>
+      <li><strong>Forgetting nonlocal:</strong> <code>count += 1</code> inside an inner function raises UnboundLocalError unless you declare nonlocal.</li>
+      <li><strong>Overusing lambda:</strong> if a lambda is hard to read, use a normal <code>def</code> with a name.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Flexible Average</h3>
+      <p>Write <code>average(*numbers)</code> that returns the average of any number of arguments. Return 0 if none are given.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Receipt Builder</h3>
+      <p>Write <code>receipt(customer, **items)</code> where each keyword is an item name and its price. Print each item with its price, then the total. Test with <code>receipt("Sam", pen=10, book=150)</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Unpacking Practice</h3>
+      <p>Store a list of three numbers. Pass it to a function <code>volume(l, w, h)</code> using the star operator to compute l x w x h. Then store a dictionary with keys l, w, h and call it with <code>**</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Ticket Pricing</h3>
+      <p>Write <code>ticket_price(age, *, student=False)</code> that returns 100 normally, 50 for students, and 0 for children under 5. Use guard clauses. Confirm that calling it with <code>True</code> as a second positional argument raises an error.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Visit Counter</h3>
+      <p>Write <code>make_visit_counter()</code> that returns a function. Each call to that function adds 1 and returns the new total, using <code>nonlocal</code>. Call it three times and print each result.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Sort by Second Item</h3>
+      <p>Given a list of tuples like <code>[("Sam", 82), ("Ali", 95), ("Sara", 70)]</code>, sort it by the score using a lambda, then print the names in order from highest to lowest.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td><code>*args</code></td><td><code>print(*items)</code>, math functions that accept any number of values, logging helpers</td></tr>
+      <tr><td><code>**kwargs</code></td><td>Configuration options, Django model fields, passing options through wrapper functions</td></tr>
+      <tr><td>Unpacking with <code>*</code> and <code>**</code></td><td>Passing a row of database results into a function, forwarding options from one function to another</td></tr>
+      <tr><td>Keyword-only parameters</td><td>Safer APIs where flags like <code>force=True</code> must be spelled out</td></tr>
+      <tr><td>Closures</td><td>Counters and rate limiters, factory functions, and decorators used in web frameworks for login checks</td></tr>
+      <tr><td>Lambda with sort</td><td>Sorting customers by spending, products by rating, or files by size</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's <code>Model.objects.filter(**kwargs)</code> uses the keyword unpacking you learned today. Many Django view decorators rely on closures.
+    </div>
+  </section>
+
+  <section>
+    <h2>Day 9 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 9 of 30 &middot; Next: Day 10 - Lambda, map, and filter</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What type does *args give the parameter inside the function?",
+      options: ["list", "tuple", "dict", "set"],
+      answer: 1,
+      explain: "*args collects extra positional arguments into a tuple."
+    },
+    {
+      q: "What type does **kwargs give the parameter inside the function?",
+      options: ["list", "tuple", "dict", "set"],
+      answer: 2,
+      explain: "**kwargs collects extra keyword arguments into a dictionary."
+    },
+    {
+      q: "What does f(*[1, 2, 3]) do when f takes three parameters?",
+      options: ["Passes the list as one argument", "Passes 1, 2, 3 as three separate arguments", "Raises an error", "Passes only 1"],
+      answer: 1,
+      explain: "The * operator spreads the list into separate positional arguments."
+    },
+    {
+      q: "Which parameter order is valid?",
+      options: ["def f(**kw, *args):", "def f(a, *args, **kw):", "def f(**kw, a):", "def f(a, b, *):"],
+      answer: 1,
+      explain: "The order is regular parameters, then *args, then **kwargs. The others break this order or end with a bare * and no name after it."
+    },
+    {
+      q: "In def send(msg, *, urgent=False), how must urgent be passed?",
+      options: ["Positionally", "By keyword only", "Either way", "It cannot be passed"],
+      answer: 1,
+      explain: "The bare * means every parameter after it is keyword-only."
+    },
+    {
+      q: "What does the nonlocal keyword allow?",
+      options: ["Changing a global variable", "Changing a variable from an enclosing function", "Creating a constant", "Importing modules"],
+      answer: 1,
+      explain: "nonlocal lets an inner function assign to a variable in the nearest enclosing function."
+    },
+    {
+      q: "What is a closure?",
+      options: ["A function that closes files", "An inner function that remembers variables from its enclosing function", "A function with no return", "A loop that ends automatically"],
+      answer: 1,
+      explain: "A closure keeps access to variables from the scope where it was created, even after that function has finished."
+    },
+    {
+      q: "What does this print? def f(*a, **k): print(len(a), len(k)) ; f(1, 2, x=3)",
+      options: ["3 1", "2 1", "1 2", "2 2"],
+      answer: 1,
+      explain: "Two positional values (1, 2) go into a, and one keyword (x=3) goes into k."
+    },
+    {
+      q: "Which is an example of a guard clause?",
+      options: ["A global variable", "Returning early when input is invalid", "A lambda with no name", "A default argument"],
+      answer: 1,
+      explain: "A guard clause checks for a problem first and returns early, keeping the main logic simple."
+    },
+    {
+      q: "What does this print? square = lambda x: x * x; print(square(4))",
+      options: ["8", "16", "4", "Error"],
+      answer: 1,
+      explain: "The lambda squares its input, so square(4) returns 16."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 10!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 4</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 4 of 30</span>
+  <h1>Templates</h1>
+  <p>Estimated time: about 1.5 hours &middot; The Django template language, variables, filters, loops, conditions, template inheritance, include, and rendering real data</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What Templates Do</h2>
+    <p>A <strong>template</strong> is an HTML file with placeholders. The view supplies the data, and Django fills the placeholders to produce the final page. HTML handles the layout; Python handles the data.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A template is a letter with blanks, such as "Dear ___, your order of ___ has shipped." The blanks are filled in for each customer. The letter's design stays the same every time.</div>
+    <p>Up to now your views returned plain strings. Templates let you build proper pages.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Variables, Filters, and Tags</h2>
+    <p>The template language has three building blocks:</p>
+    <table>
+      <tr><th>Syntax</th><th>Name</th><th>Example</th></tr>
+      <tr><td><code>{{ ... }}</code></td><td>Variable</td><td><code>{{ post.title }}</code></td></tr>
+      <tr><td><code>{% ... %}</code></td><td>Tag (logic)</td><td><code>{% for post in posts %}</code></td></tr>
+      <tr><td><code>{# ... #}</code></td><td>Comment (not sent to the browser)</td><td><code>{# remove later #}</code></td></tr>
+      <tr><td><code>|</code></td><td>Filter (changes a value)</td><td><code>{{ post.title|upper }}</code></td></tr>
+    </table>
+    <p>Useful filters:</p>
+    <pre><code>{{ post.title|upper }}              {# AUTHOR MODEL TIPS #}
+{{ post.body|truncatechars:20 }}    {# Keep models sm... #}
+{{ post.author.name|default:"Unknown" }}
+{{ post.created_at|date:"d M Y" }}  {# formatted date #}
+{{ posts|length }}                  {# number of items #}</code></pre>
+    <div class="callout tip">
+      <strong>Automatic escaping:</strong> Django escapes HTML by default. If a title contains <code>&lt;b&gt;</code>, it appears as text, not bold. This protects your site from script injection (XSS). Only use <code>|safe</code> on content you fully trust.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Loops and Conditions</h2>
+    <pre><code>{% if posts %}
+  &lt;ul&gt;
+  {% for post in posts %}
+    &lt;li&gt;{{ forloop.counter }}. {{ post.title }} by {{ post.author.name }}&lt;/li&gt;
+  {% empty %}
+    &lt;li&gt;Nothing here yet.&lt;/li&gt;
+  {% endfor %}
+  &lt;/ul&gt;
+{% else %}
+  &lt;p&gt;No posts available.&lt;/p&gt;
+{% endif %}</code></pre>
+    <ul>
+      <li><code>forloop.counter</code> counts from 1, and <code>forloop.first</code> and <code>forloop.last</code> are True for the first and last items.</li>
+      <li><code>{% empty %}</code> runs when the list has nothing in it, which avoids an extra <code>if</code>.</li>
+      <li>Conditions can use <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>in</code>, <code>and</code>, <code>or</code>, and <code>not</code>.</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Limit of templates:</strong> The template language is deliberately simple. It can't do arbitrary Python. Put complicated logic in the view or the model, not the template.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Rendering a Template from a View</h2>
+    <p>Templates live in an app's <code>templates</code> folder. Create this structure inside the <code>blog</code> app:</p>
+    <div class="tree">blog/
+└── templates/
+    └── blog/
+        └── post_list.html</div>
+    <p>The nested <code>blog/</code> folder prevents name clashes with templates from other apps. Django finds templates automatically because <code>APP_DIRS</code> is enabled in settings.</p>
+    <p>Write a view that gives the template its data:</p>
+    <pre><code># blog/views.py
+from django.shortcuts import render
+from .models import Post
+
+def post_list(request):
+    posts = Post.objects.filter(is_published=True)
+    return render(request, "blog/post_list.html", {"posts": posts})</code></pre>
+    <p>The third argument to <code>render()</code> is the <strong>context</strong>: a dictionary whose keys become variable names in the template.</p>
+    <p>Add the URL in <code>blog/urls.py</code>:</p>
+    <pre><code>path("posts/", views.post_list, name="post_list"),</code></pre>
+    <p>A simple template with one list:</p>
+    <pre><code># blog/templates/blog/post_list.html
+&lt;h1&gt;Posts&lt;/h1&gt;
+&lt;ul&gt;
+{% for post in posts %}
+  &lt;li&gt;{{ post.title }} by {{ post.author.name }}&lt;/li&gt;
+{% empty %}
+  &lt;li&gt;No published posts yet.&lt;/li&gt;
+{% endfor %}
+&lt;/ul&gt;</code></pre>
+    <p>If the database holds one published post, "Model tips" by "Asha", the page at <code>/posts/</code> contains:</p>
+    <div class="output">&lt;h1&gt;Posts&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;Model tips by Asha&lt;/li&gt;
+&lt;/ul&gt;</div>
+    <p>The output shows the HTML the browser receives. The exact whitespace may differ from your template, which is normal.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Template Inheritance</h2>
+    <p>Most pages share a header, navigation, and footer. Write them once in a <strong>base template</strong>, then let each page extend it.</p>
+    <pre><code># blog/templates/base.html
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;{% block title %}My Blog{% endblock %}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;nav&gt;&lt;a href="/"&gt;Home&lt;/a&gt; | &lt;a href="/posts/"&gt;Posts&lt;/a&gt;&lt;/nav&gt;
+  &lt;main&gt;
+    {% block content %}{% endblock %}
+  &lt;/main&gt;
+  &lt;footer&gt;&amp;copy; My Blog&lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    <pre><code># blog/templates/blog/post_list.html
+{% extends "base.html" %}
+
+{% block title %}Posts{% endblock %}
+
+{% block content %}
+  &lt;h1&gt;Posts&lt;/h1&gt;
+  {% for post in posts %}
+    &lt;p&gt;{{ post.title }}&lt;/p&gt;
+  {% endfor %}
+{% endblock %}</code></pre>
+    <p><code>{% extends %}</code> must be the first tag in the child template. Anything outside a <code>{% block %}</code> in the child is ignored.</p>
+    <div class="callout tip">
+      <strong>Where to put <code>base.html</code>:</strong> Keeping it in the project-level <code>templates</code> folder is common. Then add that folder to <code>TEMPLATES[0]["DIRS"]</code> in <code>settings.py</code>, as <code>[BASE_DIR / "templates"]</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: include and url</h2>
+    <p>Use <code>{% include %}</code> to reuse a small piece, such as a post card:</p>
+    <pre><code># blog/templates/blog/_post_card.html
+&lt;article&gt;
+  &lt;h2&gt;{{ post.title }}&lt;/h2&gt;
+  &lt;p&gt;{{ post.body|truncatewords:15 }}&lt;/p&gt;
+&lt;/article&gt;
+
+# in post_list.html
+{% for post in posts %}
+  {% include "blog/_post_card.html" %}
+{% endfor %}</code></pre>
+    <p>Never hard-code links such as <code>/posts/</code>. Use the <code>url</code> tag with the name you gave the route. If the address changes later, every link still works.</p>
+    <pre><code>&lt;a href="{% url 'post_list' %}"&gt;All posts&lt;/a&gt;
+&lt;a href="{% url 'greet' name='Sam' %}"&gt;Say hello&lt;/a&gt;</code></pre>
+    <div class="output">&lt;a href="/posts/"&gt;All posts&lt;/a&gt;
+&lt;a href="/greet/Sam/"&gt;Say hello&lt;/a&gt;</div>
+    <div class="callout warn">
+      <strong>Common error:</strong> A misspelled name in <code>{% url %}</code> raises <code>NoReverseMatch</code>. Check that the <code>name=</code> in <code>urls.py</code> matches exactly.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Putting It Together</h2>
+    <p>A complete detail page shows the template language working together:</p>
+    <pre><code># blog/views.py
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, pk=post_id, is_published=True)
+    return render(request, "blog/post_detail.html", {"post": post})</code></pre>
+    <p><code>get_object_or_404</code> returns the post, or a standard "Page not found" response if it doesn't exist. This is far safer than <code>Post.objects.get()</code>, which would crash the page. Don't forget to import it: <code>from django.shortcuts import get_object_or_404, render</code>.</p>
+    <pre><code># blog/templates/blog/post_detail.html
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+  &lt;h1&gt;{{ post.title }}&lt;/h1&gt;
+  &lt;p&gt;By {{ post.author.name }} on {{ post.created_at|date:"d M Y" }}&lt;/p&gt;
+  &lt;div&gt;{{ post.body|linebreaks }}&lt;/div&gt;
+  &lt;p&gt;&lt;a href="{% url 'post_list' %}"&gt;Back to all posts&lt;/a&gt;&lt;/p&gt;
+{% endblock %}</code></pre>
+    <div class="callout tip">
+      <strong>Note:</strong> <code>linebreaks</code> turns newlines in the body into paragraphs. It also escapes the text, so the content stays safe.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 4</h2>
+    <ol>
+      <li><strong>Putting the template in the wrong folder:</strong> it must be inside <code>app/templates/app/</code> (or a folder listed in <code>DIRS</code>), or Django reports "TemplateDoesNotExist".</li>
+      <li><strong>Writing <code>{% extends %}</code> after other content:</strong> it must be the first tag.</li>
+      <li><strong>Using <code>|safe</code> on user input:</strong> it turns off escaping and opens the door to script injection.</li>
+      <li><strong>Hard-coding URLs:</strong> use <code>{% url %}</code> so links survive route changes.</li>
+      <li><strong>Doing heavy logic in templates:</strong> filter and calculate in the view or model.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Continue in your <code>mysite</code> project. Visit each page in the browser after you build it.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Your First Template</h3>
+      <p>Create <code>blog/templates/blog/post_list.html</code> and the <code>post_list</code> view from Lesson 4. Visit <code>/posts/</code> and confirm the published posts appear.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Base Layout</h3>
+      <p>Create <code>base.html</code> with a navigation bar and footer. Make <code>post_list.html</code> extend it, and confirm the navigation shows on the posts page.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Filters and Empty State</h3>
+      <p>Show each post's title in uppercase using a filter, and show its body truncated to 30 characters. Use <code>{% empty %}</code> to display a message when there are no posts. Test the empty message by unpublishing every post in the admin.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Detail Page</h3>
+      <p>Build the <code>post_detail</code> view and template from Lesson 7. Add a link from each item in the list to its detail page, using <code>{% url 'post_detail' post.id %}</code> with a matching route.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Escaping Test</h3>
+      <p>Create a post whose title is <code>&lt;b&gt;Bold?&lt;/b&gt;</code>. Look at the page and explain, in one sentence, why the tags appear as text instead of making the title bold.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Template feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Base template with blocks</td><td>Every page of a site sharing one header and footer</td></tr>
+      <tr><td>for loops with empty</td><td>Product listings, search results, comment threads</td></tr>
+      <tr><td>Filters like date and truncatechars</td><td>Article previews, timestamps, and prices</td></tr>
+      <tr><td>{% url %}</td><td>Navigation menus and links that must stay correct when routes change</td></tr>
+      <tr><td>Automatic escaping</td><td>Comment sections where users type arbitrary text</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Frontend frameworks such as React can also consume your Django data as JSON through an API. You'll learn that on the REST API days, but templates are how Django builds full pages on its own.</div>
+  </section>
+
+  <section>
+    <h2>Day 4 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 4 of 30 &middot; Next: Day 5 - Static Files</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which syntax prints a variable in a Django template?",
+      options: ["{% post.title %}", "{{ post.title }}", "[[ post.title ]]", "<post.title>"],
+      answer: 1,
+      explain: "Double curly braces print a value, while {% %} is for tags such as loops and conditions."
+    },
+    {
+      q: "What does the render() function receive as its third argument?",
+      options: ["A URL", "A context dictionary that supplies data to the template", "A model class", "A database query"],
+      answer: 1,
+      explain: "The context dictionary's keys become variable names inside the template."
+    },
+    {
+      q: "What is the purpose of {% empty %} inside a for loop?",
+      options: ["It stops the loop", "It shows content when the list has no items", "It deletes the empty items", "It sorts the list"],
+      answer: 1,
+      explain: "{% empty %} runs only when the sequence is empty, which replaces a separate if check."
+    },
+    {
+      q: "Why does a title containing <b>text</b> show as plain text instead of bold?",
+      options: ["Django deletes the tags", "Django escapes HTML by default to protect the page", "Browsers never display bold", "The database removes tags"],
+      answer: 1,
+      explain: "Automatic escaping converts the characters so they are displayed as text, which protects against script injection."
+    },
+    {
+      q: "What does {% extends 'base.html' %} do?",
+      options: ["Copies base.html into the page", "Makes the current template inherit the layout of base.html", "Deletes base.html", "Imports a Python module"],
+      answer: 1,
+      explain: "extends makes the child template use the parent's layout, with its own blocks filling the gaps."
+    },
+    {
+      q: "Where must {% extends %} appear in a child template?",
+      options: ["At the end of the file", "In the middle of the content", "As the first tag", "Inside a block"],
+      answer: 2,
+      explain: "extends must be the first tag in the child template, or the inheritance won't work correctly."
+    },
+    {
+      q: "Why is {% url 'post_list' %} better than writing /posts/ directly?",
+      options: ["It is faster", "If the route changes, the link still works", "It hides the link", "It removes the need for urls.py"],
+      answer: 1,
+      explain: "The url tag builds the address from the route name, so changing the route updates every link."
+    },
+    {
+      q: "What does get_object_or_404 do when no matching post exists?",
+      options: ["Returns None", "Creates the post", "Returns a standard 404 Not Found response", "Crashes the server"],
+      answer: 2,
+      explain: "It returns a standard 404 response, which is safer than letting an exception crash the page."
+    },
+    {
+      q: "Which template folder path is the standard location for an app's templates?",
+      options: ["blog/templates/blog/", "templates/blog.html", "blog/views/", "static/blog/"],
+      answer: 0,
+      explain: "The nested blog/ folder avoids name clashes with other apps' templates."
+    },
+    {
+      q: "Why should you avoid using |safe on user-written content?",
+      options: ["It makes the page slower", "It disables escaping, which can allow harmful scripts to run", "It removes formatting", "It breaks the URL tag"],
+      answer: 1,
+      explain: "|safe marks content as trusted HTML, so any script inside it would run in visitors' browsers."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 5!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

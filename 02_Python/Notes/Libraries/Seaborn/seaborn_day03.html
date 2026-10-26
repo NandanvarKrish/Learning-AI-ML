@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn – Day 3 | Relationship & Regression Plots</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#ECFEFF;--surface:#FFFFFF;--border:#A5F3FC;--accent:#0E7490;--accent2:#164E63;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--blue:#3B82F6;--purple:#7C3AED;--rose:#BE185D;
+    --text:#083344;--muted:#0E7490;--code-bg:#031014;--code-text:#A5F3FC;--tag-bg:#CFFAFE;--tag-text:#164E63;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(14,116,144,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0E7490 0%,#164E63 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#A5F3FC;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#22D3EE;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#67E8F9;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#164E63;font-style:italic;} .op{color:#A5F3FC;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.yellow{border-color:var(--yellow);background:#FFFBEB;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.yellow .callout-title{color:#92400E;}
+  .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#164E63,#0E7490);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0E7490,#164E63);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#0E7490,#7C3AED);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Day 3 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">60%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:60%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Full Course · Day 3</div>
+  <h1>Relationship &amp; <span>Regression Plots</span></h1>
+  <p>Fit and visualize regression lines automatically, explore joint distributions with jointplot, and master the correlation heatmap workflow.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📈 regplot &amp; lmplot</span>
+    <span class="hero-pill">🔀 Faceted Regression</span>
+    <span class="hero-pill">🔗 jointplot</span>
+    <span class="hero-pill">🔥 heatmap</span>
+    <span class="hero-pill">📊 Correlation Analysis</span>
+    <span class="hero-pill">📉 residplot</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📈</div>
+    <div><h2>regplot() — Scatter + Automatic Regression Line</h2><p>Seaborn's one-line linear relationship visualization</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><code>regplot()</code> is an axes-level function combining a scatter plot with an automatically FIT regression line and its confidence interval — no manual <code>np.polyfit()</code> needed.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>)
+tips = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)
+
+<span class="cm"># Basic regression plot — scatter + fitted line + 95% CI band</span>
+<span class="op">sns</span>.<span class="fn">regplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+
+<span class="cm"># Styled version</span>
+<span class="op">sns</span>.<span class="fn">regplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>,
+            scatter_kws={<span class="st">'alpha'</span>:<span class="nm">0.5</span>, <span class="st">'color'</span>:<span class="st">'#0E7490'</span>},
+            line_kws={<span class="st">'color'</span>:<span class="st">'#BE185D'</span>, <span class="st">'linewidth'</span>:<span class="nm">2</span>},
+            ci=<span class="nm">95</span>)                    <span class="cm"># confidence interval band around the line</span>
+
+<span class="cm"># Fit a HIGHER-ORDER polynomial (not just a straight line)</span>
+<span class="op">sns</span>.<span class="fn">regplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, order=<span class="nm">2</span>)   <span class="cm"># quadratic fit</span>
+
+<span class="cm"># Fit a LOGISTIC regression (for a binary 0/1 outcome variable)</span>
+<span class="op">sns</span>.<span class="fn">regplot</span>(data=titanic, x=<span class="st">'age'</span>, y=<span class="st">'survived'</span>, logistic=<span class="kw">True</span>)
+
+<span class="cm"># Fit a LOWESS (locally weighted) smooth curve instead of a straight line</span>
+<span class="op">sns</span>.<span class="fn">regplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, lowess=<span class="kw">True</span>)
+
+<span class="cm"># No confidence interval band, no scatter points, just the fit line</span>
+<span class="op">sns</span>.<span class="fn">regplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, ci=<span class="kw">None</span>, scatter=<span class="kw">False</span>)</pre>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 regplot() vs Matplotlib's np.polyfit() Approach</div>
+      In pure Matplotlib, adding a trend line requires: compute coefficients with <code>np.polyfit()</code>, build the fit function with <code>np.poly1d()</code>, generate points, then plot. Seaborn's <code>regplot()</code> does all of this — including the confidence interval band — in ONE function call.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔀</div>
+    <div><h2>lmplot() — Figure-Level Regression with Faceting</h2><p>Compare regression relationships across groups automatically</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># lmplot is the figure-level version of regplot — same fitting, but with faceting power</span>
+<span class="op">sns</span>.<span class="fn">lmplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+
+<span class="cm"># Separate regression line PER hue group — reveals if the relationship differs by category</span>
+<span class="op">sns</span>.<span class="fn">lmplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'smoker'</span>)
+<span class="cm"># Two separate fitted lines — do smokers and non-smokers tip differently relative to bill size?</span>
+
+<span class="cm"># Faceted into a grid — separate SUBPLOT per category, each with its own regression line</span>
+<span class="op">sns</span>.<span class="fn">lmplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>,
+            col=<span class="st">'time'</span>, row=<span class="st">'smoker'</span>,   <span class="cm"># 2×2 grid, each panel with its OWN independent fit</span>
+            height=<span class="nm">4</span>)
+
+<span class="cm"># hue AND col together — compare hue-lines WITHIN each facet</span>
+<span class="op">sns</span>.<span class="fn">lmplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'sex'</span>, col=<span class="st">'day'</span>, col_wrap=<span class="nm">2</span>)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Function</th><th>Level</th><th>Faceting (col/row)?</th><th>ax= support?</th></tr>
+        <tr><td><code>regplot()</code></td><td>Axes-level</td><td>❌ No</td><td>✅ Yes</td></tr>
+        <tr><td><code>lmplot()</code></td><td>Figure-level</td><td>✅ Yes</td><td>❌ No</td></tr>
+      </table>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 hue= vs col= in lmplot()</div>
+      <code>hue=</code> overlays multiple fitted lines in the SAME panel (good for 2-3 groups, direct comparison). <code>col=</code>/<code>row=</code> creates SEPARATE panels (good for more groups, or when overlaid lines would be too cluttered to read).
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🔗</div>
+    <div><h2>jointplot() — Marginal Distributions + Relationship</h2><p>Three charts in one: scatter/relationship plus both variables' distributions</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><code>jointplot()</code> combines a central relationship plot (scatter, hex, KDE) with marginal distribution plots along the top and right edges — showing both the RELATIONSHIP and each variable's individual DISTRIBUTION at once.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Default: scatter in the middle, histograms on the margins</span>
+<span class="op">sns</span>.<span class="fn">jointplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+
+<span class="cm"># Different central plot kinds</span>
+<span class="op">sns</span>.<span class="fn">jointplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, kind=<span class="st">'hex'</span>)      <span class="cm"># hexbin — great for LOTS of overlapping points</span>
+<span class="op">sns</span>.<span class="fn">jointplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, kind=<span class="st">'kde'</span>)      <span class="cm"># 2D density contours + marginal KDEs</span>
+<span class="op">sns</span>.<span class="fn">jointplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, kind=<span class="st">'reg'</span>)      <span class="cm"># adds a regression line to the center</span>
+<span class="op">sns</span>.<span class="fn">jointplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, kind=<span class="st">'resid'</span>)    <span class="cm"># residuals plot</span>
+
+<span class="cm"># Color by a categorical hue</span>
+<span class="op">sns</span>.<span class="fn">jointplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'time'</span>)
+
+<span class="cm"># Access and further customize the underlying axes</span>
+g = <span class="op">sns</span>.<span class="fn">jointplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+g.<span class="fn">ax_joint</span>.<span class="fn">set_xlabel</span>(<span class="st">'Total Bill (₹)'</span>)      <span class="cm"># the main central plot</span>
+g.<span class="fn">ax_marg_x</span>.<span class="fn">set_title</span>(<span class="st">'Bill Distribution'</span>)  <span class="cm"># top marginal plot</span>
+
+<span class="cm"># Overlay additional detail onto the joint axes</span>
+g.<span class="fn">plot_joint</span>(<span class="op">sns</span>.<span class="fn">kdeplot</span>, color=<span class="st">'r'</span>, levels=<span class="nm">5</span>)   <span class="cm"># add contour lines on top of the scatter</span></pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 kind='hex' for Overplotting</div>
+      When you have thousands of overlapping data points, a regular scatter becomes a solid blob. <code>kind='hex'</code> bins the 2D space into hexagons colored by point density — revealing the TRUE concentration pattern that a scatter plot would hide.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🔥</div>
+    <div><h2>heatmap() — Matrix Visualization</h2><p>Correlation matrices and 2D tabular data as color</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Compute a correlation matrix from a DataFrame directly</span>
+numeric_cols = tips.<span class="fn">select_dtypes</span>(include=<span class="st">'number'</span>)
+corr_matrix = numeric_cols.<span class="fn">corr</span>()      <span class="cm"># Pandas built-in correlation calculation</span>
+
+<span class="cm"># Basic heatmap</span>
+<span class="op">sns</span>.<span class="fn">heatmap</span>(corr_matrix)
+
+<span class="cm"># Fully styled correlation heatmap — the standard EDA pattern</span>
+<span class="op">sns</span>.<span class="fn">heatmap</span>(corr_matrix,
+            annot=<span class="kw">True</span>,             <span class="cm"># show numeric value in each cell</span>
+            fmt=<span class="st">'.2f'</span>,               <span class="cm"># format: 2 decimal places</span>
+            cmap=<span class="st">'coolwarm'</span>,         <span class="cm"># diverging colormap (correlation ranges -1 to 1)</span>
+            vmin=-<span class="nm">1</span>, vmax=<span class="nm">1</span>,        <span class="cm"># fix the color scale range explicitly</span>
+            center=<span class="nm">0</span>,               <span class="cm"># ensure 0 maps to the neutral midpoint color</span>
+            square=<span class="kw">True</span>,             <span class="cm"># make each cell perfectly square</span>
+            linewidths=<span class="nm">0.5</span>,          <span class="cm"># thin white gridlines between cells</span>
+            cbar_kws={<span class="st">'label'</span>:<span class="st">'Correlation'</span>})
+
+<span class="cm"># Mask the upper triangle — correlation matrices are symmetric, showing both halves is redundant</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+mask = <span class="op">np</span>.<span class="fn">triu</span>(<span class="op">np</span>.<span class="fn">ones_like</span>(corr_matrix, dtype=<span class="fn">bool</span>))   <span class="cm"># True for upper triangle</span>
+<span class="op">sns</span>.<span class="fn">heatmap</span>(corr_matrix, mask=mask, annot=<span class="kw">True</span>, cmap=<span class="st">'coolwarm'</span>, center=<span class="nm">0</span>)
+
+<span class="cm"># Non-correlation heatmap example — pivoted data (e.g., flights by month/year)</span>
+flights = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'flights'</span>)
+flights_pivot = flights.<span class="fn">pivot</span>(index=<span class="st">'month'</span>, columns=<span class="st">'year'</span>, values=<span class="st">'passengers'</span>)
+<span class="op">sns</span>.<span class="fn">heatmap</span>(flights_pivot, cmap=<span class="st">'YlGnBu'</span>, annot=<span class="kw">True</span>, fmt=<span class="st">'d'</span>)</pre>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ Always Set center=0 for Correlation Heatmaps</div>
+      Without <code>center=0</code>, the colormap might not put white/neutral exactly at zero correlation, making it hard to instantly distinguish weak positive from weak negative correlations. Setting <code>center=0</code> with a diverging colormap like 'coolwarm' or 'RdBu' ensures the visual midpoint matches the meaningful "no correlation" value.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">📉</div>
+    <div><h2>residplot() — Checking Regression Assumptions</h2><p>Is a linear fit actually appropriate for this data?</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>A <strong>residual plot</strong> shows the ERRORS (actual - predicted) of a linear fit. If a straight line is the RIGHT model, residuals should scatter randomly around zero with no pattern. A curved pattern in residuals signals the relationship is NOT actually linear.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Residual plot — shows leftover error after fitting a straight line</span>
+<span class="op">sns</span>.<span class="fn">residplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+<span class="cm"># A horizontal band of scattered points with NO pattern = good linear fit
+# A curved/systematic pattern = a linear model is NOT appropriate; consider order=2, lowess=True</span>
+
+<span class="cm"># Add a lowess smoother line through the residuals to spot subtle patterns more easily</span>
+<span class="op">sns</span>.<span class="fn">residplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, lowess=<span class="kw">True</span>,
+              line_kws={<span class="st">'color'</span>:<span class="st">'red'</span>})</pre>
+    </div>
+
+    <div class="fbox">
+      <div class="ft">📉 Reading a Residual Plot</div>
+      <div class="fm">✅ Random scatter around y=0, roughly constant spread  → linear model fits well</div>
+      <div class="fm">❌ Curved/U-shaped pattern                            → relationship is nonlinear, try order=2 or lowess</div>
+      <div class="fm">❌ Funnel shape (spread grows/shrinks with x)         → non-constant variance (heteroscedasticity)</div>
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">sns.regplot()</div><div class="mc-desc">Axes-level scatter + fit line</div><div class="mc-ex">order=2, logistic=True</div></div>
+      <div class="mini-card"><div class="mc-name">sns.lmplot()</div><div class="mc-desc">Figure-level, faceted regression</div><div class="mc-ex">hue, col, row</div></div>
+      <div class="mini-card"><div class="mc-name">sns.jointplot()</div><div class="mc-desc">Relationship + marginals</div><div class="mc-ex">kind='hex'/'kde'/'reg'</div></div>
+      <div class="mini-card"><div class="mc-name">sns.heatmap()</div><div class="mc-desc">Matrix as color</div><div class="mc-ex">annot=True, center=0</div></div>
+      <div class="mini-card"><div class="mc-name">sns.residplot()</div><div class="mc-desc">Check linear fit validity</div><div class="mc-ex">lowess=True</div></div>
+      <div class="mini-card"><div class="mc-name">df.corr()</div><div class="mc-desc">Pandas correlation matrix</div><div class="mc-ex">feeds into heatmap()</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>regplot, lmplot, jointplot, heatmap, residplot. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0E7490">🏆</div>
+    <div><h2>Real-World Task — Diamond Price Prediction Analysis</h2><p>Estimated time: 85–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Data Scientist</strong> at a jewelry marketplace. Using Seaborn's built-in 'diamonds' dataset, build a complete relationship and regression analysis exploring what drives diamond prices.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0E7490">1</div><h4>Phase 1 — Setup &amp; Sampling</h4><span class="phase-time">~10 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Load and Sample the Data</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>)
+
+diamonds = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'diamonds'</span>)
+<span class="cm"># The full dataset has 50,000+ rows — sample for faster, clearer plots</span>
+diamonds_sample = diamonds.<span class="fn">sample</span>(<span class="nm">2000</span>, random_state=<span class="nm">42</span>)
+<span class="fn">print</span>(diamonds_sample[[<span class="st">'carat'</span>,<span class="st">'price'</span>,<span class="st">'cut'</span>,<span class="st">'color'</span>,<span class="st">'clarity'</span>]].head())</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Regression Analysis</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 1: Carat vs Price with Regression</h5>
+          <p>Build a regplot() of carat vs price. Note the curved pattern — try order=2 to see if a quadratic fit is better. Compare both on a 1×2 subplot.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 2: Check the Residuals</h5>
+          <p>Build a residplot() of carat vs price with lowess=True. Confirm whether the linear model shows a systematic pattern (it should — diamond price vs carat is famously non-linear).</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Chart 3: Faceted Regression by Cut Quality</h5>
+          <p>Use lmplot() with x='carat', y='price', hue='cut', to see if the carat→price relationship differs across cut qualities (Fair, Good, Very Good, Premium, Ideal).</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Joint &amp; Correlation Analysis</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 4: Hexbin Joint Plot</h5>
+          <p>Build a jointplot() with kind='hex' for carat vs price to properly reveal density given thousands of overlapping points.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 5: Full Correlation Heatmap</h5>
+          <p>Compute the correlation matrix of all numeric diamond features (carat, depth, table, price, x, y, z). Build an annotated heatmap with a masked upper triangle, coolwarm colormap, and center=0. Identify the strongest predictor of price.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Loaded diamonds dataset and sampled 2000 rows for performance</li>
+        <li>Built linear vs quadratic regplot comparison for carat vs price</li>
+        <li>Built residual plot confirming non-linearity with lowess overlay</li>
+        <li>Built faceted lmplot comparing regression lines across cut quality</li>
+        <li>Built hexbin jointplot handling the overplotting issue</li>
+        <li>Built masked, annotated correlation heatmap of numeric features</li>
+        <li>Identified the strongest correlate of price</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 15 min)</div>
+      Build a jointplot with kind='reg' for log(carat) vs log(price) — diamond pricing often follows a power-law relationship that becomes linear after a log-log transformation. Compare the R² fit quality visually against the untransformed version.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Statistical Plots &amp; Themes</span>
+    <span class="day-pill done">Day 2 · Distribution &amp; Categorical</span>
+    <span class="day-pill done active">Day 3 · Relationship &amp; Regression</span>
+    <span class="day-pill">Day 4 · Multi-Plot Grids</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"sns.regplot(data=tips, x='total_bill', y='tip')",q:"What THREE elements does this single function call produce?",opts:["Only a scatter plot","A scatter plot of the raw data, PLUS an automatically fitted regression line, PLUS a shaded confidence interval band around that line","Only the regression line, no scatter points","A histogram and a line plot"],ans:1,explain:"regplot() combines three elements in one call: the raw scatter points, a fitted regression line (linear by default), and a shaded 95% confidence interval band around the fit — all computed automatically without manual statistics code."},
+  {code:"sns.regplot(data=tips, x='total_bill', y='tip', order=2)",q:"What does order=2 change about the fit?",opts:["Fits 2 separate lines","Fits a QUADRATIC (degree-2 polynomial) curve instead of a straight line — useful when the relationship is visibly curved rather than linear","Doubles the confidence interval","Uses only every 2nd data point"],ans:1,explain:"The order parameter controls the degree of the polynomial fit. order=1 (default) is a straight line; order=2 fits a quadratic curve; higher orders fit more complex curves — useful when scatter plot inspection reveals a clearly non-linear relationship."},
+  {q:"What is the key difference between sns.regplot() and sns.lmplot()?",opts:["They are identical functions","regplot() is AXES-LEVEL (plots on one given ax, no faceting); lmplot() is FIGURE-LEVEL (manages its own figure, supports col=/row= faceting to show separate regression fits per subgroup)","lmplot() cannot fit polynomial curves","regplot() is deprecated"],ans:1,explain:"This mirrors the general Seaborn axes-level vs figure-level pattern. regplot() integrates into existing Matplotlib subplot layouts via ax=. lmplot() creates its own figure and can facet the regression analysis across multiple panels using col=/row=, ideal for comparing fits across many categories."},
+  {code:"sns.lmplot(data=tips, x='total_bill', y='tip', hue='smoker')",q:"What does hue='smoker' produce in this figure-level regression plot?",opts:["A single combined regression line for all data","TWO SEPARATE fitted regression lines — one for smokers, one for non-smokers — overlaid in the SAME panel with different colors, enabling direct comparison of whether the relationship differs between groups","Removes the smoker category from analysis","Creates two separate figures"],ans:1,explain:"hue= in lmplot() fits an INDEPENDENT regression line for each category and overlays them in one shared plot with matching colors — letting you visually compare whether the bill-tip relationship's slope/intercept differs between smokers and non-smokers."},
+  {q:"What is the primary purpose of jointplot()?",opts:["Only shows a scatter plot","Combines a central relationship plot (scatter/hex/kde) with MARGINAL distribution plots along the top and right edges, showing both the joint relationship AND each variable's individual distribution simultaneously","Joins two separate DataFrames together","Only works with categorical data"],ans:1,explain:"jointplot() is specifically designed to answer 'how do these 2 variables relate, AND what does each one's individual distribution look like' — combining the central relationship visualization with marginal histograms/KDEs on the edges, all in one composed figure."},
+  {code:"sns.jointplot(data=tips, x='total_bill', y='tip', kind='hex')",q:"Why would kind='hex' be preferred over the default 'scatter' for a dataset with thousands of points?",opts:["Hex is always prettier regardless of data size","With many overlapping points, a scatter plot becomes an indistinguishable solid blob; hexbin bins the 2D space into hexagonal cells colored by point DENSITY, revealing concentration patterns that pure scatter would hide (an 'overplotting' solution)","Hex plots are faster for small datasets only","kind='hex' removes outliers automatically"],ans:1,explain:"When you have thousands of data points, many scatter points overlap and render on top of each other, making it impossible to see where data is actually concentrated. Hexbin plots solve this 'overplotting' problem by binning space into hexagonal cells and coloring by count/density — revealing the true concentration structure."},
+  {q:"Why is `center=0` important when building a correlation heatmap with a diverging colormap like 'coolwarm'?",opts:["It has no visual effect","It ensures the colormap's neutral/white midpoint color aligns EXACTLY with a correlation value of zero, so viewers can instantly and correctly distinguish weak positive from weak negative correlations by color alone","center=0 removes negative correlations","It changes the numbers shown in each cell"],ans:1,explain:"Diverging colormaps are meant to show a meaningful transition through a neutral midpoint. For correlation data (which ranges -1 to +1 with 0 meaning 'no correlation'), setting center=0 ensures the colormap's neutral color maps EXACTLY to zero correlation, preventing misleading color impressions where weak correlations might appear more red or blue than they should."},
+  {code:"mask = np.triu(np.ones_like(corr_matrix, dtype=bool))\nsns.heatmap(corr_matrix, mask=mask, annot=True)",q:"Why mask the upper triangle of a correlation matrix heatmap?",opts:["It's purely decorative","A correlation matrix is symmetric (corr(A,B) = corr(B,A)), so showing both the upper AND lower triangle is redundant; masking one half reduces visual clutter while showing all unique information exactly once","It removes negative correlations","It's required for heatmap() to function"],ans:1,explain:"Since a correlation matrix is always symmetric around its diagonal, the upper and lower triangles contain identical information (just mirrored). Masking one triangle (commonly upper) removes this redundancy, making the heatmap cleaner and easier to read without losing any unique information."},
+  {q:"What does a residual plot (residplot()) specifically visualize?",opts:["The raw data points only","The DIFFERENCE between each actual y-value and what a fitted (typically linear) model PREDICTED for that x-value — essentially the leftover 'error' after removing the fitted trend","The regression line itself","The confidence interval width"],ans:1,explain:"A residual is actual_value minus predicted_value. residplot() fits a model (linear by default) and plots these residuals against x. If the residuals show NO pattern (random scatter around zero), the linear model is appropriate. A visible pattern (curve, funnel shape) suggests the linear model is missing something."},
+  {q:"If a residplot() shows a clear U-shaped or curved pattern in the residuals rather than random scatter, what does this indicate?",opts:["The data has too many outliers","The linear model is NOT capturing the true relationship correctly — the underlying data likely has a non-linear (e.g., quadratic, exponential) relationship that a straight-line fit fails to represent, suggesting order=2 or another model type should be tried","The data is perfectly linear","Nothing — this pattern is expected and normal"],ans:1,explain:"A well-fitting linear model should leave residuals that scatter RANDOMLY around zero with no discernible pattern. A systematic curve (like a U-shape) in the residuals is a diagnostic red flag indicating the true relationship is non-linear — the straight-line model is systematically over/under-predicting in different regions of x, and a curved fit (order=2+) would likely fit better."},
+  {code:"sns.regplot(data=titanic, x='age', y='survived', logistic=True)",q:"Why use logistic=True here specifically?",opts:["It's just a stylistic preference","survived is a BINARY (0/1) outcome variable; logistic=True fits a logistic regression curve (S-shaped) appropriate for binary outcomes, rather than a straight line which would be inappropriate and could predict nonsensical values like 1.5 or -0.3","logistic=True makes the plot faster","It has no functional effect"],ans:1,explain:"For a binary outcome (0 or 1, like survived/died), a straight-line linear fit is mathematically inappropriate — it could predict values outside the 0-1 range. logistic=True fits a proper logistic regression curve, which is S-shaped and naturally bounded between 0 and 1, correctly modeling probability of the binary outcome."},
+  {q:"What does `lowess=True` do in regplot() or residplot(), as an alternative to a standard linear/polynomial fit?",opts:["Removes all data points","Fits a LOCALLY WEIGHTED smooth curve that adapts to local trends in the data rather than assuming one single global functional form (like one straight line or one polynomial) — useful for complex, non-parametric relationships","Increases the confidence interval width","Only works with categorical variables"],ans:1,explain:"LOWESS (Locally Weighted Scatterplot Smoothing) fits many small local regressions across different regions of the x-range and combines them into one flexible smooth curve. Unlike a single global linear or polynomial fit, it can adapt to complex shapes without requiring you to specify the 'correct' functional form in advance."},
+  {q:"What underlying Pandas method typically feeds data INTO sns.heatmap() for a correlation analysis?",opts:["df.describe()","df.corr() — computes the pairwise correlation matrix for all numeric columns in a DataFrame, which is then passed directly as the data for heatmap()","df.groupby()","df.pivot_table()"],ans:1,explain:"The standard EDA workflow is: numeric_df.corr() computes a square correlation matrix (each cell showing the correlation between two columns), and this DataFrame is passed directly to sns.heatmap() to visualize all pairwise correlations as color-coded cells."},
+  {code:"sns.lmplot(data=tips, x='total_bill', y='tip', col='time', row='smoker')",q:"How many separate regression fits does this create, and how are they related?",opts:["1 shared fit for all data","4 INDEPENDENT regression fits — one per combination of time (2 values) × smoker (2 values) — each subplot panel computes its own separate line from only the data in that facet","2 fits, one per row","Exactly 8 fits regardless of data"],ans:1,explain:"With row='smoker' (2 values) and col='time' (2 values), lmplot() creates a 2×2 grid of 4 panels. CRITICALLY, each panel's regression line is fit INDEPENDENTLY using only the data belonging to that specific combination — this lets you see if the bill-tip relationship's slope and intercept genuinely differ across these 4 subgroups."},
+  {q:"In the diamonds dataset example, why is `diamonds.sample(2000, random_state=42)` used before plotting, rather than plotting all 50,000+ rows directly?",opts:["Seaborn cannot handle more than 2000 rows ever","Plotting very large datasets can be slow to render and cause severe overplotting in scatter-based charts (like regplot); sampling a representative subset speeds up rendering and can improve readability, especially for exploratory analysis, while random_state ensures reproducibility","Sampling changes the underlying data values","It's required syntax for load_dataset()"],ans:1,explain:"Large datasets (tens of thousands+ of rows) can make scatter-based plots slow to render and severely overplotted (indistinguishable overlapping points). Sampling a representative subset (with a fixed random_state for reproducibility) is a common practical technique for faster, cleaner exploratory visualization, while techniques like hexbin can also handle full datasets without sampling."},
+  {q:"What is the conceptual relationship between jointplot(kind='reg') and combining regplot() with marginal histograms manually?",opts:["They are unrelated features","jointplot(kind='reg') achieves in ONE function call what would otherwise require manually building a 3-plot layout (main regplot in the center, plus two separate histogram/KDE plots along the margins) using GridSpec in pure Matplotlib or multiple regplot/histplot calls","kind='reg' removes the regression capability","They produce completely different underlying calculations"],ans:1,explain:"jointplot(kind='reg') is a convenience wrapper that automatically builds the classic '3-panel' layout: the main plot (with a fitted regression line) in the center, plus marginal distribution plots along the top and right edges — a layout that would require considerably more manual GridSpec code to replicate directly."},
+  {q:"Why might carat vs price for diamonds show a CURVED (non-linear) pattern rather than a straight line, requiring order=2 or a log transformation for a good fit?",opts:["Diamond pricing is always perfectly linear","Diamond prices often scale non-linearly with carat weight (larger, rarer diamonds command disproportionately higher prices per carat) — a real-world economic pattern that a simple straight-line model fails to capture, requiring polynomial or logarithmic transformations to fit well","This never happens in real data","Non-linearity is a plotting error"],ans:1,explain:"This reflects genuine underlying economics: larger diamonds are rarer and often command a premium beyond simple linear scaling — price tends to increase faster than proportionally with carat size. Recognizing this non-linearity through visual diagnostic tools (regplot with different orders, residplot) is a key data science skill before choosing an appropriate model."},
+  {q:"What visual advantage does a heatmap have over reading a raw Pandas correlation DataFrame (.corr()) printed as a table of numbers?",opts:["No advantage — the heatmap shows the exact same information just less clearly","Color encoding lets viewers instantly SCAN and identify the strongest positive/negative correlations at a glance (bright colors jump out), rather than having to read and mentally compare dozens of individual numeric values in a table one by one","Heatmaps show more precise decimal values","Heatmaps compute different correlation values than .corr()"],ans:1,explain:"While both show identical underlying numbers, the heatmap's color encoding leverages human visual pattern recognition — strong correlations (very red or very blue cells) immediately draw the eye, letting an analyst scan a large correlation matrix and spot the most important relationships far faster than reading through a table of raw decimal numbers one at a time."},
+  {q:"When would you choose sns.regplot() over sns.lmplot() even though lmplot() offers more features (faceting)?",opts:["Never — always use lmplot()","When you need to place the regression plot into a SPECIFIC existing Matplotlib subplot (e.g., as ONE panel within a larger custom dashboard built with plt.subplots()), since regplot() accepts ax= while lmplot() manages its own separate figure and cannot be placed into an existing subplot grid","regplot() supports more chart kinds","They are functionally identical in all cases"],ans:1,explain:"If you're building a custom multi-panel dashboard using plt.subplots() and need the regression scatter to occupy one SPECIFIC panel alongside other custom charts, regplot(ax=my_ax) integrates cleanly. lmplot() always creates and manages its own entirely separate figure, making it unsuitable for insertion into a pre-built custom subplot layout."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review regplot/lmplot and jointplot, then try again! 📚"],[50,75,"Good progress! Focus on residual diagnostics and heatmap masking. 💪"],[75,90,"Strong Day 3! Regression skills are solid. 🎉"],[90,101,"Excellent! Day 3 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

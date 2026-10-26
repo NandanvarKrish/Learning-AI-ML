@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 3</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 3 of 30</span>
+  <h1>The Admin Panel and Relationships</h1>
+  <p>Estimated time: about 1.5 hours &middot; Creating a superuser, registering models in the admin, ForeignKey and on_delete, related names, and ManyToMany</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: The Admin Panel</h2>
+    <p>Django ships with a ready-made admin site at <code>/admin/</code>. It lets staff members create, read, update, and delete data through a web interface, without you writing a single form or page.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> The admin is the back office of a shop. Customers see the storefront (your site). Staff use the back office to manage stock and orders. You build the storefront; Django provides the back office.</div>
+    <p>The admin was already enabled on Day 1. The line <code>path("admin/", admin.site.urls)</code> in <code>mysite/urls.py</code> is what connects it.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Creating a Superuser</h2>
+    <p>A superuser is an account with full permission to use the admin. Create one from the terminal:</p>
+    <pre><code>python manage.py createsuperuser</code></pre>
+    <div class="output">Username: admin
+Email address: admin@example.com
+Password:
+Password (again):
+Superuser created successfully.</div>
+    <div class="callout warn">
+      <strong>Security:</strong> Choose a strong password. The superuser can see and change all data on the site. Never create a superuser with a shared or simple password on a live site.</div>
+    <p>Start the server with <code>python manage.py runserver</code>, then sign in at <code>http://127.0.0.1:8000/admin/</code>.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Registering Models in the Admin</h2>
+    <p>Models are hidden from the admin until you register them. Register them in <code>blog/admin.py</code>:</p>
+    <pre><code># blog/admin.py
+from django.contrib import admin
+from .models import Post
+
+admin.site.register(Post)</code></pre>
+    <p>Refresh the admin and you'll see a Posts section with an Add button. This is the quickest form of registration.</p>
+    <p>For more control, subclass <code>ModelAdmin</code> and use the <code>@admin.register</code> decorator, which you met on Day 20 when studying decorators:</p>
+    <pre><code># blog/admin.py
+from django.contrib import admin
+from .models import Post
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ("title", "author", "is_published", "created_at")
+    list_filter = ("is_published", "author")
+    search_fields = ("title", "body")
+    list_editable = ("is_published",)</code></pre>
+    <table>
+      <tr><th>Option</th><th>What it adds to the admin list page</th></tr>
+      <tr><td><code>list_display</code></td><td>Columns shown in the table</td></tr>
+      <tr><td><code>list_filter</code></td><td>A sidebar of filters</td></tr>
+      <tr><td><code>search_fields</code></td><td>A search box that searches these fields</td></tr>
+      <tr><td><code>list_editable</code></td><td>Lets you edit values directly in the list</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Foreign Keys</h2>
+    <p>A <strong>ForeignKey</strong> links one row to one row in another table. Each post has one author, and each author can have many posts.</p>
+    <pre><code># blog/models.py
+from django.db import models
+
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Post(models.Model):
+    author = models.ForeignKey(
+        Author,
+        on_delete=models.CASCADE,
+        related_name="posts",
+    )
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title</code></pre>
+    <p>After changing the models, run the migration commands from Day 2:</p>
+    <pre><code>python manage.py makemigrations blog
+python manage.py migrate</code></pre>
+    <div class="output">Migrations for 'blog':
+  blog/migrations/0002_author_post_author.py
+    + Create model Author
+    + Add field author to post</div>
+    <div class="callout tip">
+      <strong>Migration name:</strong> Django generates the name from your changes, so the exact text may differ. The important part is the "Create model Author" line.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Using Relationships in Code</h2>
+    <p>Relationships work in both directions. Follow a foreign key forward with the field name, and backward with the <code>related_name</code>.</p>
+    <pre><code>&gt;&gt;&gt; from blog.models import Author, Post
+&gt;&gt;&gt; a = Author.objects.create(name="Asha", email="asha@example.com")
+&gt;&gt;&gt; Post.objects.create(author=a, title="Model tips", body="Keep models small.")
+&gt;&gt;&gt; post = Post.objects.get(title="Model tips")
+&gt;&gt;&gt; post.author.name            # forward: post → author
+&gt;&gt;&gt; a.posts.all()               # backward: author → posts
+&gt;&gt;&gt; Post.objects.filter(author__name="Asha").count()</code></pre>
+    <div class="output">'Asha'
+&lt;QuerySet [&lt;Post: Model tips&gt;]&gt;
+1</div>
+    <p>Notice <code>author__name</code> in the filter. Double underscores can follow a relationship, so you can filter by a field on the related model.</p>
+    <div class="callout tip">
+      <strong>Why <code>related_name</code>?</strong> Without it, Django creates <code>author.post_set</code>. Setting <code>related_name="posts"</code> gives a clearer name, <code>author.posts</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: The on_delete Options</h2>
+    <p>The <code>on_delete</code> argument decides what happens to a post when its author is deleted. Choose it deliberately.</p>
+    <table>
+      <tr><th>Option</th><th>Behaviour when the author is deleted</th><th>Typical use</th></tr>
+      <tr><td><code>CASCADE</code></td><td>Deletes the posts too</td><td>Child data that makes no sense alone, such as comments on a post</td></tr>
+      <tr><td><code>PROTECT</code></td><td>Stops the deletion with an error</td><td>Data that must not be lost by accident, such as orders</td></tr>
+      <tr><td><code>SET_NULL</code></td><td>Sets the field to None (needs <code>null=True</code>)</td><td>Posts that should survive, with no author</td></tr>
+      <tr><td><code>SET_DEFAULT</code></td><td>Sets a default value</td><td>Reassigning to a placeholder user</td></tr>
+      <tr><td><code>DO_NOTHING</code></td><td>Leaves the rows alone, which can break integrity</td><td>Rarely used; avoid unless you know why</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Caution:</strong> <code>CASCADE</code> is convenient but dangerous for important data. Deleting one author could silently remove years of records. Consider <code>PROTECT</code> or <code>SET_NULL</code> for anything valuable.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: ManyToMany Relationships</h2>
+    <p>When one post can have many tags and one tag can belong to many posts, use <code>ManyToManyField</code>. Django creates the join table for you.</p>
+    <pre><code>class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Post(models.Model):
+    # ...other fields...
+    tags = models.ManyToManyField(Tag, blank=True, related_name="posts")</code></pre>
+    <pre><code>&gt;&gt;&gt; python = Tag.objects.create(name="python")
+&gt;&gt;&gt; web = Tag.objects.create(name="web")
+&gt;&gt;&gt; post.tags.add(python, web)
+&gt;&gt;&gt; post.tags.all()
+&gt;&gt;&gt; python.posts.all()</code></pre>
+    <div class="output">&lt;QuerySet [&lt;Tag: python&gt;, &lt;Tag: web&gt;]&gt;
+&lt;QuerySet [&lt;Post: Model tips&gt;]&gt;</div>
+    <p><code>blank=True</code> lets the admin form save a post with no tags. Without it, the admin requires at least one tag.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Inlines in the Admin</h2>
+    <p>You can edit related objects on the same page. For example, an author's posts can be added inside the author's form:</p>
+    <pre><code># blog/admin.py
+from django.contrib import admin
+from .models import Author, Post
+
+class PostInline(admin.TabularInline):
+    model = Post
+    extra = 1
+
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ("name", "email")
+    inlines = [PostInline]</code></pre>
+    <p>Each author's page now lists their posts, with a row to add a new one.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 3</h2>
+    <ol>
+      <li><strong>Forgetting to register the model:</strong> it won't appear in the admin until <code>admin.site.register</code> or <code>@admin.register</code> is used.</li>
+      <li><strong>Choosing CASCADE without thinking:</strong> deleting a parent can remove far more than you intended.</li>
+      <li><strong>Using SET_NULL without null=True:</strong> the migration fails, because the database can't store an empty value.</li>
+      <li><strong>Forgetting migrations after adding a ForeignKey:</strong> the new column is missing and queries fail.</li>
+      <li><strong>Expecting <code>author.post_set</code> after setting related_name:</strong> the name is now <code>author.posts</code>.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Continue in your <code>mysite</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Superuser and Admin Access</h3>
+      <p>Create a superuser and sign in to <code>/admin/</code>. Confirm you can see the Posts section.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Add Authors and Posts</h3>
+      <p>Add the <code>Author</code> model and the foreign key to <code>Post</code>. Run the migrations, then create two authors and three posts (two by one author, one by the other) using the admin.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Customise the Admin</h3>
+      <p>Write a <code>PostAdmin</code> class with <code>list_display</code>, <code>list_filter</code>, and <code>search_fields</code>. Confirm the search box finds a post by a word in its body.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Query Across the Relationship</h3>
+      <p>In the shell, print each author's name and the number of posts they have, using <code>author.posts.count()</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Choose a Delete Behaviour</h3>
+      <p>Decide whether deleting an author should delete their posts, block the deletion, or keep the posts with no author. Change <code>on_delete</code> to match your decision, migrate, and explain your choice in one sentence.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Admin panel</td><td>Content teams managing articles, shops managing products, support staff managing tickets</td></tr>
+      <tr><td>ForeignKey</td><td>Comments on posts, orders for customers, employees in departments</td></tr>
+      <tr><td>ManyToMany</td><td>Tags on articles, students in courses, products in categories</td></tr>
+      <tr><td>on_delete choices</td><td>Keeping order history when a customer account is closed</td></tr>
+      <tr><td>Inlines</td><td>Adding order line items on the same page as the order</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> The admin is one of Django's biggest time-savers. Many teams use it for internal tools long before they build a public site.</div>
+  </section>
+
+  <section>
+    <h2>Day 3 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 3 of 30 &middot; Next: Day 4 - Templates</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the admin panel's default web address?",
+      options: ["/dashboard/", "/admin/", "/manage/", "/staff/"],
+      answer: 1,
+      explain: "The admin is connected at /admin/ by the line path('admin/', admin.site.urls) in the project's urls.py."
+    },
+    {
+      q: "Which command creates an account that can sign in to the admin with full access?",
+      options: ["python manage.py startapp", "python manage.py createsuperuser", "python manage.py makemigrations", "python manage.py shell"],
+      answer: 1,
+      explain: "createsuperuser creates a superuser, who has full permission to use the admin."
+    },
+    {
+      q: "What does a ForeignKey represent?",
+      options: ["A many-to-many link", "A link from one row to exactly one row in another table", "A primary key that is text", "A view function"],
+      answer: 1,
+      explain: "A ForeignKey points from many rows to one related row, such as many posts to one author."
+    },
+    {
+      q: "What does related_name='posts' allow you to write?",
+      options: ["author.posts.all()", "post.posts.all()", "posts.author()", "Author.posts = True"],
+      answer: 0,
+      explain: "related_name sets the name used to reach the related objects backward, so author.posts.all() returns that author's posts."
+    },
+    {
+      q: "Which on_delete option stops the deletion of an author if they still have posts?",
+      options: ["CASCADE", "PROTECT", "SET_NULL", "DO_NOTHING"],
+      answer: 1,
+      explain: "PROTECT raises an error and prevents the parent from being deleted while related rows exist."
+    },
+    {
+      q: "What must be true before you can use on_delete=SET_NULL?",
+      options: ["The field must be unique", "The field must have null=True", "The field must be a TextField", "The model must have no __str__"],
+      answer: 1,
+      explain: "SET_NULL stores None in the column, so the column must allow nulls."
+    },
+    {
+      q: "Which field type links many posts to many tags?",
+      options: ["ForeignKey", "ManyToManyField", "CharField", "OneToOneField"],
+      answer: 1,
+      explain: "ManyToManyField allows each post to have several tags and each tag to belong to several posts."
+    },
+    {
+      q: "What does list_display do in a ModelAdmin class?",
+      options: ["Hides the model", "Chooses the columns shown on the admin list page", "Sets the password", "Creates a migration"],
+      answer: 1,
+      explain: "list_display controls which fields appear as columns in the admin list."
+    },
+    {
+      q: "Why does a new migration need to be run after adding a ForeignKey?",
+      options: ["To delete the admin", "So the database gets the new column for the relationship", "To update the Python version", "To start the server"],
+      answer: 1,
+      explain: "Models describe the plan; migrate changes the database so the new column exists."
+    },
+    {
+      q: "What does a TabularInline do in the admin?",
+      options: ["It shows a related model's rows and forms on the parent's page", "It hides the parent model", "It creates a new database", "It turns off the admin"],
+      answer: 0,
+      explain: "Inlines let you add and edit related objects, such as an author's posts, on the same page."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 4!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

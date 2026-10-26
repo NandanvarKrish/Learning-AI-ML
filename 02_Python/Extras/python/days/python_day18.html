@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 18</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 18 of 30</span>
+  <h1>Comprehensions in Depth</h1>
+  <p>Estimated time: about 1.5 hours &middot; List, set, and dictionary comprehensions, filters, nesting, readability</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Recap of List Comprehensions</h2>
+    <p>On Day 5 and Day 10 you saw that a comprehension builds a list from a loop in one line. The general form is:</p>
+    <pre><code>[expression for item in iterable if condition]</code></pre>
+    <p>Read it left to right as a sentence: "give me this expression, for each item in the iterable, if the condition holds."</p>
+    <pre><code>squares = [n * n for n in range(1, 6)]
+print(squares)
+
+evens = [n for n in range(10) if n % 2 == 0]
+print(evens)</code></pre>
+    <div class="output">[1, 4, 9, 16, 25]
+[0, 2, 4, 6, 8]</div>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A comprehension is a sieve. Everything from the iterable passes through, the condition decides what is kept, and the expression decides what shape each kept item takes.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Conditions in Two Places</h2>
+    <p>A comprehension can have a filter (<code>if</code> at the end) or a conditional expression (<code>if ... else</code> inside the expression). They do different jobs.</p>
+    <pre><code>nums = [1, 2, 3, 4, 5]
+
+# Filter: keeps only some items, others are dropped
+big = [n for n in nums if n > 2]
+print(big)
+
+# Conditional expression: every item is kept, but its value changes
+labels = ["even" if n % 2 == 0 else "odd" for n in nums]
+print(labels)</code></pre>
+    <div class="output">[3, 4, 5]
+['odd', 'even', 'odd', 'even', 'odd']</div>
+    <div class="callout warn">
+      <strong>Common mistake:</strong> Putting <code>if ... else</code> at the end. The filter form has only <code>if</code>, and the <code>else</code> must go in the expression at the start.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Working with Strings and Lists of Data</h2>
+    <pre><code>names = ["  sam ", "ALI", "  sara"]
+clean = [n.strip().title() for n in names]
+print(clean)
+
+prices = {"pen": 10, "book": 150, "bag": 900}
+expensive = [item for item, price in prices.items() if price > 100]
+print(expensive)</code></pre>
+    <div class="output">['Sam', 'Ali', 'Sara']
+['book', 'bag']</div>
+    <p>When iterating over a dictionary's items, unpack each pair directly in the <code>for</code> clause, just as you did in a normal loop on Day 6.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Set and Dictionary Comprehensions</h2>
+    <p>Change the brackets to make a different collection. Curly brackets with a colon make a dictionary, and curly brackets without a colon make a set.</p>
+    <pre><code>words = ["apple", "Banana", "apple", "cherry"]
+
+# Set comprehension: unique lowercase words
+unique = {w.lower() for w in words}
+print(unique)
+
+# Dictionary comprehension: word to its length
+lengths = {w: len(w) for w in words}
+print(lengths)</code></pre>
+    <div class="output">{'banana', 'apple', 'cherry'}
+{'apple': 5, 'Banana': 6, 'cherry': 6}</div>
+    <div class="callout tip">
+      <strong>Note:</strong> In the dictionary example, the duplicate key <code>apple</code> is written only once, because later entries overwrite earlier ones with the same key. Sets and dictionaries never keep duplicates.</div>
+
+    <h3>Swapping keys and values</h3>
+    <pre><code>codes = {"IN": "India", "US": "United States"}
+reversed_codes = {v: k for k, v in codes.items()}
+print(reversed_codes)</code></pre>
+    <div class="output">{'India': 'IN', 'United States': 'US'}</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Nested Comprehensions</h2>
+    <p>A comprehension can contain another <code>for</code>. The first <code>for</code> is the outer loop, and the second is the inner loop. Read them in the same order as normal nested loops.</p>
+    <pre><code># Same as two nested for loops
+pairs = [(x, y) for x in range(3) for y in range(2)]
+print(pairs)
+
+# Flatten a list of lists
+matrix = [[1, 2], [3, 4], [5, 6]]
+flat = [n for row in matrix for n in row]
+print(flat)</code></pre>
+    <div class="output">[(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1)]
+[1, 2, 3, 4, 5, 6]</div>
+    <div class="callout warn">
+      <strong>Readability limit:</strong> Two nested <code>for</code> clauses are usually fine. Three or more, or a complex condition, is a sign to switch to an ordinary loop.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Comprehensions Versus Loops</h2>
+    <p>Comprehensions are shorter and often faster, but a loop is clearer when the logic has several steps. Compare:</p>
+    <pre><code>orders = [120, 45, 300, 80]
+
+# Comprehension: clear, one idea
+discounted = [round(o * 0.9, 2) for o in orders if o > 100]
+
+# Loop: better when you need several steps
+discounted_loop = []
+for o in orders:
+    if o > 100:
+        final = o * 0.9
+        final = round(final, 2)
+        discounted_loop.append(final)
+
+print(discounted)
+print(discounted_loop)</code></pre>
+    <div class="output">[108.0, 270.0]
+[108.0, 270.0]</div>
+    <div class="callout analogy">
+      <strong>Rule of thumb:</strong> If you can read the comprehension aloud as one sentence, use it. If you need to pause and work out what it does, use a loop with clear names.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Generator Expressions (Preview)</h2>
+    <p>Replace the square brackets with round ones and you get a <strong>generator expression</strong>. It produces values one at a time, which saves memory on large data. Day 19 covers this in full.</p>
+    <pre><code>total = sum(n * n for n in range(1000))
+print(total)</code></pre>
+    <div class="output">332833500</div>
+    <p>Passing a generator expression straight into <code>sum()</code>, <code>max()</code>, or <code>any()</code> doesn't need extra brackets.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 18</h2>
+    <ol>
+      <li><strong>Wrong position for else:</strong> <code>if ... else</code> belongs in the expression, not after the loop.</li>
+      <li><strong>Reversed nested loop order:</strong> the outer <code>for</code> comes first, then the inner one.</li>
+      <li><strong>Expecting a set to keep order:</strong> set comprehensions don't guarantee order.</li>
+      <li><strong>Overly complex comprehensions:</strong> readability matters more than brevity.</li>
+      <li><strong>Side effects:</strong> comprehensions are for building values. Calling <code>print()</code> or changing other variables inside one hides what is happening.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Even Squares</h3>
+      <p>Using one list comprehension, build a list of the squares of even numbers from 1 to 20.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Clean Emails</h3>
+      <p>Given <code>["  SAM@EXAMPLE.COM ", "ali@test.org"]</code>, use a comprehension to produce lowercase, trimmed emails.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Unique Cities</h3>
+      <p>Using a set comprehension, extract the unique city names from <code>["Surat", "surat", "Pune", "Pune", "Delhi"]</code>, normalised to title case.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Price Labels</h3>
+      <p>Given a dictionary of product prices, build a new dictionary with the same keys and values formatted as strings like "Rs 150.00".</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Flatten a Grid</h3>
+      <p>Use a nested comprehension to flatten <code>[[1, 2, 3], [4, 5, 6], [7, 8, 9]]</code> into a single list, then keep only the odd numbers in a second comprehension.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Compare Styles</h3>
+      <p>Take the expense tracker totals from Day 7 (a list of amounts above 500). Write the filter once as a loop and once as a comprehension. Print both results and confirm they match.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Form</th><th>Where you'll see it</th></tr>
+      <tr><td>List comprehension</td><td>Cleaning imported data, building display lists for web pages, transforming API results</td></tr>
+      <tr><td>Filtered comprehension</td><td>Selecting active users, overdue invoices, or products in stock</td></tr>
+      <tr><td>Set comprehension</td><td>Collecting unique tags, email domains, or visitor IDs</td></tr>
+      <tr><td>Dictionary comprehension</td><td>Building lookup tables, reversing mappings, formatting settings</td></tr>
+      <tr><td>Nested comprehension</td><td>Flattening nested JSON, building grids for games and image processing</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django querysets and template logic often use comprehensions to shape data before it reaches a page. Reading them fluently now will help you follow framework code.</div>
+  </section>
+
+  <section>
+    <h2>Day 18 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 18 of 30 &middot; Next: Day 19 - Iterators and Generators</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does [x * 2 for x in range(4) if x > 1] produce?",
+      options: ["[0, 2, 4, 6]", "[4, 6]", "[2, 4]", "[4, 6, 8]"],
+      answer: 1,
+      explain: "The filter keeps x = 2 and 3, and doubling gives [4, 6]."
+    },
+    {
+      q: "Which is the correct conditional expression in a comprehension?",
+      options: ["[x for x in nums if x else 0]", "[x if x > 0 else 0 for x in nums]", "[x > 0 ? x : 0 for x in nums]", "[if x > 0 then x for x in nums]"],
+      answer: 1,
+      explain: "The if ... else goes in the expression at the start, before the for clause."
+    },
+    {
+      q: "Which produces a set?",
+      options: ["[x for x in s]", "(x for x in s)", "{x for x in s}", "{x: x for x in s}"],
+      answer: 2,
+      explain: "Curly brackets without a colon make a set comprehension."
+    },
+    {
+      q: "What does {k: v for k, v in d.items()} produce?",
+      options: ["A list of pairs", "A dictionary copy of d", "A set", "An error"],
+      answer: 1,
+      explain: "A dictionary comprehension with the same keys and values creates a copy of the dictionary."
+    },
+    {
+      q: "In [(x, y) for x in range(2) for y in range(3)], which loop is outer?",
+      options: ["y", "x", "Both are equal", "Neither"],
+      answer: 1,
+      explain: "The first for clause is the outer loop, so x changes slowly and y changes inside it."
+    },
+    {
+      q: "How many items does [n for row in [[1,2],[3]] for n in row] contain?",
+      options: ["2", "3", "Error", "1"],
+      answer: 1,
+      explain: "The nested loops visit 1, 2, and 3, giving three items."
+    },
+    {
+      q: "What do the round brackets in (n * n for n in range(5)) create?",
+      options: ["A tuple", "A generator expression", "A list", "A set"],
+      answer: 1,
+      explain: "Round brackets create a generator expression, which produces values one at a time."
+    },
+    {
+      q: "Why might a set comprehension give a different order than the input?",
+      options: ["Comprehensions reverse lists", "Sets do not guarantee any order", "Python randomises it", "It always keeps input order"],
+      answer: 1,
+      explain: "Sets are unordered, so the order of printed items is not guaranteed."
+    },
+    {
+      q: "What is a sign that a comprehension has become too complex?",
+      options: ["It fits on one line", "It has three or more nested for clauses or a hard-to-read condition", "It uses a filter", "It returns a list"],
+      answer: 1,
+      explain: "Deep nesting or complicated conditions are hard to read, so a loop is often clearer."
+    },
+    {
+      q: "What does sum(n * n for n in range(4)) return?",
+      options: ["14", "6", "16", "9"],
+      answer: 0,
+      explain: "The squares are 0, 1, 4, and 9, which add up to 14."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 19!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

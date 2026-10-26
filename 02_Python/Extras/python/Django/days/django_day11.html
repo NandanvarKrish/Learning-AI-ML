@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 11</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 11 of 30</span>
+  <h1>Sessions, Cookies, and Messages</h1>
+  <p>Estimated time: about 1.5 hours &middot; How Django remembers visitors between requests, storing data in cookies and sessions, and showing one-time messages to users</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: The Problem: HTTP Forgets</h2>
+    <p>HTTP is <strong>stateless</strong>. Each request stands alone, and the server doesn't remember the previous one. Yet sites remember logged-in users, shopping carts, and preferences. The solution is to send a small piece of information with each request so the server can recognise the visitor.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A coat-check ticket. You hand over your coat and get a numbered ticket. Each time you return, you show the ticket, and the staff find your coat. The ticket is not the coat; it is just a key to what is stored.</div>
+    <p>Django gives you two tools for this: <strong>cookies</strong>, which the browser stores, and <strong>sessions</strong>, which keep the data on the server and use a cookie only as a key.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Cookies</h2>
+    <p>A cookie is a small piece of text the server asks the browser to keep. The browser sends it back with every later request to that site.</p>
+    <pre><code># blog/views.py
+from django.http import HttpResponse
+
+def set_theme(request):
+    response = HttpResponse("Theme saved")
+    response.set_cookie("theme", "dark", max_age=60 * 60 * 24 * 30)  # 30 days in seconds
+    return response
+
+def show_theme(request):
+    theme = request.COOKIES.get("theme", "light")   # default if no cookie exists
+    return HttpResponse(f"Theme: {theme}")</code></pre>
+    <div class="output">Visit /theme/set/   → Theme saved
+Visit /theme/show/  → Theme: dark</div>
+    <p>To remove a cookie, use <code>response.delete_cookie("theme")</code>.</p>
+    <div class="callout warn">
+      <strong>Never trust cookies:</strong> The browser can edit any cookie. Store preferences such as a theme in cookies, but never store anything that grants access, such as "is_admin=True". Put that kind of data on the server, where the visitor can't change it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Sessions</h2>
+    <p>A session stores data on the server. The browser holds only a random session ID in a cookie, and Django looks up the matching data on each request. The <code>request.session</code> object behaves like a dictionary:</p>
+    <pre><code># blog/views.py
+from django.http import HttpResponse
+
+def visit_counter(request):
+    count = request.session.get("visits", 0) + 1
+    request.session["visits"] = count
+    return HttpResponse(f"You have visited this page {count} time(s).")</code></pre>
+    <div class="output">First visit:  You have visited this page 1 time(s).
+Second visit: You have visited this page 2 time(s).
+Third visit:  You have visited this page 3 time(s).</div>
+    <p>Each visit increases the count because the browser sends the same session cookie back. Open a private window and the count starts again at 1, because that browser has no session cookie.</p>
+    <table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td><code>request.session["key"] = value</code></td><td>Stores a value; Django saves the session automatically</td></tr>
+      <tr><td><code>request.session.get("key", default)</code></td><td>Reads a value safely</td></tr>
+      <tr><td><code>del request.session["key"]</code></td><td>Removes one value</td></tr>
+      <tr><td><code>request.session.flush()</code></td><td>Deletes all session data and the session itself (used at logout)</td></tr>
+      <tr><td><code>request.session.set_expiry(300)</code></td><td>Ends the session after 300 seconds of inactivity</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Where sessions live:</strong> By default, Django stores sessions in the database, in the <code>django_session</code> table. That is why <code>django.contrib.sessions</code> appears in <code>INSTALLED_APPS</code> and why <code>migrate</code> creates the table.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Session Settings and Security</h2>
+    <p>A few settings in <code>settings.py</code> control how sessions behave:</p>
+    <pre><code># mysite/settings.py
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14     # two weeks (the default)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False     # True keeps the session only until the browser closes
+SESSION_COOKIE_SECURE = True                # only send the cookie over HTTPS (use in production)
+SESSION_COOKIE_HTTPONLY = True              # JavaScript cannot read the cookie (default)</code></pre>
+    <table>
+      <tr><th>Setting</th><th>Why it matters</th></tr>
+      <tr><td><code>SESSION_COOKIE_HTTPONLY</code></td><td>Protects the session ID from being stolen by injected JavaScript (default True)</td></tr>
+      <tr><td><code>SESSION_COOKIE_SECURE</code></td><td>Stops the cookie from travelling over unencrypted connections (set True on a live HTTPS site)</td></tr>
+      <tr><td><code>SESSION_COOKIE_SAMESITE</code></td><td>Limits cookies sent from other websites, reducing CSRF risk (default "Lax")</td></tr>
+      <tr><td><code>SESSION_COOKIE_AGE</code></td><td>How long a session stays valid, in seconds</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Security reminder:</strong> Setting <code>SESSION_COOKIE_SECURE = True</code> on a local <code>runserver</code> (plain HTTP) stops the cookie from working, so sessions appear broken. Enable it only once the site runs over HTTPS.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Messages Framework</h2>
+    <p>After a form is saved, you usually want to show a short confirmation, such as "Post created." Because you redirect after a POST (Day 6), the message must survive the redirect. Django's messages framework handles this: it stores the message in the session, shows it once on the next page, and then clears it.</p>
+    <pre><code># blog/views.py
+from django.contrib import messages
+from django.shortcuts import redirect
+
+def post_create(request):
+    # ...form handling as before...
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Post created.")
+        return redirect("post_list")</code></pre>
+    <p>Show the messages in the base template, so any page can display them:</p>
+    <pre><code># templates/base.html (inside &lt;main&gt;, before the content block)
+{% if messages %}
+  &lt;ul class="messages"&gt;
+    {% for message in messages %}
+      &lt;li class="{{ message.tags }}"&gt;{{ message }}&lt;/li&gt;
+    {% endfor %}
+  &lt;/ul&gt;
+{% endif %}</code></pre>
+    <div class="output">&lt;ul class="messages"&gt;
+  &lt;li class="success"&gt;Post created.&lt;/li&gt;
+&lt;/ul&gt;</div>
+    <table>
+      <tr><th>Function</th><th>Level</th><th>Typical use</th></tr>
+      <tr><td><code>messages.success()</code></td><td>SUCCESS</td><td>"Post created."</td></tr>
+      <tr><td><code>messages.info()</code></td><td>INFO</td><td>"You have 2 drafts."</td></tr>
+      <tr><td><code>messages.warning()</code></td><td>WARNING</td><td>"This post has no cover image."</td></tr>
+      <tr><td><code>messages.error()</code></td><td>ERROR</td><td>"Could not save. Please try again."</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Note:</strong> <code>message.tags</code> gives the CSS class name, such as <code>success</code>, so you can colour each message type in your stylesheet.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 11</h2>
+    <ol>
+      <li><strong>Storing secrets or permissions in cookies:</strong> the browser can edit them. Keep them in sessions or on the server.</li>
+      <li><strong>Forgetting <code>migrate</code>:</strong> the <code>django_session</code> table is missing, and sessions fail with a database error.</li>
+      <li><strong>Setting SESSION_COOKIE_SECURE on plain HTTP:</strong> the browser refuses the cookie, and the session never persists.</li>
+      <li><strong>Expecting messages to show without rendering them:</strong> add the loop to the template.</li>
+      <li><strong>Calling messages after a render instead of a redirect:</strong> the message may appear on the wrong page or be lost.</li>
+      <li><strong>Using <code>request.session.get()</code> without a default:</strong> a new visitor gets None, and later arithmetic fails.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Visit Counter</h3>
+      <p>Add the <code>visit_counter</code> view from Lesson 3 and a URL for it. Refresh the page several times, then open a private window and confirm the count starts again.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Theme Cookie</h3>
+      <p>Write <code>set_theme</code> and <code>show_theme</code> from Lesson 2. Set the cookie, close and reopen the tab, and confirm the theme is still "dark".</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Inspect the Session Cookie</h3>
+      <p>Open your browser's developer tools, find the <code>sessionid</code> cookie, and note that it is a random string. Explain in one sentence why the visit count is not stored inside that string.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Messages on Create and Edit</h3>
+      <p>Add <code>messages.success</code> to the create and edit views, add the loop to <code>base.html</code>, and confirm the message appears once after saving and disappears on the next refresh.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Error Message</h3>
+      <p>In the form handling, add a <code>messages.error</code> call for an invalid form. Submit an invalid post and confirm the error message appears along with the form errors.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Sessions</td><td>Login state, shopping carts, multi-step checkout forms</td></tr>
+      <tr><td>Cookies</td><td>Remembering language, dark mode, or "don't show this banner again"</td></tr>
+      <tr><td>Messages</td><td>"Saved", "Deleted", and "Payment failed" notices after an action</td></tr>
+      <tr><td>Session expiry</td><td>Banking sites that log you out after a short time of inactivity</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's login system stores the signed-in user's ID in the session. Day 16 builds on this directly.</div>
+  </section>
+
+  <section>
+    <h2>Day 11 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 11 of 30 &middot; Next: Day 12 - Errors, Debugging, and Custom Error Pages</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Why is HTTP described as stateless?",
+      options: ["It never sends data", "Each request is independent, so the server does not remember earlier requests by default", "It cannot use cookies", "It only works offline"],
+      answer: 1,
+      explain: "Without extra information, the server treats every request as new, which is why cookies and sessions exist."
+    },
+    {
+      q: "Where is the data stored in a session by default?",
+      options: ["In the browser's cookie itself", "On the server, in the database, with only a session ID in the cookie", "In a text file on the visitor's computer", "In the URL"],
+      answer: 1,
+      explain: "Django keeps session data on the server, and the cookie holds only a key that identifies it."
+    },
+    {
+      q: "Why must you never store 'is_admin=True' in a plain cookie?",
+      options: ["Cookies are too small", "The browser can edit cookies, so the visitor could grant themselves admin rights", "Cookies cannot hold booleans", "Admins cannot use cookies"],
+      answer: 1,
+      explain: "Anything the browser stores can be changed by the user, so access rights must stay on the server."
+    },
+    {
+      q: "What does request.session.get('visits', 0) do for a new visitor?",
+      options: ["Raises an error", "Returns 0 because the key does not exist yet", "Returns None", "Creates a new user"],
+      answer: 1,
+      explain: "The default value is returned when the key is missing, which avoids errors for new visitors."
+    },
+    {
+      q: "Which command removes all session data and the session itself, as used at logout?",
+      options: ["request.session.clear_all()", "request.session.flush()", "request.session.delete()", "request.session.reset()"],
+      answer: 1,
+      explain: "flush() deletes the session data and creates a fresh, empty session."
+    },
+    {
+      q: "What does SESSION_COOKIE_HTTPONLY = True protect against?",
+      options: ["Slow connections", "JavaScript reading the session cookie, which reduces theft by injected scripts", "Duplicate sessions", "Expired migrations"],
+      answer: 1,
+      explain: "HttpOnly cookies cannot be read by JavaScript, which makes stealing them through injected code harder."
+    },
+    {
+      q: "Why are messages stored in the session rather than in the page?",
+      options: ["Pages cannot display text", "Messages must survive the redirect that follows a POST", "Sessions are faster", "Messages are encrypted only in sessions"],
+      answer: 1,
+      explain: "After a redirect, the next page is a new request, so the message has to be kept between requests."
+    },
+    {
+      q: "What does messages.success(request, 'Saved') do?",
+      options: ["Saves the post to the database", "Queues a success message to show on the next page", "Redirects the visitor", "Creates a session"],
+      answer: 1,
+      explain: "The function adds a message that the messages loop displays on the next rendered page, then clears it."
+    },
+    {
+      q: "What is the CSS class of a message created with messages.error()?",
+      options: ["error", "danger", "bad", "fail"],
+      answer: 0,
+      explain: "message.tags gives the level name in lowercase, so error messages get the class 'error'."
+    },
+    {
+      q: "Why might sessions break after you set SESSION_COOKIE_SECURE = True on runserver?",
+      options: ["Django deletes the session table", "The cookie is sent only over HTTPS, and runserver uses plain HTTP", "Secure cookies are slower", "The database refuses connections"],
+      answer: 1,
+      explain: "Secure cookies are only sent over HTTPS, so on a local HTTP server the browser never returns them."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 12!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

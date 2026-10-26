@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 30</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .check { list-style: none; padding-left: 0; }
+  .check li { padding-left: 26px; position: relative; }
+  .check li::before { content: "\2610"; position: absolute; left: 0; color: var(--dj-green-light); }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 30 of 30</span>
+  <h1>Capstone: Build and Ship a Web App</h1>
+  <p>Estimated time: about 1.5 hours to plan and review, plus the build &middot; Combine models, views, forms, auth, permissions, APIs, tests, and deployment into one project</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Welcome to the Capstone</h2>
+    <p>Thirty days ago you had no Django project. Today you bring every idea together. The capstone is not a new topic. It is a checklist of what you already know, arranged into one working product.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Each day gave you a tool. Today you build the house. You don't need new tools, but you need to know which tool goes where, in what order.</div>
+    <p>You will build a small web app of your choice. The examples below use a <strong>Bookmark Manager</strong>, where users save links, tag them, search them, and share a public list. Any app with similar parts works.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Plan Before Code</h2>
+    <p>Write the plan on paper or in a text file. A clear plan saves more time than any clever code:</p>
+    <table>
+      <tr><th>Question</th><th>Bookmark Manager answer</th></tr>
+      <tr><td>Who uses it?</td><td>Signed-in people who save links, and visitors who read public lists</td></tr>
+      <tr><td>What are the main objects?</td><td>User (via Author), Bookmark, Tag</td></tr>
+      <tr><td>What must be private?</td><td>Private bookmarks, visible only to their owner</td></tr>
+      <tr><td>What can the public see?</td><td>Public bookmarks, plus a health check</td></tr>
+      <tr><td>What is the API for?</td><td>A mobile app that lists and creates bookmarks with a token</td></tr>
+      <tr><td>What runs in production?</td><td>Docker Compose with Gunicorn, Postgres, and a health check</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Keep the scope small:</strong> Five solid features beat twelve half-built ones. Write down what you will not build in version 1.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Map Each Feature to a Day</h2>
+    <p>Every feature in your app uses a skill from this course. Use this map to see where to look when you get stuck:</p>
+    <table>
+      <tr><th>Feature</th><th>Skill</th><th>Day</th></tr>
+      <tr><td>Project and app layout</td><td>Projects, apps, URLs, settings</td><td>1, 21</td></tr>
+      <tr><td>Bookmark model and migrations</td><td>Models, ORM, migrations</td><td>2</td></tr>
+      <tr><td>Managing data in the admin</td><td>ModelAdmin, inlines</td><td>3</td></tr>
+      <tr><td>Pages with templates</td><td>Templates, base layout, static files</td><td>4, 5</td></tr>
+      <tr><td>Adding a bookmark</td><td>Forms, ModelForm, CSRF</td><td>6</td></tr>
+      <tr><td>List, detail, edit, delete</td><td>Class-based views</td><td>7, 8</td></tr>
+      <tr><td>Search and filter by tag</td><td>Querysets, Q, GET forms</td><td>9, 19</td></tr>
+      <tr><td>Tags as many-to-many</td><td>Relations, through models</td><td>3, 14</td></tr>
+      <tr><td>Sign up and log in</td><td>Authentication, login_required</td><td>16</td></tr>
+      <tr><td>Private vs public bookmarks</td><td>Permissions and ownership</td><td>17</td></tr>
+      <tr><td>Welcome email</td><td>Email backends, signals</td><td>18, 10</td></tr>
+      <tr><td>Public list cache</td><td>Caching</td><td>20</td></tr>
+      <tr><td>Mobile API</td><td>Serializers, viewsets, tokens, throttling</td><td>24, 25, 26, 27</td></tr>
+      <tr><td>Tests</td><td>TestCase, test client, APITestCase</td><td>13, 26</td></tr>
+      <tr><td>Production deployment</td><td>Settings split, Gunicorn, Nginx, Docker</td><td>21, 22, 28</td></tr>
+      <tr><td>Health and CI</td><td>Health endpoint, error tracking, GitHub Actions</td><td>29</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 4: The Project Shape</h2>
+    <p>A well-organised project looks like this. Each app has one clear job:</p>
+    <pre><code>bookmarks_project/
+├── config/
+│   ├── settings/
+│   │   ├── base.py
+│   │   ├── dev.py
+│   │   └── prod.py
+│   ├── urls.py
+│   └── wsgi.py
+├── accounts/            # sign up, login, Author profile
+├── bookmarks/
+│   ├── models.py        # Bookmark, Tag, custom manager
+│   ├── forms.py         # BookmarkForm with validation
+│   ├── views.py         # CBVs for pages and health check
+│   ├── api.py           # serializers and viewsets
+│   ├── permissions.py   # IsOwnerOrReadOnly
+│   ├── signals.py       # welcome email, cache invalidation
+│   ├── tests/
+│   │   ├── test_models.py
+│   │   ├── test_views.py
+│   │   └── test_api.py
+│   └── templates/bookmarks/
+├── templates/base.html
+├── static/
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── .github/workflows/ci.yml</code></pre>
+    <div class="callout tip">
+      <strong>Split tests by layer:</strong> Separate files for models, views, and the API make failures easy to find. Run them together with <code>python manage.py test</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: The Core Model</h2>
+    <p>Start with the data. The model below uses several ideas from the course: a custom queryset, a many-to-many relation, a constraint, and an index:</p>
+    <pre><code># bookmarks/models.py
+from django.conf import settings
+from django.db import models
+from django.urls import reverse
+
+class BookmarkQuerySet(models.QuerySet):
+    def public(self):
+        return self.filter(is_public=True)
+
+class Tag(models.Model):
+    name = models.SlugField(max_length=40, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Bookmark(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE, related_name="bookmarks")
+    url = models.URLField(max_length=500)
+    title = models.CharField(max_length=200)
+    note = models.TextField(blank=True)
+    tags = models.ManyToManyField(Tag, blank=True, related_name="bookmarks")
+    is_public = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = BookmarkQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "url"], name="unique_bookmark_per_owner"),
+        ]
+        indexes = [
+            models.Index(fields=["is_public", "-created_at"], name="public_recent_idx"),
+        ]
+
+    def get_absolute_url(self):
+        return reverse("bookmarks:detail", args=[self.pk])</code></pre>
+    <div class="callout tip">
+      <strong>Decisions baked in:</strong> <code>on_delete=CASCADE</code> removes a user's bookmarks with the account. The unique constraint stops duplicate saves per owner. The index supports the public list from Day 29.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Views and Permissions</h2>
+    <p>Use class-based views for the pages, and reuse the ownership rule from Day 17 and Day 26:</p>
+    <pre><code># bookmarks/views.py
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.views.generic import ListView, DetailView, CreateView
+from django.http import JsonResponse
+from django.db import connection
+from .models import Bookmark
+from .forms import BookmarkForm
+
+class MyBookmarks(LoginRequiredMixin, ListView):
+    template_name = "bookmarks/list.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Bookmark.objects.filter(owner=self.request.user)
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            qs = qs.filter(Q(title__icontains=q) | Q(note__icontains=q))
+        return qs.prefetch_related("tags")
+
+class PublicList(ListView):
+    template_name = "bookmarks/public.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Bookmark.objects.public().select_related("owner").prefetch_related("tags")
+
+class BookmarkDetail(DetailView):
+    model = Bookmark
+    template_name = "bookmarks/detail.html"
+
+    def get_queryset(self):
+        # Owners see private bookmarks too; everyone else sees public ones only
+        qs = Bookmark.objects.all()
+        if self.request.user.is_authenticated:
+            return qs.filter(Q(is_public=True) | Q(owner=self.request.user))
+        return qs.filter(is_public=True)
+
+class BookmarkCreate(LoginRequiredMixin, CreateView):
+    model = Bookmark
+    form_class = BookmarkForm
+    template_name = "bookmarks/form.html"
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user      # set by the server
+        return super().form_valid(form)
+
+def health(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "ok"})
+    except Exception:
+        return JsonResponse({"status": "error"}, status=503)</code></pre>
+    <div class="callout warn">
+      <strong>Hide, don't just block:</strong> The detail view filters the queryset, so someone else's private bookmark returns 404, not a hint that it exists. This matches the advice from Day 25.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: The API</h2>
+    <p>A mobile app needs the same data through the API. Reuse the serializer, the ownership permission, and the token and throttle setup from Days 24 to 27:</p>
+    <pre><code># bookmarks/api.py
+from rest_framework import permissions, serializers, viewsets
+from rest_framework.throttling import ScopedRateThrottle
+from .models import Bookmark
+from .permissions import IsOwnerOrReadOnly
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
+
+    class Meta:
+        model = Bookmark
+        fields = ["id", "owner", "url", "title", "note", "tags", "is_public", "created_at"]
+
+class BookmarkViewSet(viewsets.ModelViewSet):
+    serializer_class = BookmarkSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "bookmarks"
+
+    def get_queryset(self):
+        return Bookmark.objects.filter(owner=self.request.user).prefetch_related("tags")</code></pre>
+    <div class="callout tip">
+      <strong>HiddenField for ownership:</strong> <code>CurrentUserDefault</code> sets the owner from the token, so clients can't post as someone else. It's the API version of <code>form_valid</code> above.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Tests That Protect the Rules</h2>
+    <p>Test the rules that matter most. These four checks guard the app's core promises:</p>
+    <pre><code>from django.contrib.auth.models import User
+from django.test import TestCase
+from django.urls import reverse
+from bookmarks.models import Bookmark
+
+class PrivacyTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.asha = User.objects.create_user("asha", password="x-pass-123")
+        cls.ravi = User.objects.create_user("ravi", password="y-pass-456")
+        cls.private = Bookmark.objects.create(owner=cls.asha, url="https://a.example",
+                                              title="Secret", is_public=False)
+        cls.public = Bookmark.objects.create(owner=cls.asha, url="https://b.example",
+                                             title="Shared", is_public=True)
+
+    def test_anonymous_cannot_see_private(self):
+        response = self.client.get(reverse("bookmarks:detail", args=[self.private.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_other_user_cannot_see_private(self):
+        self.client.force_login(self.ravi)
+        response = self.client.get(reverse("bookmarks:detail", args=[self.private.pk]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_owner_sees_private(self):
+        self.client.force_login(self.asha)
+        response = self.client.get(reverse("bookmarks:detail", args=[self.private.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_public_list_hides_private(self):
+        response = self.client.get(reverse("bookmarks:public"))
+        self.assertContains(response, "Shared")
+        self.assertNotContains(response, "Secret")</code></pre>
+    <div class="output">Found 4 test(s).
+....
+Ran 4 tests in 0.412s
+
+OK</div>
+    <div class="callout warn">
+      <strong>Write these first:</strong> Privacy tests protect users from the worst bugs. If you add one test today, make it the one that checks a private bookmark stays private.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 9: Ship It</h2>
+    <p>Shipping follows the path from Days 21, 22, 28 and 29. Work through this checklist in order:</p>
+    <ul class="check">
+      <li>Settings split into base, dev, and prod, with secrets read from the environment</li>
+      <li><code>DEBUG = False</code> and <code>ALLOWED_HOSTS</code> set in production</li>
+      <li><code>python manage.py check --deploy</code> run and its warnings reviewed</li>
+      <li>Dockerfile and <code>.dockerignore</code> written, with no secrets copied into the image</li>
+      <li>Docker Compose stack with Postgres and a named volume for data</li>
+      <li>Migrations applied inside the container</li>
+      <li>Gunicorn behind Nginx (or a managed platform) with HTTPS</li>
+      <li>Health endpoint responding at <code>/health/</code></li>
+      <li>Error tracking enabled through an environment variable</li>
+      <li>CI pipeline green on the main branch</li>
+      <li>Backups tested by restoring them to a second database</li>
+    </ul>
+    <div class="callout tip">
+      <strong>Release order from Day 22:</strong> Run migrations before restarting the new code, and keep the old version running until the new one passes its health check.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 10: Review Your Work</h2>
+    <p>Before calling the project done, review it the way a teammate would:</p>
+    <ul class="check">
+      <li>Every view that changes data requires login or a permission check</li>
+      <li>Every queryset that shows user data is filtered by owner or public status</li>
+      <li>No secret, password, or token appears in Git history or in templates</li>
+      <li>List pages use pagination, and the queries are counted in at least one test</li>
+      <li>Forms and the API validate input, and return clear errors</li>
+      <li>The README explains how to run the app locally and in Docker</li>
+    </ul>
+    <div class="callout analogy">
+      <strong>Reviewing is a skill:</strong> Read your own code as if you had never seen it. The places you feel unsure are where bugs usually hide.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 30</h2>
+    <ol>
+      <li><strong>Building too many features at once:</strong> finish the five core features before adding any extras.</li>
+      <li><strong>Skipping the privacy tests:</strong> they catch the bugs users are most affected by.</li>
+      <li><strong>Trusting client-supplied owners:</strong> set ownership on the server, in <code>form_valid</code> or <code>HiddenField</code>.</li>
+      <li><strong>Deploying with <code>DEBUG = True</code>:</strong> run <code>check --deploy</code> before every release.</li>
+      <li><strong>Forgetting to test a restore:</strong> a backup you have never restored is only a hope.</li>
+      <li><strong>Waiting for perfect code before shipping:</strong> a working, tested, deployed app teaches you more than a perfect app on your laptop.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Build your own capstone app. The Bookmark Manager is an example; a recipe book, a habit tracker, or a small inventory app works just as well.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Plan</h3>
+      <p>Complete the table in Lesson 2 for your app. List five core features and the features you will leave for later.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Core Model and Admin</h3>
+      <p>Write your models with at least one ForeignKey, one ManyToMany, and a constraint. Register them in the admin and add some sample data.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Pages and Auth</h3>
+      <p>Build list, detail, create, and edit pages with class-based views. Add sign-up and login, and protect the private pages.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Privacy and API</h3>
+      <p>Write the four privacy tests from Lesson 8. Add an API with a serializer, token authentication, and an ownership permission.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Ship</h3>
+      <p>Containerise the app with Docker Compose, add the health endpoint and CI workflow, and deploy it to a server or a managed platform. Share the link with someone who can test it.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where to Go Next</h2>
+    <table>
+      <tr><th>Next step</th><th>Why</th></tr>
+      <tr><td>Django's official tutorial and docs</td><td>The reference for every topic in this course</td></tr>
+      <tr><td>Django REST framework's full guide</td><td>Filtering, versioning, and advanced permissions for big APIs</td></tr>
+      <tr><td>Frontend skills (HTML, CSS, JavaScript)</td><td>Making your templates and pages more interactive</td></tr>
+      <tr><td>PostgreSQL and query tuning</td><td>Speed and reliability for larger datasets</td></tr>
+      <tr><td>Cloud deployment and monitoring</td><td>Running your app for real users at scale</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Keep the habit:</strong> Build one small project a month. The skill comes from building, not from reading.</div>
+  </section>
+
+  <section>
+    <h2>Day 30 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 30 of 30 &middot; Course complete. Build something new next.</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the main purpose of the capstone?",
+      options: ["To learn a brand-new framework", "To combine the course skills into one working, shipped product", "To memorise Python syntax", "To write a textbook"],
+      answer: 1,
+      explain: "The capstone brings together models, views, auth, APIs, tests, and deployment into one project."
+    },
+    {
+      q: "Why write a plan before coding?",
+      options: ["Plans are required by Django", "A clear scope saves time and prevents half-built features", "Plans replace tests", "Plans make the database faster"],
+      answer: 1,
+      explain: "A small, clear scope is easier to finish and ship than a long wish list."
+    },
+    {
+      q: "Where should the owner of a new bookmark be set in the web form version?",
+      options: ["In the template, as a hidden field the user can edit", "In form_valid, from the signed-in user", "In settings.py", "In the URL"],
+      answer: 1,
+      explain: "Setting the owner on the server keeps clients from posting as someone else."
+    },
+    {
+      q: "What does returning 404 for someone else's private bookmark accomplish?",
+      options: ["It shows the user the bookmark exists", "It hides the bookmark's existence from people without access", "It deletes the bookmark", "It caches the page"],
+      answer: 1,
+      explain: "Filtering the queryset makes private objects look missing to everyone except their owner."
+    },
+    {
+      q: "Which constraint stops a user from saving the same URL twice?",
+      options: ["A UniqueConstraint on owner and url", "A DEBUG flag", "A default ordering", "A throttle rate"],
+      answer: 0,
+      explain: "UniqueConstraint on owner and url enforces one copy of each URL per user at the database level."
+    },
+    {
+      q: "What does HiddenField(default=CurrentUserDefault()) do in the API serializer?",
+      options: ["Shows the user's password", "Sets the owner from the authenticated user, without the client sending it", "Disables authentication", "Creates a new token"],
+      answer: 1,
+      explain: "The hidden field fills in the owner from the request, so the client cannot choose a different owner."
+    },
+    {
+      q: "Why write privacy tests first?",
+      options: ["They are the fastest tests to run", "They protect the rules whose failure hurts users most", "They replace migrations", "They are required for deployment"],
+      answer: 1,
+      explain: "A leaked private bookmark is a serious failure, so testing it guards the most important promise of the app."
+    },
+    {
+      q: "Which command checks deployment settings before a release?",
+      options: ["python manage.py check --deploy", "python manage.py makemessages", "python manage.py startapp", "python manage.py dumpdata"],
+      answer: 0,
+      explain: "check --deploy reports security settings that are missing or weak for production."
+    },
+    {
+      q: "According to the release order from Day 22, what should happen first?",
+      options: ["Restart the server, then migrate", "Apply migrations, then restart with the new code", "Delete the database, then deploy", "Turn on DEBUG, then deploy"],
+      answer: 1,
+      explain: "Migrations come before the restart so the new code runs against a database that already matches it."
+    },
+    {
+      q: "Why is a backup you have never restored a risk?",
+      options: ["Backups slow down the site", "You cannot know it works until you restore it", "Backups are illegal", "Backups delete data automatically"],
+      answer: 1,
+      explain: "A backup is only useful if restoring from it works. Test the restore before you need it."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You've completed the Django course!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

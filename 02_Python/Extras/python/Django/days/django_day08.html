@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 8</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 8 of 30</span>
+  <h1>Class-Based Views</h1>
+  <p>Estimated time: about 1.5 hours &middot; Generic views, as_view(), ListView, DetailView, CreateView, UpdateView, DeleteView, and customising them with get_queryset and get_context_data</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: From Functions to Classes</h2>
+    <p>On Day 7 you wrote five views for the mini blog. Each one repeated the same steps: fetch objects, render a template, handle a form, redirect. Django's <strong>class-based views</strong> (CBVs) package those steps so you configure a view instead of rewriting it.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Writing a function view is like building a car from parts each time. A class-based view is a ready-made car where you choose the colour, engine, and seats. You still have full control, but you start from a working design.</div>
+    <table>
+      <tr><th>Style</th><th>Good for</th><th>Trade-off</th></tr>
+      <tr><td>Function-based view</td><td>Custom logic that doesn't fit a pattern</td><td>More code for common tasks</td></tr>
+      <tr><td>Class-based view</td><td>Standard patterns: lists, details, forms, deletes</td><td>You need to learn which methods to override</td></tr>
+    </table>
+    <p>Both styles are normal in real projects. Choose whichever makes the code shorter and clearer.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: The Basic Pattern</h2>
+    <p>A class-based view is a class with a method for each HTTP verb (<code>get</code>, <code>post</code>, and so on). Generic views already implement those methods for common tasks, so you only set attributes:</p>
+    <pre><code># blog/views.py
+from django.views.generic import ListView
+from .models import Post
+
+class PostListView(ListView):
+    model = Post
+    template_name = "blog/post_list.html"
+    context_object_name = "posts"</code></pre>
+    <p>In <code>urls.py</code>, call <code>as_view()</code>. It turns the class into a function that Django can call:</p>
+    <pre><code>from .views import PostListView
+
+urlpatterns = [
+    path("posts/", PostListView.as_view(), name="post_list"),
+]</code></pre>
+    <div class="callout warn">
+      <strong>Don't forget <code>as_view()</code>:</strong> Passing the class itself, without <code>()</code> or <code>as_view()</code>, causes a confusing error. Django needs the function that <code>as_view()</code> returns.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: The Five Core Generic Views</h2>
+    <table>
+      <tr><th>View</th><th>Does</th><th>Default template</th><th>Default context name</th></tr>
+      <tr><td><code>ListView</code></td><td>Shows many objects</td><td><code>app/model_list.html</code></td><td><code>object_list</code> and <code>model_list</code></td></tr>
+      <tr><td><code>DetailView</code></td><td>Shows one object</td><td><code>app/model_detail.html</code></td><td><code>object</code> and <code>model</code></td></tr>
+      <tr><td><code>CreateView</code></td><td>Shows and processes a form to create</td><td><code>app/model_form.html</code></td><td><code>form</code></td></tr>
+      <tr><td><code>UpdateView</code></td><td>Shows and processes a form to edit</td><td><code>app/model_form.html</code></td><td><code>form</code>, <code>object</code>, and <code>model</code></td></tr>
+      <tr><td><code>DeleteView</code></td><td>Confirms, then deletes</td><td><code>app/model_confirm_delete.html</code></td><td><code>object</code> and <code>model</code></td></tr>
+    </table>
+    <p>The model name is lowercased in the context. For <code>Post</code>, the detail view provides both <code>object</code> and <code>post</code>. Setting <code>context_object_name</code> lets you choose a friendlier name.</p>
+    <div class="callout tip">
+      <strong>Tip:</strong> When a view's template name is the default, you can leave out <code>template_name</code> entirely. Keeping it explicit, as in the mini blog, makes the code easier to read.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Rewriting the Mini Blog</h2>
+    <p>Here are the Day 7 function views rewritten as classes. The behaviour stays the same, and far less code is needed:</p>
+    <pre><code># blog/views.py
+from django.urls import reverse, reverse_lazy
+from django.views.generic import (
+    CreateView, DeleteView, DetailView, ListView, UpdateView,
+)
+from .forms import PostForm
+from .models import Post
+
+class PostListView(ListView):
+    model = Post
+    template_name = "blog/post_list.html"
+    context_object_name = "posts"
+
+    def get_queryset(self):
+        return Post.objects.filter(is_published=True)
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = "blog/post_detail.html"
+    context_object_name = "post"
+
+    def get_queryset(self):
+        return Post.objects.filter(is_published=True)
+
+class PostCreateView(CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "blog/post_form.html"
+    success_url = reverse_lazy("post_list")
+
+class PostUpdateView(UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = "blog/post_form.html"
+
+    def get_success_url(self):
+        return reverse("post_detail", args=[self.object.pk])
+
+class PostDeleteView(DeleteView):
+    model = Post
+    template_name = "blog/post_confirm_delete.html"
+    success_url = reverse_lazy("post_list")</code></pre>
+    <p>The URL patterns change only by adding <code>.as_view()</code> to each view:</p>
+    <pre><code># blog/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("posts/", views.PostListView.as_view(), name="post_list"),
+    path("posts/new/", views.PostCreateView.as_view(), name="post_create"),
+    path("posts/&lt;int:pk&gt;/", views.PostDetailView.as_view(), name="post_detail"),
+    path("posts/&lt;int:pk&gt;/edit/", views.PostUpdateView.as_view(), name="post_edit"),
+    path("posts/&lt;int:pk&gt;/delete/", views.PostDeleteView.as_view(), name="post_delete"),
+]</code></pre>
+    <div class="callout warn">
+      <strong>Name change:</strong> Generic views look up objects by <code>pk</code> by default, so the URL parameter is now <code>&lt;int:pk&gt;</code> instead of <code>&lt;int:post_id&gt;</code>. Update the templates' <code>{% url %}</code> tags to pass the object's primary key.</div>
+    <div class="callout tip">
+      <strong>Why <code>reverse_lazy</code> in some places?</strong> <code>success_url</code> is set when the class is loaded, before URLs are ready. <code>reverse_lazy</code> waits until the URL is needed. Inside a method like <code>get_success_url</code>, plain <code>reverse</code> works, because the method runs later.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Customising with get_queryset and get_context_data</h2>
+    <p>Two methods cover most customisation:</p>
+    <ul>
+      <li><strong><code>get_queryset()</code></strong> controls which objects the view can see. Put security and filtering rules here.</li>
+      <li><strong><code>get_context_data()</code></strong> adds extra values for the template. Always call <code>super()</code> first so the defaults are kept.</li>
+    </ul>
+    <pre><code>class PostListView(ListView):
+    model = Post
+    template_name = "blog/post_list.html"
+    context_object_name = "posts"
+    paginate_by = 5
+
+    def get_queryset(self):
+        return Post.objects.filter(is_published=True).select_related("author")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_published"] = Post.objects.filter(is_published=True).count()
+        return context</code></pre>
+    <table>
+      <tr><th>Addition</th><th>What it does</th></tr>
+      <tr><td><code>paginate_by = 5</code></td><td>Splits results into pages of five. Pagination links appear through <code>page_obj</code> in the template.</td></tr>
+      <tr><td><code>select_related("author")</code></td><td>Fetches each post's author in the same query, avoiding one extra query per post</td></tr>
+      <tr><td><code>total_published</code></td><td>An extra value the template can print, such as "12 published posts"</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Performance note:</strong> <code>select_related</code> works for ForeignKey and one-to-one fields. For ManyToMany relations, use <code>prefetch_related</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Templates for Generic Views</h2>
+    <p>The list template receives the same variable names as before, so the Day 7 template still works. Pagination adds a short block:</p>
+    <pre><code># blog/templates/blog/post_list.html (addition)
+{% if is_paginated %}
+  &lt;nav&gt;
+    {% if page_obj.has_previous %}
+      &lt;a href="?page={{ page_obj.previous_page_number }}"&gt;Previous&lt;/a&gt;
+    {% endif %}
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    {% if page_obj.has_next %}
+      &lt;a href="?page={{ page_obj.next_page_number }}"&gt;Next&lt;/a&gt;
+    {% endif %}
+  &lt;/nav&gt;
+{% endif %}</code></pre>
+    <p>For a list with 12 posts and <code>paginate_by = 5</code>, the page shows "Page 1 of 3" with a Next link.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Mixins and Reuse</h2>
+    <p>A <strong>mixin</strong> is a small class that adds one behaviour. You combine mixins with a view class, listing the mixins first:</p>
+    <pre><code>from django.contrib.auth.mixins import LoginRequiredMixin
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "blog/post_form.html"
+    success_url = reverse_lazy("post_list")</code></pre>
+    <p>This view now redirects anonymous visitors to the login page before the form appears. You'll build the login system on Day 16, so for now this is a preview of how mixins add behaviour without changing the core view.</p>
+    <div class="callout warn">
+      <strong>Order matters:</strong> Put mixins before the generic view class in the bases list. Django checks them left to right, so a mixin placed after the view may never run.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: When to Use Each Style</h2>
+    <ol>
+      <li><strong>Use a generic view</strong> when the page fits a standard pattern, such as listing or editing one model.</li>
+      <li><strong>Use a function view</strong> when the logic is unusual, such as a page that combines data from several models in a special way.</li>
+      <li><strong>Override only what you need.</strong> If you find yourself rewriting most of a generic view, a function view is probably clearer.</li>
+    </ol>
+    <div class="callout tip">
+      <strong>Rule of thumb:</strong> Start with a generic view. Switch to a function view when the class starts fighting you.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 8</h2>
+    <ol>
+      <li><strong>Forgetting <code>.as_view()</code>:</strong> Django raises an error about the view being a class.</li>
+      <li><strong>Overriding <code>get_queryset</code> without the model:</strong> the view can't tell which table to use.</li>
+      <li><strong>Forgetting <code>super()</code> in <code>get_context_data</code>:</strong> the default context values disappear, and the template fails.</li>
+      <li><strong>Using <code>reverse</code> in a class attribute:</strong> use <code>reverse_lazy</code> so the URL is resolved later.</li>
+      <li><strong>Keeping the old <code>post_id</code> URL parameter:</strong> generic views expect <code>pk</code> by default.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Continue in your <code>mini-blog</code> project from Day 7.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Convert the List View</h3>
+      <p>Replace the <code>post_list</code> function with <code>PostListView</code>. Update <code>urls.py</code> and confirm <code>/posts/</code> still shows only published posts.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Convert the Other Views</h3>
+      <p>Convert the detail, create, edit, and delete views. Change the URL parameter to <code>pk</code> and update every <code>{% url %}</code> tag that passes an id.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Pagination</h3>
+      <p>Add <code>paginate_by = 2</code> to the list view, create at least three published posts, and add the pagination block from Lesson 6. Confirm the Next link works.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Extra Context</h3>
+      <p>Add <code>total_published</code> through <code>get_context_data</code>, and print it on the list page as "Showing N published posts".</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Compare the Code</h3>
+      <p>Count the lines in your Day 7 views file and in the new class-based version. Write one sentence on what got simpler and one on what got harder to follow.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Pattern</th><th>Where you'll see it</th></tr>
+      <tr><td>ListView with pagination</td><td>Search results, product catalogues, and archives</td></tr>
+      <tr><td>DetailView with get_queryset</td><td>Showing a user only their own orders or drafts</td></tr>
+      <tr><td>CreateView and UpdateView</td><td>Sign-up pages, comment forms, and admin-style editors</td></tr>
+      <tr><td>DeleteView with a confirmation page</td><td>Removing files, projects, or accounts safely</td></tr>
+      <tr><td>Mixins such as LoginRequiredMixin</td><td>Protecting dashboards and account pages</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django REST framework, which you'll meet later, uses the same idea. Its generic API views build on these class-based views.</div>
+  </section>
+
+  <section>
+    <h2>Day 8 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 8 of 30 &middot; Next: Day 9 - Querysets in Depth</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does as_view() do?",
+      options: ["Creates a database table", "Turns a class-based view into a function Django can call", "Displays the admin", "Saves the form"],
+      answer: 1,
+      explain: "as_view() returns a callable that Django uses to handle requests for the class."
+    },
+    {
+      q: "Which generic view is used to show one object?",
+      options: ["ListView", "DetailView", "CreateView", "DeleteView"],
+      answer: 1,
+      explain: "DetailView fetches one object by its primary key and renders it."
+    },
+    {
+      q: "What is the default template name for a ListView on the Post model in the blog app?",
+      options: ["blog/post.html", "blog/post_list.html", "post_list.html", "blog/list.html"],
+      answer: 1,
+      explain: "Generic views default to app/model_list.html for lists, and similar names for other views."
+    },
+    {
+      q: "Which method controls which objects a generic view can access?",
+      options: ["get_queryset()", "get_context_data()", "form_valid()", "dispatch()"],
+      answer: 0,
+      explain: "get_queryset() returns the objects available to the view, so it's the place for filtering rules."
+    },
+    {
+      q: "Why must get_context_data call super() first?",
+      options: ["It is faster", "It keeps the default context values the template relies on", "It saves the object", "It deletes the old context"],
+      answer: 1,
+      explain: "super() builds the standard context, and your extra values are added on top of it."
+    },
+    {
+      q: "What does paginate_by = 5 do in a ListView?",
+      options: ["Limits the database to five rows", "Splits the results into pages of five and provides page_obj", "Deletes all but five posts", "Caches five templates"],
+      answer: 1,
+      explain: "paginate_by splits the list, and the template gets page navigation information."
+    },
+    {
+      q: "Why use reverse_lazy for success_url in a class attribute?",
+      options: ["Because reverse is not allowed", "Because the URL is needed later, after the URLs have loaded", "Because it is faster", "Because it deletes the old URL"],
+      answer: 1,
+      explain: "Class attributes are evaluated when the module loads, so reverse_lazy waits until the URL is actually needed."
+    },
+    {
+      q: "Which URL parameter do generic detail, update, and delete views expect by default?",
+      options: ["post_id", "slug", "pk", "id_post"],
+      answer: 2,
+      explain: "Generic views look up objects by pk, so routes should capture <int:pk>."
+    },
+    {
+      q: "What is a mixin?",
+      options: ["A database backup", "A small class that adds one behaviour to a view", "A template tag", "A migration"],
+      answer: 1,
+      explain: "Mixins add focused behaviour, such as requiring login, and are combined with view classes."
+    },
+    {
+      q: "Why does select_related('author') help a post list?",
+      options: ["It deletes the authors", "It fetches each post's author in the same query, reducing extra database hits", "It sorts the posts", "It hides drafts"],
+      answer: 1,
+      explain: "select_related joins the related author data, so the page doesn't run one extra query per post."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 9!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

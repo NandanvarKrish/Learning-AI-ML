@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 5</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 5 of 30</span>
+  <h1>Static and Media Files</h1>
+  <p>Estimated time: about 1.5 hours &middot; CSS, JavaScript, and images with the static tag, project and app static folders, collectstatic, and user uploads with MEDIA settings</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Static vs Media Files</h2>
+    <p>Django separates two kinds of files that a page needs:</p>
+    <table>
+      <tr><th>Type</th><th>What it is</th><th>Who creates it</th><th>Examples</th></tr>
+      <tr><td><strong>Static files</strong></td><td>Part of your code, the same for every visitor</td><td>You, the developer</td><td>CSS, JavaScript, logos, icons</td></tr>
+      <tr><td><strong>Media files</strong></td><td>Uploaded by users while the site runs</td><td>Your site's visitors</td><td>Profile photos, PDFs, post images</td></tr>
+    </table>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Static files are the furniture and décor that came with the building. Media files are the photos visitors pin to the walls.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Where Static Files Live</h2>
+    <p>Each app can keep its own static files in a <code>static</code> folder. Use a nested folder with the app name to avoid clashes:</p>
+    <div class="tree">blog/
+└── static/
+    └── blog/
+        ├── style.css
+        └── app.js</div>
+    <p>You can also keep project-wide files in a folder you choose. Tell Django about it in <code>settings.py</code>:</p>
+    <pre><code># mysite/settings.py
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_URL = "static/"                        # the address prefix: /static/...
+STATICFILES_DIRS = [BASE_DIR / "static"]      # extra project-wide folders
+STATIC_ROOT = BASE_DIR / "staticfiles"        # where collectstatic gathers files</code></pre>
+    <div class="callout tip">
+      <strong>Note:</strong> <code>BASE_DIR</code> is usually already defined near the top of <code>settings.py</code>. Reuse it instead of defining it twice.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: The static Tag</h2>
+    <p>Never write static paths by hand. The <code>static</code> tag builds the correct URL for you, and it keeps working if you change <code>STATIC_URL</code> later.</p>
+    <pre><code># blog/templates/base.html
+{% load static %}
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;link rel="stylesheet" href="{% static 'blog/style.css' %}"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;img src="{% static 'blog/logo.png' %}" alt="Logo"&gt;
+  &lt;script src="{% static 'blog/app.js' %}"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    <div class="output">&lt;link rel="stylesheet" href="/static/blog/style.css"&gt;
+&lt;img src="/static/blog/logo.png" alt="Logo"&gt;</div>
+    <div class="callout warn">
+      <strong>Don't forget <code>{% load static %}</code>:</strong> without it, Django raises <code>TemplateSyntaxError</code> for the <code>static</code> tag. Put it at the top of every template that uses static files.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Serving Static Files in Development</h2>
+    <p>When <code>DEBUG</code> is True, <code>runserver</code> serves static files automatically from the app folders and <code>STATICFILES_DIRS</code>. You don't need extra steps while you learn.</p>
+    <p>Restart the server after changing <code>settings.py</code>, and refresh the browser with a hard reload (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) if the old CSS is cached.</p>
+    <div class="callout tip">
+      <strong>Quick test:</strong> Visit <code>http://127.0.0.1:8000/static/blog/style.css</code> directly in the browser. If you see your CSS, the setup is correct.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: collectstatic for Production</h2>
+    <p>In production, a web server such as Nginx serves static files for speed. It needs them gathered into one folder. The <code>collectstatic</code> command copies everything from all apps and <code>STATICFILES_DIRS</code> into <code>STATIC_ROOT</code>.</p>
+    <pre><code>python manage.py collectstatic</code></pre>
+    <div class="output">142 static files copied to '/home/you/django-course/mysite/staticfiles'.</div>
+    <p>The number depends on your apps. Django's admin alone brings many files. Run <code>collectstatic</code> again whenever you change static files before deploying.</p>
+    <div class="callout warn">
+      <strong>Don't edit the <code>staticfiles</code> folder by hand.</strong> It's a generated copy. Change the original file in your app's <code>static</code> folder and run <code>collectstatic</code> again.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Media Files and User Uploads</h2>
+    <p>Media files need two settings: the URL prefix and the folder on disk where uploads are saved.</p>
+    <pre><code># mysite/settings.py
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"</code></pre>
+    <p>A model can then store an uploaded image. <code>ImageField</code> needs the Pillow library, so install it with <code>pip install pillow</code>.</p>
+    <pre><code># blog/models.py
+class Post(models.Model):
+    # ...existing fields...
+    cover = models.ImageField(upload_to="covers/", blank=True)</code></pre>
+    <p>Add this to <code>mysite/urls.py</code> so Django serves uploads while <code>DEBUG</code> is on:</p>
+    <pre><code>from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    # ...existing patterns...
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)</code></pre>
+    <p>In a template, show an uploaded image safely. The <code>if</code> check avoids errors for posts without a cover:</p>
+    <pre><code>{% if post.cover %}
+  &lt;img src="{{ post.cover.url }}" alt="{{ post.title }}"&gt;
+{% endif %}</code></pre>
+    <div class="callout warn">
+      <strong>Security:</strong> Uploads come from strangers. Limit file types, check file sizes, and never serve uploads from the same folder as your code. On a live site, use cloud storage or a separate media server.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Adding a Stylesheet to the Project</h2>
+    <p>A small stylesheet makes a visible difference. Create <code>blog/static/blog/style.css</code>:</p>
+    <pre><code>body {
+  font-family: system-ui, sans-serif;
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #222;
+}
+nav a { margin-right: 1rem; }
+h1 { color: #0C4B33; }</code></pre>
+    <p>Link it from <code>base.html</code> with the <code>static</code> tag from Lesson 3. Every page that extends the base now gets the same styling.</p>
+    <div class="callout tip">
+      <strong>Tip:</strong> Keep one shared stylesheet in the base template, and add page-specific CSS only when a page truly needs it. This keeps the site consistent.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 5</h2>
+    <ol>
+      <li><strong>Forgetting <code>{% load static %}</code>:</strong> the page fails with a template syntax error.</li>
+      <li><strong>Hard-coding <code>/static/...</code>:</strong> use the <code>static</code> tag so paths stay correct.</li>
+      <li><strong>Putting files in the wrong folder:</strong> each app's files belong in <code>app/static/app/</code>.</li>
+      <li><strong>Forgetting <code>collectstatic</code> before deployment:</strong> production shows missing styles and scripts.</li>
+      <li><strong>Mixing up MEDIA and STATIC:</strong> uploads go in <code>MEDIA_ROOT</code>, code assets in static folders.</li>
+      <li><strong>Trusting uploaded files:</strong> validate and restrict them.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Continue in your <code>mysite</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Link a Stylesheet</h3>
+      <p>Create <code>blog/static/blog/style.css</code> from Lesson 7 and link it in <code>base.html</code> with the <code>static</code> tag. Visit <code>/posts/</code> and confirm the new styles appear.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Check the Generated Link</h3>
+      <p>View the page source in your browser and find the <code>link</code> tag for your stylesheet. Write down the exact href Django generated.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Add a JavaScript File</h3>
+      <p>Create <code>blog/static/blog/app.js</code> with a single line, such as <code>console.log("Blog loaded");</code>. Include it with the <code>static</code> tag, then open the browser console and confirm the message.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Run collectstatic</h3>
+      <p>Set <code>STATIC_ROOT</code>, then run <code>collectstatic</code>. Open the generated <code>staticfiles</code> folder and confirm your <code>style.css</code> is there.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Upload a Cover Image</h3>
+      <p>Add the <code>cover</code> field from Lesson 6, install Pillow, and run the migrations. In the admin, upload an image to a post, then display it on the detail page with the <code>if</code> check. Confirm that a post without a cover shows no broken image.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Stylesheets and scripts via static</td><td>Every website's look, animations, and interactive widgets</td></tr>
+      <tr><td>collectstatic and a CDN</td><td>Large sites serving assets fast to visitors worldwide</td></tr>
+      <tr><td>ImageField uploads</td><td>Profile photos, product images, and article cover pictures</td></tr>
+      <tr><td>Media folders in cloud storage</td><td>Video platforms and marketplaces storing user files</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's admin uses static files too. The admin's look comes from the same system you just learned, which is why <code>collectstatic</code> matters even for projects with no custom CSS.</div>
+  </section>
+
+  <section>
+    <h2>Day 5 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 5 of 30 &middot; Next: Day 6 - Forms</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the difference between static and media files?",
+      options: ["There is no difference", "Static files are part of the code; media files are uploaded by users", "Media files are CSS; static files are images", "Static files are stored in the database"],
+      answer: 1,
+      explain: "Static files come with the project, while media files are created by visitors at runtime."
+    },
+    {
+      q: "Which template line is required before using the static tag?",
+      options: ["{% include static %}", "{% load static %}", "{% import static %}", "{% static %}"],
+      answer: 1,
+      explain: "{% load static %} makes the static tag available in the template."
+    },
+    {
+      q: "What does {% static 'blog/style.css' %} produce?",
+      options: ["A file copy", "A URL such as /static/blog/style.css", "A Python module", "A database row"],
+      answer: 1,
+      explain: "The tag builds the correct URL from STATIC_URL and the file path."
+    },
+    {
+      q: "What does the collectstatic command do?",
+      options: ["Deletes unused CSS", "Copies static files from all apps and STATICFILES_DIRS into STATIC_ROOT", "Creates a superuser", "Runs the tests"],
+      answer: 1,
+      explain: "collectstatic gathers all static files into one folder so a production web server can serve them."
+    },
+    {
+      q: "Which setting defines the folder where user uploads are saved?",
+      options: ["STATIC_ROOT", "MEDIA_ROOT", "STATICFILES_DIRS", "INSTALLED_APPS"],
+      answer: 1,
+      explain: "MEDIA_ROOT is the folder on disk for uploaded media, while MEDIA_URL is its address prefix."
+    },
+    {
+      q: "Which library must be installed to use ImageField?",
+      options: ["Requests", "Pillow", "Pandas", "Flask"],
+      answer: 1,
+      explain: "ImageField depends on Pillow to check and process images."
+    },
+    {
+      q: "Why should you not edit the files inside the staticfiles folder?",
+      options: ["It is read-only", "It is a generated copy, so changes are overwritten by the next collectstatic run", "It contains only images", "Django forbids any change to it"],
+      answer: 1,
+      explain: "Edit the original file in the app's static folder, then run collectstatic again."
+    },
+    {
+      q: "What is the recommended way to name an app's static files folder?",
+      options: ["app/static/style.css", "app/static/app/style.css", "static/style.css in the root only", "app/css/style.css"],
+      answer: 1,
+      explain: "The nested app folder prevents name clashes between apps."
+    },
+    {
+      q: "What is the purpose of the if check in {% if post.cover %}?",
+      options: ["To delete the cover", "To avoid broken images for posts with no uploaded file", "To resize the image", "To upload the file again"],
+      answer: 1,
+      explain: "Posts without a cover have no file, so checking first prevents an error or broken image."
+    },
+    {
+      q: "Why is serving user uploads a security concern?",
+      options: ["Uploads are always slow", "Uploaded files come from untrusted users and need validation and separation from code", "Uploads cannot be displayed", "Django stores them as plain text"],
+      answer: 1,
+      explain: "Strangers can upload harmful files, so restrict types and sizes, and keep uploads apart from the code."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 6!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

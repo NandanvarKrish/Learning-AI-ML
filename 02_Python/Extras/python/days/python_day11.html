@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 11</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 11 of 30</span>
+  <h1>Reading and Writing Files</h1>
+  <p>Estimated time: about 1.5 hours &middot; open, with, read, write, append, CSV, and saving data permanently</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Files?</h2>
+    <p>Everything you've stored so far disappears when the program ends. The expense tracker from Day 7 lost its data when you closed it. Files let a program save data to the disk and load it back later.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Variables are like notes on a whiteboard, wiped when the meeting ends. Files are like a notebook you keep on the shelf, so tomorrow you can open it and carry on.
+    </div>
+    <p>Two words matter here. A <strong>file path</strong> says where a file lives, such as <code>expenses.txt</code> (same folder as the program) or <code>C:/Users/Sam/data/expenses.txt</code>. A <strong>mode</strong> says what you intend to do with it: read, write, or append.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Opening and Reading a File</h2>
+    <p>The <code>open()</code> function returns a file object. Always close the file when you're done so changes are saved and resources are freed.</p>
+    <pre><code>f = open("notes.txt", "r")    # "r" means read
+content = f.read()            # read everything as one string
+f.close()                     # always close it
+
+print(content)</code></pre>
+    <p>This works, but if an error happens before <code>close()</code>, the file stays open. Python's <code>with</code> statement avoids this problem.</p>
+
+    <h3>The with statement (the recommended way)</h3>
+    <pre><code>with open("notes.txt", "r") as f:
+    content = f.read()
+# the file is closed automatically here, even if an error happened
+
+print(content)</code></pre>
+    <div class="callout tip">
+      <strong>Rule of thumb:</strong> Use <code>with open(...)</code> every time. You'll almost never need to write <code>close()</code> yourself.
+    </div>
+
+    <h3>Reading in different ways</h3>
+    <table>
+      <tr><th>Method</th><th>Returns</th><th>Best for</th></tr>
+      <tr><td><code>f.read()</code></td><td>The whole file as one string</td><td>Small files</td></tr>
+      <tr><td><code>f.readline()</code></td><td>One line, including the newline</td><td>Reading step by step</td></tr>
+      <tr><td><code>f.readlines()</code></td><td>A list of all lines</td><td>Small files, when you need a list</td></tr>
+      <tr><td><code>for line in f</code></td><td>One line at a time</td><td>Large files (memory-friendly)</td></tr>
+    </table>
+    <pre><code>with open("notes.txt") as f:
+    for line in f:
+        print(line.strip())      # strip() removes the trailing newline</code></pre>
+    <p>Note that <code>"r"</code> is the default mode, so <code>open("notes.txt")</code> reads the file.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Writing and Appending</h2>
+    <p>The <code>"w"</code> mode writes to a file and <strong>erases anything already there</strong>. The <code>"a"</code> mode adds to the end without erasing.</p>
+    <pre><code>with open("log.txt", "w") as f:
+    f.write("First line\n")       # write() does not add a newline for you
+    f.write("Second line\n")
+
+with open("log.txt", "a") as f:
+    f.write("Third line added later\n")
+
+with open("log.txt") as f:
+    print(f.read())</code></pre>
+    <div class="output">First line
+Second line
+Third line added later</div>
+    <div class="callout warn">
+      <strong>Dangerous:</strong> Opening a file with <code>"w"</code> deletes its previous contents immediately, even if you write nothing. Use <code>"a"</code> when you want to keep existing data.
+    </div>
+
+    <h3>Mode summary</h3>
+    <table>
+      <tr><th>Mode</th><th>Meaning</th><th>If file is missing</th></tr>
+      <tr><td><code>"r"</code></td><td>Read</td><td>FileNotFoundError</td></tr>
+      <tr><td><code>"w"</code></td><td>Write (erases existing content)</td><td>Creates it</td></tr>
+      <tr><td><code>"a"</code></td><td>Append to the end</td><td>Creates it</td></tr>
+      <tr><td><code>"x"</code></td><td>Create only; error if it exists</td><td>Creates it</td></tr>
+    </table>
+    <p>Add <code>"+"</code> for both reading and writing, for example <code>"r+"</code>. Add <code>"b"</code> for binary files such as images, for example <code>"rb"</code>.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Paths and Checking Files</h2>
+    <p>A relative path like <code>data.txt</code> is measured from the folder where you run the program. An absolute path starts from the root, such as <code>C:/Users/Sam/data.txt</code> on Windows or <code>/home/sam/data.txt</code> on Linux and Mac.</p>
+    <pre><code>import os
+
+print(os.getcwd())                 # the folder the program runs from
+print(os.path.exists("data.txt"))  # True or False
+print(os.path.join("data", "expenses.txt"))   # builds a path safely</code></pre>
+    <div class="output">/home/sam/project
+False
+data/expenses.txt</div>
+    <div class="callout tip">
+      <strong>Why os.path.join:</strong> It uses the correct slash for the operating system. Writing <code>"data\\expenses.txt"</code> by hand works on Windows but breaks on other systems.
+    </div>
+    <p>Notice the <code>import os</code> line. Modules such as <code>os</code> are covered fully on Day 13, but you can use them now.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Handling Missing Files</h2>
+    <p>Opening a missing file for reading raises <code>FileNotFoundError</code>. Catch it with <code>try</code> and <code>except</code>, which you saw on Day 7, so the program can continue with sensible defaults.</p>
+    <pre><code>try:
+    with open("expenses.txt") as f:
+        data = f.read()
+except FileNotFoundError:
+    data = ""
+    print("No saved file yet, starting fresh.")
+
+print(f"Loaded {len(data)} characters")</code></pre>
+    <div class="output">No saved file yet, starting fresh.
+Loaded 0 characters</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Storing Structured Data with CSV</h2>
+    <p>CSV (comma-separated values) is a simple format used by spreadsheets. Each line is one record, and commas separate the fields. Python's <code>csv</code> module handles the details, including quotes and commas inside values.</p>
+    <pre><code>import csv
+
+rows = [
+    ["name", "amount", "category"],
+    ["Lunch", "450", "food"],
+    ["Bus Pass", "120", "travel"],
+]
+
+with open("expenses.csv", "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerows(rows)
+
+with open("expenses.csv", newline="") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        print(row)</code></pre>
+    <div class="output">['name', 'amount', 'category']
+['Lunch', '450', 'food']
+['Bus Pass', '120', 'travel']</div>
+    <p>The <code>newline=""</code> argument prevents extra blank lines on Windows. Notice that CSV reads everything back as text, so you need <code>float()</code> to do arithmetic on amounts.</p>
+
+    <h3>Dictionaries with DictReader and DictWriter</h3>
+    <pre><code>import csv
+
+with open("expenses.csv", newline="") as f:
+    for row in csv.DictReader(f):
+        print(row["name"], float(row["amount"]))</code></pre>
+    <div class="output">Lunch 450.0
+Bus Pass 120.0</div>
+    <p>Using dictionaries with CSV makes the code easier to read, because you use column names instead of positions.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Saving the Expense Tracker</h2>
+    <p>Here's how the Day 7 expense tracker can save and load its data. Only the changed parts are shown. The rest of the program stays the same.</p>
+    <pre><code>import csv
+import os
+
+FILENAME = "expenses.csv"
+
+def load_expenses():
+    """Return the saved expenses as a list of dictionaries."""
+    if not os.path.exists(FILENAME):
+        return []
+    expenses = []
+    with open(FILENAME, newline="") as f:
+        for row in csv.DictReader(f):
+            expenses.append({
+                "name": row["name"],
+                "amount": float(row["amount"]),
+                "category": row["category"],
+            })
+    return expenses
+
+def save_expenses(expenses):
+    """Write all expenses to the CSV file, replacing the old contents."""
+    with open(FILENAME, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["name", "amount", "category"])
+        writer.writeheader()
+        writer.writerows(expenses)
+
+expenses = load_expenses()
+print(f"Loaded {len(expenses)} expenses")
+
+# ...add_expense, view_expenses, etc. unchanged...
+
+save_expenses(expenses)   # call before Exit
+print("Saved.")</code></pre>
+    <div class="output">Loaded 0 expenses
+Saved.</div>
+    <div class="callout tip">
+      <strong>Design point:</strong> The program loads data once at the start and saves once at exit. Saving after every change is safer if the program could crash, and you can add that as an extension.
+    </div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 11</h2>
+    <ol>
+      <li><strong>Using "w" when you meant "a":</strong> the old contents are erased immediately.</li>
+      <li><strong>Forgetting newlines:</strong> <code>write()</code> adds only the text you give it. Add <code>\n</code> yourself.</li>
+      <li><strong>Treating read data as numbers:</strong> file contents and CSV values are strings. Convert with <code>int()</code> or <code>float()</code>.</li>
+      <li><strong>Forgetting newline="" with csv:</strong> you may get blank lines between rows on Windows.</li>
+      <li><strong>Wrong path:</strong> a relative path depends on where you run the program. Check with <code>os.getcwd()</code>.</li>
+      <li><strong>Not handling FileNotFoundError:</strong> the first run of a program often has no file yet.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Notes App</h3>
+      <p>Ask the user for a note. Append it to <code>notes.txt</code> with a timestamp-free line. Run the program twice and confirm both notes are kept. Then show all notes with line numbers.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Word Counter</h3>
+      <p>Write a program that reads a text file and prints the number of lines, words, and characters. Create the test file first with a few sentences.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Safe Reader</h3>
+      <p>Write <code>read_file_safely(path)</code> that returns the file's contents, or prints a friendly message and returns an empty string if the file does not exist.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Score History</h3>
+      <p>Each time a quiz runs, append the player name and score to <code>scores.txt</code>. Then print the best score ever recorded.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: CSV Sales Report</h3>
+      <p>Create a CSV file of five sales with columns for item, quantity, and price. Read it back with <code>DictReader</code>, compute the total revenue, and print it with 2 decimal places.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Expense Tracker with Saving</h3>
+      <p>Add file saving to your Day 7 expense tracker, using the load and save functions above. Test it: add two expenses, exit, then restart the program and confirm they're still there.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Task</th><th>Where you'll see it</th></tr>
+      <tr><td>Reading and writing text</td><td>Config files, logs, notes apps, saving game progress</td></tr>
+      <tr><td>Append mode</td><td>Application logs that grow over time, audit trails of user actions</td></tr>
+      <tr><td>CSV</td><td>Bank statements, exporting data from databases, sharing datasets with spreadsheets</td></tr>
+      <tr><td>Path handling</td><td>Finding uploaded files, saving reports into the correct folder on any operating system</td></tr>
+      <tr><td>FileNotFoundError handling</td><td>First-run setup, optional configuration files, safe fallbacks when data is missing</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django apps store settings, templates, and uploaded files on disk, and they read and write them with the same tools you practised today.
+    </div>
+  </section>
+
+  <section>
+    <h2>Day 11 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 11 of 30 &middot; Next: Day 12 - Errors and Exceptions</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which mode erases existing file contents when opened?",
+      options: ["'r'", "'a'", "'w'", "'rb'"],
+      answer: 2,
+      explain: "'w' opens the file for writing and truncates it, so previous contents are lost."
+    },
+    {
+      q: "Why is 'with open(...) as f' preferred?",
+      options: ["It makes files faster", "It closes the file automatically, even if an error occurs", "It creates files that do not exist", "It is required in Python 3"],
+      answer: 1,
+      explain: "The with block closes the file on exit, whether the code finishes normally or raises an error."
+    },
+    {
+      q: "What does f.write('Hi') do when f is opened in 'a' mode?",
+      options: ["Replaces the file with 'Hi'", "Adds 'Hi' to the end of the file", "Adds 'Hi' and a newline", "Raises an error"],
+      answer: 1,
+      explain: "Append mode writes at the end. write() adds no newline automatically."
+    },
+    {
+      q: "Opening a missing file in 'r' mode raises which error?",
+      options: ["KeyError", "ValueError", "FileNotFoundError", "IndexError"],
+      answer: 2,
+      explain: "Reading a file that does not exist raises FileNotFoundError, which you can catch with try and except."
+    },
+    {
+      q: "What type does f.read() return?",
+      options: ["list", "str", "int", "bytes in text mode"],
+      answer: 1,
+      explain: "In text mode, read() returns the entire file as one string."
+    },
+    {
+      q: "What does os.path.join('data', 'x.txt') produce?",
+      options: ["'datax.txt'", "A path with the correct separator for the operating system", "'data/x.txt' on every OS only", "An error"],
+      answer: 1,
+      explain: "os.path.join builds paths with the correct separator for your operating system."
+    },
+    {
+      q: "Why must amounts read from a CSV be converted with float()?",
+      options: ["CSV values are always lists", "CSV values are read back as strings", "float is required for files", "Amounts cannot be stored"],
+      answer: 1,
+      explain: "The csv module returns text. You must convert values before doing arithmetic."
+    },
+    {
+      q: "Which loop reads a large file one line at a time without loading all of it?",
+      options: ["for line in f", "f.read()", "f.readlines()[0]", "f.close()"],
+      answer: 0,
+      explain: "Iterating over the file object reads one line at a time, which saves memory on large files."
+    },
+    {
+      q: "What does newline='' prevent when using csv?",
+      options: ["Column headers", "Extra blank lines on Windows", "Numbers from being read", "File permissions errors"],
+      answer: 1,
+      explain: "Without newline='', the csv module can produce blank rows on Windows because of how line endings are handled."
+    },
+    {
+      q: "In the expense tracker example, when is the data saved?",
+      options: ["After every keystroke", "Only once at the start", "Once when the program exits, by calling save_expenses", "Never"],
+      answer: 2,
+      explain: "The example saves once before exit. Saving after each change is an option for extra safety."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 12!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

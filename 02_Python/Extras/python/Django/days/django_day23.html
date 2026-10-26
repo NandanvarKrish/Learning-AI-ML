@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 23</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 23 of 30</span>
+  <h1>Building a JSON API</h1>
+  <p>Estimated time: about 1.5 hours &middot; JSON responses with JsonResponse, listing and fetching objects, creating from JSON with validation and status codes, handling errors as JSON, and when to use Django REST framework</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What Is an API?</h2>
+    <p>So far your views return HTML pages for people. An <strong>API</strong> (application programming interface) returns data, usually as JSON, for programs to use. A mobile app, a JavaScript page, or another server can all read the same posts without scraping HTML.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A website is a restaurant dining room, where the food is plated for you. An API is the kitchen window, where the same food is handed over in a standard container for any delivery service to pick up.</div>
+    <p>JSON is a plain text format of keys and values, such as <code>{"title": "Model tips", "views": 40}</code>. Almost every language reads it.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Returning JSON with JsonResponse</h2>
+    <p>Django's <code>JsonResponse</code> converts a dictionary to JSON and sets the content type for you:</p>
+    <pre><code># blog/api.py
+from django.http import JsonResponse
+
+def api_hello(request):
+    return JsonResponse({"message": "Hello from the API", "version": 1})</code></pre>
+    <div class="output">{"message": "Hello from the API", "version": 1}</div>
+    <div class="callout tip">
+      <strong>Lists need a wrapper:</strong> By default, <code>JsonResponse</code> refuses a top-level list for security reasons. Wrap lists in a dictionary, such as <code>{"results": [...]}</code>, which is also easier to extend later with pagination info.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Converting Objects to Dictionaries</h2>
+    <p>Model objects are not JSON, so write a small function that chooses which fields to expose. Keeping this list explicit prevents accidentally sharing private fields:</p>
+    <pre><code># blog/api.py
+def post_to_dict(post):
+    return {
+        "id": post.pk,
+        "title": post.title,
+        "body": post.body,
+        "author": post.author.name,
+        "published": post.is_published,
+        "created_at": post.created_at.isoformat(),
+    }</code></pre>
+    <div class="callout warn">
+      <strong>Expose deliberately:</strong> Never return <code>model_to_dict</code> or <code>__dict__</code> blindly. A new sensitive field added later, such as an internal note, would leak to everyone who calls the API.</div>
+    <p><code>isoformat()</code> turns a date into a standard text form, such as <code>2026-10-21T07:14:00+05:30</code>, which every language can parse.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Listing and Fetching</h2>
+    <pre><code># blog/api.py
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .models import Post
+
+@require_http_methods(["GET"])
+def api_post_list(request):
+    posts = Post.objects.filter(is_published=True).select_related("author")
+    return JsonResponse({"results": [post_to_dict(p) for p in posts]})
+
+@require_http_methods(["GET"])
+def api_post_detail(request, pk):
+    try:
+        post = Post.objects.select_related("author").get(pk=pk, is_published=True)
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Post not found"}, status=404)
+    return JsonResponse(post_to_dict(post))</code></pre>
+    <pre><code># blog/urls.py
+path("api/posts/", api.api_post_list, name="api_post_list"),
+path("api/posts/&lt;int:pk&gt;/", api.api_post_detail, name="api_post_detail"),</code></pre>
+    <p>A request to the list address returns:</p>
+    <div class="output">{"results": [{"id": 1, "title": "Model tips", "body": "Keep models small.",
+  "author": "Asha", "published": true, "created_at": "2026-10-21T07:14:00+05:30"}]}</div>
+    <div class="callout warn">
+      <strong>Don't use get_object_or_404 in APIs:</strong> It returns the HTML 404 page, which an API client can't parse. Catch <code>DoesNotExist</code> and return a JSON error, as shown above.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Creating from JSON</h2>
+    <p>A client sends JSON in the request body. Read it with <code>json.loads</code>, reuse the form from Day 6 to validate, and return <strong>201 Created</strong> on success:</p>
+    <pre><code># blog/api.py
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .forms import PostForm
+
+@require_http_methods(["POST"])
+def api_post_create(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Request body must be valid JSON"}, status=400)
+
+    form = PostForm(data)
+    if not form.is_valid():
+        return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+
+    post = form.save()
+    return JsonResponse(post_to_dict(post), status=201)</code></pre>
+    <p>A client that sends a short title receives:</p>
+    <div class="output">{"errors": {"title": [{"message": "Title must be at least 5 characters.", "code": "invalid"}]}}</div>
+    <table>
+      <tr><th>Status</th><th>Meaning</th><th>Use it for</th></tr>
+      <tr><td>200 OK</td><td>Success</td><td>Reads and successful updates</td></tr>
+      <tr><td>201 Created</td><td>A new object was made</td><td>Successful POST that creates data</td></tr>
+      <tr><td>400 Bad Request</td><td>The client sent invalid data</td><td>Bad JSON or failed validation</td></tr>
+      <tr><td>401 / 403</td><td>Not signed in / not allowed</td><td>Protected endpoints</td></tr>
+      <tr><td>404 Not Found</td><td>No such object</td><td>Unknown IDs</td></tr>
+      <tr><td>405 Method Not Allowed</td><td>Wrong HTTP method</td><td>Created automatically by <code>require_http_methods</code></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 6: CSRF and API Clients</h2>
+    <p>On Day 6 you learned that Django rejects POST requests without a CSRF token. That protects browsers from forged requests. A JavaScript page on your own site can send the token. A separate program such as a mobile app or a script cannot, so it receives 403 errors.</p>
+    <pre><code>from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_post_create(request):
+    ...</code></pre>
+    <div class="callout warn">
+      <strong>Exempt only with another protection:</strong> <code>csrf_exempt</code> removes the browser protection, so an exempt endpoint must require something else, such as an API token in the <code>Authorization</code> header. Never exempt an endpoint that uses cookies to identify the user.</div>
+    <p>Real APIs usually use token authentication, where each client sends a secret token that the server checks on every request. Keep the browser-facing views protected by CSRF, and secure the API with tokens.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Testing an API</h2>
+    <p>The test client works for APIs too. Use <code>response.json()</code> to read the body as a dictionary:</p>
+    <pre><code>import json
+from django.test import TestCase
+from django.urls import reverse
+
+class PostApiTests(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(name="Asha", email="asha@example.com")
+
+    def test_create_returns_201(self):
+        response = self.client.post(
+            reverse("api_post_create"),
+            data=json.dumps({"author": self.author.pk, "title": "API made", "body": "Hi", "is_published": True}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["title"], "API made")
+
+    def test_short_title_returns_400(self):
+        response = self.client.post(
+            reverse("api_post_create"),
+            data=json.dumps({"author": self.author.pk, "title": "Hi", "body": "Hi"}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("title", response.json()["errors"])</code></pre>
+    <div class="callout tip">
+      <strong>Send JSON properly:</strong> Use <code>json.dumps</code> for the data and set <code>content_type="application/json"</code>. Sending a plain dictionary would be encoded as form data, and the view would not read it as JSON.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Django REST Framework</h2>
+    <p>Writing every API view by hand works well for learning, but real projects usually use <strong>Django REST framework</strong> (DRF). It adds:</p>
+    <ul>
+      <li><strong>Serializers:</strong> convert models to JSON and validate input in one class, replacing <code>post_to_dict</code>.</li>
+      <li><strong>Viewsets and routers:</strong> build list, detail, create, update, and delete endpoints from a few lines.</li>
+      <li><strong>Authentication and permissions:</strong> token and session auth, plus the permission classes from Day 17.</li>
+      <li><strong>A browsable API:</strong> a web page for trying each endpoint.</li>
+    </ul>
+    <pre><code>pip install djangorestframework</code></pre>
+    <p>Tomorrow you'll meet serializers in detail, and see how much shorter the same API becomes.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 23</h2>
+    <ol>
+      <li><strong>Returning a top-level list:</strong> wrap it in a dictionary.</li>
+      <li><strong>Exposing every model field:</strong> choose fields explicitly.</li>
+      <li><strong>Using get_object_or_404 in an API:</strong> return a JSON error instead.</li>
+      <li><strong>Forgetting status codes:</strong> return 201 for creation and 400 for bad input.</li>
+      <li><strong>Exempting CSRF without other protection:</strong> add token authentication first.</li>
+      <li><strong>Sending form-encoded data to a JSON endpoint:</strong> set the content type and encode with <code>json.dumps</code>.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project. Test with the shell, the test client, or a tool such as <code>curl</code>.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Hello Endpoint</h3>
+      <p>Add the <code>api_hello</code> view with <code>JsonResponse</code>, and visit it in the browser. Confirm the response is JSON.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Read-Only Endpoints</h3>
+      <p>Add the list and detail endpoints. Confirm that unpublished posts never appear, and that an unknown ID returns a 404 with a JSON error.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Create Endpoint</h3>
+      <p>Add the create endpoint. Send a valid post with <code>curl</code> or the test client, and confirm you receive status 201 and the new data.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Error Responses</h3>
+      <p>Send invalid JSON, then a post with a short title. Record each status code and error body.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: API Tests</h3>
+      <p>Write the two tests from Lesson 7, plus one test that the list endpoint excludes drafts. Run them with <code>python manage.py test</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>API use</th><th>Where you'll see it</th></tr>
+      <tr><td>Mobile apps</td><td>Loading feeds and sending posts from phones</td></tr>
+      <tr><td>Single-page JavaScript apps</td><td>Interactive dashboards that update without page reloads</td></tr>
+      <tr><td>Partner integrations</td><td>Shops sending orders to delivery services</td></tr>
+      <tr><td>Public data APIs</td><td>Weather, maps, and payment services</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django REST framework builds directly on the class-based views you learned on Day 8, so the patterns you know carry over.</div>
+  </section>
+
+  <section>
+    <h2>Day 23 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 23 of 30 &middot; Next: Day 24 - Django REST Framework Serializers</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is an API in the context of a website?",
+      options: ["A page designed for people to read", "A set of endpoints that return data, usually JSON, for programs to use", "A database engine", "A style sheet"],
+      answer: 1,
+      explain: "An API returns structured data for other programs, rather than pages for people."
+    },
+    {
+      q: "Why must a list be wrapped in a dictionary for JsonResponse?",
+      options: ["Lists are not valid JSON", "By default JsonResponse refuses a top-level list, and wrapping also allows extra fields such as pagination", "Dictionaries are faster", "Lists cannot contain numbers"],
+      answer: 1,
+      explain: "JsonResponse blocks top-level lists by default, and a wrapper leaves room to add metadata later."
+    },
+    {
+      q: "Why choose fields explicitly in post_to_dict instead of exposing the whole model?",
+      options: ["It is faster", "A field added later could leak private data if every field were exposed automatically", "Python requires it", "Models cannot be converted"],
+      answer: 1,
+      explain: "Explicit lists control exactly what is public, so new internal fields stay private."
+    },
+    {
+      q: "Why should an API return a JSON error instead of get_object_or_404?",
+      options: ["get_object_or_404 is slower", "The HTML 404 page cannot be parsed by API clients", "APIs cannot return 404", "It deletes the object"],
+      answer: 1,
+      explain: "API clients expect JSON, so error responses must be JSON too."
+    },
+    {
+      q: "Which status code is correct after successfully creating an object through the API?",
+      options: ["200", "201", "302", "500"],
+      answer: 1,
+      explain: "201 Created signals that a new resource was made."
+    },
+    {
+      q: "What status code means the client sent invalid data?",
+      options: ["400", "401", "404", "503"],
+      answer: 0,
+      explain: "400 Bad Request indicates the request content was invalid, such as failed validation."
+    },
+    {
+      q: "Why might a separate mobile app receive 403 errors on a POST endpoint?",
+      options: ["Mobile apps cannot send JSON", "The app does not send the browser CSRF token, which Django requires for POST", "POST is disabled on mobile", "The database is offline"],
+      answer: 1,
+      explain: "CSRF protection expects a token from a browser session, which non-browser clients do not provide."
+    },
+    {
+      q: "What must an endpoint have if you exempt it from CSRF with csrf_exempt?",
+      options: ["A larger database", "Another protection, such as token authentication", "A longer timeout", "A custom 404 page"],
+      answer: 1,
+      explain: "Removing CSRF checks means another method must confirm who is calling."
+    },
+    {
+      q: "What should you set when a test sends JSON with the test client?",
+      options: ["content_type='application/json'", "content_type='text/html'", "No content type", "content_type='json/text'"],
+      answer: 0,
+      explain: "The content type tells Django to treat the body as JSON, so json.loads can read it."
+    },
+    {
+      q: "What is the main benefit of Django REST framework over hand-written views?",
+      options: ["It removes the need for models", "Serializers, viewsets, and authentication reduce repeated code and standardise the API", "It replaces Python", "It stops all errors"],
+      answer: 1,
+      explain: "DRF provides ready-made building blocks for serialisation, endpoints, and security."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 24!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

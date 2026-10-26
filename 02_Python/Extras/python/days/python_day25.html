@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 25</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 25 of 30</span>
+  <h1>Virtual Environments</h1>
+  <p>Estimated time: about 1.5 hours &middot; Why isolation matters, venv, activating and deactivating, requirements files, reproducible installs</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: The Problem Virtual Environments Solve</h2>
+    <p>On Day 13 you installed packages globally, so every project on your computer shares them. That causes trouble. Project A needs <code>requests</code> version 2.28, while project B needs version 2.31. Upgrading one breaks the other.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A virtual environment is like giving each project its own toolbox. The carpentry project keeps its own saws, and the plumbing project keeps its own wrenches. Nobody borrows tools from a box they don't own.</div>
+    <p>A virtual environment is a folder containing its own Python interpreter and its own set of installed packages. Each project gets one.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Creating a Virtual Environment</h2>
+    <p>Python includes the <code>venv</code> module, so you don't need to install anything extra. Run this command in your project folder:</p>
+    <pre><code># Windows, Mac, and Linux
+python -m venv venv</code></pre>
+    <p>The second <code>venv</code> is the folder name. It's a convention, but you can use any name. A folder called <code>venv</code> or <code>.venv</code> appears inside your project.</p>
+    <div class="callout tip">
+      <strong>On some Linux systems:</strong> If you see an error about <code>ensurepip</code>, install the venv support package for your distribution, such as <code>python3-venv</code>, then try again.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Activating and Deactivating</h2>
+    <p>Activating the environment makes the terminal use its Python and pip, instead of the global ones.</p>
+    <table>
+      <tr><th>System</th><th>Command to activate</th></tr>
+      <tr><td>Windows (PowerShell)</td><td><code>venv\Scripts\Activate.ps1</code></td></tr>
+      <tr><td>Windows (Command Prompt)</td><td><code>venv\Scripts\activate.bat</code></td></tr>
+      <tr><td>Mac and Linux</td><td><code>source venv/bin/activate</code></td></tr>
+    </table>
+    <p>When it works, the terminal prompt shows the environment name in brackets, such as <code>(venv)</code>.</p>
+    <pre><code># Check which Python and pip are in use
+which python        # Mac and Linux
+where python        # Windows
+
+# Deactivate when you finish
+deactivate</code></pre>
+    <div class="callout warn">
+      <strong>Windows note:</strong> If PowerShell says running scripts is disabled, run <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> once, then try activating again.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Installing Packages Inside an Environment</h2>
+    <p>With the environment active, pip installs packages into it only. Nothing changes for your other projects.</p>
+    <pre><code># With (venv) showing in the prompt
+pip install requests
+pip list</code></pre>
+    <div class="output">Package    Version
+---------- -------
+pip        24.x
+requests   2.31.0</div>
+    <p>The <code>pip list</code> output shows only the packages in this environment, not your global ones. Your version numbers may differ.</p>
+    <div class="callout tip">
+      <strong>Safe habit:</strong> Activate the environment before every <code>pip install</code>. If the prompt doesn't show <code>(venv)</code>, you are installing globally.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Recording and Reproducing Dependencies</h2>
+    <p>A <code>requirements.txt</code> file lists your project's packages and versions. Anyone can recreate the environment from it, including your future self on a new computer.</p>
+    <pre><code># Save the current packages
+pip freeze &gt; requirements.txt
+
+# On another computer, after creating and activating a new venv
+pip install -r requirements.txt</code></pre>
+    <div class="output">Contents of requirements.txt:
+certifi==2024.2.2
+charset-normalizer==3.3.2
+idna==3.7
+requests==2.31.0
+urllib3==2.2.1</div>
+    <div class="callout warn">
+      <strong>Use pip freeze carefully:</strong> It lists every installed package, including the dependencies of your dependencies. For small projects, many developers write just the top-level packages by hand. Either way, keep the file up to date.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Keeping Your Project Clean</h2>
+    <ul>
+      <li><strong>Don't commit the venv folder</strong> to version control such as Git. It is large and specific to one computer. Commit <code>requirements.txt</code> instead.</li>
+      <li><strong>Create a new environment per project</strong>, so dependencies never clash.</li>
+      <li><strong>Upgrade pip inside the environment</strong> with <code>python -m pip install --upgrade pip</code>.</li>
+      <li><strong>Delete and recreate</strong> a broken environment rather than trying to repair it. Since requirements.txt exists, you lose nothing.</li>
+    </ul>
+    <p>A simple <code>.gitignore</code> entry for Python projects looks like this:</p>
+    <pre><code>venv/
+__pycache__/
+*.pyc</code></pre>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Choosing a Python Version</h2>
+    <p>You can create an environment with a specific interpreter. This matters when a project needs an older or newer Python.</p>
+    <pre><code># Mac and Linux, if you have Python 3.11 installed
+python3.11 -m venv venv311
+
+# Windows, using the Python launcher
+py -3.11 -m venv venv311</code></pre>
+    <p>Check the version after activating with <code>python --version</code>.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 8: A Full Workflow</h2>
+    <p>Here's the complete routine for starting a new project. Follow it once, and you'll remember it.</p>
+    <pre><code>mkdir expense_app
+cd expense_app
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install requests
+pip freeze &gt; requirements.txt
+python main.py
+deactivate</code></pre>
+    <p>When you return to the project later, just activate the environment, and you'll be working with the same packages as before.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 25</h2>
+    <ol>
+      <li><strong>Forgetting to activate:</strong> packages install globally, and the program may then use the wrong versions.</li>
+      <li><strong>Committing the venv folder:</strong> it bloats the repository and doesn't work on other machines.</li>
+      <li><strong>Mixing global and project packages:</strong> the cause of most "it works on my machine" problems.</li>
+      <li><strong>Not updating requirements.txt:</strong> after adding a package, record it, or others can't reproduce the setup.</li>
+      <li><strong>Using the wrong activate script:</strong> Windows and Mac/Linux use different commands.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints. Use a folder you can delete afterwards.</p>
+
+    <div class="practical">
+      <h3>Practical 1: First Environment</h3>
+      <p>Create a folder called <code>practice_env</code>, create a virtual environment inside it, and activate it. Confirm the prompt shows the environment name.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Compare Environments</h3>
+      <p>With the environment active, run <code>pip list</code>. Deactivate it and run <code>pip list</code> again. Note how the two lists differ.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Install and Record</h3>
+      <p>Inside the active environment, install <code>requests</code>. Create <code>requirements.txt</code> with <code>pip freeze</code> and open the file to read it.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Rebuild Elsewhere</h3>
+      <p>Create a second folder with a new environment. Copy <code>requirements.txt</code> into it, then run <code>pip install -r requirements.txt</code>. Confirm <code>requests</code> is installed there too.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Two Versions</h3>
+      <p>In two different environments, install different versions of the same package, such as <code>requests==2.28.0</code> in one and <code>requests==2.31.0</code> in the other. Check each version with <code>pip show requests</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Project Setup Script</h3>
+      <p>Write the workflow from Lesson 8 as a short checklist in a text file called <code>setup_steps.txt</code>. Follow your own checklist from scratch on a new folder to test it.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Practice</th><th>Where you'll see it</th></tr>
+      <tr><td>One venv per project</td><td>Every professional Python team, including Django projects</td></tr>
+      <tr><td><code>requirements.txt</code></td><td>Deployment to servers, sharing projects with teammates, continuous integration pipelines</td></tr>
+      <tr><td>Pinned versions</td><td>Preventing sudden breakage when a library releases an update</td></tr>
+      <tr><td>Ignoring venv in Git</td><td>Keeping repositories small and portable across operating systems</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Every Django project starts with a virtual environment and a <code>requirements.txt</code> file. You'll use this workflow for the entire Django part of your course.</div>
+  </section>
+
+  <section>
+    <h2>Day 25 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 25 of 30 &middot; Next: Day 26 - Testing with pytest</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What problem does a virtual environment solve?",
+      options: ["It makes Python faster", "It keeps each project's packages and versions separate", "It replaces pip", "It encrypts code"],
+      answer: 1,
+      explain: "Each environment has its own installed packages, so projects with different needs do not interfere."
+    },
+    {
+      q: "Which command creates a virtual environment named venv?",
+      options: ["pip venv", "python -m venv venv", "venv create python", "python venv.create"],
+      answer: 1,
+      explain: "python -m venv followed by the folder name creates the environment."
+    },
+    {
+      q: "How do you activate an environment on Mac or Linux?",
+      options: ["activate venv", "source venv/bin/activate", "venv/activate.exe", "python activate"],
+      answer: 1,
+      explain: "On Mac and Linux, source runs the activate script inside venv/bin."
+    },
+    {
+      q: "How can you tell that an environment is active?",
+      options: ["The computer restarts", "The prompt shows the environment name in brackets", "Python prints a message", "The folder disappears"],
+      answer: 1,
+      explain: "Most shells show (venv) at the start of the prompt when an environment is active."
+    },
+    {
+      q: "What does pip freeze > requirements.txt do?",
+      options: ["Deletes packages", "Saves the installed packages and versions to requirements.txt", "Freezes the terminal", "Installs requirements"],
+      answer: 1,
+      explain: "pip freeze lists installed packages with versions, and the redirect saves that list to a file."
+    },
+    {
+      q: "Which command installs packages listed in requirements.txt?",
+      options: ["pip freeze requirements.txt", "pip install -r requirements.txt", "pip read requirements.txt", "pip load requirements.txt"],
+      answer: 1,
+      explain: "The -r flag tells pip to read the package list from the file."
+    },
+    {
+      q: "Should the venv folder be committed to Git?",
+      options: ["Yes, always", "No, it is specific to one computer and is large", "Only on Windows", "Only if it has a README"],
+      answer: 1,
+      explain: "Commit requirements.txt instead, and add venv/ to .gitignore."
+    },
+    {
+      q: "What happens if you install a package while the environment is not active?",
+      options: ["It goes into the environment automatically", "It is installed globally, which can cause version clashes", "It fails", "It is installed only for the current file"],
+      answer: 1,
+      explain: "Without activation, pip installs into the global Python, which other projects share."
+    },
+    {
+      q: "What is the command to leave an active environment?",
+      options: ["exit", "quit", "deactivate", "stop venv"],
+      answer: 2,
+      explain: "deactivate returns your terminal to the global Python."
+    },
+    {
+      q: "Why is pinning versions in requirements.txt useful?",
+      options: ["It makes packages faster", "It stops sudden breakage when a library updates", "It removes the need for pip", "It hides dependencies"],
+      answer: 1,
+      explain: "Pinned versions mean everyone installs the same code, so updates don't break the project unexpectedly."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 26!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

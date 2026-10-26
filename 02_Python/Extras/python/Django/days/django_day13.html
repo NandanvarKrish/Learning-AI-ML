@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 13</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 13 of 30</span>
+  <h1>Testing Your Django App</h1>
+  <p>Estimated time: about 1.5 hours &middot; Writing tests with TestCase, the test client, checking responses, redirects, templates and forms, and running the suite with manage.py test</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Test a Website?</h2>
+    <p>A website changes constantly. A small edit to a model can break a page three folders away, and you may not notice until a visitor complains. Tests are automatic checks that run in seconds and tell you what broke.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A smoke alarm. You hope never to need it, but it runs quietly in the background and warns you the moment something goes wrong.</div>
+    <p>Django's test framework builds on Python's <code>unittest</code>. Each test runs against a separate, temporary test database, so your real data is never touched.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Test Structure</h2>
+    <p>Put tests in <code>blog/tests.py</code>, which Django finds automatically. Each test class inherits from <code>TestCase</code>, and each method whose name starts with <code>test_</code> is a test:</p>
+    <pre><code># blog/tests.py
+from django.test import TestCase
+from .models import Author, Post
+
+class PostModelTests(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(name="Asha", email="asha@example.com")
+
+    def test_word_count(self):
+        post = Post.objects.create(author=self.author, title="Model tips",
+                                   body="Keep models small.")
+        self.assertEqual(post.word_count, 3)</code></pre>
+    <p>Notice the <code>assert</code> methods. They are clearer than plain <code>assert</code> because they print helpful messages when they fail.</p>
+    <table>
+      <tr><th>Method</th><th>Checks that</th></tr>
+      <tr><td><code>assertEqual(a, b)</code></td><td>a equals b</td></tr>
+      <tr><td><code>assertTrue(x)</code> / <code>assertFalse(x)</code></td><td>x is truthy or falsy</td></tr>
+      <tr><td><code>assertIn(a, b)</code></td><td>a is in b</td></tr>
+      <tr><td><code>assertRaises(Error)</code></td><td>the block raises the given error</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Note:</strong> Each test method runs in its own transaction, which is rolled back afterwards. One test's data never leaks into another.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: setUp and setUpTestData</h2>
+    <p>Creating the same objects in every test is slow and repetitive. Two methods help:</p>
+    <ul>
+      <li><strong><code>setUp()</code></strong> runs before every test method. Use it for objects a test might change.</li>
+      <li><strong><code>setUpTestData()</code></strong> runs once for the whole class, and is faster. Use it for data that tests only read.</li>
+    </ul>
+    <pre><code>class PostListViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        author = Author.objects.create(name="Asha", email="asha@example.com")
+        Post.objects.create(author=author, title="Visible post", body="Hello", is_published=True)
+        Post.objects.create(author=author, title="Hidden draft", body="Secret", is_published=False)</code></pre>
+    <div class="callout warn">
+      <strong>Caution:</strong> Objects created in <code>setUpTestData</code> are shared across the class's tests. If one test changes them, Django protects the original for later tests, but you should still avoid modifying them.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Testing Views with the Test Client</h2>
+    <p>The <code>self.client</code> object acts like a browser. It sends requests to your URLs and gives you the response to inspect:</p>
+    <pre><code>from django.urls import reverse
+
+class PostListViewTests(TestCase):
+    # ...setUpTestData from above...
+
+    def test_page_loads(self):
+        response = self.client.get(reverse("post_list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_only_published_posts_shown(self):
+        response = self.client.get(reverse("post_list"))
+        self.assertContains(response, "Visible post")
+        self.assertNotContains(response, "Hidden draft")
+
+    def test_correct_template_used(self):
+        response = self.client.get(reverse("post_list"))
+        self.assertTemplateUsed(response, "blog/post_list.html")</code></pre>
+    <table>
+      <tr><th>Assertion</th><th>Use it to check</th></tr>
+      <tr><td><code>assertEqual(response.status_code, 200)</code></td><td>The page returned successfully</td></tr>
+      <tr><td><code>assertContains(response, text)</code></td><td>Text appears in the page</td></tr>
+      <tr><td><code>assertNotContains(response, text)</code></td><td>Sensitive or hidden text does not appear</td></tr>
+      <tr><td><code>assertTemplateUsed(response, name)</code></td><td>The right template was rendered</td></tr>
+      <tr><td><code>assertRedirects(response, url)</code></td><td>A POST redirected to the expected page</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Always use <code>reverse()</code>:</strong> If you hard-code <code>/posts/</code> and the route changes, the test fails for the wrong reason. Using the route name keeps tests focused on behaviour.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Testing Forms and POST Requests</h2>
+    <p>To test a form, send the data a browser would send. Check both the successful path and the error path:</p>
+    <pre><code>class PostCreateViewTests(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(name="Asha", email="asha@example.com")
+
+    def test_valid_post_is_saved_and_redirects(self):
+        response = self.client.post(reverse("post_create"), {
+            "author": self.author.pk,
+            "title": "A valid title",
+            "body": "Body text",
+            "is_published": True,
+        })
+        self.assertRedirects(response, reverse("post_list"))
+        self.assertEqual(Post.objects.count(), 1)
+
+    def test_short_title_is_rejected(self):
+        response = self.client.post(reverse("post_create"), {
+            "author": self.author.pk,
+            "title": "Hi",
+            "body": "Body text",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "at least 5 characters")
+        self.assertEqual(Post.objects.count(), 0)</code></pre>
+    <div class="callout warn">
+      <strong>Test client and CSRF:</strong> The test client skips CSRF checks by default, so your POST tests don't need the token. Real browsers still need it; test the token separately if the protection is important to you.</div>
+    <p>Checking <code>Post.objects.count()</code> proves the database changed, not just that the page looked right. Test both.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Testing Deletion</h2>
+    <pre><code>class PostDeleteViewTests(TestCase):
+    def setUp(self):
+        author = Author.objects.create(name="Asha", email="asha@example.com")
+        self.post = Post.objects.create(author=author, title="To remove", body="Bye")
+
+    def test_post_request_deletes_post(self):
+        response = self.client.post(reverse("post_delete", args=[self.post.pk]))
+        self.assertRedirects(response, reverse("post_list"))
+        self.assertFalse(Post.objects.filter(pk=self.post.pk).exists())</code></pre>
+    <p>A test like this protects a dangerous action. If someone later changes the view to delete on GET, the test shows the mistake quickly, because the post would be removed by a plain page visit.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Running the Tests</h2>
+    <pre><code>python manage.py test
+python manage.py test blog
+python manage.py test blog.tests.PostListViewTests.test_only_published_posts_shown</code></pre>
+    <p>A successful run looks like this. Timings vary on your machine:</p>
+    <div class="output">Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.214s
+
+OK
+Destroying test database for alias 'default'...</div>
+    <p>Each dot is one passing test. An <code>F</code> marks a failure and an <code>E</code> marks an error, which means the test itself crashed. Read the failure message: it shows the expected value and the actual value.</p>
+    <div class="callout tip">
+      <strong>Pytest alternative:</strong> The <code>pytest-django</code> plugin runs Django tests with pytest, which you used on Day 26. Both approaches are common; choose one and be consistent.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: What to Test</h2>
+    <table>
+      <tr><th>Test this</th><th>Because</th></tr>
+      <tr><td>Model methods and properties</td><td>Business rules live here, and they should never break silently</td></tr>
+      <tr><td>Access rules (drafts hidden, deletes need POST)</td><td>Security problems are costly and easy to introduce</td></tr>
+      <tr><td>Form validation (valid and invalid data)</td><td>Bad input is the most common source of bugs</td></tr>
+      <tr><td>Redirects after success</td><td>Users expect a predictable path after each action</td></tr>
+      <tr><td>Each important page loads</td><td>A crash on a key page is the most visible failure</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Don't test Django itself:</strong> Trust that <code>save()</code> saves and that the admin works. Test the rules your project adds on top.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 13</h2>
+    <ol>
+      <li><strong>Hard-coding URLs:</strong> use <code>reverse()</code> so tests survive route changes.</li>
+      <li><strong>Testing only the happy path:</strong> include invalid input and access checks.</li>
+      <li><strong>Forgetting the database check after a POST:</strong> the page may say "saved" while nothing changed.</li>
+      <li><strong>Writing tests that depend on each other:</strong> each test should create the data it needs.</li>
+      <li><strong>Using the real database for tests:</strong> Django's test runner creates a separate one automatically, so don't override it.</li>
+      <li><strong>Ignoring failing tests:</strong> a red test that stays red teaches the team to ignore the suite.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project. Write the tests in <code>blog/tests.py</code>.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Model Test</h3>
+      <p>Write a test that <code>publish()</code> sets <code>is_published</code> to True. Use <code>refresh_from_db()</code> before checking the value.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: List Page Tests</h3>
+      <p>Write three tests for the list view: the page returns 200, a published post is shown, and a draft is hidden.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Create Tests</h3>
+      <p>Write one test for a valid submission that checks the redirect and the count, and one for a short title that checks the error message and that nothing was saved.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Delete Test</h3>
+      <p>Write a test that a POST deletes the post, and a second test that a GET to the delete address does not delete it. Run the suite and confirm both pass.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Break and Fix</h3>
+      <p>Change the list view to show drafts too, run the tests, and read the failure. Revert the change and confirm the tests pass again.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Practice</th><th>Where you'll see it</th></tr>
+      <tr><td>Automated test suites run on every commit</td><td>Teams catching problems before they reach users</td></tr>
+      <tr><td>Access-control tests</td><td>Banking and healthcare sites protecting private records</td></tr>
+      <tr><td>Form validation tests</td><td>Checkout forms rejecting invalid card details</td></tr>
+      <tr><td>Redirect tests</td><td>Login flows that must send users to the right page</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django REST framework provides its own test client for APIs. The same <code>TestCase</code> and assertions work there, which you'll use later.</div>
+  </section>
+
+  <section>
+    <h2>Day 13 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 13 of 30 &middot; Next: Day 14 - Relationships in Practice</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Where do Django tests usually live in an app?",
+      options: ["In settings.py", "In tests.py or a tests package inside the app", "In the static folder", "In migrations"],
+      answer: 1,
+      explain: "Django's test runner finds tests.py, or a tests package, inside each app."
+    },
+    {
+      q: "Which command runs the whole test suite?",
+      options: ["python manage.py runtests", "python manage.py test", "python manage.py check", "python manage.py verify"],
+      answer: 1,
+      explain: "python manage.py test discovers and runs all tests in the project."
+    },
+    {
+      q: "What is the main advantage of setUpTestData over setUp?",
+      options: ["It runs before every test", "It runs once per class, so it is faster for shared data", "It creates the database", "It is required for POST tests"],
+      answer: 1,
+      explain: "setUpTestData runs once for the whole class, while setUp runs before each test method."
+    },
+    {
+      q: "Why use reverse('post_list') in tests instead of '/posts/'?",
+      options: ["It is faster", "If the URL changes, the test still points to the correct route", "Hard-coded URLs are not allowed", "reverse makes the page bigger"],
+      answer: 1,
+      explain: "Using the route name keeps the test tied to the behaviour, not to the exact address."
+    },
+    {
+      q: "Which assertion checks that text is absent from a response?",
+      options: ["assertContains", "assertNotContains", "assertIn", "assertTemplateUsed"],
+      answer: 1,
+      explain: "assertNotContains confirms that hidden or sensitive text does not appear in the page."
+    },
+    {
+      q: "What does assertRedirects check?",
+      options: ["That the page is red", "That the response redirects to the expected URL", "That a model was deleted", "That the template is cached"],
+      answer: 1,
+      explain: "assertRedirects checks the redirect target, which is common after a successful POST."
+    },
+    {
+      q: "Why should a POST test also check Post.objects.count()?",
+      options: ["Counting is required by Django", "The page may look successful while the database did not change", "It makes the test faster", "It checks the admin"],
+      answer: 1,
+      explain: "Checking the database confirms the real effect, not just the response text."
+    },
+    {
+      q: "Which database do Django tests use?",
+      options: ["Your real production database", "A separate temporary test database created automatically", "A text file", "The admin database"],
+      answer: 1,
+      explain: "Django creates and destroys a test database, so real data is never touched."
+    },
+    {
+      q: "What does an F in the test output mean?",
+      options: ["The test passed", "The test failed an assertion", "The test was skipped", "The database is full"],
+      answer: 1,
+      explain: "F marks a failed assertion, while E marks an error where the test crashed."
+    },
+    {
+      q: "What should you avoid testing?",
+      options: ["Your model's business rules", "Access rules and form validation", "Django's own built-in behaviour, such as save() working", "Redirects after success"],
+      answer: 2,
+      explain: "Trust the framework; focus your tests on the rules your project adds."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 14!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

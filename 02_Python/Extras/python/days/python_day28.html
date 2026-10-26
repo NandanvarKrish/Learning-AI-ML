@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 28</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 28 of 30</span>
+  <h1>SQLite and Databases</h1>
+  <p>Estimated time: about 1.5 hours &middot; Why databases, sqlite3, tables, INSERT, SELECT, UPDATE, DELETE, parameterised queries, transactions</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why a Database?</h2>
+    <p>You've saved data to CSV and JSON files. Those work for small amounts of data, but they struggle when many records change, when you need to find one record quickly, or when several parts of a program need to update the same data safely.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A CSV file is like a paper notebook. You can read it, but finding one entry means flipping pages. A database is like a filing cabinet with labelled drawers and an index, so you can find, add, and change records quickly.</div>
+    <p>SQLite is a database that lives in a single file. Python includes it in the <code>sqlite3</code> module, so you don't need to install anything.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Connecting and Creating a Table</h2>
+    <p>Connecting to a file creates the database if it doesn't exist. A <strong>cursor</strong> runs SQL commands, and <code>commit()</code> saves changes.</p>
+    <pre><code>import sqlite3
+
+conn = sqlite3.connect("library.db")
+cur = conn.cursor()
+
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS books (
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        author TEXT,
+        year INTEGER
+    )
+""")
+conn.commit()
+conn.close()
+print("Table ready")</code></pre>
+    <div class="output">Table ready</div>
+    <table>
+      <tr><th>Part</th><th>Meaning</th></tr>
+      <tr><td><code>id INTEGER PRIMARY KEY</code></td><td>A unique number for each row, which SQLite assigns automatically</td></tr>
+      <tr><td><code>TEXT NOT NULL</code></td><td>Text that must have a value</td></tr>
+      <tr><td><code>IF NOT EXISTS</code></td><td>Avoids an error when the table already exists</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Tip:</strong> Triple quotes let you write SQL across several lines, which keeps it readable.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Inserting Data Safely</h2>
+    <p>Never build SQL by joining text yourself. Use <strong>placeholders</strong> (<code>?</code>) and pass the values separately. This protects against <strong>SQL injection</strong>, where a malicious input changes the meaning of your command.</p>
+    <pre><code>import sqlite3
+
+conn = sqlite3.connect("library.db")
+cur = conn.cursor()
+
+cur.execute(
+    "INSERT INTO books (title, author, year) VALUES (?, ?, ?)",
+    ("Dune", "Frank Herbert", 1965),
+)
+cur.executemany(
+    "INSERT INTO books (title, author, year) VALUES (?, ?, ?)",
+    [("Emma", "Jane Austen", 1815), ("Ulysses", "James Joyce", 1922)],
+)
+conn.commit()
+conn.close()</code></pre>
+    <div class="callout warn">
+      <strong>Never do this:</strong> <code>f"INSERT ... VALUES ('{title}')"</code>. If the title contains a quote or SQL commands, the statement breaks or does something unintended. Always use <code>?</code> placeholders.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Reading Data with SELECT</h2>
+    <pre><code>import sqlite3
+
+conn = sqlite3.connect("library.db")
+cur = conn.cursor()
+
+cur.execute("SELECT id, title, year FROM books WHERE year &lt; ? ORDER BY year", (1950,))
+for row in cur.fetchall():
+    print(row)
+
+conn.close()</code></pre>
+    <div class="output">(2, 'Emma', 1815)
+(3, 'Ulysses', 1922)</div>
+    <table>
+      <tr><th>Method</th><th>Returns</th></tr>
+      <tr><td><code>fetchone()</code></td><td>The next row as a tuple, or None</td></tr>
+      <tr><td><code>fetchall()</code></td><td>A list of all remaining rows</td></tr>
+      <tr><td><code>fetchmany(n)</code></td><td>A list of up to n rows</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Note:</strong> Dune (1965) is excluded because the WHERE clause keeps only books published before 1950. The output assumes the rows from Lesson 3 were inserted into an empty table, so Dune has id 1, Emma id 2, and Ulysses id 3.</div>
+    <p>Set <code>conn.row_factory = sqlite3.Row</code> to access columns by name, such as <code>row["title"]</code>, which is clearer than positions.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Updating and Deleting</h2>
+    <pre><code>import sqlite3
+
+conn = sqlite3.connect("library.db")
+cur = conn.cursor()
+
+cur.execute("UPDATE books SET year = ? WHERE title = ?", (1966, "Dune"))
+cur.execute("DELETE FROM books WHERE id = ?", (2,))
+conn.commit()
+print("Rows changed:", cur.rowcount)
+conn.close()</code></pre>
+    <div class="output">Rows changed: 1</div>
+    <div class="callout warn">
+      <strong>Be careful:</strong> An <code>UPDATE</code> or <code>DELETE</code> without a <code>WHERE</code> clause affects every row in the table. Always check your WHERE condition before running it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Using with for Connections</h2>
+    <p>Like files on Day 11, connections can be used with <code>with</code>, which commits on success and rolls back on error.</p>
+    <pre><code>import sqlite3
+
+with sqlite3.connect("library.db") as conn:
+    conn.execute("INSERT INTO books (title, author, year) VALUES (?, ?, ?)",
+                 ("Hamlet", "William Shakespeare", 1603))
+# committed automatically if no error occurred</code></pre>
+    <div class="callout tip">
+      <strong>Important:</strong> The <code>with</code> statement on a connection does not close it. Call <code>conn.close()</code> yourself when you finish, or use <code>contextlib.closing</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Transactions and Errors</h2>
+    <p>A <strong>transaction</strong> groups several changes so they all happen or none do. If an error occurs before <code>commit()</code>, <code>rollback()</code> undoes the changes.</p>
+    <pre><code>import sqlite3
+
+conn = sqlite3.connect("library.db")
+try:
+    conn.execute("UPDATE books SET year = ? WHERE id = ?", (1900, 1))
+    conn.execute("INSERT INTO books (title, year) VALUES (?, ?)", (None, 2000))
+    conn.commit()
+except sqlite3.IntegrityError as e:
+    conn.rollback()
+    print("Nothing was saved:", e)
+finally:
+    conn.close()</code></pre>
+    <div class="output">Nothing was saved: NOT NULL constraint failed: books.title</div>
+    <p>The first update was rolled back as well, because both changes belong to one transaction. This is the same try, except, finally pattern you learned on Day 12.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Connecting Databases to Your Projects</h2>
+    <p>Here's the library storage rewritten to use SQLite, with a small function for each action. The menu code from Day 21 can stay the same, because only the storage changes.</p>
+    <pre><code>import sqlite3
+
+DB = "library.db"
+
+def add_book(title, author, year):
+    with sqlite3.connect(DB) as conn:
+        conn.execute("INSERT INTO books (title, author, year) VALUES (?, ?, ?)",
+                     (title, author, year))
+
+def list_books():
+    with sqlite3.connect(DB) as conn:
+        return conn.execute("SELECT title, author, year FROM books ORDER BY title").fetchall()
+
+add_book("Dune", "Frank Herbert", 1965)
+for title, author, year in list_books():
+    print(f"{title} by {author} ({year})")</code></pre>
+    <div class="output">Dune by Frank Herbert (1965)</div>
+    <p>Notice that the database file is opened only when it's needed, and each function is short and focused.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 28</h2>
+    <ol>
+      <li><strong>Building SQL with f-strings:</strong> use <code>?</code> placeholders to prevent SQL injection and quoting errors.</li>
+      <li><strong>Forgetting commit():</strong> changes are lost if they are not committed.</li>
+      <li><strong>UPDATE or DELETE without WHERE:</strong> this changes every row.</li>
+      <li><strong>Leaving connections open:</strong> close them, or use a with block with a clear scope.</li>
+      <li><strong>Passing values as a single string:</strong> placeholders expect a tuple, such as <code>(title,)</code> for one value.</li>
+      <li><strong>Assuming fetchall() returns objects:</strong> it returns tuples unless you set a row factory.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints. Use a separate database file for practice, so you don't disturb your library data.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Create a Table</h3>
+      <p>Create a database file <code>practice.db</code> with a table <code>students</code> containing id, name, and marks. Print a message when it's ready.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Insert Safely</h3>
+      <p>Insert three students using placeholders. Include one name containing an apostrophe, such as "O'Brien", to confirm the placeholders handle it correctly.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Query with a Filter</h3>
+      <p>Select the names of students with marks above 60, ordered from highest to lowest mark. Print each name and mark.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Update and Check</h3>
+      <p>Change one student's marks, then use <code>cur.rowcount</code> to confirm exactly one row changed. Print the rowcount.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Safe Delete</h3>
+      <p>Delete one student by id. Write the function so that it prints "Not found" when the rowcount is 0.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Rewrite a Feature</h3>
+      <p>Take the contact book from Day 14 and write <code>add_contact</code> and <code>list_contacts</code> using SQLite instead of CSV. Keep the same menu code, and confirm the contacts persist between runs.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Use</th><th>Where you'll see it</th></tr>
+      <tr><td>SQLite</td><td>Mobile apps, desktop software, browsers storing history, and small web apps</td></tr>
+      <tr><td>Parameterised queries</td><td>Every secure web form that saves user input</td></tr>
+      <tr><td>Transactions</td><td>Bank transfers, where money must leave one account and arrive in another, or neither</td></tr>
+      <tr><td>SELECT with WHERE and ORDER BY</td><td>Search results, reports, and dashboards</td></tr>
+      <tr><td>Primary keys</td><td>Unique IDs for orders, customers, and products</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's ORM writes SQL for you, so you'll rarely type it by hand. Understanding tables, keys, and transactions now makes the ORM's behaviour much easier to predict.</div>
+  </section>
+
+  <section>
+    <h2>Day 28 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 28 of 30 &middot; Next: Day 29 - Git Basics</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Why use ? placeholders in SQL statements?",
+      options: ["They make queries faster only", "They prevent SQL injection and quoting errors", "They are required by SQLite", "They create tables automatically"],
+      answer: 1,
+      explain: "Placeholders send values separately, so they cannot change the structure of the SQL statement."
+    },
+    {
+      q: "Which module provides SQLite support in Python?",
+      options: ["sqlite", "sql", "sqlite3", "database"],
+      answer: 2,
+      explain: "The sqlite3 module is built into Python's standard library."
+    },
+    {
+      q: "What does conn.commit() do?",
+      options: ["Closes the connection", "Saves the pending changes to the database", "Deletes the table", "Starts a new transaction only"],
+      answer: 1,
+      explain: "Without commit(), changes made in the current transaction are not saved."
+    },
+    {
+      q: "Which SQL command reads rows from a table?",
+      options: ["GET", "FETCH", "SELECT", "READ"],
+      answer: 2,
+      explain: "SELECT is the SQL command for reading data."
+    },
+    {
+      q: "What happens if you run DELETE FROM books without a WHERE clause?",
+      options: ["Nothing", "Every row is deleted", "Only the first row is deleted", "An error always occurs"],
+      answer: 1,
+      explain: "Without WHERE, the DELETE applies to every row in the table."
+    },
+    {
+      q: "What does INTEGER PRIMARY KEY do?",
+      options: ["Makes the column text", "Gives each row a unique number, assigned automatically", "Prevents the table from being read", "Sorts the table"],
+      answer: 1,
+      explain: "A primary key uniquely identifies each row, and SQLite fills in the number for you."
+    },
+    {
+      q: "Which method returns all remaining rows from a query?",
+      options: ["fetchone()", "fetchall()", "commit()", "execute()"],
+      answer: 1,
+      explain: "fetchall() returns a list of all remaining rows."
+    },
+    {
+      q: "What does a transaction rollback do?",
+      options: ["Deletes the database file", "Undoes changes since the last commit", "Adds a new row", "Closes all tables"],
+      answer: 1,
+      explain: "rollback() cancels the uncommitted changes in the current transaction."
+    },
+    {
+      q: "What does cur.rowcount tell you after an UPDATE?",
+      options: ["The number of columns", "The number of rows affected", "The database size", "The number of tables"],
+      answer: 1,
+      explain: "rowcount reports how many rows the last statement changed, which helps confirm an update worked."
+    },
+    {
+      q: "Why must placeholder values be passed as a tuple, such as (title,)?",
+      options: ["Tuples are faster", "The placeholders expect a sequence of values, and a single value needs a trailing comma", "SQLite only accepts tuples for dates", "Lists are not allowed"],
+      answer: 1,
+      explain: "A single value in parentheses is not a tuple without the trailing comma, so (title,) is needed."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 29!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

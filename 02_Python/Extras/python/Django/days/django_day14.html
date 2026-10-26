@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 14</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 14 of 30</span>
+  <h1>Relationships in Practice</h1>
+  <p>Estimated time: about 1.5 hours &middot; OneToOneField, managing ManyToMany with add, remove, set, and clear, extra data with a through model, and querying across relationships</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Recap and the Three Relationship Types</h2>
+    <p>On Day 3 you met ForeignKey and ManyToManyField. Today you'll use all three relationship types together:</p>
+    <table>
+      <tr><th>Type</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td><code>ForeignKey</code></td><td>Many rows point to one row</td><td>Many posts, one author</td></tr>
+      <tr><td><code>OneToOneField</code></td><td>One row points to exactly one row</td><td>One author, one profile</td></tr>
+      <tr><td><code>ManyToManyField</code></td><td>Many rows relate to many rows</td><td>Many posts, many tags</td></tr>
+    </table>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> ForeignKey is a family where many children share one surname. OneToOne is a passport: each person has exactly one. ManyToMany is a club: members can belong to many clubs, and each club has many members.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: OneToOneField</h2>
+    <p>Suppose each author has one profile with a biography and avatar. A <code>OneToOneField</code> guarantees that no author can have two profiles:</p>
+    <pre><code># blog/models.py
+class Profile(models.Model):
+    author = models.OneToOneField(
+        Author,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
+    bio = models.TextField(blank=True)
+    website = models.URLField(blank=True)
+
+    def __str__(self):
+        return f"Profile of {self.author.name}"</code></pre>
+    <p>Both directions work with a single attribute, and the reverse side is always one object, not a list:</p>
+    <pre><code>&gt;&gt;&gt; asha = Author.objects.get(name="Asha")
+&gt;&gt;&gt; Profile.objects.create(author=asha, bio="Writes about Django.")
+&gt;&gt;&gt; asha.profile.bio
+&gt;&gt;&gt; Profile.objects.get(author__name="Asha").website</code></pre>
+    <div class="output">'Writes about Django.'
+''</div>
+    <div class="callout warn">
+      <strong>Missing profiles:</strong> An author with no profile makes <code>asha.profile</code> raise <code>Author.profile.RelatedObjectDoesNotExist</code>. Check with <code>hasattr(author, "profile")</code>, or use a try/except around the lookup.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Managing ManyToMany Relations</h2>
+    <p>The related manager on a ManyToMany field gives you four methods for changing the links. Use the Tag model from Day 3 with the <code>tags</code> field on <code>Post</code>:</p>
+    <pre><code>&gt;&gt;&gt; post = Post.objects.get(title="Model tips")
+&gt;&gt;&gt; python = Tag.objects.create(name="python")
+&gt;&gt;&gt; web = Tag.objects.create(name="web")
+&gt;&gt;&gt; django_tag = Tag.objects.create(name="django")
+
+&gt;&gt;&gt; post.tags.add(python, web)
+&gt;&gt;&gt; post.tags.count()
+&gt;&gt;&gt; post.tags.remove(web)
+&gt;&gt;&gt; post.tags.count()
+&gt;&gt;&gt; post.tags.set([web, django_tag])
+&gt;&gt;&gt; post.tags.all().order_by("name")
+&gt;&gt;&gt; post.tags.clear()
+&gt;&gt;&gt; post.tags.count()</code></pre>
+    <div class="output">2
+1
+&lt;QuerySet [&lt;Tag: django&gt;, &lt;Tag: web&gt;]&gt;
+0</div>
+    <table>
+      <tr><th>Method</th><th>Effect on the links</th></tr>
+      <tr><td><code>add(...)</code></td><td>Adds links; existing ones are kept, duplicates are ignored</td></tr>
+      <tr><td><code>remove(...)</code></td><td>Removes only those links; the Tag objects remain</td></tr>
+      <tr><td><code>set([...])</code></td><td>Makes the list exactly these links, adding and removing as needed</td></tr>
+      <tr><td><code>clear()</code></td><td>Removes every link; the Tag objects remain</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Remember:</strong> Removing a tag from a post never deletes the tag itself. The tag can still be used by other posts. Deleting a Tag object, however, removes all its links.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Querying Across Relationships</h2>
+    <p>Use double underscores to follow a relation, then use <code>distinct()</code> when a join can return the same row more than once:</p>
+    <pre><code>&gt;&gt;&gt; Post.objects.filter(tags__name="python").order_by("title")
+&gt;&gt;&gt; Tag.objects.filter(posts__author__name="Asha").distinct().order_by("name")
+&gt;&gt;&gt; Post.objects.filter(author__profile__website__contains="example")</code></pre>
+    <p>The second query walks three relations: Tag to Post, then Post to Author. Each tag appears once, even if several of Asha's posts use it.</p>
+    <div class="callout warn">
+      <strong>Duplicates:</strong> Filtering on a ManyToMany field can return a row once for each matching tag. Add <code>.distinct()</code> when you need each object only once. Note that <code>distinct()</code> can be slower on large tables, so use it only when needed.</div>
+    <p>Use <code>related_query_name</code> to choose a name for reverse filters. Without it, the reverse filter name is the model name in lowercase, such as <code>post</code>, rather than the plural <code>posts</code>.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Extra Data with a Through Model</h2>
+    <p>Sometimes the link itself has information, such as a student's grade in a course. A plain ManyToMany can't store it, so use an explicit <strong>through model</strong>:</p>
+    <pre><code># school/models.py
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+
+class Course(models.Model):
+    title = models.CharField(max_length=100)
+    students = models.ManyToManyField(Student, through="Enrollment", related_name="courses")
+
+class Enrollment(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    grade = models.CharField(max_length=2, blank=True)
+    enrolled_on = models.DateField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("student", "course")</code></pre>
+    <p>With a through model, <code>add()</code>, <code>set()</code>, and <code>clear()</code> are no longer available on the relation. Create the links explicitly, which lets you set the extra fields:</p>
+    <pre><code>&gt;&gt;&gt; ravi = Student.objects.create(name="Ravi")
+&gt;&gt;&gt; django101 = Course.objects.create(title="Django 101")
+&gt;&gt;&gt; Enrollment.objects.create(student=ravi, course=django101, grade="A")
+&gt;&gt;&gt; ravi.courses.all()
+&gt;&gt;&gt; Enrollment.objects.get(student=ravi, course=django101).grade</code></pre>
+    <div class="output">&lt;QuerySet [&lt;Course: Django 101&gt;]&gt;
+'A'</div>
+    <div class="callout tip">
+      <strong>When to choose a through model:</strong> Use it as soon as the link needs data of its own, such as a date, role, score, or status. Keep a plain ManyToMany when the link has no extra information.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Prefetching Filtered Relations</h2>
+    <p>Suppose you want each author with only their <em>published</em> posts, loaded efficiently. <code>Prefetch</code> lets you filter the related objects and store them under a new name:</p>
+    <pre><code>from django.db.models import Prefetch
+
+&gt;&gt;&gt; authors = Author.objects.prefetch_related(
+...     Prefetch(
+...         "posts",
+...         queryset=Post.objects.filter(is_published=True).order_by("title"),
+...         to_attr="published_posts",
+...     )
+... ).order_by("name")
+&gt;&gt;&gt; for a in authors:
+...     print(a.name, [p.title for p in a.published_posts])</code></pre>
+    <div class="output">Asha ['Model tips', 'Views explained']
+Ravi []</div>
+    <p>The two queries are: one for the authors, and one for their published posts. Without <code>Prefetch</code>, filtering inside the loop would run a separate query for every author.</p>
+    <div class="callout tip">
+      <strong>Naming:</strong> <code>to_attr</code> stores the result in a plain list, not a queryset. This is handy when you want the list ready for a template.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Deletion and Related Data</h2>
+    <p>Recall the <code>on_delete</code> rules from Day 3, and check them as you add relations:</p>
+    <table>
+      <tr><th>Situation</th><th>Result</th></tr>
+      <tr><td>Delete an Author with CASCADE posts</td><td>Their posts are deleted too</td></tr>
+      <tr><td>Delete a Profile</td><td>The Author remains, with no profile</td></tr>
+      <tr><td>Delete a Tag</td><td>The Tag and its links are removed; posts remain</td></tr>
+      <tr><td>Delete an Enrollment</td><td>The student and course remain</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Plan deletions before building:</strong> Ask "what should happen to the children?" for every ForeignKey. A wrong choice here can delete far more data than you intended.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 14</h2>
+    <ol>
+      <li><strong>Forgetting <code>distinct()</code> on a ManyToMany filter:</strong> the same object can appear more than once.</li>
+      <li><strong>Expecting <code>remove()</code> to delete the tag:</strong> it only removes the link.</li>
+      <li><strong>Using <code>add()</code> on a through-model relation:</strong> create the through objects explicitly.</li>
+      <li><strong>Accessing a missing OneToOne reverse:</strong> it raises an exception, so check first.</li>
+      <li><strong>Filtering inside a loop instead of using Prefetch:</strong> this causes an extra query for each object.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project, and create the <code>Profile</code> model and Tag model if you haven't already.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Profile</h3>
+      <p>Add the <code>Profile</code> model with a OneToOneField, migrate, and create a profile for one author. Print <code>author.profile.bio</code> in the shell.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Tags</h3>
+      <p>Create three tags, attach two to a post with <code>add()</code>, use <code>set()</code> to change them to a different pair, then call <code>clear()</code>. Print the count after each step.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Cross-Relation Query</h3>
+      <p>Write a query that returns every tag used by any post written by a particular author, without duplicates.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Through Model</h3>
+      <p>Build the Student, Course, and Enrollment models from Lesson 5 in a separate app or in the same project. Enrol two students in one course, give each a different grade, and list each student's grade.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Prefetch</h3>
+      <p>Use <code>Prefetch</code> to load each author's published posts into <code>published_posts</code>, then print each author with the number of published posts. Confirm the count matches the data.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Relationship</th><th>Where you'll see it</th></tr>
+      <tr><td>OneToOneField</td><td>User profiles, company settings, and extended account details</td></tr>
+      <tr><td>ManyToMany with tags</td><td>Articles, videos, and products with multiple categories</td></tr>
+      <tr><td>Through model</td><td>Course enrolments with grades, employees in teams with roles, orders with quantities</td></tr>
+      <tr><td>Prefetch with filters</td><td>Listing categories with only in-stock products</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> The admin's inline forms and Django REST framework's nested serializers rely on the same relations you built today.</div>
+  </section>
+
+  <section>
+    <h2>Day 14 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 14 of 30 &middot; Next: Day 15 - Model Forms in Depth</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which field guarantees that each author has at most one profile?",
+      options: ["ForeignKey", "OneToOneField", "ManyToManyField", "CharField(unique=True)"],
+      answer: 1,
+      explain: "OneToOneField creates a link that can appear only once for each author."
+    },
+    {
+      q: "What happens to the Tag objects when you call post.tags.remove(tag)?",
+      options: ["They are deleted", "Only the link between that post and tag is removed", "All posts lose all tags", "The Tag table is cleared"],
+      answer: 1,
+      explain: "remove() deletes only the link, and the Tag object stays available for other posts."
+    },
+    {
+      q: "What does post.tags.set([a, b]) do?",
+      options: ["Adds a and b to existing tags", "Makes the post's tags exactly a and b", "Deletes the tags", "Creates new tags"],
+      answer: 1,
+      explain: "set() adds and removes links so the final list matches the one you give it."
+    },
+    {
+      q: "Why might a query over ManyToMany tags need distinct()?",
+      options: ["Tags are always unique", "A post with several matching tags can appear more than once", "distinct() speeds up writes", "Django requires it for all queries"],
+      answer: 1,
+      explain: "Joining through several matching rows can repeat the same object, and distinct() removes the repeats."
+    },
+    {
+      q: "Why use a through model?",
+      options: ["To make the admin faster", "To store extra data on the link, such as a grade or date", "To remove the need for migrations", "To replace ForeignKey"],
+      answer: 1,
+      explain: "A through model lets the relationship carry its own fields."
+    },
+    {
+      q: "Which method is not available on a ManyToMany with a custom through model?",
+      options: ["all()", "count()", "add()", "filter()"],
+      answer: 2,
+      explain: "With a through model, you create the link objects yourself, so add() is not used."
+    },
+    {
+      q: "What does Prefetch(..., to_attr='published_posts') give you?",
+      options: ["A count of posts", "A list of the filtered related posts stored on each author", "A new database table", "A deleted relation"],
+      answer: 1,
+      explain: "to_attr stores the filtered results in a plain list attribute on each object."
+    },
+    {
+      q: "Why is filtering inside a loop with separate queries slow?",
+      options: ["Python loops are slow", "Each object triggers another database query", "Filters are not allowed in loops", "It deletes the related data"],
+      answer: 1,
+      explain: "Running one query per object multiplies the database work, which Prefetch avoids."
+    },
+    {
+      q: "What does the query Tag.objects.filter(posts__author__name='Asha') follow?",
+      options: ["Tag to Post to Author", "Author to Profile to Tag", "Post to Tag only", "Tag to Enrollment"],
+      answer: 0,
+      explain: "Double underscores move along the relations: from tags to posts, then from posts to their author."
+    },
+    {
+      q: "What happens when you delete a Profile with a OneToOneField to Author?",
+      options: ["The Author is deleted too", "The Author remains, and its profile is gone", "The Profile cannot be deleted", "All posts are deleted"],
+      answer: 1,
+      explain: "Deleting the profile removes only that object, leaving the author in place."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 15!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

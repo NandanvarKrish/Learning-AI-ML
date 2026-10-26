@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 26</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 26 of 30</span>
+  <h1>API Authentication and Permissions</h1>
+  <p>Estimated time: about 1.5 hours &middot; Token authentication, login endpoints, default settings, object-level permissions, throttling, and testing protected APIs</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Who Is Calling?</h2>
+    <p>Yesterday's API let anyone create and change posts. Before you can allow only some clients to write, the API must know <strong>who</strong> is calling. That step is <strong>authentication</strong>. Deciding what that person may do is <strong>permission</strong>, which you met on Day 25.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Authentication is checking a visitor's ID at the door. Permission is the list of rooms that ID opens.</div>
+    <p>Browsers normally use a session cookie (Day 11). Mobile apps and scripts usually can't keep a cookie jar in the same way, so APIs often use a <strong>token</strong>: a long random string the client sends with every request.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Enabling Token Authentication</h2>
+    <p>DRF ships a token model. Add it to the installed apps, then run migrations:</p>
+    <pre><code># settings.py
+INSTALLED_APPS = [
+    # ...
+    "rest_framework",
+    "rest_framework.authtoken",
+    "blog",
+]</code></pre>
+    <pre><code>python manage.py migrate</code></pre>
+    <p>Then tell DRF which authentication classes to accept, project-wide:</p>
+    <pre><code>REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 5,
+}</code></pre>
+    <div class="callout tip">
+      <strong>Setting a safe default:</strong> <code>IsAuthenticatedOrReadOnly</code> as the project default means a new viewset is protected unless you deliberately loosen it. Forgetting to set permissions then fails safe.</div>
+    <div class="callout warn">
+      <strong>Order matters:</strong> DRF tries the classes in order. With <code>TokenAuthentication</code> first, a missing or bad token gives <code>401 Unauthorized</code>. If <code>SessionAuthentication</code> is first, the same request gives <code>403 Forbidden</code>. Both mean "refused", but clients rely on the code, so choose deliberately.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Issuing a Token</h2>
+    <p>DRF provides a view that checks a username and password and returns a token. Add it to the URLs:</p>
+    <pre><code># blog/urls.py
+from rest_framework.authtoken.views import obtain_auth_token
+
+urlpatterns = [
+    path("api/", include(router.urls)),
+    path("api/token/", obtain_auth_token, name="api-token"),
+]</code></pre>
+    <p>A client sends its credentials once and stores the result:</p>
+    <pre><code>curl -X POST http://127.0.0.1:8000/api/token/ \
+     -d "username=asha&amp;password=x-pass-123"</code></pre>
+    <div class="output">{"token": "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"}</div>
+    <p>Every later request carries the token in the <code>Authorization</code> header, with the word <code>Token</code> before it:</p>
+    <pre><code>curl http://127.0.0.1:8000/api/posts/ \
+     -H "Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"</code></pre>
+    <div class="callout warn">
+      <strong>Treat tokens like passwords:</strong> Anyone holding a token can act as its user. Send it only over HTTPS (Day 22), never put it in a URL, and never commit it to Git.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Making the Token Creation Explicit</h2>
+    <p>The token is created once per user. <code>Token.objects.get_or_create</code> returns the existing token, or makes one if it's missing. You can also create tokens yourself, for example when a user signs up:</p>
+    <pre><code>from rest_framework.authtoken.models import Token
+
+user = User.objects.create_user(username="ravi", password="a-strong-pass-789")
+token, created = Token.objects.get_or_create(user=user)
+print(created, token.key)</code></pre>
+    <div class="output">True 5b1e0c3a7d9f...  (the key is different every time)</div>
+    <p>To invalidate a client, delete its token. The next request with that token gets a 401:</p>
+    <pre><code>Token.objects.filter(user=user).delete()</code></pre>
+    <div class="callout tip">
+      <strong>Logout for APIs:</strong> Deleting the token is the API version of logging out. A "logout" endpoint can call the same line for the signed-in user.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Checking the Caller Inside Views</h2>
+    <p>After authentication, <code>request.user</code> holds the user, or <code>AnonymousUser</code> if nobody is signed in. Check it when you need logic beyond the simple permission classes:</p>
+    <pre><code>from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class WhoAmI(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"user": None})
+        return Response({"user": request.user.username,
+                         "is_staff": request.user.is_staff})</code></pre>
+    <p>Register it in <code>urls.py</code> as <code>path("api/me/", WhoAmI.as_view())</code>. Note that <code>APIView</code> with <code>get</code> is read-only here; the default permission still applies to the request.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Object-Level Permissions</h2>
+    <p>Permissions like <code>IsAuthenticatedOrReadOnly</code> answer "may this user call this method at all?". They don't answer "may this user change <em>this</em> post?". For that, write a custom permission with <code>has_object_permission</code>:</p>
+    <pre><code># blog/permissions.py
+from rest_framework import permissions
+
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:   # GET, HEAD, OPTIONS
+            return True
+        return obj.author.user == request.user</code></pre>
+    <p>Use it on the viewset. Writes to a post now succeed only for its author:</p>
+    <pre><code>class PostViewSet(viewsets.ModelViewSet):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+    # ...get_queryset and perform_create from Day 25...</code></pre>
+    <p>Both classes must allow the request. The first checks sign-in; the second checks ownership.</p>
+    <div class="callout warn">
+      <strong>Watch the flow:</strong> <code>has_object_permission</code> runs only when DRF fetches a single object (update, partial update, delete, and custom detail actions). The list and create methods call <code>has_permission</code> only. Put the ownership check where it's needed.</div>
+    <div class="callout tip">
+      <strong>Ownership comes from Day 16 and 17:</strong> <code>obj.author.user</code> follows the <code>Author.user</code> OneToOneField you built on Day 16, so ownership uses the same link as the rest of the site.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Throttling</h2>
+    <p>Throttling limits how often a client may call the API. It protects against brute-force logins and runaway scripts. Set rates in settings:</p>
+    <pre><code>REST_FRAMEWORK = {
+    # ...authentication and permission settings from Lesson 2...
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "50/day",
+        "user": "1000/day",
+    },
+}</code></pre>
+    <p>When the limit is reached, DRF returns <code>429 Too Many Requests</code>. Anonymous visitors are counted by IP address, signed-in users by their account.</p>
+    <div class="callout tip">
+      <strong>Cache required:</strong> Throttling stores counts in Django's cache (Day 20). The default local-memory cache works for development. In production with several server processes, use a shared cache such as Redis.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Testing Protected Endpoints</h2>
+    <p>Test the three paths every protected API needs: anonymous, wrong user, and correct user. <code>APIClient</code> can send the token header directly:</p>
+    <pre><code>from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APITestCase
+from rest_framework import status
+from django.urls import reverse
+from blog.models import Author, Post
+
+class PostPermissionTests(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.asha_user = User.objects.create_user("asha", password="x-pass-123")
+        cls.ravi_user = User.objects.create_user("ravi", password="y-pass-456")
+        cls.asha = Author.objects.create(name="Asha", email="asha@example.com", user=cls.asha_user)
+        cls.post = Post.objects.create(title="Hello", body="...", author=cls.asha, is_published=True)
+        cls.asha_token = Token.objects.create(user=cls.asha_user)
+        cls.ravi_token = Token.objects.create(user=cls.ravi_user)
+
+    def test_anonymous_cannot_edit(self):
+        url = reverse("post-detail", args=[self.post.pk])
+        response = self.client.patch(url, {"title": "Hacked"}, format="json")
+        self.assertIn(response.status_code, (401, 403))
+
+    def test_other_user_cannot_edit(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.ravi_token.key}")
+        url = reverse("post-detail", args=[self.post.pk])
+        response = self.client.patch(url, {"title": "Hacked"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_author_can_edit(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.asha_token.key}")
+        url = reverse("post-detail", args=[self.post.pk])
+        response = self.client.patch(url, {"title": "Updated"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.post.refresh_from_db()
+        self.assertEqual(self.post.title, "Updated")</code></pre>
+    <div class="callout tip">
+      <strong>Clean up credentials:</strong> <code>self.client.credentials()</code> with no arguments removes the header. Use it between phases of one test so one user's token doesn't leak into the next check.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 26</h2>
+    <ol>
+      <li><strong>Forgetting <code>rest_framework.authtoken</code> in <code>INSTALLED_APPS</code>:</strong> the token table doesn't exist, and token login fails.</li>
+      <li><strong>Sending the token without the word <code>Token</code>:</strong> the header must be <code>Authorization: Token &lt;key&gt;</code>.</li>
+      <li><strong>Relying on <code>has_permission</code> alone for ownership:</strong> add <code>has_object_permission</code> for single-object writes.</li>
+      <li><strong>Passing tokens in URLs:</strong> query strings are logged by servers and proxies.</li>
+      <li><strong>Expecting throttling without a cache:</strong> counts are stored in the cache, so the cache must work.</li>
+      <li><strong>Testing only the success path:</strong> check anonymous and wrong-user responses too.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project with the viewset from Day 25.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Enable Tokens</h3>
+      <p>Add <code>rest_framework.authtoken</code>, run <code>migrate</code>, and add the <code>api/token/</code> route. Request a token for a test user with <code>curl</code> or the browsable API.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Call with a Token</h3>
+      <p>Create a post with the token header. Then call the same endpoint without the header and note the status code.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Ownership</h3>
+      <p>Write <code>IsAuthorOrReadOnly</code>. Log in as two users and confirm only the author can change a post. Confirm both can read it.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Throttle</h3>
+      <p>Set the <code>anon</code> rate to <code>5/minute</code>. Send six anonymous requests in a loop and confirm the sixth returns 429.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Tests</h3>
+      <p>Write the three tests from Lesson 8 and run <code>python manage.py test</code>. Fix any failures before moving on.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Pattern</th><th>Where you'll see it</th></tr>
+      <tr><td>Token authentication</td><td>Mobile apps and third-party scripts calling your API</td></tr>
+      <tr><td>Object-level ownership</td><td>Users editing only their own profiles, orders, or posts</td></tr>
+      <tr><td>Throttling</td><td>Public APIs that protect against scraping and login attacks</td></tr>
+      <tr><td>Token revocation</td><td>"Log out everywhere" buttons and stolen-device recovery</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Looking ahead:</strong> Tokens are simple and work well for many APIs. Larger systems often use short-lived access tokens such as JWTs, which you can add later with a third-party package.</div>
+  </section>
+
+  <section>
+    <h2>Day 26 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 26 of 30 &middot; Next: Day 27 - API Versioning and Throttling Deep Dive</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the difference between authentication and permission?",
+      options: ["They are the same thing", "Authentication identifies the caller; permission decides what the caller may do", "Permission identifies the caller; authentication decides actions", "Authentication only applies to the admin"],
+      answer: 1,
+      explain: "Authentication answers who is calling. Permissions answer whether that caller may perform the action."
+    },
+    {
+      q: "Which app must be in INSTALLED_APPS for DRF's token model?",
+      options: ["rest_framework.tokens", "rest_framework.authtoken", "rest_framework.auth", "django.tokens"],
+      answer: 1,
+      explain: "rest_framework.authtoken provides the Token model and its table."
+    },
+    {
+      q: "What is the correct Authorization header for a DRF token?",
+      options: ["Authorization: Bearer <key>", "Authorization: Token <key>", "Token: <key>", "Auth: <key>"],
+      answer: 1,
+      explain: "DRF's TokenAuthentication expects the word Token followed by the key."
+    },
+    {
+      q: "What does a token-based request get when the token is missing or invalid, if TokenAuthentication is first?",
+      options: ["200 OK", "301 Redirect", "401 Unauthorized", "500 Server Error"],
+      answer: 2,
+      explain: "TokenAuthentication provides an authenticate header, so DRF returns 401."
+    },
+    {
+      q: "Why use has_object_permission instead of only has_permission for ownership?",
+      options: ["has_permission is deprecated", "has_permission runs before the object is loaded, so it cannot check the object's author", "has_object_permission is faster", "They do the same thing"],
+      answer: 1,
+      explain: "Ownership depends on the specific object, which is only known in has_object_permission for single-object requests."
+    },
+    {
+      q: "In IsAuthorOrReadOnly, why check SAFE_METHODS first?",
+      options: ["To allow reading for everyone while restricting writes", "To make the class faster", "To disable authentication", "To enable throttling"],
+      answer: 0,
+      explain: "GET, HEAD, and OPTIONS are safe. Allowing them lets anyone read while writes stay restricted."
+    },
+    {
+      q: "Which response does a throttled client receive?",
+      options: ["403 Forbidden", "404 Not Found", "429 Too Many Requests", "503 Service Unavailable"],
+      answer: 2,
+      explain: "429 is the standard status for exceeding a rate limit."
+    },
+    {
+      q: "Where does DRF store throttle counts?",
+      options: ["In the Token table", "In Django's cache", "In the session cookie", "In a log file"],
+      answer: 1,
+      explain: "Throttle counts are kept in the configured cache, so the cache must work for throttling to be reliable."
+    },
+    {
+      q: "What does deleting a user's Token accomplish?",
+      options: ["It deletes the user account", "The old token stops working and the client gets 401 on its next request", "It resets the password", "It clears the database"],
+      answer: 1,
+      explain: "Deleting the token revokes API access for that key. The user account is unaffected."
+    },
+    {
+      q: "What should you avoid when sending a token?",
+      options: ["Using HTTPS", "Putting it in the URL query string", "Using the Authorization header", "Keeping it out of Git"],
+      answer: 1,
+      explain: "Query strings are often logged by servers and proxies. Use the header over HTTPS instead."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 27!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 1</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 1 of 30</span>
+  <h1>Getting Started with Django</h1>
+  <p>Estimated time: about 1.5 hours &middot; What Django is, setup, projects vs apps, your first view and URL, and how a request travels through Django</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What Is Django?</h2>
+    <p>Django is a Python web framework. A framework gives you the common parts of a web application already built: user accounts, database access, URL routing, form handling, security protections, and an admin panel. You write the parts that make your application unique.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Building a house from bare bricks means deciding everything from plumbing to wiring. Django is a prefabricated house: the foundation, plumbing, and wiring are standard and tested, and you spend your time on the rooms and the design.</div>
+    <p>Django was built for busy news sites and has been used for a wide range of products since. It favours a principle called <strong>"batteries included"</strong>: most things you need are in the box.</p>
+    <table>
+      <tr><th>Part of Django</th><th>What it handles</th></tr>
+      <tr><td>Models and ORM</td><td>Defining database tables as Python classes</td></tr>
+      <tr><td>URLs</td><td>Matching web addresses to your Python functions</td></tr>
+      <tr><td>Views</td><td>The code that handles a request and returns a response</td></tr>
+      <tr><td>Templates</td><td>HTML files with placeholders filled in by Python data</td></tr>
+      <tr><td>Admin</td><td>An automatic management panel for your data</td></tr>
+      <tr><td>Auth and security</td><td>Logins, password hashing, CSRF and SQL injection protection</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 2: How a Request Travels</h2>
+    <p>When someone types an address into a browser, Django handles it in a predictable chain. Learn this chain now, because every later day adds one link to it.</p>
+    <pre><code>Browser  →  URL pattern (urls.py)  →  View function (views.py)  →  Response (HTML, JSON, redirect)
+                                          ↓
+                               Models (models.py) ↔ Database
+                               Templates (.html) for pages</code></pre>
+    <div class="callout tip">
+      <strong>Django calls this MTV:</strong> Model, Template, View. It is similar to the MVC pattern you may have seen elsewhere. The names differ, but the idea is the same: separate data, presentation, and logic.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Setup with a Virtual Environment</h2>
+    <p>Use the virtual environment habit from Day 25 for every Django project. Each project gets its own copy of Django, so upgrading one project never breaks another.</p>
+    <pre><code>mkdir django-course
+cd django-course
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install django
+python -m django --version</code></pre>
+    <div class="output">5.2.1</div>
+    <p>Your version number may be newer. Any recent Django 5.x or later works for this course.</p>
+    <div class="callout warn">
+      <strong>Check the environment:</strong> If <code>(venv)</code> is missing from your prompt, the environment isn't active. Run the activate command again before installing anything.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Projects and Apps</h2>
+    <p>Django has two levels of organisation:</p>
+    <ul>
+      <li><strong>Project:</strong> the whole website, with its settings and the main URL configuration.</li>
+      <li><strong>App:</strong> a self-contained feature, such as a blog, a shop, or user accounts. A project contains one or more apps.</li>
+    </ul>
+    <pre><code>django-admin startproject mysite
+cd mysite
+python manage.py startapp blog</code></pre>
+    <div class="analogy callout">
+      <strong>Analogy:</strong> The project is the whole shopping centre. Each app is one shop inside it, with its own rooms and staff, and the centre's settings decide which shops are open.</div>
+    <p>After these commands your folder looks like this:</p>
+    <div class="tree">mysite/
+├── manage.py          # command-line helper for this project
+├── mysite/            # the project package
+│   ├── settings.py    # configuration: apps, database, security
+│   ├── urls.py        # the main URL map
+│   ├── asgi.py / wsgi.py   # deployment entry points
+└── blog/              # the app you created
+    ├── models.py      # database tables
+    ├── views.py       # request handlers
+    ├── admin.py       # admin panel setup
+    ├── apps.py
+    ├── tests.py
+    └── migrations/    # history of database changes</div>
+    <p>Register the new app in <code>mysite/settings.py</code> so Django knows about it:</p>
+    <pre><code># mysite/settings.py
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "blog",   # our new app
+]</code></pre>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Your First View and URL</h2>
+    <p>A <strong>view</strong> is a Python function that receives a request and returns a response. A <strong>URL pattern</strong> connects a web address to that view.</p>
+    <p>Write the view in <code>blog/views.py</code>:</p>
+    <pre><code># blog/views.py
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Hello, Django!")
+
+def greet(request, name):
+    return HttpResponse(f"Hello, {name}!")</code></pre>
+    <p>Create <code>blog/urls.py</code> to map addresses to those views:</p>
+    <pre><code># blog/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("greet/<str:name>/", views.greet, name="greet"),
+]</code></pre>
+    <p>Then include the app's URLs in the project's main URL map:</p>
+    <pre><code># mysite/urls.py
+from django.contrib import admin
+from django.urls import include, path
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", include("blog.urls")),
+]</code></pre>
+    <p>Start the development server:</p>
+    <pre><code>python manage.py runserver</code></pre>
+    <div class="output">Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.</div>
+    <p>The first time you start the server, you may also see a warning about unapplied migrations. That is normal for a new project. You'll handle migrations on Day 2.</p>
+    <p>Visit the addresses in your browser:</p>
+    <table>
+      <tr><th>Address</th><th>Page shown</th></tr>
+      <tr><td><code>http://127.0.0.1:8000/</code></td><td><code>Hello, Django!</code></td></tr>
+      <tr><td><code>http://127.0.0.1:8000/greet/Sam/</code></td><td><code>Hello, Sam!</code></td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>The <code>&lt;str:name&gt;</code> part</strong> is a path converter. It captures text from the address and passes it to the view as the <code>name</code> argument. Other converters include <code>int</code>, <code>slug</code>, and <code>uuid</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: The Settings File</h2>
+    <p>Most project-wide behaviour lives in <code>settings.py</code>. You'll meet these settings often:</p>
+    <table>
+      <tr><th>Setting</th><th>Purpose</th></tr>
+      <tr><td><code>DEBUG</code></td><td>When True, Django shows detailed error pages. It must be False in production.</td></tr>
+      <tr><td><code>INSTALLED_APPS</code></td><td>The list of apps Django loads</td></tr>
+      <tr><td><code>DATABASES</code></td><td>Database connection details. SQLite is the default.</td></tr>
+      <tr><td><code>ALLOWED_HOSTS</code></td><td>Which domain names may serve the site</td></tr>
+      <tr><td><code>SECRET_KEY</code></td><td>A secret used for security features. Never commit it to Git.</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Security:</strong> The <code>SECRET_KEY</code> in a new project is generated for you. Keep it private, and load it from an environment variable once you deploy. This ties to the <code>.gitignore</code> lesson from Day 29.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 1</h2>
+    <ol>
+      <li><strong>Forgetting to activate the virtual environment:</strong> Django installs into the wrong place, or <code>django-admin</code> is not found.</li>
+      <li><strong>Running <code>startproject</code> twice in the same folder:</strong> you end up with nested folders named the same. Check your location with <code>pwd</code> or <code>cd</code> first.</li>
+      <li><strong>Not adding the app to <code>INSTALLED_APPS</code>:</strong> Django ignores the app's models, templates, and admin settings.</li>
+      <li><strong>Forgetting <code>include()</code> in the project URLs:</strong> the app's URLs are never reached, and you see a 404 page.</li>
+      <li><strong>Stopping the server in the wrong terminal:</strong> keep <code>runserver</code> in its own terminal while you edit code.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Build everything in one project, <code>mysite</code>. Restart the server if a change doesn't appear.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Set Up Your Environment</h3>
+      <p>Create the virtual environment, install Django, and confirm the version with <code>python -m django --version</code>. Take a screenshot or copy the output to your notes.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Create the Project and App</h3>
+      <p>Run <code>startproject mysite</code> and <code>startapp blog</code>. Register <code>blog</code> in <code>INSTALLED_APPS</code>. Then start the server and confirm the default welcome page appears at <code>http://127.0.0.1:8000/</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Your Own Page</h3>
+      <p>Change the <code>home</code> view to return a short HTML string with a heading and a paragraph about yourself, such as <code>"&lt;h1&gt;Welcome&lt;/h1&gt;&lt;p&gt;Learning Django&lt;/p&gt;"</code>. Refresh the browser.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: A Second Route</h3>
+      <p>Add a view called <code>about</code> at the address <code>about/</code>. It should return a sentence describing the app. Test it in the browser.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: A Route with Two Values</h3>
+      <p>Create a route <code>add/&lt;int:a&gt;/&lt;int:b&gt;/</code> whose view returns the sum, such as <code>/add/3/4/</code> showing <code>7</code>. Think about why <code>int</code> is useful here, and what happens at <code>/add/x/4/</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Projects and apps</td><td>Large sites split into features such as accounts, payments, and blog</td></tr>
+      <tr><td>URL patterns with converters</td><td>Product pages like <code>/shop/shoes/42/</code> or profile pages by username</td></tr>
+      <tr><td>Views</td><td>Every page, login, search, and API endpoint on a Django site</td></tr>
+      <tr><td>Settings</td><td>Switching between development and production configuration</td></tr>
+      <tr><td>Development server</td><td>Testing changes locally before deploying them</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Next:</strong> Day 2 adds models, which define the data your site stores. The request path you learned today stays the same; models sit behind the views.</div>
+  </section>
+
+  <section>
+    <h2>Day 1 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 1 of 30 &middot; Next: Day 2 - Models and the ORM</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is Django?",
+      options: ["A database engine", "A Python web framework with many built-in features", "A JavaScript library", "A code editor"],
+      answer: 1,
+      explain: "Django is a Python web framework that provides routing, models, admin, authentication, and more."
+    },
+    {
+      q: "What is the difference between a project and an app?",
+      options: ["There is no difference", "A project is the whole site with settings; an app is a self-contained feature inside it", "An app is the whole site; a project is one page", "A project is only a database"],
+      answer: 1,
+      explain: "A project holds configuration and the main URL map, while apps hold features such as blog or accounts."
+    },
+    {
+      q: "Which command creates a new app called blog?",
+      options: ["django-admin blog", "python manage.py startapp blog", "python manage.py newapp blog", "pip install blog"],
+      answer: 1,
+      explain: "startapp, run through manage.py, creates the app folder with its starter files."
+    },
+    {
+      q: "Why must a new app be added to INSTALLED_APPS?",
+      options: ["To make the app faster", "So Django loads the app's models, templates, and settings", "To install it with pip", "It is optional and changes nothing"],
+      answer: 1,
+      explain: "Django only uses the apps listed in INSTALLED_APPS."
+    },
+    {
+      q: "What is a view in Django?",
+      options: ["A database table", "A Python function that takes a request and returns a response", "A CSS file", "A migration"],
+      answer: 1,
+      explain: "Views handle requests and build responses, such as HTML or a redirect."
+    },
+    {
+      q: "What does the path <str:name> do in a URL pattern?",
+      options: ["It prints the name", "It captures text from the address and passes it to the view as name", "It creates a database table", "It sets a cookie"],
+      answer: 1,
+      explain: "Path converters such as str, int, and slug capture parts of the address as view arguments."
+    },
+    {
+      q: "Why is include() used in the project's urls.py?",
+      options: ["To import Python packages", "To connect the app's URL patterns to the main URL map", "To close the server", "To create migrations"],
+      answer: 1,
+      explain: "include() hands part of the URL space to another urls.py, such as the one in blog."
+    },
+    {
+      q: "Which command starts the development server?",
+      options: ["python manage.py runserver", "python manage.py start", "django run", "python server.py"],
+      answer: 0,
+      explain: "runserver starts the local development server, usually at http://127.0.0.1:8000/."
+    },
+    {
+      q: "Why must DEBUG be False in a live website?",
+      options: ["Because the site is slower otherwise", "Because detailed error pages can reveal sensitive information", "Because Django does not run with DEBUG on", "Because the database needs it"],
+      answer: 1,
+      explain: "With DEBUG on, error pages can expose settings and code details, which helps attackers."
+    },
+    {
+      q: "What does the MTV name stand for in Django?",
+      options: ["Model, Template, View", "Module, Test, Version", "Main, Table, Value", "Model, Test, Verify"],
+      answer: 0,
+      explain: "Django's pattern is Model, Template, and View, which separates data, presentation, and request handling."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 2!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

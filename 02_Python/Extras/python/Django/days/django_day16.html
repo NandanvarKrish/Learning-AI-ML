@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 16</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 16 of 30</span>
+  <h1>Authentication and Login</h1>
+  <p>Estimated time: about 1.5 hours &middot; Django's User model, hashed passwords, authenticate and login, logout, protecting pages, signup, and linking users to your data</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Authentication vs Authorisation</h2>
+    <p>Two ideas get mixed up often, so keep them separate:</p>
+    <table>
+      <tr><th>Question</th><th>Name</th><th>Example</th></tr>
+      <tr><td>Who are you?</td><td><strong>Authentication</strong></td><td>Entering a username and password</td></tr>
+      <tr><td>What may you do?</td><td><strong>Authorisation</strong></td><td>Only staff may publish posts</td></tr>
+    </table>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Authentication is showing your ID at the door. Authorisation is what the wristband lets you access once you're inside.</div>
+    <p>Django provides both through <code>django.contrib.auth</code>, which was already included in <code>INSTALLED_APPS</code> from Day 1. Today you focus on authentication: logging in, logging out, and protecting pages.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: The User Model and Hashed Passwords</h2>
+    <p>Django ships with a <code>User</code> model that has a username, password, email, and flags such as <code>is_staff</code> and <code>is_superuser</code>. Never store passwords as plain text. Django stores a <strong>hash</strong>, a one-way scrambled version of the password.</p>
+    <pre><code>&gt;&gt;&gt; from django.contrib.auth.models import User
+
+&gt;&gt;&gt; u = User.objects.create_user(username="sam", email="sam@example.com",
+...                              password="a-strong-pass-123")
+&gt;&gt;&gt; u.password == "a-strong-pass-123"
+&gt;&gt;&gt; u.check_password("a-strong-pass-123")
+&gt;&gt;&gt; u.check_password("wrong-guess")</code></pre>
+    <div class="output">False
+True
+False</div>
+    <div class="callout warn">
+      <strong>Always use <code>create_user()</code> or <code>set_password()</code>:</strong> Setting <code>user.password = "text"</code> directly saves the text unhashed, and no one can log in with it. Use the helper methods every time.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: authenticate and login</h2>
+    <p><code>authenticate()</code> checks the credentials and returns the user, or None. <code>login()</code> attaches the user to the current session (Day 11):</p>
+    <pre><code>&gt;&gt;&gt; from django.contrib.auth import authenticate
+&gt;&gt;&gt; authenticate(username="sam", password="wrong-guess")
+&gt;&gt;&gt; authenticate(username="sam", password="a-strong-pass-123")</code></pre>
+    <div class="output">None
+&lt;User: sam&gt;</div>
+    <pre><code># blog/views.py
+from django.contrib.auth import authenticate, login
+
+def my_login(request):
+    user = authenticate(request, username=request.POST["username"],
+                        password=request.POST["password"])
+    if user is not None:
+        login(request, user)
+        return redirect("post_list")
+    return render(request, "registration/login.html", {"error": "Wrong details"})</code></pre>
+    <p>In practice you rarely write this yourself. Django's built-in <code>LoginView</code> does it, and you only supply a template.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Built-in Login and Logout Views</h2>
+    <p>Connect the built-in views in <code>mysite/urls.py</code>, or in <code>blog/urls.py</code>:</p>
+    <pre><code># mysite/urls.py
+from django.contrib.auth import views as auth_views
+
+urlpatterns = [
+    path("accounts/login/", auth_views.LoginView.as_view(
+        template_name="registration/login.html"), name="login"),
+    path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    # ...other patterns...
+]</code></pre>
+    <p>Set where users go after logging in and out, in <code>settings.py</code>:</p>
+    <pre><code># mysite/settings.py
+LOGIN_URL = "login"                # where protected pages send anonymous visitors
+LOGIN_REDIRECT_URL = "post_list"   # where users land after logging in
+LOGOUT_REDIRECT_URL = "post_list"  # where users land after logging out</code></pre>
+    <p>The login template needs the form, the CSRF token, and a hidden <code>next</code> field, so users return to the page they wanted:</p>
+    <pre><code># templates/registration/login.html
+{% extends "base.html" %}
+{% block content %}
+  &lt;h1&gt;Log in&lt;/h1&gt;
+  &lt;form method="post"&gt;
+    {% csrf_token %}
+    {{ form.as_p }}
+    &lt;input type="hidden" name="next" value="{{ next }}"&gt;
+    &lt;button type="submit"&gt;Log in&lt;/button&gt;
+  &lt;/form&gt;
+{% endblock %}</code></pre>
+    <div class="callout warn">
+      <strong>Logout is POST only:</strong> Since Django 5.0, <code>LogoutView</code> accepts only POST requests. A logout link must be a form button, not a plain link, so that visiting an address can't log people out.</div>
+    <pre><code># in base.html
+{% if user.is_authenticated %}
+  &lt;form method="post" action="{% url 'logout' %}" style="display:inline"&gt;
+    {% csrf_token %}
+    &lt;button type="submit"&gt;Log out ({{ user.username }})&lt;/button&gt;
+  &lt;/form&gt;
+{% else %}
+  &lt;a href="{% url 'login' %}"&gt;Log in&lt;/a&gt;
+{% endif %}</code></pre>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Protecting Pages</h2>
+    <p>Use the <code>login_required</code> decorator for function views, or <code>LoginRequiredMixin</code> for class-based views (Day 8):</p>
+    <pre><code>from django.contrib.auth.decorators import login_required
+
+@login_required
+def post_create(request):
+    ...
+
+# or, for a class-based view
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "blog/post_form.html"</code></pre>
+    <p>An anonymous visitor who opens <code>/posts/new/</code> is sent to the login page, with the original address kept:</p>
+    <div class="output">302 redirect to /accounts/login/?next=/posts/new/</div>
+    <p>Inside a view, <code>request.user</code> holds the signed-in user, or an <code>AnonymousUser</code>. Check with <code>request.user.is_authenticated</code>.</p>
+    <div class="callout tip">
+      <strong>Put protection in the view:</strong> Hiding a link in the template is not security, because anyone can type the address. The view must check access.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Signup</h2>
+    <p>Django's <code>UserCreationForm</code> handles username, password entry, and password confirmation. Log the user in straight after signup:</p>
+    <pre><code># blog/views.py
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+
+def signup(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("post_list")
+    else:
+        form = UserCreationForm()
+    return render(request, "registration/signup.html", {"form": form})</code></pre>
+    <div class="callout tip">
+      <strong>Built-in password rules:</strong> <code>UserCreationForm</code> applies Django's password validators, such as minimum length and common-password checks, configured in <code>AUTH_PASSWORD_VALIDATORS</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Linking Users to Your Data</h2>
+    <p>In the mini blog, an <code>Author</code> is not yet a login account. A <code>OneToOneField</code> from Author to User (Day 14) connects them, so the view can tell who is writing:</p>
+    <pre><code># blog/models.py
+from django.conf import settings
+
+class Author(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="author",
+    )
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)</code></pre>
+    <pre><code># blog/views.py
+@login_required
+def post_create(request):
+    author = request.user.author          # the Author linked to this login
+    ...</code></pre>
+    <div class="callout warn">
+      <strong>Always use settings.AUTH_USER_MODEL:</strong> Pointing directly at <code>User</code> works now, but projects often replace the user model later. Referencing the setting keeps the link correct.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Checking Permissions</h2>
+    <p>Being logged in does not mean you may do everything. Check permissions with <code>has_perm</code>:</p>
+    <pre><code>&gt;&gt;&gt; u.is_staff
+&gt;&gt;&gt; u.has_perm("blog.add_post")</code></pre>
+    <div class="output">False
+False</div>
+    <p>A new user has no permissions until you grant them. You'll manage groups and permissions on Day 17.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 16</h2>
+    <ol>
+      <li><strong>Setting passwords directly:</strong> use <code>create_user()</code> or <code>set_password()</code> so they are hashed.</li>
+      <li><strong>Using a link to log out:</strong> the POST-only LogoutView needs a form button.</li>
+      <li><strong>Hiding links instead of protecting views:</strong> anyone can type the address.</li>
+      <li><strong>Hard-coding <code>/accounts/login/</code> in redirects:</strong> use the named route and <code>LOGIN_URL</code>.</li>
+      <li><strong>Forgetting <code>{% csrf_token %}</code> in login and signup forms:</strong> the submission fails with a 403.</li>
+      <li><strong>Accessing <code>request.user.author</code> for an anonymous user:</strong> protect the view with <code>login_required</code> first.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Create Users in the Shell</h3>
+      <p>Create two users with <code>create_user()</code>. Confirm that <code>authenticate()</code> returns the user with the right password and None with a wrong one.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Login and Logout</h3>
+      <p>Add the login and logout URLs, the login template, and the settings. Log in, confirm the navigation shows your username, then log out using the form button.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Protect the Create Page</h3>
+      <p>Add <code>login_required</code> to the create view. Visit <code>/posts/new/</code> while logged out and confirm you are sent to the login page, then back to the create page after logging in.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Signup</h3>
+      <p>Build the signup view and template using <code>UserCreationForm</code>. Create a new account through the page and confirm you are logged in immediately.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Link Author to User</h3>
+      <p>Add the <code>user</code> field to <code>Author</code>, migrate, and link one Author to one login. In <code>post_create</code>, set <code>post.author = request.user.author</code> and test that the new post belongs to that author.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Login and logout</td><td>Every account-based website, from banks to social networks</td></tr>
+      <tr><td>Hashed passwords</td><td>Any system that must survive a database leak without exposing passwords</td></tr>
+      <tr><td>login_required</td><td>Dashboards, account settings, and order histories</td></tr>
+      <tr><td>Signup with automatic login</td><td>Onboarding flows that get new users straight into the product</td></tr>
+      <tr><td>Linking a profile to a user</td><td>Showing "your posts" or "your orders" for the signed-in person</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's admin uses the same User model and permission checks. Staff accounts you created on Day 3 are these users.</div>
+  </section>
+
+  <section>
+    <h2>Day 16 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 16 of 30 &middot; Next: Day 17 - Permissions and Groups</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the difference between authentication and authorisation?",
+      options: ["They are the same", "Authentication checks who you are; authorisation checks what you may do", "Authorisation checks passwords", "Authentication only applies to staff"],
+      answer: 1,
+      explain: "Authentication identifies the user; authorisation decides which actions that user may perform."
+    },
+    {
+      q: "What is stored in the database for a password created with create_user()?",
+      options: ["The plain text password", "A one-way hash of the password", "Nothing", "The username repeated"],
+      answer: 1,
+      explain: "Django stores a salted hash, so the original password cannot be read back from the database."
+    },
+    {
+      q: "What does authenticate() return for wrong credentials?",
+      options: ["An error", "None", "An empty user", "False"],
+      answer: 1,
+      explain: "authenticate() returns the user when the credentials match, and None when they don't."
+    },
+    {
+      q: "What does login(request, user) do?",
+      options: ["Creates a new user", "Attaches the user to the current session", "Deletes the session", "Checks the password"],
+      answer: 1,
+      explain: "login() stores the user in the session so later requests know who is signed in."
+    },
+    {
+      q: "Why must the logout action be a POST form in Django 5 and later?",
+      options: ["GET is slower", "Logging out with a plain link could be triggered by any page, so POST prevents accidental or forced logouts", "LogoutView is not available", "Passwords are sent with POST"],
+      answer: 1,
+      explain: "Restricting logout to POST stops other websites or links from logging visitors out."
+    },
+    {
+      q: "Which setting sets where anonymous visitors are sent when a protected page is requested?",
+      options: ["LOGIN_URL", "LOGIN_PAGE", "AUTH_START", "PROTECTED_URL"],
+      answer: 0,
+      explain: "LOGIN_URL names the login route that login_required redirects to."
+    },
+    {
+      q: "What does the 'next' parameter do in the login flow?",
+      options: ["Sets the next password", "Returns the user to the page they originally asked for after logging in", "Creates the next user", "Logs out the previous user"],
+      answer: 1,
+      explain: "next keeps the requested address, so the user lands back where they were going."
+    },
+    {
+      q: "Why is hiding a link in the template not sufficient protection?",
+      options: ["Links cannot be hidden", "Anyone can type the address directly, so the view itself must check access", "Templates are read-only", "Hidden links are always visible"],
+      answer: 1,
+      explain: "Access checks must happen on the server, in the view, because URLs can be typed or shared."
+    },
+    {
+      q: "Why should a new Author link to a User through settings.AUTH_USER_MODEL?",
+      options: ["It is faster", "It keeps the link correct even if the project later replaces the user model", "It hides the user", "It is required for passwords"],
+      answer: 1,
+      explain: "Referencing the setting instead of User directly makes the project easier to change later."
+    },
+    {
+      q: "Which method checks whether a user holds a specific permission?",
+      options: ["user.can()", "user.has_perm('blog.add_post')", "user.permission('add')", "user.allowed()"],
+      answer: 1,
+      explain: "has_perm() takes the permission in the form app_label.codename and returns True or False."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 17!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

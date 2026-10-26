@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 18</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 18 of 30</span>
+  <h1>Sending Email</h1>
+  <p>Estimated time: about 1.5 hours &middot; Email settings, the console backend for development, send_mail, HTML emails from templates, sending on sign-up with signals, and testing with the outbox</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Email Matters</h2>
+    <p>Email is how a site confirms a sign-up, resets a password, sends receipts, and announces new content. Django includes an email system that works the same way in every environment. Only the delivery method changes between development and production.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Django's email module is like a mail room. Your code drops off a letter with the address and contents. The mail room either prints it on the spot for testing or hands it to the postal service in production.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Email Settings</h2>
+    <p>The email backend decides how messages are delivered. During development, use the console backend, which prints each email in the terminal instead of sending it:</p>
+    <pre><code># mysite/settings.py
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "Mini Blog &lt;noreply@example.com&gt;"</code></pre>
+    <p>For production, use an SMTP server from your email provider. Keep the password out of your code by reading it from an environment variable:</p>
+    <pre><code># mysite/settings.py
+import os
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.example.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = "Mini Blog &lt;noreply@example.com&gt;"</code></pre>
+    <div class="callout warn">
+      <strong>Never commit passwords:</strong> Read secrets from environment variables, as you did with the secret key on Day 1. Anyone with access to your repository would otherwise be able to send email as your site.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Sending with send_mail</h2>
+    <p><code>send_mail</code> is the simplest way to send a plain text email:</p>
+    <pre><code>&gt;&gt;&gt; from django.core.mail import send_mail
+
+&gt;&gt;&gt; send_mail(
+...     subject="Welcome to Mini Blog",
+...     message="Hi Sam, thanks for signing up.",
+...     from_email=None,                       # None uses DEFAULT_FROM_EMAIL
+...     recipient_list=["sam@example.com"],
+...     fail_silently=False,
+... )</code></pre>
+    <div class="output">Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Welcome to Mini Blog
+From: Mini Blog &lt;noreply@example.com&gt;
+To: sam@example.com
+Date: ...
+Message-ID: &lt;...&gt;
+
+Hi Sam, thanks for signing up.
+-------------------------------------------------------------------------------
+1</div>
+    <p>The final <code>1</code> is the number of messages sent. The header values such as <code>Date</code> and <code>Message-ID</code> change each time.</p>
+    <table>
+      <tr><th>Argument</th><th>Purpose</th></tr>
+      <tr><td><code>subject</code></td><td>The email heading</td></tr>
+      <tr><td><code>message</code></td><td>The plain text body</td></tr>
+      <tr><td><code>from_email</code></td><td>The sender; None uses DEFAULT_FROM_EMAIL</td></tr>
+      <tr><td><code>recipient_list</code></td><td>A list of addresses that receive the email</td></tr>
+      <tr><td><code>fail_silently</code></td><td>If False, errors such as a failed connection raise an exception</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Safety built in:</strong> Django refuses a subject containing a newline with a <code>BadHeaderError</code>. This blocks header injection, where an attacker slips extra recipients into a form field.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: HTML Emails from Templates</h2>
+    <p>Real emails usually have a plain text version and an HTML version. Write the content in templates, and send both with <code>EmailMultiAlternatives</code>:</p>
+    <pre><code># blog/templates/emails/welcome.txt
+Hi {{ user.username }},
+
+Thanks for joining Mini Blog. You can start writing today.
+
+# blog/templates/emails/welcome.html
+&lt;h1&gt;Welcome, {{ user.username }}!&lt;/h1&gt;
+&lt;p&gt;Thanks for joining Mini Blog. &lt;a href="{{ site_url }}"&gt;Start writing&lt;/a&gt;.&lt;/p&gt;</code></pre>
+    <pre><code># blog/emails.py
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+
+def send_welcome_email(user):
+    context = {"user": user, "site_url": "https://example.com/posts/"}
+    text_body = render_to_string("emails/welcome.txt", context)
+    html_body = render_to_string("emails/welcome.html", context)
+
+    message = EmailMultiAlternatives(
+        subject="Welcome to Mini Blog",
+        body=text_body,
+        to=[user.email],
+    )
+    message.attach_alternative(html_body, "text/html")
+    message.send()</code></pre>
+    <div class="callout tip">
+      <strong>Why both versions?</strong> Some email apps show only plain text, and some spam filters score emails with only HTML more harshly. Sending both is the safer choice.</div>
+    <p>Keep email templates in a dedicated <code>emails</code> folder inside your templates, and keep the logic that builds them in <code>emails.py</code>. The view then calls one function, which keeps the view short.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Sending When Something Happens</h2>
+    <p>On Day 10 you used a signal to react when a post was saved. The same idea sends a welcome email when a new user is created:</p>
+    <pre><code># blog/signals.py
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .emails import send_welcome_email
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def welcome_new_user(sender, instance, created, **kwargs):
+    if created and instance.email:
+        send_welcome_email(instance)</code></pre>
+    <div class="callout warn">
+      <strong>Slow email blocks the page:</strong> Sending email inside a request makes the visitor wait for the mail server. Real projects move sending into a background task, using a tool such as Celery or Django's task framework. For learning now, the direct call is fine.</div>
+    <div class="callout tip">
+      <strong>Only send to real addresses:</strong> The check <code>instance.email</code> skips users with no address, which avoids errors in the email system.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Testing Email Without Sending</h2>
+    <p>During tests, Django replaces the real backend with an in-memory one. Every message is stored in <code>mail.outbox</code>, so you can check what would have been sent:</p>
+    <pre><code># blog/tests.py
+from django.contrib.auth.models import User
+from django.core import mail
+from django.test import TestCase
+
+class WelcomeEmailTests(TestCase):
+    def test_welcome_email_sent_on_signup(self):
+        User.objects.create_user(username="sam", email="sam@example.com", password="x-pass-123")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Welcome to Mini Blog")
+        self.assertEqual(mail.outbox[0].to, ["sam@example.com"])
+
+    def test_no_email_without_address(self):
+        User.objects.create_user(username="nomail", email="", password="x-pass-123")
+        self.assertEqual(len(mail.outbox), 0)</code></pre>
+    <div class="callout tip">
+      <strong>Check the outbox, not the terminal:</strong> The outbox is reset before each test, so emails from one test never appear in another. This is the same isolation you learned on Day 13.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Good Email Practice</h2>
+    <ul>
+      <li><strong>Ask consent first:</strong> send marketing email only to people who opted in. Transactional email, such as a password reset, may be sent without marketing consent.</li>
+      <li><strong>Include an unsubscribe option</strong> in marketing emails, and honour it immediately.</li>
+      <li><strong>Use a clear sender name</strong> and a real reply address, so people recognise your messages.</li>
+      <li><strong>Never put secrets in email links without expiry:</strong> password-reset links should expire quickly and be used only once.</li>
+      <li><strong>Log failures:</strong> with <code>fail_silently=False</code>, catch exceptions and log them (Day 12), so a broken mail server doesn't go unnoticed.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 18</h2>
+    <ol>
+      <li><strong>Hard-coding passwords:</strong> read them from environment variables.</li>
+      <li><strong>Forgetting the console backend in development:</strong> the mail server may reject test sends or deliver real messages to real people.</li>
+      <li><strong>Sending only HTML:</strong> include a plain text body as well.</li>
+      <li><strong>Sending from inside a slow request:</strong> move long-running sends into background tasks in larger projects.</li>
+      <li><strong>Assuming an email was delivered:</strong> <code>send()</code> only hands the message to the mail server; it does not confirm delivery.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Console Output</h3>
+      <p>Set the console backend, then run <code>send_mail</code> from the shell. Find the email headers and body in the terminal output.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Plain and HTML Templates</h3>
+      <p>Create the two welcome templates and the <code>send_welcome_email</code> function. Call it from the shell with an existing user and confirm both parts appear in the console output.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Welcome on Signup</h3>
+      <p>Add the signal from Lesson 5 and register a new user through the signup page. Confirm the email appears in the terminal.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Test the Email</h3>
+      <p>Write the two tests from Lesson 6 and run <code>python manage.py test</code>. Confirm both pass and that the console prints nothing during the tests.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Secure Settings</h3>
+      <p>Move the email password into an environment variable, confirm your code reads it, and check that <code>settings.py</code> contains no real password.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Email type</th><th>Where you'll see it</th></tr>
+      <tr><td>Welcome and confirmation</td><td>Sign-ups on any account-based site</td></tr>
+      <tr><td>Password reset</td><td>"Forgot password" links on banking and shopping sites</td></tr>
+      <tr><td>Receipts and invoices</td><td>Every online purchase</td></tr>
+      <tr><td>Notifications</td><td>Comments, mentions, and new messages</td></tr>
+      <tr><td>Newsletters</td><td>Blogs and product updates, usually with unsubscribe links</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's built-in password reset views send email using these same settings and templates. Once your email works, that feature needs very little extra code.</div>
+  </section>
+
+  <section>
+    <h2>Day 18 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 18 of 30 &middot; Next: Day 19 - Search and Filtering</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does the console email backend do?",
+      options: ["Sends email through Gmail", "Prints each email in the terminal instead of sending it", "Stores emails in the database", "Deletes emails after sending"],
+      answer: 1,
+      explain: "The console backend is ideal during development, because you can see every email without contacting real people."
+    },
+    {
+      q: "Why should EMAIL_HOST_PASSWORD come from an environment variable?",
+      options: ["Environment variables are faster", "So the secret is not stored in the code that might be shared or committed", "Django requires it", "Passwords cannot be stored in settings"],
+      answer: 1,
+      explain: "Secrets in code can leak through version control, so they belong in the environment."
+    },
+    {
+      q: "What does from_email=None do in send_mail?",
+      options: ["Sends no email", "Uses the DEFAULT_FROM_EMAIL setting", "Causes an error", "Uses the user's email"],
+      answer: 1,
+      explain: "When from_email is None, Django uses DEFAULT_FROM_EMAIL."
+    },
+    {
+      q: "Why does Django refuse a subject that contains a newline?",
+      options: ["Subjects must be short", "It blocks header injection, where extra headers or recipients could be slipped in", "Newlines are slow", "Email cannot use capital letters"],
+      answer: 1,
+      explain: "Newlines in headers can add fake headers, so Django raises BadHeaderError to prevent injection."
+    },
+    {
+      q: "What is EmailMultiAlternatives used for?",
+      options: ["Sending to many servers at once", "Sending an email with both a plain text and an HTML version", "Attaching only images", "Validating addresses"],
+      answer: 1,
+      explain: "EmailMultiAlternatives lets you attach an HTML version alongside the plain text body."
+    },
+    {
+      q: "What does send() on an email message guarantee?",
+      options: ["The recipient has read it", "The message was handed to the mail server, not that delivery is confirmed", "The address is valid", "The email is encrypted"],
+      answer: 1,
+      explain: "send() passes the message on; delivery and reading are outside Django's control."
+    },
+    {
+      q: "Where does Django store test emails during a test run?",
+      options: ["In the console", "In mail.outbox", "In the database", "In a file named sent.txt"],
+      answer: 1,
+      explain: "During tests, Django uses an in-memory backend, and mail.outbox holds the messages."
+    },
+    {
+      q: "Why is sending email inside a slow web request a concern?",
+      options: ["Email makes the page larger", "The visitor waits for the mail server, which can slow or break the page", "Email cannot run in views", "It deletes the session"],
+      answer: 1,
+      explain: "A slow mail server delays the response, so larger projects send email in background tasks."
+    },
+    {
+      q: "Why should marketing emails only go to people who opted in?",
+      options: ["Django forbids it", "Sending unwanted email is unethical and often illegal, and damages trust", "Opted-in emails are faster", "Only HTML emails need consent"],
+      answer: 1,
+      explain: "Consent protects people from unwanted messages and keeps your sender reputation healthy."
+    },
+    {
+      q: "Which signal argument tells you that a new user was just created?",
+      options: ["sender", "instance", "created", "kwargs"],
+      answer: 2,
+      explain: "post_save passes created=True when the object is new, and False when it is updated."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 19!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

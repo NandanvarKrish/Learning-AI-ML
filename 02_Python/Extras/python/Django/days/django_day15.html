@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 15</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 15 of 30</span>
+  <h1>Model Forms in Depth</h1>
+  <p>Estimated time: about 1.5 hours &middot; Widgets, labels, help text, customising fields in __init__, saving with commit=False, unique validation, and formsets</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Forms Describe Three Things</h2>
+    <p>A form does three jobs, and each is controlled separately:</p>
+    <table>
+      <tr><th>Job</th><th>Controlled by</th><th>Example</th></tr>
+      <tr><td>What the field looks like</td><td>Widget</td><td>A large text area for the body</td></tr>
+      <tr><td>What the field means to the user</td><td>Label and help text</td><td>"Publish now", with a hint underneath</td></tr>
+      <tr><td>What values are allowed</td><td>Field rules and validation</td><td>Title of at least 5 characters</td></tr>
+    </table>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A form is like a printed application. The layout (widget), the printed question (label), and the rules about what answers are acceptable (validation) are three separate decisions that you can change independently.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Widgets, Labels, and Help Text</h2>
+    <p>Customise the presentation through <code>Meta</code>, without touching the model:</p>
+    <pre><code># blog/forms.py
+from django import forms
+from .models import Post, Tag
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ["title", "body", "cover", "is_published", "tags"]
+        labels = {
+            "is_published": "Publish now",
+        }
+        help_texts = {
+            "title": "Keep it under 80 characters.",
+        }
+        widgets = {
+            "title": forms.TextInput(attrs={"placeholder": "Post title", "class": "input"}),
+            "body": forms.Textarea(attrs={"rows": 6}),
+            "tags": forms.CheckboxSelectMultiple,
+        }</code></pre>
+    <p>Check the result in the shell, without rendering a page:</p>
+    <pre><code>&gt;&gt;&gt; form = PostForm()
+&gt;&gt;&gt; form.fields["title"].help_text
+&gt;&gt;&gt; form.fields["is_published"].label
+&gt;&gt;&gt; form.fields["title"].max_length</code></pre>
+    <div class="output">'Keep it under 80 characters.'
+'Publish now'
+200</div>
+    <div class="callout tip">
+      <strong>Why 200 and not 80?</strong> The help text is only a hint for users. The real limit still comes from the model's <code>max_length=200</code>. If you want to enforce 80 characters, add a validation rule (Lesson 5).</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Customising Fields in __init__</h2>
+    <p>Some choices depend on the situation, such as which tags a user may pick. Adjust the form's fields in <code>__init__</code>, after calling <code>super()</code>:</p>
+    <pre><code>class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ["title", "body", "cover", "is_published", "tags"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tags"].queryset = Tag.objects.order_by("name")
+        self.fields["tags"].required = False
+        self.fields["title"].widget.attrs["autofocus"] = True</code></pre>
+    <p>Notice that <code>super().__init__</code> comes first. Fields are created there, so you can change them only afterwards.</p>
+    <div class="callout warn">
+      <strong>Don't change the model's fields here:</strong> Changes made in <code>__init__</code> affect only this form instance. The database rules, such as <code>blank=True</code> on the model, are not changed.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Saving with commit=False</h2>
+    <p>Sometimes a value comes from the view, not the user, such as the author or the current time. <code>save(commit=False)</code> builds the object without writing it, so you can add those values first:</p>
+    <pre><code># blog/views.py
+def post_create(request):
+    if request.method == "POST":
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = Author.objects.get(email="asha@example.com")  # set by the view
+            post.save()
+            form.save_m2m()    # ManyToMany data is saved after the object has a pk
+            return redirect("post_list")
+    else:
+        form = PostForm()
+    return render(request, "blog/post_form.html", {"form": form})</code></pre>
+    <p>The shell shows the difference:</p>
+    <pre><code>&gt;&gt;&gt; form = PostForm({"title": "Draft from shell", "body": "Text", "author": asha.pk})
+&gt;&gt;&gt; form.is_valid()
+&gt;&gt;&gt; obj = form.save(commit=False)
+&gt;&gt;&gt; obj.pk
+&gt;&gt;&gt; obj.save()
+&gt;&gt;&gt; obj.pk is not None</code></pre>
+    <div class="output">True
+None
+True</div>
+    <div class="callout warn">
+      <strong>Remember save_m2m():</strong> Calling <code>save(commit=False)</code> does not save the ManyToMany selections, such as tags. Call <code>form.save_m2m()</code> after the object is saved, or the tags are lost.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Custom Validation Rules</h2>
+    <p>Field-level rules go in <code>clean_&lt;field&gt;</code> (Day 6). Here is a stricter title rule, plus a check across fields:</p>
+    <pre><code>class PostForm(forms.ModelForm):
+    # ...Meta and __init__ as before...
+
+    def clean_title(self):
+        title = self.cleaned_data["title"].strip()
+        if len(title) &lt; 5:
+            raise forms.ValidationError("Title must be at least 5 characters.")
+        if len(title) &gt; 80:
+            raise forms.ValidationError("Keep the title under 80 characters.")
+        return title
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("is_published") and not cleaned.get("tags"):
+            self.add_error("tags", "Published posts need at least one tag.")
+        return cleaned</code></pre>
+    <p><code>add_error("tags", ...)</code> attaches the error to a specific field, so the message appears next to the tags box instead of at the top of the form.</p>
+    <div class="callout tip">
+      <strong>Where each rule belongs:</strong> Rules about one value go in <code>clean_&lt;field&gt;</code>. Rules involving several fields go in <code>clean()</code>, with <code>add_error</code> to point at the right field.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Unique Checks in ModelForms</h2>
+    <p>A ModelForm automatically checks the unique constraint you added on Day 10 (<code>author</code> plus <code>title</code>). Instead of a database error, the user sees a friendly message:</p>
+    <div class="output">Post with this Author and Title already exists.</div>
+    <p>The check runs during <code>is_valid()</code>, so the object is never saved with a duplicate. The database constraint remains as the final safety net, for code that bypasses forms.</p>
+    <div class="callout tip">
+      <strong>Two layers:</strong> The form gives a helpful message; the database constraint guarantees the rule. Use both.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Editing Several Rows with Formsets</h2>
+    <p>Sometimes a page edits many objects at once, such as all of an author's posts. A <strong>model formset</strong> creates one form per object:</p>
+    <pre><code>from django.forms import modelformset_factory
+
+PostFormSet = modelformset_factory(Post, fields=["title", "is_published"], extra=0)
+
+formset = PostFormSet(request.POST or None, queryset=Post.objects.filter(author=asha))
+if request.method == "POST" and formset.is_valid():
+    formset.save()</code></pre>
+    <ul>
+      <li><code>extra=0</code> means no blank forms are added beyond the existing rows.</li>
+      <li>The formset manages a hidden ID field for each row, so each form updates the right object.</li>
+      <li>Use <code>{{ formset.management_form }}</code> in the template, or the formset won't know how many forms it contains.</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Management form:</strong> Missing <code>{{ formset.management_form }}</code> is a common mistake. Without it, Django raises an error about missing management form data.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 15</h2>
+    <ol>
+      <li><strong>Forgetting <code>super().__init__</code> before customising fields:</strong> the fields do not exist yet.</li>
+      <li><strong>Forgetting <code>save_m2m()</code> after <code>commit=False</code>:</strong> tags and other ManyToMany data are lost.</li>
+      <li><strong>Using a help text as a rule:</strong> it only describes the field; add validation to enforce it.</li>
+      <li><strong>Attaching multi-field errors to the whole form when they belong to one field:</strong> use <code>add_error</code> with the field name.</li>
+      <li><strong>Leaving out the management form in a formset template:</strong> the page errors on submission.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Widgets and Help Text</h3>
+      <p>Add labels, help text, and a larger text area for the body to <code>PostForm</code>. Confirm each change in the rendered page.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Filter the Tags</h3>
+      <p>In <code>__init__</code>, sort the tags alphabetically and make them optional. Create tags in different orders and confirm the form lists them sorted.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: commit=False</h3>
+      <p>Change the create view to use <code>commit=False</code>, set the author in the view, and call <code>save_m2m()</code>. Create a post with two tags and confirm both tags are saved.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Cross-Field Rule</h3>
+      <p>Add the <code>clean()</code> rule that published posts need a tag. Submit a published post with no tags and confirm the error appears next to the tags field.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Duplicate Check</h3>
+      <p>Try to create a second post with the same title for the same author through the form. Record the message, and explain in one sentence why the database constraint is still needed.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Technique</th><th>Where you'll see it</th></tr>
+      <tr><td>Custom widgets and help text</td><td>Checkout forms with masked card fields and hints about format</td></tr>
+      <tr><td>Filtering choices in __init__</td><td>Showing only the cities a user can ship to</td></tr>
+      <tr><td>commit=False</td><td>Orders that record the logged-in user and timestamps automatically</td></tr>
+      <tr><td>Formsets</td><td>Invoice line items, spreadsheet-like editors, and bulk admin changes</td></tr>
+      <tr><td>Unique checks</td><td>Sign-up forms that reject existing email addresses</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's authentication forms are ModelForms and formsets built on these same ideas. Day 16 uses them directly.</div>
+  </section>
+
+  <section>
+    <h2>Day 15 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 15 of 30 &middot; Next: Day 16 - Authentication and Login</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which Meta option sets the on-screen hint text for a field?",
+      options: ["hints", "help_texts", "descriptions", "tooltips"],
+      answer: 1,
+      explain: "help_texts is a dictionary mapping field names to hint text shown to the user."
+    },
+    {
+      q: "Why must super().__init__() be called before changing self.fields in a form?",
+      options: ["It is a style rule only", "The fields are created by the parent __init__, so they must exist first", "It deletes old fields", "It saves the form"],
+      answer: 1,
+      explain: "Fields are built in the parent constructor, so you can modify them only after it runs."
+    },
+    {
+      q: "What does form.save(commit=False) return?",
+      options: ["A saved object with its ManyToMany data", "An unsaved object, so you can add values before saving", "None", "A list of errors"],
+      answer: 1,
+      explain: "commit=False builds the object without writing it, which lets the view add values first."
+    },
+    {
+      q: "Why must you call form.save_m2m() after commit=False?",
+      options: ["To close the form", "ManyToMany selections such as tags are saved only by this call", "To validate the title", "To create a migration"],
+      answer: 1,
+      explain: "The object must have a primary key before ManyToMany rows can be created, and save_m2m() handles them."
+    },
+    {
+      q: "Which method attaches an error to one specific field from clean()?",
+      options: ["add_error(field, message)", "raise_field(message)", "set_error(message)", "errors.append(message)"],
+      answer: 0,
+      explain: "add_error takes the field name, so the message appears beside that field."
+    },
+    {
+      q: "What is the main reason to keep the database unique constraint when the form already checks uniqueness?",
+      options: ["Forms are slower", "Code that bypasses forms could still create duplicates, and the database must enforce the rule", "Constraints are required for widgets", "It deletes duplicates automatically"],
+      answer: 1,
+      explain: "The database is the final guarantee, so it must enforce rules that other code paths might skip."
+    },
+    {
+      q: "What does extra=0 do in modelformset_factory?",
+      options: ["Deletes all rows", "Adds no blank forms beyond the existing objects", "Doubles the forms", "Disables validation"],
+      answer: 1,
+      explain: "extra controls how many empty forms are added; 0 means only the existing objects are shown."
+    },
+    {
+      q: "Why does a formset template need {{ formset.management_form }}?",
+      options: ["It styles the form", "It tells the formset how many forms were submitted", "It logs the user in", "It stores the password"],
+      answer: 1,
+      explain: "The management form carries counts that the formset needs to process the submitted rows."
+    },
+    {
+      q: "Why is help text not a validation rule?",
+      options: ["Help text is always ignored by browsers", "It only describes the field; the rule must be enforced by validation", "Help text cannot contain numbers", "Validation is removed in ModelForms"],
+      answer: 1,
+      explain: "Help text is guidance for the user, so limits such as length must be enforced in code."
+    },
+    {
+      q: "Where does a rule about several fields belong?",
+      options: ["In the template", "In the clean() method", "In the URL pattern", "In the static folder"],
+      answer: 1,
+      explain: "clean() can read every field at once, so it's the right place for rules across fields."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 16!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

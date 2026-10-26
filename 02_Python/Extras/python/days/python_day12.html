@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 12</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .error {
+    background: #2a1414;
+    color: var(--bad);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 12 of 30</span>
+  <h1>Errors and Exceptions</h1>
+  <p>Estimated time: about 1.5 hours &middot; Reading tracebacks, try, except, else, finally, raising and custom exceptions</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Errors Are Normal</h2>
+    <p>Every programmer meets errors daily. An error is not a sign that you're bad at coding. It's Python telling you exactly what it couldn't do. Your job is to read the message, find the cause, and decide whether to fix the code or handle the situation gracefully.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A smoke alarm doesn't mean the house is broken. It tells you something needs attention. Exceptions work the same way: they signal a problem at a specific point in the program.
+    </div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Three Kinds of Errors</h2>
+    <table>
+      <tr><th>Type</th><th>When it happens</th><th>Example</th></tr>
+      <tr><td>Syntax error</td><td>Before the program runs, when the code breaks Python's grammar</td><td><code>if x = 5:</code> (missing ==)</td></tr>
+      <tr><td>Runtime error (exception)</td><td>While the program runs, when something goes wrong</td><td><code>10 / 0</code></td></tr>
+      <tr><td>Logic error</td><td>The program runs without crashing but gives the wrong result</td><td>Using <code>+</code> where you meant <code>*</code></td></tr>
+    </table>
+    <p>Syntax errors must be fixed before the code can run at all. Exceptions can be caught and handled. Logic errors are the hardest, because Python does not report them. You find them with tests and careful thinking.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Reading a Traceback</h2>
+    <p>When an unhandled exception happens, Python prints a <strong>traceback</strong>. It looks intimidating, but you can read it in a fixed order.</p>
+    <pre><code>def average(nums):
+    return sum(nums) / len(nums)
+
+print(average([]))</code></pre>
+    <div class="error">Traceback (most recent call last):
+  File "stats.py", line 4, in &lt;module&gt;
+    print(average([]))
+  File "stats.py", line 2, in average
+    return sum(nums) / len(nums)
+ZeroDivisionError: division by zero</div>
+    <div class="callout tip">
+      <strong>How to read it:</strong>
+      <ol>
+        <li>Start at the <strong>last line</strong>. It names the exception type and message: <code>ZeroDivisionError</code>.</li>
+        <li>Look at the line above it to see the exact code that failed.</li>
+        <li>Read upward through the <code>File</code> lines to see how the program reached that point.</li>
+      </ol>
+    </div>
+    <p>The most useful habit: fix the exception named on the last line, and check the line number it points to.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Common Built-in Exceptions</h2>
+    <table>
+      <tr><th>Exception</th><th>Typical cause</th></tr>
+      <tr><td><code>ValueError</code></td><td>Right type, wrong value, e.g. <code>int("abc")</code></td></tr>
+      <tr><td><code>TypeError</code></td><td>Wrong type for an operation, e.g. <code>"5" + 3</code></td></tr>
+      <tr><td><code>ZeroDivisionError</code></td><td>Dividing by zero</td></tr>
+      <tr><td><code>IndexError</code></td><td>Index beyond the list or string length</td></tr>
+      <tr><td><code>KeyError</code></td><td>Missing key in a dictionary</td></tr>
+      <tr><td><code>FileNotFoundError</code></td><td>File does not exist (Day 11)</td></tr>
+      <tr><td><code>NameError</code></td><td>Using a variable that has not been defined</td></tr>
+      <tr><td><code>AttributeError</code></td><td>Calling a method that doesn't exist on an object, e.g. <code>"abc".push()</code></td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Careful:</strong> <code>ValueError</code> and <code>TypeError</code> look similar, but the difference matters. <code>int("abc")</code> is a ValueError because the type (str) is right but the value isn't a number. <code>int([1])</code> is a TypeError because the type itself is wrong.
+    </div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: try and except</h2>
+    <p>Wrap risky code in a <code>try</code> block. If an exception happens, Python jumps to the matching <code>except</code> block instead of crashing.</p>
+    <pre><code>try:
+    number = int(input("Enter a number: "))
+    print("Double:", number * 2)
+except ValueError:
+    print("That was not a whole number.")
+
+print("Program continues")</code></pre>
+    <div class="output">Enter a number: abc
+That was not a whole number.
+Program continues</div>
+
+    <h3>Catching several exceptions</h3>
+    <pre><code>def safe_divide(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return None
+    except TypeError:
+        return None
+
+print(safe_divide(10, 2))     # 5.0
+print(safe_divide(10, 0))     # None
+print(safe_divide(10, "x"))   # None</code></pre>
+    <div class="output">5.0
+None
+None</div>
+
+    <h3>Getting the exception details</h3>
+    <pre><code>try:
+    value = int("abc")
+except ValueError as error:
+    print("Problem:", error)</code></pre>
+    <div class="output">Problem: invalid literal for int() with base 10: 'abc'</div>
+    <div class="callout warn">
+      <strong>Avoid bare except:</strong> <code>except:</code> with no type catches everything, including <code>KeyboardInterrupt</code> when you press Ctrl+C. Name the exceptions you expect. Use <code>except Exception</code> only at the top level of a program, where you want a last-resort message.
+    </div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: else and finally</h2>
+    <p><code>else</code> runs only if the <code>try</code> block succeeded. <code>finally</code> always runs, whether or not an error happened. Use it for cleanup.</p>
+    <pre><code>def read_number(text):
+    try:
+        number = int(text)
+    except ValueError:
+        print("Invalid input")
+    else:
+        print("Valid number:", number)
+    finally:
+        print("Check finished")
+
+read_number("42")
+read_number("abc")</code></pre>
+    <div class="output">Valid number: 42
+Check finished
+Invalid input
+Check finished</div>
+    <div class="callout tip">
+      <strong>Tip:</strong> Keep the <code>try</code> block small. Put only the risky line inside it, so you catch exactly the error you expect and nothing else.
+    </div>
+    <p>For files, the <code>with</code> statement from Day 11 already handles cleanup, so <code>finally</code> is most useful for other resources such as network connections.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Raising Exceptions</h2>
+    <p>You can trigger an error yourself with <code>raise</code>. This is useful when your function receives data that is technically valid Python but wrong for your program.</p>
+    <pre><code>def set_age(age):
+    if age < 0 or age > 130:
+        raise ValueError("Age must be between 0 and 130")
+    return age
+
+try:
+    set_age(200)
+except ValueError as e:
+    print("Error:", e)</code></pre>
+    <div class="output">Error: Age must be between 0 and 130</div>
+    <p>Raising early, near the bad input, gives a clear message. Without it, the bad value might cause a confusing error much later.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Custom Exceptions</h2>
+    <p>For your own program, you can define an exception class. Inherit from <code>Exception</code>, and you'll learn classes properly in Week 3.</p>
+    <pre><code>class InsufficientFunds(Exception):
+    pass
+
+def withdraw(balance, amount):
+    if amount > balance:
+        raise InsufficientFunds(f"Balance {balance} is less than {amount}")
+    return balance - amount
+
+try:
+    withdraw(100, 500)
+except InsufficientFunds as e:
+    print("Transaction declined:", e)</code></pre>
+    <div class="output">Transaction declined: Balance 100 is less than 500</div>
+    <p>Custom exceptions let calling code catch exactly the problem it cares about.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 12</h2>
+    <ol>
+      <li><strong>Bare except:</strong> hides bugs and catches Ctrl+C. Name the exception.</li>
+      <li><strong>Too much code inside try:</strong> an unrelated error may be caught by accident.</li>
+      <li><strong>Silent failure:</strong> <code>except: pass</code> hides problems. At least print or log the error.</li>
+      <li><strong>Reading only the top of a traceback:</strong> the last line says what went wrong.</li>
+      <li><strong>Confusing ValueError and TypeError:</strong> check whether the type or the value is the problem.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Safe Integer Input</h3>
+      <p>Write <code>get_int(prompt)</code> that keeps asking until the user enters a valid whole number, then returns it.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Safe List Access</h3>
+      <p>Write <code>get_item(items, index)</code> that returns the item, or prints "No item at that position" and returns None if the index is out of range.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Dictionary Lookup</h3>
+      <p>Given <code>prices = {"pen": 10, "book": 150}</code>, ask for an item name and print its price. Handle the missing key case with a friendly message, first using <code>try</code> and <code>except KeyError</code>, then using <code>get()</code>. Compare the two versions.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Validate a Mark</h3>
+      <p>Write <code>set_mark(mark)</code> that raises <code>ValueError</code> if the mark is not between 0 and 100. Test it with 50, 101, and "abc" (convert before checking), catching errors each time.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Custom Exception for Stock</h3>
+      <p>Define <code>OutOfStock(Exception)</code>. Write <code>buy(stock, quantity)</code> that raises it if the quantity exceeds the stock. Catch it and print a message showing how many items are available.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Read a Traceback</h3>
+      <p>Write a short function with a deliberate bug, such as using a missing key or dividing by zero. Run it without a try block, read the traceback, and fix the bug. Explain in one sentence what the error meant.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Technique</th><th>Where you'll see it</th></tr>
+      <tr><td>try and except around input</td><td>Forms that reject bad data without crashing the app</td></tr>
+      <tr><td>Catching network errors</td><td>Retrying a failed API call, showing "Connection lost" in a mobile app</td></tr>
+      <tr><td>finally for cleanup</td><td>Closing database connections, releasing locks, stopping timers</td></tr>
+      <tr><td>Raising exceptions</td><td>Validating that a payment amount is positive before processing</td></tr>
+      <tr><td>Custom exceptions</td><td>Banking apps, e-commerce checkout, and APIs that report specific failures</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django raises exceptions such as <code>Http404</code> when a page is missing, and <code>DoesNotExist</code> when a database lookup finds nothing. You'll handle them the same way you did today.
+    </div>
+  </section>
+
+  <section>
+    <h2>Day 12 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 12 of 30 &middot; Next: Day 13 - Modules and pip</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which error type is raised by int('abc')?",
+      options: ["TypeError", "ValueError", "KeyError", "NameError"],
+      answer: 1,
+      explain: "The type is correct (a string), but the value cannot be converted to a number, so it is a ValueError."
+    },
+    {
+      q: "In a traceback, which line tells you what went wrong?",
+      options: ["The first line", "The last line", "The line numbers in the middle", "The file name"],
+      answer: 1,
+      explain: "The last line names the exception type and message, which is the most useful information."
+    },
+    {
+      q: "When does the else block of a try statement run?",
+      options: ["Always", "Only if an exception occurred", "Only if no exception occurred", "Never"],
+      answer: 2,
+      explain: "else runs when the try block completes without raising an exception."
+    },
+    {
+      q: "What does the finally block do?",
+      options: ["Runs only on errors", "Runs always, whether or not an error occurred", "Runs only if else ran", "Stops the program"],
+      answer: 1,
+      explain: "finally always runs, which makes it useful for cleanup."
+    },
+    {
+      q: "Why is a bare 'except:' risky?",
+      options: ["It is slower", "It can hide bugs and catch unintended exceptions such as Ctrl+C", "It is a syntax error", "It prevents else from running"],
+      answer: 1,
+      explain: "A bare except catches every exception, including ones you didn't expect, which can hide real bugs."
+    },
+    {
+      q: "What does this print? try: print(1/0) except ZeroDivisionError: print('oops')",
+      options: ["1/0", "oops", "Error", "Nothing"],
+      answer: 1,
+      explain: "Dividing by zero raises ZeroDivisionError, which is caught, so 'oops' is printed."
+    },
+    {
+      q: "Which keyword triggers an exception on purpose?",
+      options: ["throw", "error", "raise", "stop"],
+      answer: 2,
+      explain: "Python uses raise to trigger an exception. throw is used in some other languages."
+    },
+    {
+      q: "What does 'except ValueError as e' give you?",
+      options: ["The line number", "The exception object, which you can print for details", "A list of errors", "A new variable type"],
+      answer: 1,
+      explain: "The as clause binds the exception object to e, so you can read its message."
+    },
+    {
+      q: "What is the best way to handle a missing dictionary key without an error?",
+      options: ["d['key']", "d.get('key', default)", "d.key", "d.find('key')"],
+      answer: 1,
+      explain: "get() returns a default when the key is missing, avoiding KeyError."
+    },
+    {
+      q: "What does a custom exception usually inherit from?",
+      options: ["object", "Exception", "print", "list"],
+      answer: 1,
+      explain: "Custom exceptions inherit from Exception, so they behave like built-in ones."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 13!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 17</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 17 of 30</span>
+  <h1>Special Methods</h1>
+  <p>Estimated time: about 1.5 hours &middot; __repr__, __eq__, __lt__, __add__, __len__, __iter__, __getitem__</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What Are Special Methods?</h2>
+    <p>Special methods, also called dunder methods (double underscore), let your objects work with Python's built-in operations. When you write <code>a + b</code>, <code>len(obj)</code>, or <code>print(obj)</code>, Python calls a special method behind the scenes. You define the method, and your objects behave like built-in types.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Special methods are like teaching your object the language of Python. Once it understands <code>+</code>, <code>len</code>, and <code>==</code>, it can join the conversation with lists, numbers, and strings.</div>
+    <p>You've already met <code>__init__</code> (Day 15) and <code>__str__</code>. Today you'll learn the most useful others.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: __repr__ for Developers</h2>
+    <p><code>__str__</code> is for people reading output. <code>__repr__</code> is for developers, and it should ideally show code that would recreate the object. Python uses <code>__repr__</code> when you view an object in the interactive shell, or inside a list.</p>
+    <pre><code>class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return f"Point({self.x}, {self.y})"
+
+p = Point(3, 4)
+print(p)           # no __str__, so falls back to __repr__
+print([p, p])      # lists use __repr__ for their items</code></pre>
+    <div class="output">Point(3, 4)
+[Point(3, 4), Point(3, 4)]</div>
+    <div class="callout tip">
+      <strong>Rule of thumb:</strong> Always define <code>__repr__</code>. Define <code>__str__</code> only when you want a friendlier display for users.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Comparison Methods</h2>
+    <p>By default, two objects are only equal if they are the same object. Define <code>__eq__</code> to compare by value, and <code>__lt__</code> (less than) to allow sorting.</p>
+    <pre><code>class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __lt__(self, other):
+        return (self.x, self.y) < (other.x, other.y)
+
+    def __repr__(self):
+        return f"Point({self.x}, {self.y})"
+
+print(Point(1, 2) == Point(1, 2))            # True
+print(Point(1, 2) == Point(3, 4))            # False
+print(sorted([Point(3, 1), Point(1, 5)]))    # uses __lt__</code></pre>
+    <div class="output">True
+False
+[Point(1, 5), Point(3, 1)]</div>
+    <div class="callout warn">
+      <strong>Careful:</strong> If you define <code>__eq__</code>, Python sets <code>__hash__</code> to None, so the object can no longer be used as a dictionary key or in a set. Define <code>__hash__</code> too if you need that.</div>
+    <p>From <code>__lt__</code>, Python's <code>functools.total_ordering</code> decorator can fill in <code>&gt;</code>, <code>&lt;=</code>, and <code>&gt;=</code> automatically, but you don't need it yet.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Arithmetic Methods</h2>
+    <p>Define <code>__add__</code> to make <code>+</code> work, <code>__sub__</code> for <code>-</code>, and <code>__mul__</code> for <code>*</code>.</p>
+    <pre><code>class Money:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def __add__(self, other):
+        return Money(self.amount + other.amount)
+
+    def __repr__(self):
+        return f"Money({self.amount})"
+
+wallet = Money(100) + Money(250)
+print(wallet)</code></pre>
+    <div class="output">Money(350)</div>
+    <p>Operators should return a new object rather than changing the originals, which keeps your code predictable.</p>
+    <div class="callout tip">
+      <strong>Good practice:</strong> Only overload an operator when the meaning is obvious. Adding two <code>Money</code> objects is clear. Using <code>+</code> to mean "send an email" is confusing.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Making Objects Behave Like Containers</h2>
+    <p>Three methods make your object work like a list or dictionary:</p>
+    <table>
+      <tr><th>Method</th><th>Lets you use</th></tr>
+      <tr><td><code>__len__</code></td><td><code>len(obj)</code></td></tr>
+      <tr><td><code>__getitem__</code></td><td><code>obj[index]</code> and slicing</td></tr>
+      <tr><td><code>__iter__</code></td><td><code>for item in obj</code></td></tr>
+      <tr><td><code>__contains__</code></td><td><code>item in obj</code></td></tr>
+    </table>
+    <pre><code>class Playlist:
+    def __init__(self, songs):
+        self.songs = songs
+
+    def __len__(self):
+        return len(self.songs)
+
+    def __getitem__(self, index):
+        return self.songs[index]
+
+    def __contains__(self, song):
+        return song in self.songs
+
+p = Playlist(["Song A", "Song B", "Song C"])
+print(len(p))                  # 3
+print(p[1])                    # Song B
+print("Song C" in p)           # True
+for song in p:                 # works because __getitem__ exists
+    print(song)</code></pre>
+    <div class="output">3
+Song B
+True
+Song A
+Song B
+Song C</div>
+    <div class="callout analogy">
+      <strong>Note:</strong> Defining <code>__getitem__</code> alone is enough for <code>for</code> loops to work, because Python falls back to indexing. Defining <code>__iter__</code> is the clearer and more modern choice.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: __iter__ Explicitly</h2>
+    <p>For full control over iteration, return an iterator from <code>__iter__</code>. Here the playlist returns the iterator of its list directly.</p>
+    <pre><code>class Playlist:
+    def __init__(self, songs):
+        self.songs = songs
+
+    def __iter__(self):
+        return iter(self.songs)
+
+for song in Playlist(["Intro", "Chorus"]):
+    print("Now playing:", song)</code></pre>
+    <div class="output">Now playing: Intro
+Now playing: Chorus</div>
+    <p>Iterators and generators are covered in full on Day 19.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Putting It Together</h2>
+    <p>A small <code>Temperature</code> class that compares, sorts, adds, and reports its length as a readable string:</p>
+    <pre><code>class Temperature:
+    def __init__(self, celsius):
+        self.celsius = celsius
+
+    def __repr__(self):
+        return f"Temperature({self.celsius}C)"
+
+    def __eq__(self, other):
+        return self.celsius == other.celsius
+
+    def __lt__(self, other):
+        return self.celsius < other.celsius
+
+    def __add__(self, other):
+        return Temperature(self.celsius + other.celsius)
+
+readings = [Temperature(30), Temperature(12), Temperature(25)]
+print(sorted(readings))
+print(max(readings))
+print(Temperature(10) + Temperature(5))</code></pre>
+    <div class="output">[Temperature(12C), Temperature(25C), Temperature(30C)]
+Temperature(30C)
+Temperature(15C)</div>
+    <p>Notice that <code>max</code> works because <code>__lt__</code> is defined. Python uses the same comparison behind several built-in functions.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 17</h2>
+    <ol>
+      <li><strong>Forgetting __hash__ after __eq__:</strong> the object becomes unhashable, so it can't go in a set or as a dictionary key.</li>
+      <li><strong>Mutating in __add__:</strong> return a new object instead of changing <code>self</code> or <code>other</code>.</li>
+      <li><strong>Comparing with a non-matching type:</strong> <code>other.x</code> fails if <code>other</code> is a string. Check the type first with <code>isinstance</code>.</li>
+      <li><strong>Overloading for unclear meanings:</strong> operators should behave the way a reader would expect.</li>
+      <li><strong>Relying on __str__ alone:</strong> without __repr__, debugging output is hard to read.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Readable Book</h3>
+      <p>Create a <code>Book</code> class with title and pages. Define <code>__repr__</code> so that <code>print([book1, book2])</code> shows each book clearly.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Equal Students</h3>
+      <p>Create a <code>Student</code> class with student_id and name. Define <code>__eq__</code> so two students are equal when their IDs match. Test with two students that share an ID and one that doesn't.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Sortable Scores</h3>
+      <p>Create a <code>Score</code> class with a value. Define <code>__lt__</code>, then sort a list of Score objects and print their values.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Vector Addition</h3>
+      <p>Create a <code>Vector</code> class with x and y. Define <code>__add__</code> and <code>__mul__</code> (multiplying by a number). Print the result of <code>v1 + v2</code> and <code>v1 * 3</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Shopping Cart Container</h3>
+      <p>Create a <code>Cart</code> class holding a list of item names. Add <code>__len__</code>, <code>__getitem__</code>, and <code>__contains__</code>. Test each one.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Add the Expense Tracker Feature</h3>
+      <p>Create an <code>Expense</code> class with name and amount. Define <code>__lt__</code> so expenses sort by amount, and <code>__repr__</code> to show them readably. Sort three expenses and print them.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Method</th><th>Where you'll see it</th></tr>
+      <tr><td><code>__repr__</code></td><td>Debugging output in logs, notebooks, and shells, where developers inspect objects</td></tr>
+      <tr><td><code>__eq__</code> and <code>__hash__</code></td><td>Checking duplicates, using objects as set members or dictionary keys</td></tr>
+      <tr><td><code>__lt__</code></td><td>Sorting products by price, dates by time, or versions by number</td></tr>
+      <tr><td><code>__add__</code>, <code>__mul__</code></td><td>Money and unit types in finance code, vectors in graphics and science libraries</td></tr>
+      <tr><td><code>__len__</code>, <code>__getitem__</code>, <code>__iter__</code></td><td>Custom collections such as a playlist, a shopping cart, or a database result set</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django models define <code>__str__</code> so the admin site shows a readable name for each record. You'll write that method on your own models.</div>
+  </section>
+
+  <section>
+    <h2>Day 17 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 17 of 30 &middot; Next: Day 18 - Comprehensions in Depth</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which special method does len(obj) call?",
+      options: ["__size__", "__len__", "__count__", "__length__"],
+      answer: 1,
+      explain: "len(obj) calls the object's __len__ method."
+    },
+    {
+      q: "Which method is used by print() when a __str__ method is missing?",
+      options: ["__init__", "__repr__", "__iter__", "__del__"],
+      answer: 1,
+      explain: "If __str__ is not defined, Python falls back to __repr__ for display."
+    },
+    {
+      q: "Which method makes a + b work for your objects?",
+      options: ["__plus__", "__add__", "__sum__", "__join__"],
+      answer: 1,
+      explain: "The + operator calls __add__ on the left-hand object."
+    },
+    {
+      q: "What does defining __eq__ change?",
+      options: ["How objects are printed", "How == compares two objects", "How objects are deleted", "How objects are sorted"],
+      answer: 1,
+      explain: "__eq__ controls what == returns, allowing comparison by value."
+    },
+    {
+      q: "Why might an object become unusable in a set after defining __eq__?",
+      options: ["Sets cannot hold objects", "Python sets __hash__ to None, so the object is unhashable", "__eq__ deletes the object", "Sets require strings only"],
+      answer: 1,
+      explain: "Defining __eq__ without __hash__ makes the object unhashable, so it can't be placed in a set."
+    },
+    {
+      q: "Which method lets sorted() compare your objects?",
+      options: ["__lt__", "__str__", "__len__", "__init__"],
+      answer: 0,
+      explain: "sorted() uses the less-than operator, which calls __lt__."
+    },
+    {
+      q: "What is the job of __repr__?",
+      options: ["Deleting objects", "Giving a developer-friendly representation, ideally code that recreates the object", "Counting items", "Starting a loop"],
+      answer: 1,
+      explain: "__repr__ is meant for developers and is used in the shell and inside containers like lists."
+    },
+    {
+      q: "Which method makes 'x in obj' work?",
+      options: ["__contains__", "__in__", "__has__", "__search__"],
+      answer: 0,
+      explain: "The in operator calls __contains__ on the object."
+    },
+    {
+      q: "What should __add__ generally do?",
+      options: ["Change self in place", "Return a new object", "Print the result", "Return None"],
+      answer: 1,
+      explain: "Operators should return a new object, keeping the original values unchanged."
+    },
+    {
+      q: "What does __iter__ need to return for a for loop to work?",
+      options: ["A string", "An iterator, such as iter(self.items)", "A number", "None"],
+      answer: 1,
+      explain: "__iter__ must return an iterator, which the for loop then steps through."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 18!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pandas – Capstone Task | Kestrel Logistics Operations Analytics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🐼 Pandas</div><span class="sep">|</span><span class="day-label">Capstone Task</span>
+  <div class="spacer"></div><span class="progress-label">6 phases · 100 points · ~7–9 hours</span>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pandas Full Course · Capstone Task</div>
+  <h1>Kestrel Logistics <span>Operations Analytics</span></h1>
+  <p>Turn two years of messy shipment records into a reproducible analytics pipeline: clean the raw data, join reference tables safely, engineer features, analyse carrier and warehouse performance over time, segment and flag anomalies, and export a board-ready workbook, all from one command.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🧹 Cleaning &amp; Types</span>
+    <span class="hero-pill">🔗 Safe Merges</span>
+    <span class="hero-pill">🧮 GroupBy &amp; transform</span>
+    <span class="hero-pill">📌 Pivots &amp; crosstab</span>
+    <span class="hero-pill">🔃 Resample &amp; rolling</span>
+    <span class="hero-pill">🚨 Anomaly flags</span>
+    <span class="hero-pill">📤 Excel export</span>
+    <span class="hero-pill">🏆 100-Point Rubric</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎯 <strong>How to use this task:</strong> work through the six phases in order, and treat each checkpoint as a gate. The Pandas Help section near the end has a cheat sheet, common gotchas, and a reference solution. Attempt each phase yourself first.</p>
+</div>
+
+<div class="container">
+
+<!-- BRIEF -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📋</div>
+    <div><h2>Project Brief</h2><p>Read this first. It defines what you are building and why.</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>Kestrel Logistics · Network Performance Review</h3>
+      <p>Kestrel ships parcels from six regional warehouses through five carriers. The operations committee meets each month to decide which carriers to keep, where to add capacity, and which lanes are losing money. Today the numbers come from a shipment export that nobody trusts: duplicate rows, weights stored as text, three date formats, status spelled eleven ways, and carrier IDs that do not exist in the carrier master. Your job is to build the pipeline the committee can rely on.</p>
+      <span class="cap-badge">Day 1: Selection &amp; types</span>
+      <span class="cap-badge">Day 2: Cleaning</span>
+      <span class="cap-badge">Day 3: GroupBy, merge, pivot</span>
+      <span class="cap-badge">Day 4: Time series</span>
+      <span class="cap-badge">Day 5: Chaining &amp; performance</span>
+    </div>
+
+    <h3>Deliverables</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>File</th><th>What it is</th></tr>
+        <tr><td><code>make_dataset.py</code></td><td>Generates the messy inputs in <code>data/</code> (provided in Phase 1)</td></tr>
+        <tr><td><code>pipeline.py</code></td><td>Your pipeline. Runs from the command line and rebuilds every output.</td></tr>
+        <tr><td><code>test_pipeline.py</code></td><td>At least four pytest tests covering cleaning and merging</td></tr>
+        <tr><td><code>output/shipments_clean.csv</code></td><td>Cleaned, enriched shipment table with one row per shipment</td></tr>
+        <tr><td><code>output/kestrel_report.xlsx</code></td><td>Workbook with at least four sheets: carriers, warehouse×carrier, monthly, and anomalies</td></tr>
+        <tr><td><code>output/carrier_scorecard.html</code></td><td>Styled HTML scorecard built with <code>Styler</code></td></tr>
+        <tr><td><code>NOTES.md</code></td><td>150 to 250 words for the committee: three findings, the data-quality rules you applied, and two limitations</td></tr>
+      </table>
+    </div>
+
+    <h3>Rules</h3>
+    <ul>
+      <li><strong>Read raw data as it arrives.</strong> Do not patch the CSV by hand. Every fix must live in code so the pipeline is reproducible.</li>
+      <li><strong>Never silently drop rows.</strong> If you remove something, count it and report the count.</li>
+      <li><strong>No <code>iterrows()</code> or Python loops over rows.</strong> Use vectorised operations, <code>.str</code>, <code>.dt</code>, <code>groupby</code>, <code>transform</code>, and <code>np.where</code> or <code>np.select</code>.</li>
+      <li><strong>Prefer method chaining</strong> for pipelines, with a <code>pipe()</code> call where a helper function makes the chain clearer.</li>
+      <li><strong>Every merge must be checked.</strong> Use <code>validate=</code> and <code>indicator=</code> and report unmatched keys.</li>
+    </ul>
+
+    <div class="callout teal">
+      <div class="callout-title">🧭 Environment</div>
+      Python 3.10+ with <code>pandas</code> (2.x), <code>numpy</code>, <code>openpyxl</code> (for Excel export), and <code>pytest</code>. Install with <code>pip install pandas numpy openpyxl pytest</code>.
+    </div>
+  </div>
+</div>
+
+<!-- PHASE PLAN -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🗺️</div>
+    <div><h2>Phases &amp; Checkpoints</h2><p>Each phase builds on the last. Expand each one for its steps.</p></div>
+  </div>
+  <div class="section-body">
+
+    <!-- PHASE 1 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0F172A">1</div><h4>Phase 1 — Generate the Raw Data and Profile It</h4><span class="phase-time">~45 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Run the data generator</h5>
+          <p>Save the code in the reference section as <code>make_dataset.py</code> and run it. It writes three files into <code>data/</code>: <code>shipments_raw.csv</code> (about 20,300 rows, two years), <code>carriers.csv</code>, and <code>warehouses.csv</code>. The shipment file contains duplicate rows, weights such as <code>"12.5 kg"</code>, three date formats, status spellings such as <code>DELIVERED</code> and <code>rto</code>, transit days coded as <code>-1</code>, and carrier IDs in lower case.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Profile before you touch anything</h5>
+          <p>Print the shape, dtypes, null counts, and <code>nunique()</code> for each column. Print the value counts for <code>status</code> and <code>dest_zone</code>. Count the duplicate <code>shipment_id</code> values and the rows where <code>weight_kg</code> is text. Record these numbers. They become the data-quality section of your report.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Explain each dtype problem in one sentence</h5>
+          <p>For every column whose dtype is wrong (for example <code>object</code> where <code>float</code> is expected), write one sentence in a comment explaining what goes wrong downstream if you do not fix it. You will refer to these in NOTES.md.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 1</h5>
+          <ul class="checklist">
+            <li>All three files exist in <code>data/</code></li>
+            <li>You have counted duplicates, text weights, and each status spelling</li>
+            <li>You can name every dtype that is wrong and why</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Clean the Shipment Table</h4><span class="phase-time">~70 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Write <code>parse_dates(series)</code></h5>
+          <p>Try each known format in turn with <code>pd.to_datetime(..., format=fmt, errors="coerce")</code>, and fill only the rows that are still NaT after the previous attempt. Return the result as one datetime Series. Do not use a single <code>format=None</code> call, because it guesses per value and can silently swap day and month.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Write <code>load_clean(path)</code> as one method chain</h5>
+          <ul>
+            <li>Drop duplicate rows by <code>shipment_id</code>, and report how many were dropped.</li>
+            <li>Strip, upper-case, and validate <code>warehouse_id</code> and <code>carrier_id</code>.</li>
+            <li>Remove the text unit from <code>weight_kg</code> and convert it to float. Invalid values become NaN.</li>
+            <li>Map every status spelling to one of <code>Delivered</code>, <code>Returned</code>, <code>Lost</code>, or <code>Unknown</code> with a mapping dictionary. Do not use chains of <code>if</code> statements.</li>
+            <li>Replace transit values of zero or below with NaN using <code>where</code>.</li>
+            <li>Convert <code>dest_zone</code> to a <code>category</code> dtype.</li>
+          </ul>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Handle missing dates honestly</h5>
+          <p>Rows with no valid <code>ship_date</code> cannot be placed in time, so drop them, but count them and store the count in a dictionary called <code>cleaning_log</code>. Every rule in the pipeline should append one entry to this log. You will print the log at the end of the run.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 2</h5>
+          <ul class="checklist">
+            <li><code>shipment_id</code> is unique after cleaning</li>
+            <li><code>weight_kg</code> and <code>transit_days</code> are float columns</li>
+            <li><code>status</code> has no values outside the four allowed labels</li>
+            <li><code>ship_date</code> has no NaT, and the cleaning log accounts for every dropped row</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">3</div><h4>Phase 3 — Safe Merges &amp; Feature Engineering</h4><span class="phase-time">~60 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Join the reference tables with checks</h5>
+          <p>Merge shipments with carriers and warehouses. Use <code>validate="many_to_one"</code> so a duplicated reference key raises an error instead of multiplying rows. Use <code>indicator=</code> on the carrier merge and count the <code>left_only</code> rows. Those are shipments that reference a carrier not in the master, and you must report them rather than dropping them silently.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Engineer the performance features</h5>
+          <ul>
+            <li><strong>delay_days</strong> = transit_days − promised_days</li>
+            <li><strong>on_time</strong> as a float (1.0, 0.0, or NaN when transit is unknown). Use <code>np.where</code> so that NaN stays NaN and the mean ignores it.</li>
+            <li><strong>cost_per_kg</strong> = freight_cost ÷ weight_kg</li>
+            <li><strong>weight_band</strong> with <code>pd.cut</code>: Light (0–1 kg), Medium (1–5 kg), Heavy (5–20 kg), Bulk (over 20 kg). Decide and document whether each bin is open or closed on each side.</li>
+            <li><strong>service_tier</strong> with <code>np.select</code>: "Express" if promised_days ≤ 2, "Standard" if ≤ 3, otherwise "Economy"</li>
+            <li><strong>month</strong> (first day of month), <strong>quarter</strong> (as a period string), and <strong>weekday</strong></li>
+          </ul>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 3</h5>
+          <ul class="checklist">
+            <li>The master row count equals the cleaned shipment count (no duplication from joins)</li>
+            <li>You can state how many shipments had an unknown carrier and how many had no transit value</li>
+            <li>Every feature column is documented in a comment next to its definition</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">4</div><h4>Phase 4 — Carrier &amp; Warehouse Analytics</h4><span class="phase-time">~75 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build the carrier scorecard with named aggregation</h5>
+          <p>Group by <code>carrier_name</code> and produce: shipment count, on-time rate, mean delay, mean cost per kg, and loss rate (the share of rows with status Lost). Sort by on-time rate, and round to three decimals.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Flag cost anomalies inside each lane with <code>transform</code></h5>
+          <p>Group by <code>warehouse_id</code> and <code>carrier_id</code>. Compute a z-score of <code>cost_per_kg</code> against that lane's own mean and standard deviation, using <code>transform</code> so the result aligns with the original rows. Flag rows where the absolute z-score exceeds 3. Report how many rows were flagged and which lanes they belong to.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Rank carriers within each warehouse</h5>
+          <p>For each warehouse, rank carriers by on-time rate using <code>groupby(...).rank()</code>. Add the rank as a column, then use <code>pivot_table</code> to build a city by carrier grid of on-time rates with <code>margins=True</code>.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">4</div><div class="step-content">
+          <h5>Cross-tab the outcomes</h5>
+          <p>Use <code>pd.crosstab</code> to show status counts by service tier, first as raw counts and then with <code>normalize="index"</code> to show each tier's outcome mix. Explain in one sentence which of the two tables the committee should read.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 4</h5>
+          <ul class="checklist">
+            <li>The scorecard numbers can be reproduced by hand for one carrier</li>
+            <li>The anomaly column uses <code>transform</code> and has the same length as the master table</li>
+            <li>The pivot has a totals row and column that agree with the grouped totals</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">5</div><h4>Phase 5 — Time Series &amp; Trend Analysis</h4><span class="phase-time">~70 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Weekly on-time rate with a rolling window</h5>
+          <p>Set <code>ship_date</code> as the index, sort it, and resample the on-time column to weekly means. Add a 4-week rolling mean with <code>min_periods=2</code> so the start of the series is not blank. Explain in NOTES.md why the rolling line is smoother but lags the raw weekly line.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Monthly volume with MoM, YoY, and year-to-date totals</h5>
+          <p>Group by <code>month</code> to get shipment count and freight total. Add month-over-month growth with <code>pct_change()</code>, year-over-year growth with <code>pct_change(12)</code>, and a year-to-date cumulative freight that resets each calendar year, using <code>groupby(index.year).cumsum()</code>.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Lagged carrier performance</h5>
+          <p>For the top two carriers, compute each month's on-time rate and the previous month's rate using <code>shift(1)</code>. Add a column that says whether the rate improved, and count the months where it did.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 5</h5>
+          <ul class="checklist">
+            <li>The first month of each year has a YTD value equal to its own freight, not the running total from the previous year</li>
+            <li>The YoY column is blank for the first 12 months</li>
+            <li>Weekly and monthly outputs agree on the overall on-time rate within rounding</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">6</div><h4>Phase 6 — Export, Tests, and the Committee Pack</h4><span class="phase-time">~90 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Export a multi-sheet workbook</h5>
+          <p>Use <code>pd.ExcelWriter</code> as a context manager. Write four sheets: <em>Carriers</em>, <em>Warehouse x Carrier</em>, <em>Monthly</em>, and <em>Anomalies</em> (only the flagged rows). Set <code>index=False</code> unless the index carries meaning.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Build the styled HTML scorecard</h5>
+          <p>Apply <code>Styler</code> to the carrier scorecard: format percentages, add a green gradient to on-time rate, highlight the worst loss rate, and save with <code>to_html</code>. Keep the styling in one place so it is easy to change.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Write four pytest tests</h5>
+          <p>Test that the cleaned shipment IDs are unique, that the status labels are within the allowed set, that <code>weight_kg</code> is a float column, and that the master table has no more rows than the cleaned shipments (the join did not duplicate rows).</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">4</div><div class="step-content">
+          <h5>Prove reproducibility</h5>
+          <p>Delete <code>output/</code>, then run <code>python make_dataset.py</code> and <code>python pipeline.py data --outdir output</code>. Then run <code>pytest -q</code>. Print the cleaning log at the end of the run so a reviewer can see every rule's effect.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">5</div><div class="step-content">
+          <h5>Write NOTES.md for the committee</h5>
+          <p>State three findings with numbers, list the cleaning rules in plain language, and name two limitations (for example, carrier performance is measured only where transit was recorded). A committee member should understand the note on one read.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 6</h5>
+          <ul class="checklist">
+            <li>One command rebuilds every output from an empty folder</li>
+            <li>All four tests pass</li>
+            <li>The workbook opens with four named sheets</li>
+            <li>NOTES.md is between 150 and 250 words</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RUBRIC -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">✅</div>
+    <div><h2>Scoring Rubric — 100 Points</h2><p>Use this to self-assess before you submit. Pass is 70. Distinction is 90.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Area</th><th>Points</th><th>Full marks look like</th></tr>
+        <tr><td>Ingestion &amp; cleaning</td><td>15</td><td>Duplicates removed by key, text weights parsed, three date formats handled without day/month swaps, statuses mapped, every dropped row counted in the log</td></tr>
+        <tr><td>Merges &amp; referential integrity</td><td>10</td><td><code>validate=</code> and <code>indicator=</code> used, unmatched carriers reported, no row duplication from joins</td></tr>
+        <tr><td>Feature engineering</td><td>10</td><td>on_time as float with NaN preserved, weight bands and service tiers correct at the boundaries, every feature documented</td></tr>
+        <tr><td>GroupBy, transform &amp; rank</td><td>15</td><td>Named aggregation for the scorecard, lane z-scores via <code>transform</code>, ranks computed within each warehouse</td></tr>
+        <tr><td>Pivots, crosstab &amp; MultiIndex</td><td>10</td><td>Pivot with margins that reconcile to grouped totals, normalised crosstab correctly read</td></tr>
+        <tr><td>Time series</td><td>10</td><td>Weekly resample and rolling window, YoY and YTD correct, shift-based comparison correct</td></tr>
+        <tr><td>Anomaly &amp; segmentation</td><td>10</td><td>Flags are explained, anomaly sheet matches the flag count, segments are defensible</td></tr>
+        <tr><td>Export &amp; presentation</td><td>10</td><td>Four-sheet workbook with named sheets, styled HTML scorecard, NOTES.md meets brief</td></tr>
+        <tr><td>Code quality</td><td>5</td><td>Method chaining, no <code>iterrows()</code>, small named functions with docstrings, no duplicated logic</td></tr>
+        <tr><td>Tests &amp; reproducibility</td><td>5</td><td>Four passing tests, one command rebuilds everything from an empty output folder</td></tr>
+        <tr class="rubric-total"><td>Total</td><td>100</td><td></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- HELP: CHEAT SHEET -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">📚</div>
+    <div><h2>Pandas Help — Cheat Sheet</h2><p>Short reminders for the calls this task uses most</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">pd.to_numeric(errors="coerce")</div><div class="mc-desc">Bad text becomes NaN</div><div class="mc-ex">weight_kg</div></div>
+      <div class="mini-card"><div class="mc-name">pd.to_datetime(format=..., errors="coerce")</div><div class="mc-desc">Parse one format at a time</div><div class="mc-ex">fill only the NaT rows</div></div>
+      <div class="mini-card"><div class="mc-name">.str.replace(regex=False)</div><div class="mc-desc">Literal text replacement</div><div class="mc-ex">"kg" to ""</div></div>
+      <div class="mini-card"><div class="mc-name">.map(dict)</div><div class="mc-desc">Lookup for known labels</div><div class="mc-ex">status mapping</div></div>
+      <div class="mini-card"><div class="mc-name">.where(cond)</div><div class="mc-desc">Keep values where true, else NaN</div><div class="mc-ex">transit above zero</div></div>
+      <div class="mini-card"><div class="mc-name">merge(validate=, indicator=)</div><div class="mc-desc">Checked joins with a match report</div><div class="mc-ex">many_to_one</div></div>
+      <div class="mini-card"><div class="mc-name">pd.cut(bins, labels)</div><div class="mc-desc">Numeric to ordered band</div><div class="mc-ex">right-closed intervals</div></div>
+      <div class="mini-card"><div class="mc-name">np.select(conds, choices)</div><div class="mc-desc">Vectorised multi-branch logic</div><div class="mc-ex">service_tier</div></div>
+      <div class="mini-card"><div class="mc-name">groupby().transform()</div><div class="mc-desc">Group stat aligned to every row</div><div class="mc-ex">lane z-score</div></div>
+      <div class="mini-card"><div class="mc-name">groupby().rank()</div><div class="mc-desc">Rank within each group</div><div class="mc-ex">carrier rank per warehouse</div></div>
+      <div class="mini-card"><div class="mc-name">pivot_table(margins=True)</div><div class="mc-desc">Grid with totals</div><div class="mc-ex">city by carrier</div></div>
+      <div class="mini-card"><div class="mc-name">crosstab(normalize="index")</div><div class="mc-desc">Row percentages</div><div class="mc-ex">outcome mix per tier</div></div>
+      <div class="mini-card"><div class="mc-name">resample("W").mean()</div><div class="mc-desc">Weekly aggregation</div><div class="mc-ex">on-time rate</div></div>
+      <div class="mini-card"><div class="mc-name">rolling(4, min_periods=2)</div><div class="mc-desc">Smoothing with a partial start</div><div class="mc-ex">4-week average</div></div>
+      <div class="mini-card"><div class="mc-name">pct_change(12)</div><div class="mc-desc">Year-over-year on monthly data</div><div class="mc-ex">freight YoY</div></div>
+      <div class="mini-card"><div class="mc-name">groupby(index.year).cumsum()</div><div class="mc-desc">Running total that resets yearly</div><div class="mc-ex">YTD freight</div></div>
+      <div class="mini-card"><div class="mc-name">shift(1)</div><div class="mc-desc">Previous period's value</div><div class="mc-ex">last month rate</div></div>
+      <div class="mini-card"><div class="mc-name">xs(key, level=)</div><div class="mc-desc">Cross-section of a MultiIndex</div><div class="mc-ex">one quarter, all carriers</div></div>
+      <div class="mini-card"><div class="mc-name">ExcelWriter</div><div class="mc-desc">Several sheets in one file</div><div class="mc-ex">with ... as xw</div></div>
+      <div class="mini-card"><div class="mc-name">df.style.format()</div><div class="mc-desc">Presentation styling</div><div class="mc-ex">percent, gradient</div></div>
+    </div>
+
+    <h3>Common Gotchas</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+        <tr><td>Row count grows after a merge</td><td>Right table has duplicate keys</td><td><code>validate="many_to_one"</code> raises an error to show you where</td></tr>
+        <tr><td>Mean of on_time is wrong</td><td>Stored NaN as False, or dtype is object</td><td>Build on_time with <code>np.where</code> so NaN stays float</td></tr>
+        <tr><td>Day and month swapped</td><td>Parsed with <code>format=None</code> on mixed input</td><td>Parse each format separately, with <code>errors="coerce"</code></td></tr>
+        <tr><td>Boolean mask fails with an error</td><td>Used <code>and</code> or <code>or</code> instead of the element-wise operators</td><td>Use the element-wise operators with parentheses around each condition</td></tr>
+        <tr><td>Rolling values appear in the wrong place</td><td>Rolling run across group boundaries</td><td><code>groupby(...).transform(lambda s: s.rolling(...))</code></td></tr>
+        <tr><td>Pivot raises a duplicates error</td><td>Used <code>pivot</code> where <code>pivot_table</code> is needed</td><td>Use <code>pivot_table</code> with an aggregation</td></tr>
+        <tr><td>YTD does not reset in January</td><td>Cumsum ran over the whole column</td><td>Group by <code>index.year</code> before <code>cumsum</code></td></tr>
+        <tr><td>Excel sheet has an extra column of numbers</td><td>Index was written</td><td><code>to_excel(..., index=False)</code></td></tr>
+        <tr><td>Category comparison error</td><td>Compared a categorical to a value not in its categories</td><td>Add the value to categories first, or compare as strings</td></tr>
+      </table>
+    </div>
+
+    <h3>Reference Solution — <code>make_dataset.py</code></h3>
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">R</div><h4>Show reference solution: make_dataset.py</h4><span class="phase-time">~90 lines</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+<div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · make_dataset.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>import os
+import numpy as np
+import pandas as pd
+
+rng = np.random.default_rng(2024)
+os.makedirs("data", exist_ok=True)
+n = 20000
+
+warehouses = pd.DataFrame({
+    "warehouse_id": ["WH01", "WH02", "WH03", "WH04", "WH05", "WH06"],
+    "city": ["Surat", "Ahmedabad", "Mumbai", "Pune", "Bengaluru", "Delhi"],
+    "capacity": [5000, 4000, 8000, 6000, 7000, 9000],
+})
+carriers = pd.DataFrame({
+    "carrier_id": ["C01", "C02", "C03", "C04", "C05"],
+    "carrier_name": ["SwiftLine", "Carrio", "RoadRunner", "NorthStar", "Parcelo"],
+    "rate_per_kg": [42.0, 38.5, 35.0, 40.0, 33.0],
+    "sla_days": [2, 3, 4, 3, 5],
+})
+carriers.to_csv("data/carriers.csv", index=False)
+warehouses.to_csv("data/warehouses.csv", index=False)
+
+wh = rng.choice(warehouses.warehouse_id, n, p=[.2, .15, .25, .15, .15, .10])
+car = rng.choice(carriers.carrier_id, n, p=[.3, .2, .2, .15, .15])
+ship_date = pd.Series(rng.choice(pd.date_range("2023-01-01", "2024-12-31"), n))
+zone = rng.choice(["Local", "Regional", "National"], n, p=[.3, .4, .3])
+weight = rng.lognormal(mean=1.2, sigma=0.7, size=n).round(2)
+
+rate = carriers.set_index("carrier_id").loc[car, "rate_per_kg"].to_numpy()
+sla = carriers.set_index("carrier_id").loc[car, "sla_days"].to_numpy()
+zone_extra = pd.Series(zone).map({"Local": 0, "Regional": 1, "National": 2}).to_numpy()
+actual = np.clip(np.round(sla + zone_extra * 0.5 + rng.normal(0, 1.3, n)), 1, None)
+freight = weight * rate * (1 + rng.uniform(-0.1, 0.1, n)) * (1 + 0.2 * (zone_extra == 2))
+
+status = rng.choice(["Delivered", "Returned", "Lost"], n, p=[.955, .03, .015])
+status_messy = np.where(rng.random(n) < 0.3, np.char.lower(status.astype(str)), status)
+status_messy = np.where(rng.random(n) < 0.05, np.char.upper(status_messy.astype(str)), status_messy)
+status_messy = np.where(rng.random(n) < 0.02, "rto", status_messy)
+
+fmt = rng.choice(["iso", "dmy", "long"], n, p=[.7, .2, .1])
+pattern = {"iso": "%Y-%m-%d", "dmy": "%d/%m/%Y", "long": "%b %d %Y"}
+date_text = [d.strftime(pattern[f]) for d, f in zip(ship_date, fmt)]
+
+weight_text = np.where(rng.random(n) < 0.02, [f"{w} kg" for w in weight], weight)
+transit = actual.astype(float)
+transit[rng.random(n) < 0.04] = np.nan
+transit[rng.random(n) < 0.01] = -1
+
+shipments = pd.DataFrame({
+    "shipment_id": [f"SHP{i:06d}" for i in range(1, n + 1)],
+    "ship_date": date_text,
+    "warehouse_id": wh,
+    "carrier_id": car,
+    "dest_zone": zone,
+    "weight_kg": weight_text,
+    "freight_cost": freight.round(2),
+    "promised_days": sla,
+    "transit_days": transit,
+    "status": status_messy,
+})
+shipments.loc[rng.random(n) < 0.01, "warehouse_id"] = shipments["warehouse_id"].str.lower()
+shipments.loc[rng.random(n) < 0.01, "carrier_id"] = "C09"
+shipments = pd.concat([shipments, shipments.sample(300, random_state=1)], ignore_index=True)
+shipments.to_csv("data/shipments_raw.csv", index=False)
+print("Wrote", len(shipments), "raw shipment rows to data/")</pre></div>
+      </div>
+    </div>
+
+    <h3>Reference Solution — <code>pipeline.py</code></h3>
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#B45309">R</div><h4>Show reference solution: pipeline.py</h4><span class="phase-time">~200 lines</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+<div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · pipeline.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>"""pipeline.py: Kestrel Logistics operations analytics.
+
+Usage:
+    python pipeline.py data --outdir output
+"""
+import argparse
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+STATUS_MAP = {"delivered": "Delivered", "returned": "Returned",
+              "rto": "Returned", "lost": "Lost"}
+DATE_FORMATS = ["%Y-%m-%d", "%d/%m/%Y", "%b %d %Y"]
+CLEANING_LOG = {}
+
+
+def log(rule, count):
+    """Record how many rows a cleaning rule touched."""
+    CLEANING_LOG[rule] = int(count)
+
+
+def parse_dates(text):
+    """Parse each known format in turn; only retry rows still missing."""
+    out = pd.Series(pd.NaT, index=text.index, dtype="datetime64[ns]")
+    for fmt in DATE_FORMATS:
+        missing = out.isna()
+        out[missing] = pd.to_datetime(text[missing], format=fmt, errors="coerce")
+    return out
+
+
+def load_clean(path):
+    """Read the raw shipment file and return one clean row per shipment."""
+    raw = pd.read_csv(path)
+    n_dupes = raw.duplicated(subset="shipment_id").sum()
+    log("duplicate shipments removed", n_dupes)
+
+    clean = (
+        raw.drop_duplicates(subset="shipment_id")
+        .assign(
+            ship_date=lambda d: parse_dates(d["ship_date"].astype(str)),
+            warehouse_id=lambda d: d["warehouse_id"].str.strip().str.upper(),
+            carrier_id=lambda d: d["carrier_id"].str.strip().str.upper(),
+            dest_zone=lambda d: d["dest_zone"].str.strip().str.title().astype("category"),
+            weight_kg=lambda d: pd.to_numeric(
+                d["weight_kg"].astype(str).str.replace("kg", "", regex=False).str.strip(),
+                errors="coerce"),
+            status=lambda d: d["status"].str.strip().str.lower().map(STATUS_MAP).fillna("Unknown"),
+            transit_days=lambda d: pd.to_numeric(d["transit_days"], errors="coerce").where(lambda s: s &gt; 0),
+        )
+    )
+    log("rows without a valid ship_date", clean["ship_date"].isna().sum())
+    clean = clean.dropna(subset=["ship_date"])
+    return clean
+
+
+def load_reference(carriers_path, warehouses_path):
+    """Load and normalise the carrier and warehouse master tables."""
+    carriers = pd.read_csv(carriers_path).assign(
+        carrier_id=lambda d: d["carrier_id"].str.upper())
+    warehouses = pd.read_csv(warehouses_path)
+    return carriers, warehouses
+
+
+def build_master(shipments, carriers, warehouses):
+    """Join reference data with checks and add performance features."""
+    master = (
+        shipments
+        .merge(carriers, on="carrier_id", how="left",
+               validate="many_to_one", indicator="carrier_check")
+        .merge(warehouses, on="warehouse_id", how="left",
+               validate="many_to_one")
+    )
+    log("shipments with unknown carrier", (master["carrier_check"] == "left_only").sum())
+    master = master.drop(columns="carrier_check")
+
+    master = master.assign(
+        delay_days=lambda d: d["transit_days"] - d["promised_days"],
+        on_time=lambda d: np.where(d["transit_days"].notna(),
+                                   (d["transit_days"] &lt;= d["promised_days"]).astype(float),
+                                   np.nan),
+        cost_per_kg=lambda d: d["freight_cost"] / d["weight_kg"],
+        weight_band=lambda d: pd.cut(d["weight_kg"], bins=[0, 1, 5, 20, np.inf],
+                                     labels=["Light", "Medium", "Heavy", "Bulk"]),
+        service_tier=lambda d: np.select(
+            [d["promised_days"] &lt;= 2, d["promised_days"] &lt;= 3], ["Express", "Standard"],
+            default="Economy"),
+        month=lambda d: d["ship_date"].dt.to_period("M").dt.to_timestamp(),
+        quarter=lambda d: d["ship_date"].dt.to_period("Q").astype(str),
+        weekday=lambda d: d["ship_date"].dt.day_name(),
+    )
+    log("shipments with no transit value", master["transit_days"].isna().sum())
+    return master
+
+
+def carrier_scorecard(master):
+    """One row per carrier with the committee's headline metrics."""
+    return (
+        master.groupby("carrier_name")
+        .agg(shipments=("shipment_id", "count"),
+             on_time_rate=("on_time", "mean"),
+             mean_delay=("delay_days", "mean"),
+             cost_per_kg=("cost_per_kg", "mean"),
+             loss_rate=("status", lambda s: (s == "Lost").mean()))
+        .sort_values("on_time_rate", ascending=False)
+        .round(3)
+    )
+
+
+def flag_cost_anomalies(master, z_limit=3.0):
+    """Z-score cost per kg against each warehouse-carrier lane."""
+    lane = master.groupby(["warehouse_id", "carrier_id"])["cost_per_kg"]
+    z = (master["cost_per_kg"] - lane.transform("mean")) / lane.transform("std")
+    return master.assign(cost_z=z, cost_anomaly=lambda d: d["cost_z"].abs() &gt; z_limit)
+
+
+def warehouse_carrier_grid(master):
+    """On-time rate by city and carrier, with totals."""
+    return pd.pivot_table(master, values="on_time", index="warehouse_id",
+                          columns="carrier_name", aggfunc="mean", margins=True).round(3)
+
+
+def monthly_view(master):
+    """Monthly volume and freight with MoM, YoY and year-to-date totals."""
+    m = master.groupby("month").agg(shipments=("shipment_id", "count"),
+                                    freight=("freight_cost", "sum"))
+    m["freight_mom_pct"] = m["freight"].pct_change() * 100
+    m["freight_yoy_pct"] = m["freight"].pct_change(12) * 100
+    m["freight_ytd"] = m.groupby(m.index.year)["freight"].cumsum()
+    return m
+
+
+def weekly_view(master):
+    """Weekly on-time rate and its 4-week rolling mean."""
+    s = master.set_index("ship_date").sort_index()["on_time"]
+    weekly = s.resample("W").mean()
+    return pd.DataFrame({"on_time_weekly": weekly,
+                         "on_time_4wk": weekly.rolling(4, min_periods=2).mean()})
+
+
+def export(outdir, master, scorecard, grid, monthly, anomalies):
+    """Write the CSV, the Excel workbook, and the HTML scorecard."""
+    master.to_csv(outdir / "shipments_clean.csv", index=False)
+    with pd.ExcelWriter(outdir / "kestrel_report.xlsx") as xw:
+        scorecard.to_excel(xw, sheet_name="Carriers")
+        grid.to_excel(xw, sheet_name="Warehouse x Carrier")
+        monthly.to_excel(xw, sheet_name="Monthly")
+        anomalies.to_excel(xw, sheet_name="Anomalies", index=False)
+    styled = (scorecard.style
+              .format({"on_time_rate": "{:.1%}", "loss_rate": "{:.1%}",
+                       "cost_per_kg": "{:.2f}", "mean_delay": "{:.2f}"})
+              .background_gradient(subset=["on_time_rate"], cmap="Greens")
+              .highlight_max(subset=["loss_rate"], color="#FECACA"))
+    styled.to_html(outdir / "carrier_scorecard.html")
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Kestrel operations analytics")
+    ap.add_argument("data_dir")
+    ap.add_argument("--outdir", default="output")
+    args = ap.parse_args()
+
+    data, out = Path(args.data_dir), Path(args.outdir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    carriers, warehouses = load_reference(data / "carriers.csv", data / "warehouses.csv")
+    shipments = load_clean(data / "shipments_raw.csv")
+    master = build_master(shipments, carriers, warehouses)
+
+    scorecard = carrier_scorecard(master)
+    grid = warehouse_carrier_grid(master)
+    monthly = monthly_view(master)
+    flagged = flag_cost_anomalies(master)
+    anomalies = flagged.loc[flagged["cost_anomaly"],
+                            ["shipment_id", "warehouse_id", "carrier_id", "cost_per_kg", "cost_z"]]
+    log("cost anomalies flagged", len(anomalies))
+
+    export(out, flagged, scorecard, grid, monthly, anomalies)
+
+    print("Cleaning log:")
+    for rule, count in CLEANING_LOG.items():
+        print(f"  {rule}: {count}")
+    print("Master rows:", len(master))
+    print("Outputs written to", out.resolve())
+
+
+if __name__ == "__main__":
+    main()</pre></div>
+      </div>
+    </div>
+
+    <h3>Reference Test — <code>test_pipeline.py</code></h3>
+    <div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · test_pipeline.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>import pandas as pd
+from pipeline import load_clean, parse_dates
+
+ALLOWED = {"Delivered", "Returned", "Lost", "Unknown"}
+
+
+def test_shipment_ids_are_unique():
+    df = load_clean("data/shipments_raw.csv")
+    assert df["shipment_id"].is_unique
+
+
+def test_status_labels_are_standard():
+    df = load_clean("data/shipments_raw.csv")
+    assert set(df["status"].unique()) &lt;= ALLOWED
+
+
+def test_weight_is_float():
+    df = load_clean("data/shipments_raw.csv")
+    assert df["weight_kg"].dtype.kind == "f"
+
+
+def test_day_and_month_not_swapped():
+    s = pd.Series(["05/03/2023", "2023-03-05", "Mar 05 2023"])
+    parsed = parse_dates(s)
+    assert (parsed == pd.Timestamp("2023-03-05")).all()</pre></div>
+
+    <h3>Mini Recipes You Will Reuse</h3>
+    <div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · recipes</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre># 1. Count what a rule touched, without changing the data
+n_bad = (df["transit_days"] &lt;= 0).sum()
+
+# 2. Replace bad codes with NaN, keep everything else
+df["transit_days"] = df["transit_days"].where(df["transit_days"] &gt; 0)
+
+# 3. Named aggregation with a readable output
+df.groupby("carrier_name").agg(on_time=("on_time", "mean"), n=("shipment_id", "size"))
+
+# 4. Rank inside groups, then broadcast a group stat back to rows
+df["rank_in_wh"] = df.groupby("warehouse_id")["on_time"].rank(ascending=False, method="dense")
+df["lane_mean"] = df.groupby(["warehouse_id", "carrier_id"])["cost_per_kg"].transform("mean")
+
+# 5. Crosstab with row percentages
+pd.crosstab(df["service_tier"], df["status"], normalize="index").round(3)
+
+# 6. Rolling mean per group without leaking across groups
+df["sma4"] = df.groupby("carrier_id")["on_time"].transform(lambda s: s.rolling(4, min_periods=2).mean())
+
+# 7. Year-to-date that resets each year
+m["ytd"] = m.groupby(m.index.year)["freight"].cumsum()
+
+# 8. Several sheets, no index written
+with pd.ExcelWriter("out.xlsx") as xw:
+    a.to_excel(xw, sheet_name="A", index=False)
+    b.to_excel(xw, sheet_name="B", index=False)</pre></div>
+  </div>
+</div>
+
+<!-- MISTAKES -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DC2626">⚠️</div>
+    <div><h2>Analysis Mistakes That Lose Points</h2><p>Each one has led a real operations team to the wrong decision</p></div>
+  </div>
+  <div class="section-body">
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Mistake</th><th>Why it misleads</th><th>Do this instead</th></tr>
+        <tr><td>Dropping rows with unknown carrier before counting</td><td>Hides a referential problem that may be bigger than the metric itself</td><td>Count the <code>left_only</code> rows, report them, then decide</td></tr>
+        <tr><td>Averaging on_time after filling NaN with 0</td><td>Unknown transit is counted as late</td><td>Keep NaN, and report the number of unknowns alongside the rate</td></tr>
+        <tr><td>Comparing carriers on raw counts</td><td>A carrier with more volume looks better or worse without a rate</td><td>Use rates, and show volume beside them</td></tr>
+        <tr><td>Calling a lane an anomaly from one shipment</td><td>Standard deviation of tiny groups is unstable</td><td>Require a minimum lane size before flagging</td></tr>
+        <tr><td>Reading a YoY figure for a month with no prior-year data</td><td>The first 12 values are not comparisons</td><td>Leave them blank, and say so in the notes</td></tr>
+        <tr><td>Rolling average presented as the current rate</td><td>It lags the raw trend</td><td>Show the raw weekly line and the rolling line together</td></tr>
+        <tr><td>Excel workbook with numbers stored as text</td><td>Sums in the committee's spreadsheet are silently zero</td><td>Check dtypes before export</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Capstone Check — 20 Questions</h2><p>Covers cleaning, merges, groupby, pivots, time series, and export. Pass: 16/20.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMISSION -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0F172A">📦</div>
+    <div><h2>Submission Checklist</h2><p>Tick every box before you send your work</p></div>
+  </div>
+  <div class="section-body">
+    <ul class="checklist">
+      <li>make_dataset.py, pipeline.py, test_pipeline.py, and NOTES.md are in one folder</li>
+      <li>Deleting output/ and rerunning the two commands rebuilds every file</li>
+      <li>pytest -q passes with no failures</li>
+      <li>The cleaning log is printed at the end of the run and matches NOTES.md</li>
+      <li>No <code>iterrows()</code> or row-level Python loop appears anywhere</li>
+      <li>Every merge uses <code>validate=</code> and every unmatched key is reported</li>
+      <li>The workbook opens with four named sheets and no index column</li>
+      <li>NOTES.md is between 150 and 250 words and free of jargon</li>
+    </ul>
+    <div class="callout green" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges</div>
+      <ul>
+        <li><strong>Cohort view:</strong> group warehouses by the quarter they first shipped, and build a retention-style pivot of on-time rate by cohort and months since start.</li>
+        <li><strong>Lane minimum size:</strong> flag anomalies only for lanes with at least 30 shipments, and report how many lanes were excluded.</li>
+        <li><strong>Chunked ingestion:</strong> read <code>shipments_raw.csv</code> in chunks of 5,000 rows and combine the cleaned chunks. Check that the result matches the single-read version.</li>
+        <li><strong>Memory report:</strong> print <code>memory_usage(deep=True)</code> before and after converting text columns to <code>category</code> and numeric columns to smaller dtypes.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Pandas Full Course · Capstone Task</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Series &amp; DataFrames</span>
+    <span class="day-pill done">Day 2 · Data Cleaning</span>
+    <span class="day-pill done">Day 3 · GroupBy &amp; Merge</span>
+    <span class="day-pill done">Day 4 · Time Series</span>
+    <span class="day-pill done">Day 5 · Capstone</span>
+    <span class="day-pill done active">Capstone Task ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">Next up: <strong>Matplotlib</strong> — visualise everything you've analysed!</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What does errors=\"coerce\" do in pd.to_numeric?",opts:["Raises an error on the first bad value","Converts values that cannot be parsed into NaN","Drops rows with bad values","Converts bad values to zero"],ans:1,explain:"With errors=\"coerce\", unparseable values become NaN instead of raising an error, so the rest of the column is still converted and you can count the NaN values afterwards."},
+  {q:"Why parse dates one format at a time, filling only the rows still missing?",opts:["Pandas cannot parse more than one format","Guessing the format per value can silently swap day and month, while explicit formats are unambiguous","It is faster on large files","It removes timezone information"],ans:1,explain:"Mixed formats like 05/03/2023 are ambiguous without an explicit format. Trying known formats in order, with explicit format strings, makes the interpretation deliberate."},
+  {q:"Why use validate=\"many_to_one\" on a merge of shipments with carriers?",opts:["It makes the merge faster","It raises an error if the carrier table has duplicate keys, which would otherwise multiply shipment rows","It keeps only matching rows","It sorts the result by carrier"],ans:1,explain:"Each shipment should match at most one carrier. If the carrier master had a duplicate ID, a plain merge would silently duplicate shipments; validate catches that immediately."},
+  {q:"What does indicator=\"carrier_check\" add to the merged table?",opts:["A count of shipments per carrier","A column showing whether each row matched in both tables, only the left table, or only the right","A checksum of the data","A sorted index"],ans:1,explain:"The indicator column tells you which side each row came from. Counting left_only rows gives the number of shipments whose carrier is missing from the master table."},
+  {q:"Why build on_time with np.where and a float result, instead of a boolean column?",opts:["Booleans cannot hold NaN, so unknown transit would be forced to True or False and bias the mean","Booleans are slower to compute","Pandas does not allow boolean columns","The mean of a boolean column is always zero"],ans:0,explain:"A boolean column cannot represent unknown values. Forcing NaN into True or False would bias the rate. A float column with NaN keeps unknowns out of the mean."},
+  {q:"With pd.cut bins [0, 1, 5, 20], which band does a weight of exactly 5 kg fall into by default?",opts:["Light, because bins are open on the right","Medium, because bins are closed on the right, so (1, 5] includes 5","Heavy, because bins are open on the left","It is dropped as a boundary value"],ans:1,explain:"pd.cut uses right-closed intervals by default, so 5 belongs to the bin (1, 5]. Use right=False if you need left-closed intervals, and document the choice."},
+  {q:"What does groupby(...).transform(\"std\") return, compared with agg(\"std\")?",opts:["A single value for the whole table","One value per group, but aligned to every original row, so it can be used in arithmetic against the full column","A sorted list of standard deviations","The same result as agg"],ans:1,explain:"transform returns a result the same length as the input, with each row holding its group's value. That alignment is what makes a lane z-score a one-line calculation."},
+  {q:"Why is np.select a better choice than nested apply calls for service_tier?",opts:["np.select runs in compiled code across the whole column and reads as a list of conditions with matching labels","np.select is the only way to create text columns","apply cannot return strings","np.select sorts the output"],ans:0,explain:"np.select evaluates vectorised conditions in order and returns the first matching choice, with a default. It is both faster and easier to audit than a Python function applied row by row."},
+  {q:"Why parse the year-to-date freight with groupby(index.year).cumsum()?",opts:["Because cumsum does not work on a DatetimeIndex","So the running total restarts each calendar year, instead of accumulating across years","To sort the index","To remove weekends"],ans:1,explain:"Grouping by year before the cumulative sum resets the total at the start of each year, which is what a year-to-date measure needs."},
+  {q:"What does pct_change(12) compute on a monthly series?",opts:["A 12-month moving average","Each month compared with the same month one year earlier, as a fractional change","The change over 12 consecutive days","The number of months with growth"],ans:1,explain:"Shifting 12 monthly periods back compares each month with the same month a year earlier, which is the standard year-over-year calculation."},
+  {q:"Why use rolling(4, min_periods=2) on the weekly series?",opts:["It makes the rolling average exact","It lets the first few weeks produce a value from partial windows instead of staying blank","It removes outliers automatically","It converts the series to monthly"],ans:1,explain:"With min_periods=2 the rolling mean starts after two observations, so the start of the series is not blank. The trade-off is that the earliest values use fewer weeks."},
+  {q:"Why should the anomaly flag be computed with transform rather than an agg followed by a merge?",opts:["transform is always faster than merge","transform keeps the same row alignment, so the lane statistics attach to each shipment without an extra join","agg cannot compute standard deviation","transform removes the need for a group key"],ans:1,explain:"transform returns values aligned to the original rows, so no second join is needed. An extra merge is a common source of duplication and misalignment."},
+  {q:"What does crosstab with normalize=\"index\" show?",opts:["Each cell as a share of the grand total","Each cell as a share of its row total, so each row sums to 1","Each column as a share of its column total","The count of unique rows"],ans:1,explain:"normalize=\"index\" divides each cell by its row total, so you can compare outcome mixes across service tiers even when tiers have very different volumes."},
+  {q:"Why is pivot_table preferred over pivot for the warehouse by carrier on-time grid?",opts:["pivot cannot use column names","pivot raises an error when a cell has several rows, while pivot_table aggregates them with the chosen function","pivot_table is faster","pivot_table keeps text"],ans:1,explain:"pivot needs one value per cell. Warehouse and carrier pairs have many shipments, so pivot_table with an aggregation such as mean is the correct tool."},
+  {q:"What does margins=True add to a pivot_table?",opts:["Page margins for printing","An All row and an All column with totals computed over the underlying data","Blank rows between groups","Percentage formatting"],ans:1,explain:"margins=True adds totals across each dimension. Those totals are computed from the underlying rows, so they reconcile with the grouped values."},
+  {q:"Why write Excel sheets with index=False in most cases?",opts:["Excel cannot store an index","Otherwise an unnamed column of row numbers appears in the sheet, which people then mistake for data","It doubles the file size","It disables formatting"],ans:1,explain:"The index is an extra column in the output. Unless it carries meaning, leaving it out keeps the sheet clean for the reader."},
+  {q:"Why keep the cleaning log as a dictionary of counts, not just a print statement?",opts:["Dictionaries are faster to print","It lets the run record every rule's effect in one place, so the same numbers appear in the console output and in the notes","Print statements cannot show numbers","Dictionaries are required by pytest"],ans:1,explain:"A single record of counts keeps the console summary, the notes, and the tests consistent. Silent drops become visible and auditable."},
+  {q:"Which statement about the rolling-window line on a weekly chart is correct?",opts:["It leads the raw weekly line","It is smoother than the raw line but lags behind turns in the data","It is always above the raw line","It removes seasonality"],ans:1,explain:"A rolling mean averages recent weeks, so it smooths noise but reacts after a change in the raw series. The lag is the price of the smoothing."},
+  {q:"Why must a rolling calculation be grouped by carrier before it is applied to a stacked table?",opts:["rolling cannot handle more than one column","Without grouping, the window at each boundary would include the previous carrier's rows","Rolling requires a unique index","It is required only for crosstab"],ans:1,explain:"A rolling window moves through rows in order. Across group boundaries it would mix one carrier's values into another's, which is why groupby with transform is needed."},
+  {q:"What is the main purpose of method chaining in this pipeline?",opts:["It is faster than separate statements","It keeps each cleaning step visible in one readable flow, with no intermediate variables to track","It is required for merges","It makes the output smaller"],ans:1,explain:"Chaining reads as an ordered list of transformations. Reviewers can see every step in sequence, and steps can be commented out or reordered without renaming variables."},
+  {q:"Which combination best proves the pipeline is reproducible?",opts:["Running it once on a laptop","Deleting the output folder, rebuilding from raw data with two commands, and passing the tests","Saving the output by hand","Printing the results to the console"],ans:1,explain:"Reproducibility means an empty folder plus the raw inputs produces the same outputs through code alone. The tests then confirm that the rebuilt data is correct."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Revisit cleaning, merges, and time series, then try again! 📚"],[50,75,"Good progress. Focus on transform, validation, and the window functions. 💪"],[75,90,"Strong work. The pipeline is solid. 🎉"],[90,101,"Excellent. Ready for real operations data. 🏆🐼"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

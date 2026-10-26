@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 30</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 30 of 30</span>
+  <h1>Capstone: Command-Line Task Manager</h1>
+  <p>Estimated time: about 1.5 hours &middot; Combine classes, files, JSON, exceptions, modules, tests, and Git into one working project</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What You're Building</h2>
+    <p>Over 29 days you learned the pieces. Today you assemble them into a real program: a task manager you can run from the terminal. Tasks are saved to a JSON file, so they survive when the program closes.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> So far you've practised scales and chords. The capstone is playing a full song. Every skill still matters, but now they have to work together.</div>
+    <p>This is the skill map for the project:</p>
+    <table>
+      <tr><th>Course day</th><th>Used in the capstone for</th></tr>
+      <tr><td>Days 1 to 6</td><td>Variables, input, strings, conditionals, loops</td></tr>
+      <tr><td>Days 7 to 9</td><td>Lists, dictionaries, functions with defaults and return values</td></tr>
+      <tr><td>Days 10 to 12</td><td>Modules, <code>if __name__ == "__main__"</code>, exceptions</td></tr>
+      <tr><td>Days 15 to 21</td><td>Classes, <code>__str__</code>, composition, and clear method design</td></tr>
+      <tr><td>Days 22 to 26</td><td>Dates, JSON, pytest tests, and a virtual environment</td></tr>
+      <tr><td>Day 29</td><td>Commit history and a <code>.gitignore</code> file</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Project Structure</h2>
+    <p>Create a project folder and separate the code by responsibility. Each file has one job, which makes the code easier to test and change.</p>
+    <div class="tree">task_manager/
+├── models.py        # the Task class: one task and its rules
+├── storage.py       # reading and writing the JSON file
+├── manager.py       # the TaskManager class: add, complete, list
+├── cli.py           # the menu the user sees
+├── test_manager.py  # automated tests with pytest
+├── .gitignore       # files Git should ignore
+└── README.md        # what the project is and how to run it</div>
+    <div class="callout tip">
+      <strong>Design principle:</strong> Keep input/output (the menu) apart from logic (the manager). The logic can then be tested without typing anything.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: The Task Model</h2>
+    <p>A <code>Task</code> knows its own data and checks its own rules: the title cannot be blank, and the due date must be a valid <code>YYYY-MM-DD</code> date.</p>
+    <pre><code># models.py
+from datetime import date
+
+class Task:
+    def __init__(self, task_id, title, due=None, done=False):
+        if not title.strip():
+            raise ValueError("Title cannot be empty")
+        if due is not None:
+            date.fromisoformat(due)   # raises ValueError if the format is wrong
+        self.id = task_id
+        self.title = title.strip()
+        self.due = due
+        self.done = done
+
+    def to_dict(self):
+        return {"id": self.id, "title": self.title, "due": self.due, "done": self.done}
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["id"], data["title"], data.get("due"), data.get("done", False))
+
+    def __str__(self):
+        mark = "x" if self.done else " "
+        due = f" (due {self.due})" if self.due else ""
+        return f"[{mark}] {self.id}. {self.title}{due}"</code></pre>
+    <p>Notice the <code>to_dict</code> and <code>from_dict</code> pair. JSON can only hold plain data, so the object is converted to a dictionary before saving and rebuilt when loading.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Storage</h2>
+    <p>The storage module knows only about files and JSON. It doesn't know what a task is, which keeps it simple.</p>
+    <pre><code># storage.py
+import json
+from pathlib import Path
+
+def load_tasks(path):
+    file = Path(path)
+    if not file.exists():
+        return []                      # first run: no file yet
+    with file.open(encoding="utf-8") as f:
+        return json.load(f)
+
+def save_tasks(path, records):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(records, f, indent=2)</code></pre>
+    <div class="callout warn">
+      <strong>Watch out:</strong> If the JSON file is damaged, <code>json.load</code> raises <code>json.JSONDecodeError</code>. In a larger program you would catch that and warn the user. Think about where that handling belongs.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: The TaskManager Class</h2>
+    <p>The manager owns the list of tasks and keeps the file up to date after every change.</p>
+    <pre><code># manager.py
+from models import Task
+from storage import load_tasks, save_tasks
+
+class TaskManager:
+    def __init__(self, path="tasks.json"):
+        self.path = path
+        self.tasks = [Task.from_dict(d) for d in load_tasks(path)]
+
+    def _next_id(self):
+        return max((t.id for t in self.tasks), default=0) + 1
+
+    def add(self, title, due=None):
+        task = Task(self._next_id(), title, due)
+        self.tasks.append(task)
+        self.save()
+        return task
+
+    def complete(self, task_id):
+        for task in self.tasks:
+            if task.id == task_id:
+                task.done = True
+                self.save()
+                return task
+        raise KeyError(task_id)
+
+    def pending(self):
+        return [t for t in self.tasks if not t.done]
+
+    def save(self):
+        save_tasks(self.path, [t.to_dict() for t in self.tasks])</code></pre>
+    <p>The <code>max(..., default=0)</code> call from Day 9 gives the first ID as 1, even when the list is empty.</p>
+
+    <h3>Demo</h3>
+    <p>Run this in a folder where <code>demo.json</code> does not exist yet:</p>
+    <pre><code>from manager import TaskManager
+
+m = TaskManager("demo.json")
+m.add("Learn Git", due="2026-11-01")
+m.add("Finish capstone")
+m.complete(1)
+for t in m.tasks:
+    print(t)</code></pre>
+    <div class="output">[x] 1. Learn Git (due 2026-11-01)
+[ ] 2. Finish capstone</div>
+    <p>Run the same script a second time and the tasks are loaded from <code>demo.json</code>, so the new tasks get IDs 3 and 4. That is persistence in action.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: The Command-Line Interface</h2>
+    <p>The menu only handles input and output. It catches errors from the logic layer and shows a friendly message instead of a traceback.</p>
+    <pre><code># cli.py
+from manager import TaskManager
+
+def show_menu():
+    print("\n1) Add   2) List pending   3) Complete   4) Quit")
+
+def main():
+    manager = TaskManager("tasks.json")
+    while True:
+        show_menu()
+        choice = input("Choose: ").strip()
+
+        if choice == "1":
+            title = input("Title: ")
+            due = input("Due (YYYY-MM-DD, blank for none): ").strip() or None
+            try:
+                print("Added:", manager.add(title, due))
+            except ValueError as e:
+                print("Error:", e)
+
+        elif choice == "2":
+            pending = manager.pending()
+            if not pending:
+                print("Nothing pending. Well done!")
+            for task in pending:
+                print(task)
+
+        elif choice == "3":
+            try:
+                task_id = int(input("Task id: "))
+                print("Completed:", manager.complete(task_id))
+            except ValueError:
+                print("Error: please enter a number")
+            except KeyError as e:
+                print("Error: no task with id", e.args[0])
+
+        elif choice == "4":
+            print("Goodbye!")
+            break
+
+        else:
+            print("Please choose 1 to 4.")
+
+if __name__ == "__main__":
+    main()</code></pre>
+    <div class="output">1) Add   2) List pending   3) Complete   4) Quit
+Choose: 2
+[ ] 2. Finish capstone</div>
+    <p>The sample output shows one menu choice. Your session will continue in a loop until you pick 4.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Testing the Logic</h2>
+    <p>Tests check that the logic behaves as promised, without typing into the menu. Use <code>tmp_path</code> from Day 26 so the tests never touch your real data.</p>
+    <pre><code># test_manager.py
+import pytest
+from manager import TaskManager
+
+def test_ids_are_sequential(tmp_path):
+    m = TaskManager(tmp_path / "t.json")
+    a = m.add("One")
+    b = m.add("Two")
+    assert (a.id, b.id) == (1, 2)
+
+def test_blank_title_rejected(tmp_path):
+    m = TaskManager(tmp_path / "t.json")
+    with pytest.raises(ValueError):
+        m.add("   ")
+
+def test_bad_due_date_rejected(tmp_path):
+    m = TaskManager(tmp_path / "t.json")
+    with pytest.raises(ValueError):
+        m.add("Read", due="31/12/2026")
+
+def test_complete_unknown_id(tmp_path):
+    m = TaskManager(tmp_path / "t.json")
+    with pytest.raises(KeyError):
+        m.complete(99)
+
+def test_tasks_persist_between_runs(tmp_path):
+    path = tmp_path / "t.json"
+    TaskManager(path).add("Persist me")
+    assert len(TaskManager(path).tasks) == 1</code></pre>
+    <pre><code>pytest -q</code></pre>
+    <div class="output">.....                                                  [100%]
+5 passed</div>
+    <div class="callout tip">
+      <strong>Why tests matter:</strong> When you change the code later, the tests tell you within seconds whether you broke something. Professional projects depend on this.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Setup, Git, and Documentation</h2>
+    <p>Follow the Day 25 and Day 29 workflow:</p>
+    <pre><code>python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install pytest
+
+printf "venv/\n__pycache__/\n*.pyc\ntasks.json\ndemo.json\n" &gt; .gitignore
+
+git init
+git add .
+git commit -m "Build command-line task manager"</code></pre>
+    <p>A README should answer three questions: what it does, how to run it, and how to test it.</p>
+    <pre><code># Task Manager
+
+A terminal task manager that saves tasks to tasks.json.
+
+## Run
+    python cli.py
+
+## Test
+    pytest -q</code></pre>
+    <div class="callout warn">
+      <strong>Reminder:</strong> <code>tasks.json</code> contains your personal data, so it stays out of Git through <code>.gitignore</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 9: Extending the Project</h2>
+    <p>Once the core works, try these improvements. Each one uses skills from the course:</p>
+    <ul>
+      <li><strong>Priorities:</strong> add a priority field and sort with <code>sorted(..., key=...)</code> (Day 9).</li>
+      <li><strong>Overdue tasks:</strong> compare <code>date.fromisoformat(due)</code> with <code>date.today()</code> (Day 22).</li>
+      <li><strong>Delete a task:</strong> add a method and a test for it (Days 15 and 26).</li>
+      <li><strong>Export a report:</strong> write the pending tasks to CSV with the <code>csv</code> module (Day 14).</li>
+      <li><strong>Count by status:</strong> use a dictionary or <code>collections.Counter</code> (Day 27 style analysis).</li>
+    </ul>
+    <div class="callout tip">
+      <strong>Good habit:</strong> Make each change on its own Git branch, run <code>pytest</code>, then merge it into <code>main</code>.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes at This Stage</h2>
+    <ol>
+      <li><strong>Putting everything in one file:</strong> separate models, storage, logic, and the menu.</li>
+      <li><strong>Forgetting to save:</strong> call <code>save()</code> after every change that should persist.</li>
+      <li><strong>Testing with the real data file:</strong> always use <code>tmp_path</code> in tests.</li>
+      <li><strong>Silent failures:</strong> raise clear exceptions in the logic and handle them in the menu.</li>
+      <li><strong>Committing personal data:</strong> check <code>git status</code> before every commit.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Build the project in the order of the lessons. Run the tests after each file.</p>
+    <div class="practical">
+      <h3>Practical 1: Build the Model and Storage</h3>
+      <p>Create <code>models.py</code> and <code>storage.py</code>. Check that <code>Task.from_dict(task.to_dict())</code> gives back a task with the same title and due date.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Build the Manager</h3>
+      <p>Create <code>manager.py</code> and run the demo from Lesson 5. Confirm that a second run continues the IDs.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Build the Menu</h3>
+      <p>Create <code>cli.py</code>. Add a task with a bad date (such as <code>2026/11/01</code>) and confirm you see an error, not a traceback.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Write Two New Tests</h3>
+      <p>Add a test that <code>pending()</code> excludes completed tasks, and a test that completing a task saves it to the file.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Ship It</h3>
+      <p>Add the <code>.gitignore</code>, make your first commit, write the README, and make one feature on a branch (for example, priorities), then merge it.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Capstone part</th><th>Real-world equivalent</th></tr>
+      <tr><td>Task model with validation</td><td>Models in any web app, such as an order or a user account</td></tr>
+      <tr><td>Storage layer</td><td>Database access code, which you'll meet next with SQLite and Django</td></tr>
+      <tr><td>Manager class</td><td>Service code that applies business rules</td></tr>
+      <tr><td>Menu and error messages</td><td>Views, forms, and command-line tools that people use every day</td></tr>
+      <tr><td>Tests and Git</td><td>The daily routine of professional software teams</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django separates the same layers. <code>models.py</code> holds data rules, the ORM replaces your storage module, views replace <code>cli.py</code>, and Django's test runner builds on the pytest ideas you have used.</div>
+  </section>
+
+  <section>
+    <h2>Day 30 Quiz</h2>
+    <p>Ten questions on the capstone and the whole course. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+  <section>
+    <h2>Course Complete</h2>
+    <p>You have finished 30 days of Python: from variables and loops to classes, files, JSON, tests, pandas, SQLite, and Git. You have built small programs with every one of those skills.</p>
+    <p>Your next step is Django. Django builds on Python classes, functions, decorators, and modules, and it adds models, URLs, views, and templates. The Django and ORM sections will feel familiar because you have already practised the layers in this capstone.</p>
+    <div class="callout tip">
+      <strong>Keep going:</strong> Build something small every week, put it in Git, and write a test for it. Consistent practice matters more than any single lesson.</div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 30 of 30 &middot; Course complete. Next: Django</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Why is the Task class kept separate from the storage code?",
+      options: ["Python requires it", "Each module has one job, so logic and file handling can change and be tested separately", "Storage code cannot read JSON", "Classes are faster than functions"],
+      answer: 1,
+      explain: "Separating responsibilities makes each part easier to read, change, and test."
+    },
+    {
+      q: "What is the purpose of to_dict() and from_dict()?",
+      options: ["To sort the tasks", "To convert a Task to plain data for JSON and back again", "To delete tasks", "To print tasks"],
+      answer: 1,
+      explain: "JSON holds only plain data types, so tasks are converted to dictionaries for saving and rebuilt on loading."
+    },
+    {
+      q: "What does date.fromisoformat(due) do in Task.__init__ when due is '31/12/2026'?",
+      options: ["Accepts it", "Raises ValueError because the format is not YYYY-MM-DD", "Returns None", "Converts it to a number"],
+      answer: 1,
+      explain: "fromisoformat expects YYYY-MM-DD, so other formats raise ValueError, which the menu then reports."
+    },
+    {
+      q: "Why does _next_id use max(..., default=0) + 1?",
+      options: ["To count the tasks", "To give a new ID one higher than the largest existing ID, starting at 1 when the list is empty", "To sort the list", "To delete old IDs"],
+      answer: 1,
+      explain: "default=0 handles the empty list, so the first task gets ID 1."
+    },
+    {
+      q: "Why does cli.py catch ValueError and KeyError instead of letting them crash the program?",
+      options: ["Crashes are always faster", "The user sees a friendly message and the menu keeps running", "Python forbids uncaught errors", "Tests need the crash"],
+      answer: 1,
+      explain: "Handling expected errors in the user interface gives clear messages and keeps the program running."
+    },
+    {
+      q: "What is the main benefit of tmp_path in the tests?",
+      options: ["It makes tests faster", "Each test uses a temporary file, so the real tasks.json is never changed", "It deletes the tests after running", "It creates a virtual environment"],
+      answer: 1,
+      explain: "tmp_path gives each test its own temporary folder, which keeps tests isolated and repeatable."
+    },
+    {
+      q: "What does pytest -q do?",
+      options: ["Quits Python", "Runs the tests with quieter output", "Quickly installs pytest", "Runs only the queries"],
+      answer: 1,
+      explain: "-q is the quiet flag, which shows a compact summary instead of details for every test."
+    },
+    {
+      q: "Why should tasks.json be listed in .gitignore?",
+      options: ["Git cannot store JSON", "It holds personal data and changes often, so it should not be committed", "JSON files are always too large", "Python needs it hidden"],
+      answer: 1,
+      explain: "The data file belongs to the user, not the code, so it is kept out of the repository."
+    },
+    {
+      q: "In the manager, why does complete() call self.save()?",
+      options: ["To close the file", "So the change to the done flag is written to the file and survives the next run", "To create a new branch", "To sort the tasks"],
+      answer: 1,
+      explain: "Without saving, the change exists only in memory and is lost when the program ends."
+    },
+    {
+      q: "Which Django component is closest to the storage module in this capstone?",
+      options: ["Templates", "The ORM, which reads and writes the database", "URLs", "Static files"],
+      answer: 1,
+      explain: "Django's ORM handles data access, replacing the hand-written file reading and writing in storage.py."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Outstanding. You've completed the course. Time for Django!";
+    else if (score >= total * 0.6) msg += " Good work. Review the explanations for the ones you missed.";
+    else msg += " Revisit the capstone lessons, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

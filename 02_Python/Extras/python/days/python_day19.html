@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 19</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 19 of 30</span>
+  <h1>Iterators and Generators</h1>
+  <p>Estimated time: about 1.5 hours &middot; iter() and next(), writing generators with yield, lazy processing of large data</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: How for Loops Really Work</h2>
+    <p>When you write <code>for x in something</code>, Python does three things behind the scenes: it asks the object for an iterator, repeatedly asks that iterator for the next value, and stops when the iterator says there is nothing left.</p>
+    <pre><code>nums = [10, 20, 30]
+it = iter(nums)        # ask the list for an iterator
+print(next(it))        # 10
+print(next(it))        # 20
+print(next(it))        # 30
+# print(next(it))      # StopIteration: nothing left</code></pre>
+    <div class="output">10
+20
+30</div>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> An iterator is like a bookmark in a book. <code>next()</code> turns to the next page. Once you reach the last page, there are no more pages to turn to.</div>
+    <p>A <code>for</code> loop is simply <code>iter()</code> and <code>next()</code> with the <code>StopIteration</code> handled for you.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Iterable versus Iterator</h2>
+    <p>These two words are easy to mix up:</p>
+    <table>
+      <tr><th>Term</th><th>Meaning</th><th>Examples</th></tr>
+      <tr><td>Iterable</td><td>Something you can loop over. It can give you an iterator.</td><td>list, string, dict, range, file</td></tr>
+      <tr><td>Iterator</td><td>An object that remembers its position and gives the next item with <code>next()</code>.</td><td>the result of <code>iter(list)</code></td></tr>
+    </table>
+    <pre><code>nums = [1, 2, 3]
+print(hasattr(nums, "__next__"))   # False: a list is iterable, not an iterator
+it = iter(nums)
+print(hasattr(it, "__next__"))     # True: the iterator can call next()</code></pre>
+    <div class="output">False
+True</div>
+    <div class="callout warn">
+      <strong>Important:</strong> An iterator can be used only once. After it's exhausted, it stays empty. That's the same behaviour you saw with <code>map</code> on Day 10.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Generators with yield</h2>
+    <p>A <strong>generator</strong> is a function that uses <code>yield</code> instead of <code>return</code>. Each <code>yield</code> hands back one value and pauses the function. When the next value is requested, the function resumes from where it paused.</p>
+    <pre><code>def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1
+    print("Liftoff!")
+
+for value in countdown(3):
+    print(value)</code></pre>
+    <div class="output">3
+2
+1
+Liftoff!</div>
+    <p>Calling <code>countdown(3)</code> doesn't run the body. It creates a generator object, and the body runs step by step as values are requested.</p>
+    <pre><code>gen = countdown(2)
+print(type(gen))       # generator
+print(next(gen))       # 2
+print(next(gen))       # 1</code></pre>
+    <div class="output">&lt;class 'generator'&gt;
+2
+1</div>
+    <div class="callout tip">
+      <strong>Key idea:</strong> <code>return</code> ends a function and gives back one result. <code>yield</code> pauses it and gives back one value, keeping its state so it can continue later.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Why Generators Save Memory</h2>
+    <p>A list holds every value in memory at once. A generator produces each value when it's needed, so it can handle sequences that would be too large to store.</p>
+    <pre><code>def squares_list(n):
+    return [i * i for i in range(n)]
+
+def squares_gen(n):
+    for i in range(n):
+        yield i * i
+
+big_list = squares_list(1_000_000)      # all million values stored now
+big_gen = squares_gen(1_000_000)        # nothing computed yet
+
+print(sum(big_gen))                     # computed one value at a time
+print(len(big_list))</code></pre>
+    <div class="output">333332833333500000
+1000000</div>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A list is a full warehouse, storing every item in advance. A generator is a conveyor belt that makes each item only when a customer asks for it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Generator Expressions</h2>
+    <p>Round brackets around a comprehension create a generator expression, which you previewed on Day 18. It works the same way as a generator function, and it's shorter for simple cases.</p>
+    <pre><code>gen = (n * n for n in range(5))
+print(next(gen))        # 0
+print(list(gen))        # [1, 4, 9, 16]  -- the rest</code></pre>
+    <div class="output">0
+[1, 4, 9, 16]</div>
+    <p>Generator expressions are ideal for passing straight into functions like <code>sum()</code>, <code>max()</code>, <code>any()</code>, and <code>all()</code>.</p>
+    <pre><code>has_big = any(n > 100 for n in range(1000))
+print(has_big)          # True, stops as soon as it finds one</code></pre>
+    <div class="output">True</div>
+    <p><code>any()</code> stops at the first match, so the rest of the values are never computed. This is laziness working in your favour.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Infinite Generators and Pipelines</h2>
+    <p>Because a generator computes values on demand, it can describe an endless sequence. You take only as many values as you need.</p>
+    <pre><code>def naturals():
+    n = 1
+    while True:
+        yield n
+        n += 1
+
+def evens(source):
+    for n in source:
+        if n % 2 == 0:
+            yield n
+
+first_five_evens = []
+for e in evens(naturals()):
+    first_five_evens.append(e)
+    if len(first_five_evens) == 5:
+        break
+print(first_five_evens)</code></pre>
+    <div class="output">[2, 4, 6, 8, 10]</div>
+    <div class="callout warn">
+      <strong>Careful:</strong> A <code>for</code> loop over <code>naturals()</code> without a <code>break</code> would run forever. Always make sure an infinite generator is stopped by the consumer.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Reading Large Files Lazily</h2>
+    <p>Files are iterators too. You met this on Day 11. Looping over a file reads one line at a time, so a multi-gigabyte log file never has to fit in memory.</p>
+    <pre><code>def errors_in(path):
+    with open(path) as f:
+        for line in f:
+            if "ERROR" in line:
+                yield line.strip()
+
+# Use it: only matching lines are read and returned
+for error in errors_in("server.log"):
+    print(error)</code></pre>
+    <div class="callout tip">
+      <strong>Combining ideas:</strong> This function is a generator (yield), it iterates over a file (lazy reading), and it uses a condition (Day 3). Real data tools work the same way.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 19</h2>
+    <ol>
+      <li><strong>Reusing an exhausted iterator:</strong> a second loop over the same generator produces nothing.</li>
+      <li><strong>Using return instead of yield:</strong> the function gives back only one value and doesn't become a generator.</li>
+      <li><strong>Expecting generator code to run on creation:</strong> calling <code>countdown(3)</code> only creates the object. The body runs when values are requested.</li>
+      <li><strong>Converting an infinite generator to a list:</strong> <code>list(naturals())</code> never finishes.</li>
+      <li><strong>Forgetting that next() raises StopIteration:</strong> use <code>next(gen, default)</code> to provide a fallback value.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Manual Iteration</h3>
+      <p>Create an iterator from the list <code>["a", "b", "c"]</code> and call <code>next()</code> four times. Use <code>next(it, "done")</code> for the fourth call, and explain what changed.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Countdown Generator</h3>
+      <p>Write a generator <code>countdown(n)</code> that yields n, n-1, and so on down to 1. Print the values using a for loop.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Fibonacci Generator</h3>
+      <p>Write a generator <code>fibonacci()</code> that yields an endless series starting 0, 1, 1, 2, 3, 5. Take the first ten values using <code>itertools.islice</code> or a loop with <code>break</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Memory Comparison</h3>
+      <p>Write a list comprehension and a generator expression that both produce the squares of numbers up to one million. Use <code>sys.getsizeof()</code> to compare their sizes, and check how long <code>sum()</code> takes for each.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Filter Generator</h3>
+      <p>Write a generator <code>long_words(text, min_length)</code> that yields each word in a text longer than min_length. Test it on a sentence.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Log Reader</h3>
+      <p>Create a text file with ten lines, some containing "WARNING". Write a generator that yields only those lines, and print the first two using <code>next()</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Pattern</th><th>Where you'll see it</th></tr>
+      <tr><td>Generators with yield</td><td>Streaming large API responses, processing sensor data in real time, paging through database results</td></tr>
+      <tr><td>Lazy file reading</td><td>Analysing multi-gigabyte logs, processing large CSV exports</td></tr>
+      <tr><td>Infinite generators</td><td>Generating IDs, simulations, and sequences of events until a stop condition</td></tr>
+      <tr><td>Generator expressions with any() and sum()</td><td>Checking whether any record in a large dataset meets a rule, without building a list</td></tr>
+      <tr><td>Pipelines of generators</td><td>Data processing chains where each stage handles one item at a time</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django querysets are lazy. A query isn't run until you iterate over it, which is the same principle as generators.</div>
+  </section>
+
+  <section>
+    <h2>Day 19 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 19 of 30 &middot; Next: Day 20 - Decorators</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does iter(my_list) return?",
+      options: ["A copy of the list", "An iterator that gives items one at a time", "The first item", "A generator function"],
+      answer: 1,
+      explain: "iter() returns an iterator object, which next() can step through."
+    },
+    {
+      q: "What does next() do when the iterator has no items left?",
+      options: ["Returns None", "Raises StopIteration", "Starts again", "Returns 0"],
+      answer: 1,
+      explain: "When nothing is left, next() raises StopIteration, which a for loop handles automatically."
+    },
+    {
+      q: "What is the difference between return and yield?",
+      options: ["There is no difference", "yield pauses the function and can produce many values; return ends it with one value", "return is faster", "yield only works with numbers"],
+      answer: 1,
+      explain: "yield pauses and resumes the function, so it can give back a sequence of values."
+    },
+    {
+      q: "What happens when you call a function containing yield, such as countdown(3)?",
+      options: ["Its body runs completely", "It returns a generator object, and the body runs as values are requested", "It raises an error", "It returns a list"],
+      answer: 1,
+      explain: "Calling a generator function creates the generator. Nothing inside runs until you ask for values."
+    },
+    {
+      q: "Why are generators memory-efficient?",
+      options: ["They compress data", "They produce values one at a time instead of storing them all", "They delete old values", "They use a faster CPU"],
+      answer: 1,
+      explain: "A generator computes each value when needed, so large sequences do not need to fit in memory."
+    },
+    {
+      q: "Which expression creates a generator rather than a list?",
+      options: ["[n for n in range(5)]", "(n for n in range(5))", "{n for n in range(5)}", "list(range(5))"],
+      answer: 1,
+      explain: "Round brackets around a comprehension make a generator expression."
+    },
+    {
+      q: "Why does any(n > 100 for n in range(1000)) stop early?",
+      options: ["It is a bug", "any() stops at the first True value", "range is limited", "Generators run backwards"],
+      answer: 1,
+      explain: "any() returns True as soon as it finds one matching value, so the rest are never computed."
+    },
+    {
+      q: "What goes wrong with list(naturals()) if naturals() is an infinite generator?",
+      options: ["Nothing, it returns a short list", "It never finishes, because it keeps asking for more values", "It raises a TypeError immediately", "It returns None"],
+      answer: 1,
+      explain: "Converting an infinite generator to a list keeps collecting values forever."
+    },
+    {
+      q: "What does next(gen, 'fallback') return when gen is exhausted?",
+      options: ["StopIteration", "'fallback'", "None", "An error"],
+      answer: 1,
+      explain: "The second argument is a default returned instead of raising StopIteration."
+    },
+    {
+      q: "Why is looping over an open file memory-friendly?",
+      options: ["The file is copied first", "The file is an iterator that gives one line at a time", "Files are always small", "It compresses the file"],
+      answer: 1,
+      explain: "Iterating over a file reads one line at a time, so the whole file does not need to be in memory."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 20!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

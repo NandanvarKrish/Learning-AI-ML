@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 20</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 20 of 30</span>
+  <h1>Caching Basics</h1>
+  <p>Estimated time: about 1.5 hours &middot; The cache framework, low-level get and set, cache_page for views, template fragment caching, invalidating cached data on change, and the dangers of caching personal content</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Cache?</h2>
+    <p>Some work is expensive and gives the same result for many visitors: counting thousands of posts, building a sidebar of popular tags, or calling an outside service. A <strong>cache</strong> keeps the result for a while, so the next request reuses it instead of repeating the work.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A cook who prepares a popular dish in batches and keeps a tray warm. Customers get the tray instantly, and the cook refreshes it when the ingredients change or the tray goes stale.</div>
+    <p>The hard part of caching is not storing the data. It is knowing when the stored copy is no longer correct.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Configuring the Cache</h2>
+    <p>Django's cache framework has a configuration in <code>settings.py</code>. For development, the in-memory backend is simplest:</p>
+    <pre><code># mysite/settings.py
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "mini-blog",
+    }
+}</code></pre>
+    <p>In production, the cache is usually shared by all server processes, so a store such as Redis is used. Django includes a Redis backend:</p>
+    <pre><code>CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+    }
+}</code></pre>
+    <div class="callout warn">
+      <strong>Local memory is per process:</strong> The LocMem cache is separate for each server process. In production with several processes, one process may hold a value that another has already changed. Use a shared backend such as Redis for real sites.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Low-Level Cache API</h2>
+    <p>The <code>cache</code> object stores any picklable Python value under a key, for a number of seconds:</p>
+    <pre><code>&gt;&gt;&gt; from django.core.cache import cache
+
+&gt;&gt;&gt; cache.set("greeting", "hello", timeout=60)
+&gt;&gt;&gt; cache.get("greeting")
+&gt;&gt;&gt; cache.get("missing", "fallback")
+&gt;&gt;&gt; cache.delete("greeting")
+&gt;&gt;&gt; cache.get("greeting")</code></pre>
+    <div class="output">'hello'
+'fallback'
+None</div>
+    <p>The most useful method is <code>get_or_set</code>. It returns the cached value, or runs the function, stores the result, and returns it:</p>
+    <pre><code>&gt;&gt;&gt; from blog.models import Post
+&gt;&gt;&gt; total = cache.get_or_set("total_published", lambda: Post.objects.filter(is_published=True).count(), 300)
+&gt;&gt;&gt; total</code></pre>
+    <div class="output">2</div>
+    <p>The first call runs the count. Calls in the next five minutes return the stored number without touching the database. The output shows the count from the sample data; yours will match your own posts.</p>
+    <table>
+      <tr><th>Method</th><th>Purpose</th></tr>
+      <tr><td><code>set(key, value, timeout)</code></td><td>Store a value for timeout seconds</td></tr>
+      <tr><td><code>get(key, default)</code></td><td>Read a value, or the default when missing or expired</td></tr>
+      <tr><td><code>get_or_set(key, func, timeout)</code></td><td>Read, or compute and store</td></tr>
+      <tr><td><code>delete(key)</code></td><td>Remove one entry</td></tr>
+      <tr><td><code>delete_many([keys])</code></td><td>Remove several entries at once</td></tr>
+      <tr><td><code>clear()</code></td><td>Remove everything in the cache (use with care)</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Choose timeouts deliberately:</strong> A short timeout keeps data fresh but does more work. A long timeout saves work but risks stale results. Set a timeout even when you plan to invalidate, as a safety net.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Caching a Whole View</h2>
+    <p>The <code>cache_page</code> decorator stores the entire response for a set time. The next visitor gets the saved HTML:</p>
+    <pre><code># blog/views.py
+from django.views.decorators.cache import cache_page
+
+@cache_page(60 * 15)          # fifteen minutes
+def post_list(request):
+    posts = Post.objects.filter(is_published=True)
+    return render(request, "blog/post_list.html", {"posts": posts})</code></pre>
+    <p>For class-based views, wrap the <code>dispatch</code> method:</p>
+    <pre><code>from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
+@method_decorator(cache_page(60 * 15), name="dispatch")
+class PostListView(ListView):
+    model = Post
+    template_name = "blog/post_list.html"</code></pre>
+    <div class="callout warn">
+      <strong>Never cache personal pages this way:</strong> Your base template shows the signed-in username (Day 16). If that page is cached and served to another visitor, they see the first person's name. Per-view caching is only safe for pages that look identical to everyone.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Caching a Fragment</h2>
+    <p>Often only one part of a page is slow or shared, such as a list of popular tags. The <code>cache</code> template tag caches just that fragment:</p>
+    <pre><code>{% load cache %}
+
+{% cache 600 popular_tags %}
+  &lt;ul class="tags"&gt;
+    {% for tag in tags %}
+      &lt;li&gt;{{ tag.name }} ({{ tag.posts.count }})&lt;/li&gt;
+    {% endfor %}
+  &lt;/ul&gt;
+{% endcache %}</code></pre>
+    <p>The number is the timeout in seconds, and <code>popular_tags</code> is the fragment's name. If the fragment depends on the user, add extra values to make the cache key unique:</p>
+    <pre><code>{% load cache %}
+{% cache 600 user_menu request.user.pk %}
+  &lt;p&gt;Hello, {{ request.user.username }}&lt;/p&gt;
+{% endcache %}</code></pre>
+    <div class="callout tip">
+      <strong>Fragments are safer than whole pages:</strong> You can cache the public tag list and leave the personal navigation outside the cache block. That keeps most of the speed without leaking personal data.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Invalidating the Cache</h2>
+    <p>When a post changes, cached data about posts becomes wrong. Remove those entries in a signal (Day 10), so the next request rebuilds them:</p>
+    <pre><code># blog/signals.py
+from django.core.cache import cache
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from .models import Post
+
+@receiver([post_save, post_delete], sender=Post)
+def clear_post_cache(sender, **kwargs):
+    cache.delete_many(["total_published", "popular_tags"])</code></pre>
+    <div class="callout warn">
+      <strong>Keep the key list in one place:</strong> Forgetting to clear one key is the most common caching bug. Define the key names as constants, and use them in both the reading code and the clearing code.</div>
+    <p>Here is the usual sequence:</p>
+    <ol>
+      <li>A visitor asks for the count. The cache is empty, so the database runs the count and stores it.</li>
+      <li>An editor publishes a new post. The signal deletes <code>total_published</code>.</li>
+      <li>The next visitor finds nothing in the cache, so the count is recalculated and includes the new post.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Cache Keys and Testing</h2>
+    <p>Each cache entry has a key. Keep keys descriptive and specific, such as <code>post:42:detail</code> rather than <code>detail</code>. Keys must be short, without spaces, and unique across your project.</p>
+    <p>Tests should not share cache state. Clear the cache in <code>setUp</code>, so one test's data doesn't affect another:</p>
+    <pre><code>from django.core.cache import cache
+from django.test import TestCase
+
+class TotalCountTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_count_is_cached(self):
+        cache.set("total_published", 99, 60)
+        self.assertEqual(cache.get("total_published"), 99)</code></pre>
+    <div class="callout tip">
+      <strong>Cache during tests:</strong> Use the LocMem backend in the test settings, so tests don't depend on a running Redis server.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: What Not to Cache</h2>
+    <ul>
+      <li><strong>Personal data:</strong> carts, account details, and private drafts must never be shared between visitors.</li>
+      <li><strong>Values that must always be exact:</strong> account balances or stock counts used at checkout.</li>
+      <li><strong>Cheap queries:</strong> caching adds complexity and a risk of stale data, so cache only work that is measurably slow.</li>
+      <li><strong>Pages with forms and CSRF tokens:</strong> the token belongs to one visitor's session.</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Measure first:</strong> Use the query counts from Day 9 to find slow pages, then cache the specific part that is slow. Caching everything hides problems and creates bugs.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 20</h2>
+    <ol>
+      <li><strong>Caching a personal page with cache_page:</strong> the next visitor sees someone else's content.</li>
+      <li><strong>Forgetting to invalidate:</strong> visitors see old data until the timeout ends.</li>
+      <li><strong>Setting no timeout:</strong> values may stay forever, even when they become wrong.</li>
+      <li><strong>Using LocMem in production with several processes:</strong> each process keeps its own copy.</li>
+      <li><strong>Misspelling a cache key:</strong> the clearing code silently misses it, so the data stays stale.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Low-Level Cache</h3>
+      <p>In the shell, set a value with a 60-second timeout, read it, delete it, and read again. Record the three results.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: get_or_set</h3>
+      <p>Cache the published post count with <code>get_or_set</code>. Add a new published post and confirm the count is still the old value until you clear the cache.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Invalidate on Change</h3>
+      <p>Add the signal from Lesson 6. Publish a new post and confirm the cached count updates on the next read.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Fragment Cache</h3>
+      <p>Cache a sidebar of tags with the <code>cache</code> tag. Add a tag to a post, and explain why the sidebar may still show the old list until the timeout ends. Then add the invalidation for it.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Find the Leak</h3>
+      <p>Explain in one or two sentences why the base template's username display must not be inside a whole-page cache. Then wrap only the public tag list in a fragment cache instead.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Caching pattern</th><th>Where you'll see it</th></tr>
+      <tr><td>Whole-page caching</td><td>News homepages and public landing pages served to thousands of visitors</td></tr>
+      <tr><td>Fragment caching</td><td>Product recommendations, trending lists, and navigation menus</td></tr>
+      <tr><td>Low-level caching</td><td>Exchange rates, weather data, and expensive report totals</td></tr>
+      <tr><td>Invalidation on save</td><td>Inventory counts that refresh the moment a product sells out</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's per-view and fragment caches work with the same cache backends you set up today, and API endpoints can use the same tools later.</div>
+  </section>
+
+  <section>
+    <h2>Day 20 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 20 of 30 &middot; Next: Day 21 - Settings for Development and Production</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What does cache.get('missing', 'fallback') return when the key does not exist?",
+      options: ["None", "'fallback'", "An error", "An empty string"],
+      answer: 1,
+      explain: "The second argument is the default returned when the key is absent or expired."
+    },
+    {
+      q: "What does cache.get_or_set do?",
+      options: ["Always recalculates the value", "Returns the cached value, or computes, stores, and returns it when missing", "Deletes the value", "Stores values forever"],
+      answer: 1,
+      explain: "get_or_set combines reading and computing, so expensive work runs only when the cache is empty."
+    },
+    {
+      q: "Why is the LocMem backend unsuitable for a production site with several processes?",
+      options: ["It is too fast", "Each process keeps its own separate copy, so they can disagree", "It cannot store numbers", "It requires a password"],
+      answer: 1,
+      explain: "Each process has its own memory, so a change made in one is not seen by the others."
+    },
+    {
+      q: "Why must a personal page not be cached with cache_page?",
+      options: ["The page becomes too large", "The next visitor could see the first visitor's personal content", "Decorators cannot wrap views", "Cached pages cannot use templates"],
+      answer: 1,
+      explain: "A whole-page cache serves the same HTML to everyone, so personal content would leak between visitors."
+    },
+    {
+      q: "What is a safe way to cache part of a page that depends on the user?",
+      options: ["Cache the whole page", "Cache a fragment and include the user's id in the cache key", "Turn off the cache", "Store the username in a global variable"],
+      answer: 1,
+      explain: "Fragment caching with the user's id in the key keeps each visitor's copy separate."
+    },
+    {
+      q: "Why is a timeout still useful when you also invalidate on change?",
+      options: ["It is required by Django", "It acts as a safety net if an invalidation is missed", "It makes the cache larger", "It deletes the database"],
+      answer: 1,
+      explain: "A timeout limits how long a missed invalidation can leave stale data in place."
+    },
+    {
+      q: "Which signal would you use to clear the cache when a post is deleted?",
+      options: ["pre_init", "post_delete", "request_started", "class_prepared"],
+      answer: 1,
+      explain: "post_delete runs after a Post is removed, so it is the right place to clear dependent cache entries."
+    },
+    {
+      q: "What is the most common caching bug described in this lesson?",
+      options: ["Using too many keys", "Forgetting to invalidate or misspelling a key, so stale data remains", "Setting a timeout", "Using Redis"],
+      answer: 1,
+      explain: "A wrong or missing key in the clearing code leaves old data visible until the timeout ends."
+    },
+    {
+      q: "Why should tests clear the cache in setUp?",
+      options: ["To make tests slower", "So one test's cached values do not affect another test", "Cache clearing is required by Django", "To delete the test database"],
+      answer: 1,
+      explain: "Shared cache state can make tests pass or fail depending on order, so each test starts clean."
+    },
+    {
+      q: "What should you do before adding a cache to a slow page?",
+      options: ["Cache everything on the site", "Measure to find the specific slow work, such as query counts", "Remove all timeouts", "Switch to POST requests"],
+      answer: 1,
+      explain: "Measuring finds the real bottleneck, so caching targets the work that is actually slow."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 21!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

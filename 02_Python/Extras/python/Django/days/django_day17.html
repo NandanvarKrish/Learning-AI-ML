@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 17</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 17 of 30</span>
+  <h1>Permissions and Groups</h1>
+  <p>Estimated time: about 1.5 hours &middot; Model permissions, custom permissions, groups for roles, checking access in views with mixins and decorators, and object-level ownership checks</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Who May Do What</h2>
+    <p>Yesterday you learned that a login proves identity. Permissions answer the next question: which actions may this user perform? Django's permission system works on models. For every model it creates four permissions automatically:</p>
+    <table>
+      <tr><th>Permission</th><th>Allows</th></tr>
+      <tr><td><code>blog.view_post</code></td><td>Viewing posts in the admin and in code that checks it</td></tr>
+      <tr><td><code>blog.add_post</code></td><td>Creating posts</td></tr>
+      <tr><td><code>blog.change_post</code></td><td>Editing posts</td></tr>
+      <tr><td><code>blog.delete_post</code></td><td>Deleting posts</td></tr>
+    </table>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Think of a building with keycards. Each door (action) needs a specific card (permission). Groups are the job titles that come with a standard set of cards, so you don't hand out cards one at a time.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Custom Permissions</h2>
+    <p>Add your own permissions in the model's <code>Meta</code> class. Here, editors may publish posts, which is different from simply editing them:</p>
+    <pre><code># blog/models.py
+class Post(models.Model):
+    # ...fields...
+
+    class Meta:
+        ordering = ["-created_at"]
+        permissions = [
+            ("publish_post", "Can publish posts"),
+        ]</code></pre>
+    <pre><code>python manage.py makemigrations blog
+python manage.py migrate</code></pre>
+    <div class="output">Migrations for 'blog':
+  blog/migrations/0004_alter_post_options.py
+    ~ Alter model options for post</div>
+    <p>After migrating, list the permissions Django now knows for posts:</p>
+    <pre><code>&gt;&gt;&gt; from django.contrib.auth.models import Permission
+&gt;&gt;&gt; Permission.objects.filter(codename__endswith="_post").values_list("codename", flat=True).order_by("codename")</code></pre>
+    <div class="output">&lt;QuerySet ['add_post', 'change_post', 'delete_post', 'publish_post', 'view_post']&gt;</div>
+    <div class="callout tip">
+      <strong>Name format:</strong> A permission is always referred to as <code>app_label.codename</code>, such as <code>blog.publish_post</code>. The codename is what you see in the database; the second text in the Meta tuple is the description shown in the admin.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Groups</h2>
+    <p>Assigning permissions one user at a time becomes tedious. A <strong>group</strong> holds a set of permissions, and you add users to the group:</p>
+    <pre><code>&gt;&gt;&gt; from django.contrib.auth.models import User, Group, Permission
+
+&gt;&gt;&gt; editors = Group.objects.create(name="Editors")
+&gt;&gt;&gt; publish = Permission.objects.get(codename="publish_post")
+&gt;&gt;&gt; editors.permissions.add(publish)
+
+&gt;&gt;&gt; sam = User.objects.get(username="sam")
+&gt;&gt;&gt; sam.groups.add(editors)
+&gt;&gt;&gt; sam = User.objects.get(username="sam")    # reload to clear cached permissions
+&gt;&gt;&gt; sam.has_perm("blog.publish_post")</code></pre>
+    <div class="output">True</div>
+    <p>Notice the reload. Django caches a user's permissions on the object, so after changing groups, fetch the user again before checking.</p>
+    <div class="callout warn">
+      <strong>Removing access:</strong> Use <code>sam.groups.remove(editors)</code> to take a user out of a group. Their permissions from other groups stay in place, so check them all.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Checking Permissions in Views</h2>
+    <p>There are two ways to protect a view with permissions, mirroring the login tools from Day 16:</p>
+    <pre><code># blog/views.py
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.views.generic import CreateView
+
+@permission_required("blog.publish_post", raise_exception=True)
+def publish_queue(request):
+    ...
+
+class PostCreateView(PermissionRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "blog/post_form.html"
+    permission_required = "blog.add_post"</code></pre>
+    <table>
+      <tr><th>Situation</th><th>Result</th></tr>
+      <tr><td>Anonymous visitor</td><td>Redirected to the login page (with <code>login_required</code> style handling)</td></tr>
+      <tr><td>Logged in, but missing the permission</td><td>403 Forbidden when <code>raise_exception=True</code> (or the mixin's default)</td></tr>
+      <tr><td>Logged in with the permission</td><td>The view runs normally</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Combine with login:</strong> <code>PermissionRequiredMixin</code> already requires login. Use <code>LoginRequiredMixin</code> only for pages that need a logged-in user but no particular permission.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Checking Permissions in Templates</h2>
+    <p>Templates can hide buttons the user cannot use. This is for convenience only; the view must still check:</p>
+    <pre><code># blog/templates/blog/post_detail.html
+{% if perms.blog.change_post %}
+  &lt;a href="{% url 'post_edit' post.pk %}"&gt;Edit&lt;/a&gt;
+{% endif %}
+{% if perms.blog.publish_post %}
+  &lt;button type="submit"&gt;Publish now&lt;/button&gt;
+{% endif %}</code></pre>
+    <p><code>perms</code> is available in every template and reads like <code>perms.app_label.codename</code>.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Object-Level Ownership</h2>
+    <p>Model permissions apply to the whole table. "Can change posts" lets you edit any post. Often the rule is narrower: authors may edit <em>their own</em> posts. Check the object in the view:</p>
+    <pre><code>from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+
+def post_edit(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    is_owner = post.author.user == request.user
+    if not (is_owner or request.user.has_perm("blog.change_post")):
+        raise PermissionDenied
+    ...</code></pre>
+    <div class="callout warn">
+      <strong>Owner check needs login first:</strong> An anonymous user is not equal to any author's user, so the check returns False and they get a 403. Pair this with <code>login_required</code>, so they are sent to log in instead.</div>
+    <div class="callout tip">
+      <strong>Libraries:</strong> Projects with many object rules often use a package such as django-guardian. Start with simple owner checks like this one before adding a library.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Staff and Superusers</h2>
+    <table>
+      <tr><th>Flag</th><th>Meaning</th></tr>
+      <tr><td><code>is_active</code></td><td>The account can log in at all. Deactivate instead of deleting when access should stop.</td></tr>
+      <tr><td><code>is_staff</code></td><td>The user may sign in to the admin site</td></tr>
+      <tr><td><code>is_superuser</code></td><td>The user has every permission, without needing them assigned</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Be sparing with superuser:</strong> A superuser bypasses every permission check. Give staff access through groups with specific permissions, and reserve superuser for the people who manage the system.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 17</h2>
+    <ol>
+      <li><strong>Forgetting to migrate after adding a custom permission:</strong> the permission doesn't exist in the database yet.</li>
+      <li><strong>Using a stale user object after changing groups:</strong> reload the user before checking.</li>
+      <li><strong>Hiding buttons but not checking in the view:</strong> anyone can type the URL.</li>
+      <li><strong>Relying on model permissions for ownership rules:</strong> check the specific object too.</li>
+      <li><strong>Making everyone a superuser:</strong> it bypasses all controls and makes mistakes costly.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Custom Permission</h3>
+      <p>Add <code>publish_post</code> to <code>Post.Meta.permissions</code>, migrate, and confirm it appears in the permission list.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Editors Group</h3>
+      <p>Create an "Editors" group with the publish and change permissions. Add one user to it and confirm <code>has_perm</code> returns True for that user after reloading, and False for another user.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Protect a View</h3>
+      <p>Protect a page with <code>permission_required</code>. Visit it as a logged-out user, as a logged-in user without the permission, and as a user in the group. Record each result.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Owner Check</h3>
+      <p>Add the owner check to the edit view from Lesson 6. Confirm that an author can edit their own post, and another logged-in user gets a 403 unless they have the change permission.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Template Buttons</h3>
+      <p>Show the Edit and Publish buttons in <code>post_detail.html</code> only to users with the matching permissions. Confirm the buttons change between two accounts.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Permission design</th><th>Where you'll see it</th></tr>
+      <tr><td>Groups such as Editors, Moderators, and Support</td><td>Newsrooms, forums, and customer support tools</td></tr>
+      <tr><td>Custom permissions like publish_post</td><td>Actions that need more trust than simply editing</td></tr>
+      <tr><td>Owner checks</td><td>Users editing only their own profile, orders, or comments</td></tr>
+      <tr><td>Deactivating accounts</td><td>Employees who leave a company but whose records must be kept</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django REST framework uses the same permission classes for APIs, so the rules you write today apply to your future web services too.</div>
+  </section>
+
+  <section>
+    <h2>Day 17 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 17 of 30 &middot; Next: Day 18 - Sending Email</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which four permissions does Django create automatically for each model?",
+      options: ["read, write, run, stop", "add, change, delete, view", "create, edit, remove, list", "get, post, put, delete"],
+      answer: 1,
+      explain: "Django creates add_, change_, delete_, and view_ permissions for every model."
+    },
+    {
+      q: "How is a permission referred to in code?",
+      options: ["Only by its description", "As app_label.codename, such as blog.publish_post", "By the user's ID", "By the model's table number"],
+      answer: 1,
+      explain: "The format is app label, a dot, and the codename, and this is what has_perm expects."
+    },
+    {
+      q: "Why must you run migrate after adding a custom permission in Meta?",
+      options: ["Permissions are stored in Python only", "The permission row must be created in the database", "Migrations delete permissions", "It is optional"],
+      answer: 1,
+      explain: "Permissions are database rows, so the migration creates the new one."
+    },
+    {
+      q: "Why reload the user after changing their groups?",
+      options: ["To log them out", "Django caches permissions on the user object, so an old object may show outdated access", "Groups cannot be changed", "The database must restart"],
+      answer: 1,
+      explain: "A user object keeps its permission cache, so fetching a fresh copy shows the current permissions."
+    },
+    {
+      q: "What response does a logged-in user without the permission get from permission_required(..., raise_exception=True)?",
+      options: ["A 200 page", "A 403 Forbidden response", "A redirect to the homepage", "A 500 error"],
+      answer: 1,
+      explain: "With raise_exception=True, Django returns 403 for users who are logged in but lack the permission."
+    },
+    {
+      q: "What is the purpose of the perms variable in templates?",
+      options: ["It stores passwords", "It lets templates show or hide elements based on permissions", "It creates new permissions", "It logs errors"],
+      answer: 1,
+      explain: "perms reads permissions such as perms.blog.change_post so templates can hide buttons."
+    },
+    {
+      q: "Why is hiding a button in a template not enough to protect an action?",
+      options: ["Buttons cannot be hidden", "Anyone can request the URL directly, so the view must check permissions", "Templates ignore permissions", "Hidden buttons are always visible"],
+      answer: 1,
+      explain: "Access control belongs in the view, because URLs can be typed or shared."
+    },
+    {
+      q: "What does an object-level ownership check add beyond model permissions?",
+      options: ["Faster queries", "A rule about this specific object, such as the author editing their own post", "Automatic login", "Email sending"],
+      answer: 1,
+      explain: "Model permissions apply to every row; ownership checks narrow access to particular objects."
+    },
+    {
+      q: "What does is_active = False do to a user?",
+      options: ["Deletes the account", "Prevents the user from logging in, while keeping their data", "Makes them staff", "Gives them superuser rights"],
+      answer: 1,
+      explain: "Deactivating blocks login but keeps the record, which suits people who leave a team."
+    },
+    {
+      q: "Why is giving everyone superuser status risky?",
+      options: ["It slows the site", "A superuser bypasses permission checks, so mistakes or misuse have no limits", "Superusers cannot log in", "It removes the admin"],
+      answer: 1,
+      explain: "Superusers have every permission, so the controls that protect the site no longer apply to them."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 18!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

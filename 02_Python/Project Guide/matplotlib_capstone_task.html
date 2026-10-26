@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matplotlib – Capstone Task | Meridian Retail Monthly Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F8FAFC;--surface:#FFFFFF;--border:#CBD5E1;--accent:#0F172A;--accent2:#1E293B;
+    --green:#059669;--red:#EF233C;--gold:#D97706;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;
+    --text:#0F172A;--muted:#475569;--code-bg:#0B1120;--code-text:#CBD5E1;--tag-bg:#F1F5F9;--tag-text:#1E293B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(15,23,42,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#D97706 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'📊';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#D97706,#F59E0B);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#94A3B8;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.gold{border-color:var(--gold);background:#FFFBEB;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.gold .callout-title{color:var(--gold);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#1E293B,#0F172A);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0F172A,#1E293B,#D97706);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#0F172A,#D97706);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;} .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">📊 Matplotlib</div><span class="sep">|</span><span class="day-label">Capstone Task</span>
+  <div class="spacer"></div><span class="progress-label">6 phases · 100 points · ~6–8 hours</span>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Matplotlib Full Course · Capstone Task</div>
+  <h1>Meridian Retail <span>Monthly Performance Report</span></h1>
+  <p>Take raw point-of-sale data from messy CSV to a finished package: a cleaned dataset, an executive dashboard, a forecast, an animation, a multi-page PDF board pack, and a command-line tool that rebuilds everything from a single command.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🧹 Data Cleaning</span>
+    <span class="hero-pill">🧩 GridSpec Dashboard</span>
+    <span class="hero-pill">📦 Box, Donut, Heatmap</span>
+    <span class="hero-pill">📈 Forecast Band</span>
+    <span class="hero-pill">🎬 GIF Animation</span>
+    <span class="hero-pill">📄 PdfPages Report</span>
+    <span class="hero-pill">⌨️ CLI Tool</span>
+    <span class="hero-pill">🏆 100-Point Rubric</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎯 <strong>How to use this task:</strong> work through the phases in order. Each phase ends with a checkpoint. The Matplotlib Help section at the bottom has cheat-sheet code and a reference solution. Try each phase yourself first, and only open the reference when you are stuck.</p>
+</div>
+
+<div class="container">
+
+<!-- BRIEF -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📋</div>
+    <div><h2>Project Brief</h2><p>Read this first. It defines what you are building and why.</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>Meridian Retail Group · Head Office, Data Analytics</h3>
+      <p>Every month, the Meridian board receives a visual report on sales. Last month the report was assembled by hand in a spreadsheet and took two days. It contained a double-counted region, a pie chart that nobody could read, and a forecast with no uncertainty shown. The board has asked the analytics team to replace it with a reproducible pipeline. You are the analyst who will build it. Your report will be generated by one command and then reviewed by people who have less than five minutes to read it.</p>
+      <span class="cap-badge">Day 1: Figure/Axes &amp; basic charts</span>
+      <span class="cap-badge">Day 2: Styling &amp; GridSpec</span>
+      <span class="cap-badge">Day 3: Box/Violin/Heatmap/Donut</span>
+      <span class="cap-badge">Day 4: Animation</span>
+      <span class="cap-badge">Day 5: Layout &amp; PdfPages</span>
+    </div>
+
+    <h3>Deliverables</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>File</th><th>What it is</th></tr>
+        <tr><td><code>make_dataset.py</code></td><td>Generates the messy raw data file <code>orders_raw.csv</code> (provided in Phase 1)</td></tr>
+        <tr><td><code>report.py</code></td><td>Your pipeline. It cleans the data and builds every output. Runs from the command line.</td></tr>
+        <tr><td><code>test_report.py</code></td><td>At least three tests that check the cleaning step</td></tr>
+        <tr><td><code>output/dashboard.png</code></td><td>Executive dashboard, 200 DPI, at least 2×4 grid of panels</td></tr>
+        <tr><td><code>output/meridian_report.pdf</code></td><td>Board pack: cover, dashboard, regional scorecard, and a data-quality appendix</td></tr>
+        <tr><td><code>output/trend_reveal.gif</code></td><td>Animated reveal of the revenue trend</td></tr>
+        <tr><td><code>NOTES.md</code></td><td>150 to 250 words for the board. State the three findings, the data-quality issues you fixed, and two limitations of the forecast.</td></tr>
+      </table>
+    </div>
+
+    <h3>Rules</h3>
+    <ul>
+      <li>Use <strong>only Matplotlib for drawing</strong>. Pandas and NumPy are allowed for data work. Seaborn and Plotly are not allowed.</li>
+      <li>Use the <strong>object-oriented interface</strong> (<code>fig, ax = plt.subplots()</code>, <code>ax.plot()</code>) everywhere. Avoid bare <code>plt.plot()</code> calls in the report code.</li>
+      <li>Every chart title must <strong>state a takeaway</strong>, for example "Gross margin fell to 31.2% in Q4" rather than "Margin by month".</li>
+      <li>Do not use <code>jet</code> or other rainbow colormaps. Use a sequential map for ordered data and a diverging map for correlations.</li>
+      <li>Running <code>python report.py orders_raw.csv --outdir output</code> must rebuild all outputs from scratch with no manual steps.</li>
+    </ul>
+
+    <div class="callout teal">
+      <div class="callout-title">🧭 Environment</div>
+      Python 3.10+ with <code>matplotlib</code> (3.8 or newer), <code>pandas</code>, <code>numpy</code>, and <code>pytest</code>. The GIF writer uses Pillow, which Matplotlib installs as a dependency. Install with <code>pip install matplotlib pandas numpy pytest</code>. You do not need ffmpeg for this task.
+    </div>
+  </div>
+</div>
+
+<!-- PHASE PLAN -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🗺️</div>
+    <div><h2>Phases &amp; Checkpoints</h2><p>Each phase builds on the last. Expand each one for its steps.</p></div>
+  </div>
+  <div class="section-body">
+
+    <!-- PHASE 1 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0F172A">1</div><h4>Phase 1 — Generate the Raw Data &amp; Clean It</h4><span class="phase-time">~45 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Run the provided data generator</h5>
+          <p>Save the code below as <code>make_dataset.py</code> and run it. It creates <code>orders_raw.csv</code> with about 12,000 orders from January 2023 to December 2024. The file is deliberately messy: some regions are lowercase, some channels are missing, 120 rows are duplicates, and about 3% of rows are product returns with negative units and revenue.</p>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · make_dataset.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>import numpy as np
+import pandas as pd
+
+rng = np.random.default_rng(42)
+n = 12000
+dates = pd.date_range("2023-01-01", "2024-12-31", freq="D")
+
+region = rng.choice(["North", "South", "East", "West"], n, p=[0.30, 0.28, 0.22, 0.20])
+category = rng.choice(["Electronics", "Apparel", "Home", "Grocery", "Sports"], n,
+                      p=[0.20, 0.25, 0.20, 0.25, 0.10])
+channel = rng.choice(["Store", "Online", "Partner"], n, p=[0.50, 0.35, 0.15])
+base = pd.Series(category).map({"Electronics": 4500, "Apparel": 1200, "Home": 2200,
+                                "Grocery": 250, "Sports": 1800}).to_numpy()
+unit_price = base * rng.normal(1.0, 0.12, n).clip(0.6, 1.5)
+discount = rng.choice([0, 5, 10, 15, 20], n, p=[0.45, 0.20, 0.15, 0.12, 0.08])
+units = rng.poisson(3, n) + 1
+revenue = units * unit_price * (1 - discount / 100)
+cost = revenue * rng.uniform(0.55, 0.80, n)
+
+df = pd.DataFrame({
+    "order_id": np.arange(1, n + 1),
+    "order_date": rng.choice(dates, n),
+    "region": region,
+    "store_id": rng.integers(101, 140, n),
+    "category": category,
+    "channel": channel,
+    "customer_id": rng.integers(10000, 19000, n),
+    "units": units,
+    "unit_price": unit_price.round(2),
+    "discount_pct": discount,
+    "revenue": revenue.round(2),
+    "cost": cost.round(2),
+})
+
+# Product returns: negative units, revenue and cost
+ret = rng.random(n) < 0.03
+df.loc[ret, ["units", "revenue", "cost"]] *= -1
+
+# Messy inputs: inconsistent casing, missing channel, duplicate rows
+mask = rng.random(n) < 0.05
+df.loc[mask, "region"] = df.loc[mask, "region"].str.lower()
+mask = rng.random(n) < 0.02
+df.loc[mask, "channel"] = np.nan
+df = pd.concat([df, df.sample(120, random_state=1)], ignore_index=True)
+
+df.sort_values("order_date").to_csv("orders_raw.csv", index=False)
+print("Wrote orders_raw.csv with shape", df.shape)</pre></div>
+        </div></div>
+
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Profile the data before you touch it</h5>
+          <p>Write a short profiling block that prints the row count, the number of duplicate <code>order_id</code> values, the distinct values in <code>region</code>, the count of nulls in <code>channel</code>, and the number of negative <code>units</code>. Record these numbers. They become the "data-quality appendix" in Phase 5.</p>
+        </div></div>
+
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Write <code>load_clean(path)</code></h5>
+          <p>The function must do the following, in this order:</p>
+          <ul>
+            <li>Read the CSV with <code>order_date</code> parsed as a date.</li>
+            <li>Drop duplicate rows by <code>order_id</code>, not by all columns.</li>
+            <li>Normalise <code>region</code> using strip and title case, so <code>north</code> and <code>North</code> become the same value.</li>
+            <li>Fill missing <code>channel</code> values with <code>"Unknown"</code>. Do not drop those rows, because that would understate revenue.</li>
+            <li>Add <code>is_return</code> (units below zero), <code>month</code> (first day of the month), and <code>margin_pct</code>.</li>
+          </ul>
+        </div></div>
+
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 1</h5>
+          <ul class="checklist">
+            <li>After cleaning, <code>order_id</code> is unique</li>
+            <li>Region has exactly four values: North, South, East, West</li>
+            <li>Channel has no nulls</li>
+            <li>Returns are kept and flagged, not removed</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — KPI Engine &amp; Summaries</h4><span class="phase-time">~45 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Compute four headline KPIs in a <code>kpis(df)</code> function</h5>
+          <ul>
+            <li><strong>net_revenue</strong>: sum of revenue, with returns subtracted</li>
+            <li><strong>margin_pct</strong>: (net revenue − total cost) ÷ net revenue × 100</li>
+            <li><strong>yoy_pct</strong>: 2024 revenue compared with 2023, as a percentage change</li>
+            <li><strong>return_rate_pct</strong>: share of rows where <code>is_return</code> is true</li>
+          </ul>
+          <p>Return a plain dictionary. Do not hard-code any number.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Build a <code>monthly(df)</code> summary</h5>
+          <p>Group by <code>month</code> and return one row per month with <code>revenue</code>, <code>cost</code>, and <code>margin_pct</code>. This is the table that feeds the trend chart and the forecast.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Build region, category, and channel summaries</h5>
+          <p>Each summary must be a separate function that returns a sorted pandas Series or DataFrame. Print all of them in a readable console table. The dashboard will reuse these functions, so do not copy-paste the logic.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 2</h5>
+          <ul class="checklist">
+            <li>The KPI numbers can be reproduced by hand in a spreadsheet for at least one month</li>
+            <li>The monthly table has 24 rows</li>
+            <li>No function contains a hard-coded value that depends on the data</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">3</div><h4>Phase 3 — Executive Dashboard (GridSpec)</h4><span class="phase-time">~120 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Set up a 3×4 GridSpec with a KPI row and two chart rows</h5>
+          <p>Use a figure size of about 16×10 inches. Set <code>height_ratios=[0.6, 1.4, 1.2]</code> so the KPI strip is shorter than the chart rows. Add a suptitle that states the main message of the month, for example "Meridian Retail: revenue up 18% YoY, margin slipping". Put the suptitle in a variable so the PDF can reuse it.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>KPI row: four number cards</h5>
+          <p>Use <code>axis("off")</code> and <code>text()</code> with <code>transform=ax.transAxes</code> to build four cards: net revenue, margin, YoY growth, and return rate. Use a signed format for growth, such as <code>+18.4%</code>.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Row 2, columns 0–2: monthly revenue trend with direct labels</h5>
+          <p>Plot monthly revenue in lakh INR as a navy line with markers. Label the line directly at its end instead of using a legend. Add a dashed gold forecast line in Phase 4. Use a clear y-axis label, and set the y-axis to start at zero.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">4</div><div class="step-content">
+          <h5>Row 2, column 3: regional revenue as a sorted horizontal bar chart</h5>
+          <p>Sort the bars so the largest region is at the top. Colour the top region gold and the others grey. Label each bar with its value using <code>bar_label()</code>. Add a little headroom on the x-axis so the labels are not cut off.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">5</div><div class="step-content">
+          <h5>Row 3: four supporting charts</h5>
+          <ul>
+            <li><strong>Box plot</strong> of <code>margin_pct</code> by category, with sales rows only (no returns). Turn off the outlier points and say so in the title.</li>
+            <li><strong>Donut chart</strong> of revenue share by channel. Use <code>wedgeprops=dict(width=0.4)</code>. Use at most four slices.</li>
+            <li><strong>Histogram</strong> of individual sale values, with dashed vertical lines for the mean and median. Add a legend that shows both values.</li>
+            <li><strong>Annotated correlation heatmap</strong> of <code>units</code>, <code>unit_price</code>, <code>discount_pct</code>, <code>revenue</code>, and <code>margin_pct</code>. Use <code>RdBu_r</code> with <code>vmin=-1</code> and <code>vmax=1</code>. Write each correlation value inside its cell.</li>
+          </ul>
+        </div></div>
+        <div class="task-step"><div class="step-dot">6</div><div class="step-content">
+          <h5>Export at 200 DPI</h5>
+          <p>Save to <code>output/dashboard.png</code> with <code>dpi=200</code> and <code>bbox_inches="tight"</code>. Open the file and check that no label is clipped.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 3</h5>
+          <ul class="checklist">
+            <li>All seven panels plus four KPI cards are visible</li>
+            <li>Every panel has a takeaway title, not a description</li>
+            <li>The regional bars are sorted, and the top region is highlighted</li>
+            <li>The heatmap uses a diverging colormap centred on zero</li>
+            <li>No text overlaps and no label is clipped</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#D97706">4</div><h4>Phase 4 — Forecast Band &amp; Animated Reveal</h4><span class="phase-time">~60 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Linear forecast for six months</h5>
+          <p>Fit a straight line with <code>np.polyfit(x, y, 1)</code> to the monthly revenue, where <code>x</code> is the month index from 0 to 23. Forecast months 24 to 29. Draw the forecast as a dashed gold line.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Uncertainty band</h5>
+          <p>Compute the residual standard deviation with <code>ddof=2</code>, because the fit estimates two parameters. Shade the band from forecast minus two standard deviations to forecast plus two standard deviations, using <code>fill_between</code> with a low alpha. In your NOTES.md, explain that this band is a rough guide and not a guarantee.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Animated reveal as a GIF</h5>
+          <p>Build a separate figure with <code>FuncAnimation</code>. Reveal the actual revenue line one month at a time. Then reveal the forecast. Create the line object once and update its data in each frame. Use <code>blit=True</code>, but if a title or text label does not update correctly, set <code>blit=False</code> and note why in a comment. Save with <code>writer="pillow"</code> at 12 frames per second.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 4</h5>
+          <ul class="checklist">
+            <li>The forecast line is dashed and labelled "Forecast" in the legend</li>
+            <li>The uncertainty band is visible but does not hide the actual data</li>
+            <li>The GIF plays from start to finish and loops only if you choose to</li>
+            <li>The GIF file is under 5 MB</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">5</div><h4>Phase 5 — Multi-Page PDF Board Pack</h4><span class="phase-time">~60 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Use <code>PdfPages</code> with four pages</h5>
+          <ol>
+            <li><strong>Cover</strong>: company name, report title, and the reporting period, built from text on an axis-free figure.</li>
+            <li><strong>Dashboard</strong>: the figure from Phase 3, saved as a full page.</li>
+            <li><strong>Regional scorecard</strong>: a table with revenue, average margin, and return rate for each region, built with <code>ax.table()</code>.</li>
+            <li><strong>Data-quality appendix</strong>: a table listing each cleaning rule you applied and how many rows it affected. Use the numbers you recorded in Phase 1.</li>
+          </ol>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Set metadata and close every figure</h5>
+          <p>Set the PDF <code>Title</code>, <code>Author</code>, and <code>Subject</code> through <code>pdf.infodict()</code>. Call <code>plt.close(fig)</code> after each <code>pdf.savefig(fig)</code> so memory does not build up.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 5</h5>
+          <ul class="checklist">
+            <li>The PDF opens and has exactly four pages</li>
+            <li>Every page has a title, and the page numbers match the order above</li>
+            <li>The appendix numbers match what you printed in Phase 1</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">6</div><h4>Phase 6 — Command-Line Tool, Tests &amp; Board Notes</h4><span class="phase-time">~60 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Make it a command-line program</h5>
+          <p>Use <code>argparse</code> to accept the input CSV and an <code>--outdir</code> option with the default <code>output</code>. Create the folder if it does not exist. Call <code>matplotlib.use("Agg")</code> so the script never opens a window.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Write three tests in <code>test_report.py</code></h5>
+          <p>Test that cleaning removes duplicates, that region values are normalised, and that no channel values are missing. Run them with <code>pytest</code>. All tests must pass before you submit.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Write NOTES.md for the board</h5>
+          <p>Include three findings written as sentences with numbers, the data-quality fixes you made, and two limitations of the forecast. Do not use jargon. A board member should understand it on one read.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">4</div><div class="step-content">
+          <h5>Prove reproducibility</h5>
+          <p>Delete the <code>output</code> folder. Run <code>python make_dataset.py</code>, then <code>python report.py orders_raw.csv --outdir output</code>. All files must rebuild without errors. Then run <code>pytest</code>.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">✓</div><div class="step-content">
+          <h5>Checkpoint 6</h5>
+          <ul class="checklist">
+            <li>One command rebuilds every output from scratch</li>
+            <li>All tests pass</li>
+            <li>NOTES.md is between 150 and 250 words</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RUBRIC -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">✅</div>
+    <div><h2>Scoring Rubric — 100 Points</h2><p>Use this to self-assess before you submit. Pass is 70. Distinction is 90.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Area</th><th>Points</th><th>Full marks look like</th></tr>
+        <tr><td>Data cleaning &amp; validation</td><td>15</td><td>Duplicates removed by <code>order_id</code>, regions normalised, nulls handled without dropping revenue, returns kept and flagged</td></tr>
+        <tr><td>KPI correctness</td><td>15</td><td>All four KPIs reproduce by hand for one month, and no number is hard-coded</td></tr>
+        <tr><td>Dashboard layout</td><td>15</td><td>GridSpec with KPI row, no overlaps, consistent panel sizes, and a clear visual hierarchy</td></tr>
+        <tr><td>Chart choice &amp; honesty of encoding</td><td>15</td><td>Sorted bars, takeaway titles, correct diverging colormap, zero-based bars, no rainbow maps, no 3D</td></tr>
+        <tr><td>Legibility &amp; export quality</td><td>10</td><td>200 DPI PNG, labels readable at slide size, no clipped text, legends only where needed</td></tr>
+        <tr><td>Forecast &amp; animation</td><td>10</td><td>Dashed forecast, uncertainty band with <code>ddof=2</code>, smooth GIF under 5 MB</td></tr>
+        <tr><td>PDF board pack</td><td>10</td><td>Four pages in order, metadata set, figures closed after saving</td></tr>
+        <tr><td>Code quality &amp; CLI</td><td>5</td><td>Small functions with docstrings, OO interface, argparse, no copy-paste logic</td></tr>
+        <tr><td>Tests &amp; reproducibility</td><td>5</td><td>Three passing tests, and one command rebuilds everything</td></tr>
+        <tr class="rubric-total"><td>Total</td><td>100</td><td></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- HELP: CHEAT SHEET -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0891B2">📚</div>
+    <div><h2>Matplotlib Help — Cheat Sheet</h2><p>Short reminders for the calls this task uses most</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">matplotlib.use("Agg")</div><div class="mc-desc">Headless backend, no window</div><div class="mc-ex">call before pyplot</div></div>
+      <div class="mini-card"><div class="mc-name">GridSpec(3, 4, figure=fig)</div><div class="mc-desc">Named grid of cells</div><div class="mc-ex">height_ratios, wspace</div></div>
+      <div class="mini-card"><div class="mc-name">ax.axis("off")</div><div class="mc-desc">Hide frame and ticks</div><div class="mc-ex">KPI cards, cover page</div></div>
+      <div class="mini-card"><div class="mc-name">ax.text(..., transform=ax.transAxes)</div><div class="mc-desc">Place text in 0–1 axes space</div><div class="mc-ex">x=0.5, y=0.6</div></div>
+      <div class="mini-card"><div class="mc-name">ax.barh() + bar_label()</div><div class="mc-desc">Horizontal bars with value labels</div><div class="mc-ex">fmt="%.0f"</div></div>
+      <div class="mini-card"><div class="mc-name">ax.boxplot(patch_artist=True)</div><div class="mc-desc">Fillable boxes</div><div class="mc-ex">showfliers=False</div></div>
+      <div class="mini-card"><div class="mc-name">ax.pie(wedgeprops=...)</div><div class="mc-desc">Donut chart</div><div class="mc-ex">dict(width=0.4)</div></div>
+      <div class="mini-card"><div class="mc-name">ax.hist() + axvline()</div><div class="mc-desc">Distribution with reference lines</div><div class="mc-ex">label= for legend</div></div>
+      <div class="mini-card"><div class="mc-name">ax.imshow(cmap="RdBu_r")</div><div class="mc-desc">Matrix as colour, diverging</div><div class="mc-ex">vmin=-1, vmax=1</div></div>
+      <div class="mini-card"><div class="mc-name">ax.fill_between(x, lo, hi)</div><div class="mc-desc">Shaded uncertainty band</div><div class="mc-ex">alpha=0.15</div></div>
+      <div class="mini-card"><div class="mc-name">FuncAnimation(...)</div><div class="mc-desc">Frame-by-frame updates</div><div class="mc-ex">interval=, blit=</div></div>
+      <div class="mini-card"><div class="mc-name">PdfPages + infodict()</div><div class="mc-desc">Multi-page PDF with metadata</div><div class="mc-ex">d["Title"] = ...</div></div>
+    </div>
+
+    <h3>Common Gotchas</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+        <tr><td>Revenue total is too high</td><td>Duplicate rows still present</td><td>Drop by <code>order_id</code> before any sum</td></tr>
+        <tr><td>Bars run in the wrong order in <code>barh</code></td><td>The first item is drawn at the bottom</td><td>Sort ascending, so the largest is on top</td></tr>
+        <tr><td>Pie chart is an oval</td><td>Axes not square</td><td><code>ax.axis("equal")</code></td></tr>
+        <tr><td>Grouped bars overlap</td><td>Same x positions for both series</td><td>Offset by <code>± width/2</code></td></tr>
+        <tr><td>Animation title never changes</td><td>Text not returned, and blit is on</td><td>Return the artist, or use <code>blit=False</code></td></tr>
+        <tr><td>GIF is huge</td><td>Too many frames or DPI</td><td>Lower fps, skip frames, or reduce figure size</td></tr>
+        <tr><td>Labels cut off in PNG</td><td>Tight layout not applied</td><td><code>savefig(..., bbox_inches="tight")</code></td></tr>
+        <tr><td>Memory grows during PDF build</td><td>Figures not closed</td><td><code>plt.close(fig)</code> after each <code>savefig</code></td></tr>
+        <tr><td>Labels overlap on x-axis</td><td>Too many dates</td><td>Use <code>set_xticks(ticks[::3], labels)</code> or <code>rotation=30</code></td></tr>
+      </table>
+    </div>
+
+    <h3>Reference Solution — <code>report.py</code></h3>
+    <div class="callout gold">
+      <div class="callout-title">⚠️ Try first, then compare</div>
+      The solution below is one correct way to build the task. Your version can differ in layout, colours, and structure. The rubric does not reward matching this code, only the results. Open it after you have attempted Phases 1 to 3 on your own.
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">R</div><h4>Show reference solution: report.py</h4><span class="phase-time">~200 lines</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+<div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · report.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>"""report.py: Meridian Retail monthly performance report.
+
+Usage:
+    python report.py orders_raw.csv --outdir output
+"""
+import argparse
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")  # headless: write files without opening windows
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.gridspec import GridSpec
+import numpy as np
+import pandas as pd
+
+PALETTE = {"navy": "#0F172A", "gold": "#D97706", "teal": "#0891B2",
+           "gray": "#94A3B8", "rose": "#E11D48"}
+
+
+def apply_style():
+    """Set global defaults once, so every chart shares one look."""
+    plt.rcParams.update({
+        "font.size": 10, "axes.titlesize": 11, "axes.titleweight": "bold",
+        "axes.spines.top": False, "axes.spines.right": False,
+        "axes.grid": True, "grid.alpha": 0.2,
+    })
+
+
+# ---------- Data ----------
+def load_clean(path):
+    """Read the raw CSV and return a cleaned DataFrame."""
+    df = pd.read_csv(path, parse_dates=["order_date"])
+    df = df.drop_duplicates(subset="order_id")
+    df["region"] = df["region"].str.strip().str.title()
+    df["channel"] = df["channel"].fillna("Unknown")
+    df["is_return"] = df["units"] < 0
+    df["month"] = df["order_date"].dt.to_period("M").dt.to_timestamp()
+    df["margin_pct"] = 100 * (df["revenue"] - df["cost"]) / df["revenue"]
+    return df
+
+
+def kpis(df):
+    """Headline numbers for the KPI row."""
+    yearly = df.groupby(df["order_date"].dt.year)["revenue"].sum()
+    net = df["revenue"].sum()
+    return {
+        "net_revenue": net,
+        "margin_pct": 100 * (net - df["cost"].sum()) / net,
+        "yoy_pct": 100 * yearly.pct_change().iloc[-1],
+        "return_rate_pct": 100 * df["is_return"].mean(),
+    }
+
+
+def monthly(df):
+    """One row per month: revenue, cost, margin."""
+    m = df.groupby("month").agg(revenue=("revenue", "sum"), cost=("cost", "sum"))
+    m["margin_pct"] = 100 * (m["revenue"] - m["cost"]) / m["revenue"]
+    return m
+
+
+# ---------- Panels (each takes an Axes and draws into it) ----------
+def add_kpi_cards(fig, gs_row, k):
+    cards = [
+        ("Net revenue (INR Cr)", f"{k['net_revenue'] / 1e7:.2f}"),
+        ("Gross margin", f"{k['margin_pct']:.1f}%"),
+        ("YoY growth", f"{k['yoy_pct']:+.1f}%"),
+        ("Return rate", f"{k['return_rate_pct']:.1f}%"),
+    ]
+    for i, (label, value) in enumerate(cards):
+        ax = fig.add_subplot(gs_row[i])
+        ax.axis("off")
+        ax.text(0.5, 0.62, value, ha="center", va="center", fontsize=20,
+                fontweight="bold", transform=ax.transAxes)
+        ax.text(0.5, 0.18, label, ha="center", va="center", fontsize=9,
+                color="gray", transform=ax.transAxes)
+
+
+def plot_trend_with_forecast(ax, m, horizon=6):
+    """Monthly revenue (lakh INR) plus a 6-month linear forecast with a band."""
+    x = np.arange(len(m))
+    y = m["revenue"].to_numpy() / 1e5
+    slope, intercept = np.polyfit(x, y, 1)
+    resid_sd = np.std(y - (slope * x + intercept), ddof=2)
+    fx = np.arange(len(m), len(m) + horizon)
+    fy = slope * fx + intercept
+    future = pd.date_range(m.index[-1], periods=horizon + 1, freq="MS")[1:]
+
+    ax.plot(m.index, y, color=PALETTE["navy"], lw=2, marker="o", ms=4, label="Actual")
+    ax.plot(future, fy, color=PALETTE["gold"], lw=2, ls="--", label="Forecast")
+    ax.fill_between(future, fy - 2 * resid_sd, fy + 2 * resid_sd,
+                    color=PALETTE["gold"], alpha=0.15)
+    ax.set_ylim(bottom=0)
+    ax.set_ylabel("INR lakh")
+    ax.set_title("Monthly net revenue with 6-month linear forecast")
+    ax.legend(loc="upper left", frameon=False)
+
+
+def plot_regions(ax, df):
+    reg = df.groupby("region")["revenue"].sum().sort_values()
+    top = reg.max()
+    colors = [PALETTE["gold"] if v == top else PALETTE["gray"] for v in reg.values]
+    bars = ax.barh(reg.index, reg.values / 1e5, color=colors)
+    ax.bar_label(bars, fmt="%.0f", padding=3, fontsize=9)
+    ax.margins(x=0.15)
+    ax.set_title("Revenue by region (INR lakh)")
+
+
+def plot_margin_box(ax, df):
+    sales = df[~df["is_return"]]
+    cats = sorted(sales["category"].unique())
+    data = [sales.loc[sales["category"] == c, "margin_pct"] for c in cats]
+    bp = ax.boxplot(data, patch_artist=True, showfliers=False)
+    for box in bp["boxes"]:
+        box.set_facecolor(PALETTE["teal"])
+        box.set_alpha(0.6)
+    ax.set_xticks(range(1, len(cats) + 1), cats, rotation=30, ha="right", fontsize=8)
+    ax.set_title("Gross margin % by category (outliers hidden)", fontsize=10)
+
+
+def plot_channel_donut(ax, df):
+    ch = df.groupby("channel")["revenue"].sum().sort_values(ascending=False)
+    palette = [PALETTE["navy"], PALETTE["teal"], PALETTE["gray"], "#E2E8F0"]
+    ax.pie(ch.values, labels=ch.index, autopct="%1.0f%%", startangle=90,
+           colors=palette[:len(ch)], pctdistance=0.8,
+           wedgeprops=dict(width=0.4), textprops={"fontsize": 8})
+    ax.set_title("Revenue share by channel", fontsize=10)
+
+
+def plot_order_hist(ax, df):
+    sales = df.loc[~df["is_return"], "revenue"] / 1e3
+    ax.hist(sales, bins=40, color=PALETTE["teal"], alpha=0.85)
+    ax.axvline(sales.mean(), color=PALETTE["gold"], ls="--",
+               label=f"Mean {sales.mean():.1f}k")
+    ax.axvline(sales.median(), color=PALETTE["rose"], ls=":",
+               label=f"Median {sales.median():.1f}k")
+    ax.legend(fontsize=8, frameon=False)
+    ax.set_xlabel("Order value (INR thousand)")
+    ax.set_title("Order value distribution", fontsize=10)
+
+
+def plot_corr_heatmap(ax, df):
+    cols = ["units", "unit_price", "discount_pct", "revenue", "margin_pct"]
+    corr = df[cols].corr()
+    im = ax.imshow(corr.to_numpy(), cmap="RdBu_r", vmin=-1, vmax=1)
+    ax.set_xticks(range(len(cols)), cols, rotation=45, ha="right", fontsize=7)
+    ax.set_yticks(range(len(cols)), cols, fontsize=7)
+    for i in range(len(cols)):
+        for j in range(len(cols)):
+            v = corr.iloc[i, j]
+            ax.text(j, i, f"{v:.2f}", ha="center", va="center", fontsize=6,
+                    color="white" if abs(v) > 0.5 else "black")
+    ax.grid(False)
+    ax.set_title("Correlations", fontsize=10)
+
+
+# ---------- Outputs ----------
+def build_dashboard(df, k):
+    """Assemble the executive dashboard. Returns the Figure."""
+    apply_style()
+    fig = plt.figure(figsize=(16, 10))
+    gs = GridSpec(3, 4, figure=fig, height_ratios=[0.6, 1.4, 1.2],
+                  hspace=0.55, wspace=0.35)
+    fig.suptitle("Meridian Retail: revenue up {:.0f}% YoY, margin at {:.1f}%".format(
+        k["yoy_pct"], k["margin_pct"]), fontsize=18, fontweight="bold",
+        color=PALETTE["navy"])
+
+    add_kpi_cards(fig, gs[0, :], k)
+    plot_trend_with_forecast(fig.add_subplot(gs[1, :3]), monthly(df))
+    plot_regions(fig.add_subplot(gs[1, 3]), df)
+    plot_margin_box(fig.add_subplot(gs[2, 0]), df)
+    plot_channel_donut(fig.add_subplot(gs[2, 1]), df)
+    plot_order_hist(fig.add_subplot(gs[2, 2]), df)
+    plot_corr_heatmap(fig.add_subplot(gs[2, 3]), df)
+    return fig
+
+
+def animate_trend(m, out_path, fps=12):
+    """Reveal the actual revenue line one month at a time and save a GIF."""
+    fig, ax = plt.subplots(figsize=(10, 5))
+    x = np.arange(len(m))
+    y = m["revenue"].to_numpy() / 1e5
+    line, = ax.plot([], [], color=PALETTE["navy"], lw=2.5)
+    ax.set_xlim(0, len(m) - 1)
+    ax.set_ylim(0, y.max() * 1.1)
+    ax.set_xticks(x[::3], [d.strftime("%b %y") for d in m.index[::3]])
+    ax.set_ylabel("INR lakh")
+    ax.set_title("Net revenue, January 2023 to December 2024")
+
+    def update(frame):
+        line.set_data(x[:frame + 1], y[:frame + 1])
+        return (line,)
+
+    ani = animation.FuncAnimation(fig, update, frames=len(x),
+                                  interval=1000 // fps, blit=True, repeat=False)
+    ani.save(out_path, writer="pillow", fps=fps)
+    plt.close(fig)
+
+
+def table_page(pdf, df):
+    """Regional scorecard as a table on its own page."""
+    reg = df.groupby("region").agg(revenue=("revenue", "sum"),
+                                   margin=("margin_pct", "mean"),
+                                   returns=("is_return", "mean"))
+    rows = [[r, f"{v.revenue / 1e5:,.0f}", f"{v.margin:.1f}", f"{100 * v.returns:.1f}"]
+            for r, v in reg.iterrows()]
+    fig, ax = plt.subplots(figsize=(11, 8.5))
+    ax.axis("off")
+    ax.set_title("Regional scorecard", fontsize=16, fontweight="bold")
+    ax.table(cellText=rows,
+             colLabels=["Region", "Revenue (INR lakh)", "Avg margin %", "Return rate %"],
+             loc="center")
+    pdf.savefig(fig)
+    plt.close(fig)
+
+
+def build_pdf(df, k, out_path):
+    """Four-page board pack with metadata."""
+    with PdfPages(out_path) as pdf:
+        # Page 1: cover (text only, no axes)
+        fig = plt.figure(figsize=(11, 8.5))
+        fig.text(0.5, 0.60, "Meridian Retail Group", ha="center",
+                 fontsize=28, fontweight="bold", color=PALETTE["navy"])
+        fig.text(0.5, 0.52, "Monthly Performance Report, 2023 to 2024", ha="center",
+                 fontsize=16, color=PALETTE["gold"])
+        pdf.savefig(fig)
+        plt.close(fig)
+
+        # Page 2: dashboard
+        dash = build_dashboard(df, k)
+        pdf.savefig(dash)
+        plt.close(dash)
+
+        # Page 3: regional scorecard
+        table_page(pdf, df)
+
+        d = pdf.infodict()
+        d["Title"] = "Meridian Retail Monthly Report"
+        d["Author"] = "Data Visualization Team"
+        d["Subject"] = "Monthly board pack"
+
+
+def main():
+    p = argparse.ArgumentParser(description="Build the Meridian monthly report")
+    p.add_argument("csv", help="raw orders CSV")
+    p.add_argument("--outdir", default="output")
+    args = p.parse_args()
+
+    out = Path(args.outdir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    df = load_clean(args.csv)
+    k = kpis(df)
+
+    fig = build_dashboard(df, k)
+    fig.savefig(out / "dashboard.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    build_pdf(df, k, out / "meridian_report.pdf")
+    animate_trend(monthly(df), out / "trend_reveal.gif")
+
+    print("KPIs:", {key: round(v, 2) for key, v in k.items()})
+    print("Outputs written to", out.resolve())
+
+
+if __name__ == "__main__":
+    main()</pre></div>
+      </div>
+    </div>
+
+    <h3>Reference Test — <code>test_report.py</code></h3>
+    <div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · test_report.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>from report import load_clean
+
+
+def test_no_duplicate_orders():
+    df = load_clean("orders_raw.csv")
+    assert df["order_id"].is_unique
+
+
+def test_regions_are_normalised():
+    df = load_clean("orders_raw.csv")
+    assert set(df["region"]) == {"North", "South", "East", "West"}
+
+
+def test_no_missing_channel():
+    df = load_clean("orders_raw.csv")
+    assert df["channel"].notna().all()</pre></div>
+
+    <h3>Mini Recipes You Will Reuse</h3>
+    <div class="code-wrap"><div class="code-header"><span class="code-lang">PYTHON · recipes</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre># 1. Save a figure at print quality, without clipped labels
+fig.savefig("output/dashboard.png", dpi=200, bbox_inches="tight")
+
+# 2. Sorted horizontal bars with value labels
+s = df.groupby("region")["revenue"].sum().sort_values()
+bars = ax.barh(s.index, s.values)
+ax.bar_label(bars, fmt="%.0f", padding=3)
+
+# 3. Highlight one bar, grey out the rest
+colors = ["#D97706" if v == s.max() else "#94A3B8" for v in s.values]
+
+# 4. Direct label at the end of a line instead of a legend
+ax.text(x[-1], y[-1], "  Revenue", va="center", color="#0F172A")
+
+# 5. Small multiples that share a y-scale for fair comparison
+fig, axes = plt.subplots(1, 4, figsize=(14, 3.5), sharey=True)
+for ax, (name, grp) in zip(axes, df.groupby("region")):
+    ax.hist(grp["revenue"], bins=30)
+    ax.set_title(name)
+
+# 6. Donut chart
+ax.pie(values, labels=labels, wedgeprops=dict(width=0.4))
+
+# 7. Lines that appear one frame at a time
+line, = ax.plot([], [])
+def update(frame):
+    line.set_data(x[:frame + 1], y[:frame + 1])
+    return (line,)
+
+# 8. Multi-page PDF with metadata
+with PdfPages("report.pdf") as pdf:
+    pdf.savefig(fig1); plt.close(fig1)
+    d = pdf.infodict(); d["Title"] = "Report"</pre></div>
+  </div>
+</div>
+
+<!-- MISTAKES -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DC2626">⚠️</div>
+    <div><h2>Design Mistakes That Lose Points</h2><p>Each one has cost real analysts credibility with a board</p></div>
+  </div>
+  <div class="section-body">
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Mistake</th><th>Why it misleads</th><th>Do this instead</th></tr>
+        <tr><td>Bar chart with y-axis starting at 80</td><td>Small differences look huge</td><td>Start bars at zero</td></tr>
+        <tr><td>3D pie or 3D bar chart</td><td>Perspective distorts the values</td><td>Flat donut or sorted bars</td></tr>
+        <tr><td>Rainbow colormap for a sequential value</td><td>Creates false boundaries</td><td>viridis or a single-hue map</td></tr>
+        <tr><td>Forecast drawn in the same style as actuals</td><td>Readers treat a guess as fact</td><td>Dashed line, labelled, with a band</td></tr>
+        <tr><td>Averaging margin across order rows and calling it the company margin</td><td>Small orders get the same weight as large ones</td><td>Compute margin from summed revenue and cost</td></tr>
+        <tr><td>Dropping rows with missing channel</td><td>Understates total revenue</td><td>Label them "Unknown" and keep them</td></tr>
+        <tr><td>Title says "Revenue by region"</td><td>Tells the reader nothing</td><td>"North leads revenue at 31% of total"</td></tr>
+        <tr><td>Legend far from the lines</td><td>Eye travels back and forth</td><td>Direct label at the line end</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Capstone Check — 20 Questions</h2><p>Covers cleaning, layout, encoding, forecast, export, and tooling. Pass: 16/20.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMISSION -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0F172A">📦</div>
+    <div><h2>Submission Checklist</h2><p>Tick every box before you send your work</p></div>
+  </div>
+  <div class="section-body">
+    <ul class="checklist">
+      <li>make_dataset.py, report.py, test_report.py, and NOTES.md are in one folder</li>
+      <li>Deleting the output folder and rerunning the commands rebuilds every file</li>
+      <li>pytest passes with no failures</li>
+      <li>dashboard.png is 200 DPI and no label is clipped</li>
+      <li>The PDF has four pages in the correct order, with metadata set</li>
+      <li>The GIF plays and is under 5 MB</li>
+      <li>Every chart title states a takeaway</li>
+      <li>No rainbow colormap and no 3D chart is used</li>
+      <li>NOTES.md is between 150 and 250 words and has no jargon</li>
+      <li>You can explain, for each chart, why you chose that chart type</li>
+    </ul>
+    <div class="callout green" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges</div>
+      <ul>
+        <li><strong>Dark variant:</strong> wrap <code>build_dashboard</code> in <code>plt.style.context("dark_background")</code> and save <code>dashboard_dark.png</code>. Check that the gold highlight is still readable.</li>
+        <li><strong>Small multiples:</strong> add a 2×2 figure with one trend line per region, sharing the same y-axis.</li>
+        <li><strong>Forecast horizon flag:</strong> add a <code>--horizon</code> argument to the CLI, and make the band and labels update automatically.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Matplotlib Full Course · Capstone Task</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Figure &amp; Basic Plots</span>
+    <span class="day-pill done">Day 2 · Styling &amp; Subplots</span>
+    <span class="day-pill done">Day 3 · Statistical Charts</span>
+    <span class="day-pill done">Day 4 · Animation</span>
+    <span class="day-pill done">Day 5 · Capstone</span>
+    <span class="day-pill done active">Capstone Task ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">Next up: <strong>Seaborn</strong> — statistical visualization built on Matplotlib!</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"Why does report.py call matplotlib.use(\"Agg\") before importing pyplot?",opts:["It makes charts faster to draw on screen","It selects a non-interactive backend so files can be written on a server with no display","It enables 3D plotting","It is required for GridSpec"],ans:1,explain:"The Agg backend renders to files without opening a window, so the script works on servers, in cron jobs, and in CI. Set it before pyplot is imported."},
+  {q:"Why is drop_duplicates applied on order_id rather than on all columns?",opts:["Because pandas cannot drop on all columns","Because the duplicates were created by copying rows, and the order_id is the unique key that identifies a real order","Because region is always unique","Because revenue is never duplicated"],ans:1,explain:"A duplicate order is one with the same order_id. Checking all columns could miss duplicates where a messy field such as region differs in casing."},
+  {q:"Why fill missing channel values with \"Unknown\" instead of dropping those rows?",opts:["Dropping rows is not allowed in pandas","Dropping would remove real revenue from the totals and understate performance","Unknown is a valid channel name for reports","It makes the donut chart faster"],ans:1,explain:"The sale happened, so its revenue belongs in the totals. Labelling it Unknown keeps the total honest and still shows the data gap to the reader."},
+  {q:"Why are returns kept in the data with negative units and revenue, rather than removed?",opts:["Negative revenue is required by PdfPages","Net revenue should subtract returns, and the return rate needs those rows to be present","Matplotlib cannot plot positive values","Removing them doubles the margin"],ans:1,explain:"Net revenue is gross sales minus returns, and the return rate KPI needs the flagged rows. Removing returns would overstate revenue."},
+  {q:"What does height_ratios=[0.6, 1.4, 1.2] control in a GridSpec?",opts:["The colours of each row","The relative height of each row, so the KPI row is shorter than the chart rows","The number of subplots in each row","The DPI of each row"],ans:1,explain:"height_ratios sets the proportional height of each grid row. The KPI strip gets the smallest share, and the two chart rows get the larger shares."},
+  {q:"Why is the regional bar chart sorted ascending before using barh?",opts:["barh requires sorted input","barh draws the first item at the bottom, so ascending order puts the largest region at the top","Ascending order is faster to plot","Sorting removes the value labels"],ans:1,explain:"In a horizontal bar chart, the first category sits at the bottom of the chart. Sorting ascending puts the largest value at the top, where the eye starts reading."},
+  {q:"What does ax.bar_label(bars, fmt=\"%.0f\") do?",opts:["Adds a legend entry for each bar","Writes each bar's value as a text label, formatted with no decimals","Changes the bar colour based on the value","Rotates the bars"],ans:1,explain:"bar_label adds a value label to each bar, which is cleaner and better aligned than writing text with a manual loop."},
+  {q:"Why is showfliers=False used in the margin box plot?",opts:["Fliers are not allowed in PDF exports","The outlier points would stretch the axis and hide the typical range, so the title should state that outliers are hidden","It makes the boxes wider","Fliers only appear in violin plots"],ans:1,explain:"Hiding outliers keeps the typical spread readable. It is a choice that must be stated in the title, or the reader may think the data was filtered without saying so."},
+  {q:"What is the advantage of wedgeprops=dict(width=0.4) on a pie chart?",opts:["It makes the pie larger","It turns the pie into a donut, which is easier to read for part-to-whole with few slices","It removes the labels","It converts the pie to a bar chart"],ans:1,explain:"Setting wedge width creates a ring. Donuts with at most four slices are a readable part-to-whole choice, and the centre can hold a total."},
+  {q:"Why use a diverging colormap such as RdBu_r with vmin=-1 and vmax=1 for the correlation heatmap?",opts:["Because diverging maps are more colourful","Correlations run from -1 to +1 with a meaningful zero, and a diverging map shows the sign and the strength","Because viridis cannot show negative numbers","Because heatmaps must always be red and blue"],ans:1,explain:"A diverging map puts a neutral colour at zero and different hues on each side. Fixing vmin and vmax makes colours comparable across different versions of the chart."},
+  {q:"Why is the forecast band computed with ddof=2?",opts:["To round the standard deviation","The straight-line fit estimates two parameters, slope and intercept, and ddof=2 corrects the variance for that","Because the data has two years","It is required by fill_between"],ans:1,explain:"Degrees of freedom are reduced by one for each parameter estimated from the data. A straight line has two parameters, so the correction is ddof=2."},
+  {q:"Why is the forecast drawn as a dashed line with a label and an uncertainty band?",opts:["Dashed lines are faster to draw","It tells the reader this is an estimate, not an observed value, and shows how uncertain it is","Matplotlib requires a dashed line for forecasts","It hides the actual data"],ans:1,explain:"Visually separating projections from actuals and showing uncertainty prevents readers from treating a guess as fact."},
+  {q:"What does FuncAnimation's update function return, and why?",opts:["None, because the figure is redrawn","A tuple of the artists that changed, so blitting can redraw only those parts","The frame number as a string","The figure object"],ans:1,explain:"With blit=True, Matplotlib needs to know which artists changed. Returning them as a tuple tells it exactly what to redraw."},
+  {q:"Why might a title not update in an animation that uses blit=True?",opts:["Titles can never change in animations","Text that is not among the returned artists may not be redrawn when blitting is on","Titles are read-only in Matplotlib","Blit disables all text"],ans:1,explain:"Blitting redraws only the returned artists. If the title is not returned, it may keep its first value, so you return it or switch blitting off for that animation."},
+  {q:"Why use writer=\"pillow\" for the GIF instead of writer=\"ffmpeg\"?",opts:["Pillow produces higher quality","Pillow ships with Matplotlib's dependencies, so no external program needs to be installed","ffmpeg cannot write GIF files","Pillow is faster for MP4"],ans:1,explain:"ffmpeg is an external program that must be installed separately. Pillow is a Python dependency already present, so the GIF works on any machine."},
+  {q:"Why call plt.close(fig) after each pdf.savefig(fig)?",opts:["savefig fails if the figure stays open","Open figures keep their memory allocated, and a multi-page build can use a lot of memory if they are not closed","It deletes the saved page","It is only needed for animations"],ans:1,explain:"Each open figure holds memory. Closing it after saving keeps a long report build from growing in memory."},
+  {q:"What is pdf.infodict() used for?",opts:["Reading text from the PDF","Setting document metadata such as Title and Author that appears in the file's properties","Changing the page size","Adding a visible header to each page"],ans:1,explain:"infodict() gives access to the PDF metadata dictionary. Title, Author, and Subject set there appear in the document properties, not on the page."},
+  {q:"What is the main difference between plt.style.use() and plt.style.context()?",opts:["use() works only on Windows","use() changes the style for the rest of the session, while context() applies it only inside a with block and then restores the previous style","context() is deprecated","There is no difference"],ans:1,explain:"Use the context form when you want a temporary theme, such as a dark variant, so later charts are not affected."},
+  {q:"Why is the dashboard built in a function that returns the Figure, rather than drawing directly at module level?",opts:["Module-level code cannot use Matplotlib","A function can be reused for both the PNG and the PDF page, and it avoids leftover state from other charts","Functions make the figure faster","Figures can only be returned from functions"],ans:1,explain:"Returning the figure lets one function serve several outputs. Keeping the drawing in a function also stops one chart's settings from leaking into another."},
+  {q:"Which test is the most useful check after cleaning the raw data?",opts:["Checking that the file has a certain size in bytes","Checking that order_id is unique and the region values are exactly the four expected names","Checking that the PDF has four pages","Checking that the GIF has a specific frame count"],ans:1,explain:"These two checks catch the two most damaging cleaning failures: double-counted revenue and inconsistent categories that split one region into several bars."},
+  {q:"Why is it important that the whole report rebuilds from one command with no manual steps?",opts:["It makes the output file bigger","Reproducibility means the same data always produces the same report, so the board can trust the numbers and next month's run is quick","Manual steps are not allowed by Python","It disables the animation"],ans:1,explain:"A scripted pipeline removes human error, makes every number traceable to the input file, and turns a two-day task into a single command."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Revisit cleaning and the layout phases, then try again! 📚"],[50,75,"Good progress. Focus on encoding choices and the forecast band. 💪"],[75,90,"Strong work. The pipeline is solid. 🎉"],[90,101,"Excellent. Ready for a real board pack. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

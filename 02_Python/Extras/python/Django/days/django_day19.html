@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 19</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 19 of 30</span>
+  <h1>Search and Filtering</h1>
+  <p>Estimated time: about 1.5 hours &middot; GET forms, reading query parameters, combining search with filters, safe sorting, keeping filters across pages, and when to use full-text search</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Search Is a GET Request</h2>
+    <p>Searching doesn't change any data, so it should use GET. The search terms travel in the address, such as <code>/search/?q=django&amp;tag=python</code>. That makes results bookmarkable and shareable, and it's the reason search forms use <code>method="get"</code>.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A search is like asking a librarian a question. Nothing is borrowed or changed, so you can repeat the question as often as you like. A POST is more like checking out a book, which changes records.</div>
+    <div class="callout warn">
+      <strong>Rule of thumb:</strong> Use GET for anything that only reads, and POST for anything that changes data (Day 6). Never delete or change records through a GET request.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Reading Query Parameters</h2>
+    <p>Values from the address are available in <code>request.GET</code>, a dictionary-like object. Always give <code>get()</code> a default, because the user may not have typed anything:</p>
+    <pre><code>&gt;&gt;&gt; # for the address /search/?q=django
+&gt;&gt;&gt; request.GET.get("q", "")
+&gt;&gt;&gt; request.GET.get("tag")
+&gt;&gt;&gt; request.GET.get("q", "").strip()</code></pre>
+    <div class="output">'django'
+None
+'django'</div>
+    <p>Missing parameters return the default you give, or None when you give none. Treat every query parameter as untrusted input, the same way you treat form data.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Searching Text</h2>
+    <p>Combine several fields with <code>Q</code> objects (Day 9). <code>icontains</code> gives a case-insensitive match anywhere in the text:</p>
+    <pre><code>&gt;&gt;&gt; from django.db.models import Q
+
+&gt;&gt;&gt; term = "django"
+&gt;&gt;&gt; Post.objects.filter(
+...     Q(title__icontains=term) | Q(body__icontains=term)
+... ).order_by("title")</code></pre>
+    <div class="output">&lt;QuerySet [&lt;Post: Django forms made easy&gt;, &lt;Post: Model tips&gt;]&gt;</div>
+    <p>The output depends on your data. Here, one post has the word in its title and another has it only in its body.</p>
+    <div class="callout tip">
+      <strong>Safe by default:</strong> The ORM turns the search term into a parameter, so text like <code>'; DROP TABLE</code> is treated as plain text. Don't build search SQL with f-strings, even when it seems simple.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Filters from Dropdowns</h2>
+    <p>Filters such as a tag or author are chosen from a list. Skip the filter when its parameter is empty, so the same view handles every combination:</p>
+    <pre><code># blog/views.py
+from django.db.models import Q
+from django.views.generic import ListView
+from .models import Post, Tag
+
+class PostSearchView(ListView):
+    model = Post
+    template_name = "blog/post_search.html"
+    context_object_name = "posts"
+    paginate_by = 5
+
+    SORT_OPTIONS = {
+        "newest": "-created_at",
+        "oldest": "created_at",
+        "title": "title",
+    }
+
+    def get_queryset(self):
+        qs = Post.objects.filter(is_published=True).select_related("author")
+
+        term = self.request.GET.get("q", "").strip()
+        if term:
+            qs = qs.filter(Q(title__icontains=term) | Q(body__icontains=term))
+
+        tag = self.request.GET.get("tag", "")
+        if tag:
+            qs = qs.filter(tags__name=tag).distinct()
+
+        sort = self.request.GET.get("sort", "newest")
+        return qs.order_by(self.SORT_OPTIONS.get(sort, "-created_at"))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = Tag.objects.order_by("name")
+        context["q"] = self.request.GET.get("q", "")
+        params = self.request.GET.copy()
+        params.pop("page", None)
+        context["query_string"] = params.urlencode()
+        return context</code></pre>
+    <div class="callout warn">
+      <strong>Whitelist sort options:</strong> The <code>SORT_OPTIONS</code> dictionary accepts only the names you list. Passing a raw parameter to <code>order_by()</code> would let visitors order by any field, including ones you meant to hide.</div>
+    <div class="callout tip">
+      <strong>Why <code>.distinct()</code> here:</strong> A post with two matching tags is not an issue for a single tag filter, but it becomes one if you later allow several tags at once. Adding it now prevents duplicates later.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: The Search Form</h2>
+    <p>The template shows the form and keeps the user's choices filled in after the search runs:</p>
+    <pre><code># blog/templates/blog/post_search.html
+{% extends "base.html" %}
+{% block content %}
+  &lt;form method="get"&gt;
+    &lt;input type="search" name="q" value="{{ q }}" placeholder="Search posts"&gt;
+    &lt;select name="tag"&gt;
+      &lt;option value=""&gt;All tags&lt;/option&gt;
+      {% for t in tags %}
+        &lt;option value="{{ t.name }}" {% if request.GET.tag == t.name %}selected{% endif %}&gt;{{ t.name }}&lt;/option&gt;
+      {% endfor %}
+    &lt;/select&gt;
+    &lt;select name="sort"&gt;
+      &lt;option value="newest" {% if request.GET.sort == "newest" %}selected{% endif %}&gt;Newest&lt;/option&gt;
+      &lt;option value="oldest" {% if request.GET.sort == "oldest" %}selected{% endif %}&gt;Oldest&lt;/option&gt;
+      &lt;option value="title" {% if request.GET.sort == "title" %}selected{% endif %}&gt;Title&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;button type="submit"&gt;Search&lt;/button&gt;
+  &lt;/form&gt;
+
+  &lt;p&gt;{{ posts|length }} result(s) on this page.&lt;/p&gt;
+  {% for post in posts %}
+    &lt;article&gt;
+      &lt;h2&gt;&lt;a href="{% url 'post_detail' post.pk %}"&gt;{{ post.title }}&lt;/a&gt;&lt;/h2&gt;
+      &lt;p&gt;{{ post.body|truncatewords:20 }}&lt;/p&gt;
+    &lt;/article&gt;
+  {% empty %}
+    &lt;p&gt;No posts match your search.&lt;/p&gt;
+  {% endfor %}
+
+  {% if is_paginated %}
+    {% if page_obj.has_previous %}
+      &lt;a href="?page={{ page_obj.previous_page_number }}&amp;{{ query_string }}"&gt;Previous&lt;/a&gt;
+    {% endif %}
+    {% if page_obj.has_next %}
+      &lt;a href="?page={{ page_obj.next_page_number }}&amp;{{ query_string }}"&gt;Next&lt;/a&gt;
+    {% endif %}
+  {% endif %}
+{% endblock %}</code></pre>
+    <div class="callout tip">
+      <strong>Keeping filters across pages:</strong> The <code>query_string</code> variable holds every filter except <code>page</code>. Without it, clicking Next would drop the search term and tag.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Testing Search</h2>
+    <p>Search logic is easy to test with the Django test client (Day 13), so test each filter alone and then together:</p>
+    <pre><code>class PostSearchTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        author = Author.objects.create(name="Asha", email="asha@example.com")
+        Post.objects.create(author=author, title="Django forms", body="Forms", is_published=True)
+        Post.objects.create(author=author, title="Python basics", body="Loops", is_published=True)
+        Post.objects.create(author=author, title="Draft django", body="Hidden", is_published=False)
+
+    def test_search_matches_title_case_insensitively(self):
+        response = self.client.get(reverse("post_search"), {"q": "DJANGO"})
+        self.assertContains(response, "Django forms")
+        self.assertNotContains(response, "Python basics")
+
+    def test_drafts_never_appear(self):
+        response = self.client.get(reverse("post_search"), {"q": "django"})
+        self.assertNotContains(response, "Draft django")
+
+    def test_invalid_sort_falls_back_to_newest(self):
+        response = self.client.get(reverse("post_search"), {"sort": "drop_table"})
+        self.assertEqual(response.status_code, 200)</code></pre>
+    <div class="callout warn">
+      <strong>Test the hidden rules:</strong> The most important test here is that drafts never appear in search. A search bug that leaks drafts is easy to miss if you only test the happy path.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Beyond icontains</h2>
+    <p><code>icontains</code> scans every row, which is fine for small sites. Larger sites need more:</p>
+    <table>
+      <tr><th>Approach</th><th>Good for</th></tr>
+      <tr><td><code>icontains</code> with Q</td><td>Small tables and simple matching (what you built today)</td></tr>
+      <tr><td>Database indexes on searched fields</td><td>Speeding up exact and prefix matches</td></tr>
+      <tr><td>PostgreSQL full-text search (<code>SearchVector</code>, <code>SearchQuery</code>)</td><td>Ranking results by relevance, stemming words, and handling many languages</td></tr>
+      <tr><td>Dedicated search engines (Elasticsearch, Meilisearch)</td><td>Very large catalogues with typo tolerance and facets</td></tr>
+      <tr><td>django-filter package</td><td>Building many filter forms without writing each one by hand</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Start simple:</strong> Build the plain version first, measure, and add more power only when real users need it.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 19</h2>
+    <ol>
+      <li><strong>Using POST for search:</strong> results can't be bookmarked, and the browser asks to resubmit on refresh.</li>
+      <li><strong>Passing raw parameters to order_by:</strong> whitelist allowed sort fields.</li>
+      <li><strong>Forgetting to keep filters in pagination links:</strong> the next page loses the search.</li>
+      <li><strong>Showing drafts in search:</strong> filter with <code>is_published=True</code> before applying search terms.</li>
+      <li><strong>Assuming an empty search means all results:</strong> decide whether empty input shows everything, nothing, or the latest posts, and test that choice.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Text Search</h3>
+      <p>Add the search view and template. Search for a word that appears only in a post's body, and confirm the post is found.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Tag Filter</h3>
+      <p>Add the tag dropdown. Filter by one tag and confirm only posts with that tag appear, with no duplicates.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Sorting</h3>
+      <p>Add the sort dropdown with the whitelist. Try <code>?sort=title</code> and <code>?sort=unknown</code>, and confirm the second falls back to newest.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Pagination with Filters</h3>
+      <p>Set <code>paginate_by = 2</code>, create enough matching posts for two pages, and confirm the Next link keeps the search term and tag.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Tests</h3>
+      <p>Write the three tests from Lesson 6 and run them. Then add one test that a search for a tag returns only that tag's posts.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Feature</th><th>Where you'll see it</th></tr>
+      <tr><td>GET search with shareable URLs</td><td>Product search on shopping sites and job boards</td></tr>
+      <tr><td>Filter dropdowns</td><td>Hotel booking by price, rating, and amenities</td></tr>
+      <tr><td>Sorting whitelists</td><td>"Sort by price" menus that never expose internal fields</td></tr>
+      <tr><td>Full-text search</td><td>Knowledge bases and document archives with relevance ranking</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django REST framework supports the same query parameters for APIs, so the filtering you wrote today carries over to your future JSON endpoints.</div>
+  </section>
+
+  <section>
+    <h2>Day 19 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 19 of 30 &middot; Next: Day 20 - Caching Basics</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Why should a search form use method=\"get\"?",
+      options: ["GET is more secure than POST", "Searching only reads data, and GET keeps results bookmarkable and shareable", "POST cannot send text", "Browsers require GET for all forms"],
+      answer: 1,
+      explain: "GET suits read-only actions, and the search terms appear in the URL for sharing."
+    },
+    {
+      q: "What does request.GET.get('q', '') return when q is missing?",
+      options: ["None", "An empty string", "An error", "The last search"],
+      answer: 1,
+      explain: "The default value is returned when the parameter is absent, so the code can continue safely."
+    },
+    {
+      q: "Which operator combines two Q objects so either condition may match?",
+      options: ["&", "|", "~", "+"],
+      answer: 1,
+      explain: "The pipe operator combines Q objects with OR."
+    },
+    {
+      q: "Why is it risky to pass request.GET['sort'] straight into order_by()?",
+      options: ["It makes queries slower", "Visitors could order by fields you intended to keep hidden", "order_by cannot accept strings", "It deletes the sort field"],
+      answer: 1,
+      explain: "A whitelist limits sorting to the options you approve."
+    },
+    {
+      q: "What is the purpose of the query_string variable in the pagination links?",
+      options: ["It stores the password", "It keeps the search and filter values when moving between pages", "It clears the search", "It counts the results"],
+      answer: 1,
+      explain: "Without the existing parameters, Next and Previous would reset the search."
+    },
+    {
+      q: "Why does the view filter is_published=True before applying the search term?",
+      options: ["Search is faster that way only", "Drafts must never appear in public search results", "Django requires the order", "Titles cannot be searched when drafts exist"],
+      answer: 1,
+      explain: "Applying the public rule first ensures drafts never leak into results."
+    },
+    {
+      q: "What does icontains do?",
+      options: ["Matches exact text, case-sensitive", "Matches text anywhere in the field, ignoring case", "Matches only the start of text", "Matches numbers only"],
+      answer: 1,
+      explain: "icontains is a case-insensitive substring match."
+    },
+    {
+      q: "Why is text search built with the ORM safe from SQL injection?",
+      options: ["Search terms are ignored", "The ORM sends the term as a parameter, not as SQL code", "Search is disabled for symbols", "The database rejects all input"],
+      answer: 1,
+      explain: "Parameterised queries keep user text separate from the SQL command."
+    },
+    {
+      q: "Why is distinct() useful when filtering by a ManyToMany field?",
+      options: ["It sorts the results", "It removes duplicate posts that match more than one matching row", "It speeds up the page", "It deletes unused tags"],
+      answer: 1,
+      explain: "A join can return the same post several times, and distinct() keeps each post once."
+    },
+    {
+      q: "When is PostgreSQL full-text search a better choice than icontains?",
+      options: ["For a three-post blog", "When you need relevance ranking, word stemming, and fast search over large text", "When you do not use a database", "When the search term is one letter"],
+      answer: 1,
+      explain: "Full-text search adds ranking and language features that simple substring matching cannot provide."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 20!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

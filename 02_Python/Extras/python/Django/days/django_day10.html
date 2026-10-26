@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 10</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 10 of 30</span>
+  <h1>Model Methods, Managers, and Signals</h1>
+  <p>Estimated time: about 1.5 hours &middot; Putting behaviour where the data lives: model methods and properties, Meta options, custom QuerySets and managers, constraints, and signals</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Fat Models, Thin Views</h2>
+    <p>Views and templates should describe what the page shows. Rules about the data itself, such as "a published post needs a body" or "word count of an article", belong on the model. Then every view, form, admin page, and shell session follows the same rule.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A model is the engine of a car, and views are the dashboard. If the engine rules are written on the dashboard, every new car needs them rewritten. Keep the rules in the engine.</div>
+    <p>This principle is often called "fat models, thin views". It keeps your logic in one place and easy to test.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Model Methods</h2>
+    <p>A method on a model can read and change its own data. Add a few useful ones to the <code>Post</code> model from the mini blog:</p>
+    <pre><code># blog/models.py
+from django.db import models
+from django.urls import reverse
+
+class Post(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="posts")
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
+    def publish(self):
+        self.is_published = True
+        self.save(update_fields=["is_published"])
+
+    def get_absolute_url(self):
+        return reverse("post_detail", args=[self.pk])
+
+    @property
+    def word_count(self):
+        return len(self.body.split())</code></pre>
+    <p>Use them like any other attribute or method:</p>
+    <pre><code>&gt;&gt;&gt; post = Post.objects.get(title="Model tips")
+&gt;&gt;&gt; post.word_count
+&gt;&gt;&gt; post.publish()
+&gt;&gt;&gt; post.is_published
+&gt;&gt;&gt; post.get_absolute_url()</code></pre>
+    <div class="output">3
+True
+'/posts/1/'</div>
+    <p>The word count uses the sample body "Keep models small.", which has three words. The URL uses the primary key 1, so your number may differ.</p>
+    <table>
+      <tr><th>Kind</th><th>When to use</th></tr>
+      <tr><td>Method (<code>publish()</code>)</td><td>An action that changes data or needs arguments</td></tr>
+      <tr><td>Property (<code>@property word_count</code>)</td><td>A read-only value calculated from fields</td></tr>
+      <tr><td><code>get_absolute_url()</code></td><td>The canonical address of one object, used by admin's "View on site" and by templates</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Use <code>update_fields</code>:</strong> <code>save(update_fields=[...])</code> writes only the named columns. This avoids overwriting changes that another request made to other fields at the same time.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Custom QuerySets with Chaining</h2>
+    <p>Filters such as "published posts" get repeated across views. A custom QuerySet lets you name them and chain them together:</p>
+    <pre><code># blog/models.py
+class PostQuerySet(models.QuerySet):
+    def published(self):
+        return self.filter(is_published=True)
+
+    def by_author(self, name):
+        return self.filter(author__name=name)
+
+class Post(models.Model):
+    # ...fields from above...
+    objects = PostQuerySet.as_manager()</code></pre>
+    <pre><code>&gt;&gt;&gt; Post.objects.published().by_author("Asha").order_by("title")</code></pre>
+    <div class="output">&lt;QuerySet [&lt;Post: Model tips&gt;, &lt;Post: Views explained&gt;]&gt;</div>
+    <p>Because each method returns a QuerySet, you can chain as many as you need. <code>as_manager()</code> exposes these methods on <code>Post.objects</code> as well.</p>
+    <div class="callout tip">
+      <strong>Naming tip:</strong> Name queryset methods after the business meaning, such as <code>published()</code>, rather than the field, such as <code>filter_is_published()</code>. Views then read like plain English.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Custom Managers</h2>
+    <p>A manager is the object behind <code>Post.objects</code>. You can add a second manager for a common view of the data, such as only published posts:</p>
+    <pre><code># blog/models.py
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_published=True)
+
+class Post(models.Model):
+    # ...fields...
+    objects = models.Manager()          # keep the default first
+    published = PublishedManager()</code></pre>
+    <pre><code>&gt;&gt;&gt; Post.published.all().order_by("title")</code></pre>
+    <div class="output">&lt;QuerySet [&lt;Post: Model tips&gt;, &lt;Post: Views explained&gt;]&gt;</div>
+    <div class="callout warn">
+      <strong>Order matters:</strong> The first manager defined on a model becomes the default. Django uses the default for related lookups, admin pages, and some built-in operations. Put the plain <code>objects</code> manager first, so no records are hidden by accident.</div>
+    <p>For most projects, a custom QuerySet with <code>as_manager()</code> (Lesson 3) is more flexible than a custom manager. Use a custom manager when you need to change the base queryset for everyone.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Meta Options</h2>
+    <p>The inner <code>Meta</code> class controls how the model behaves across the project:</p>
+    <pre><code>class Post(models.Model):
+    # ...fields...
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "article"
+        verbose_name_plural = "articles"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["author", "title"],
+                name="unique_title_per_author",
+            ),
+        ]</code></pre>
+    <table>
+      <tr><th>Option</th><th>Effect</th></tr>
+      <tr><td><code>ordering</code></td><td>Default order for every query on this model</td></tr>
+      <tr><td><code>verbose_name</code> / <code>verbose_name_plural</code></td><td>Names shown in the admin, such as "Articles" instead of "Posts"</td></tr>
+      <tr><td><code>constraints</code></td><td>Rules enforced by the database, such as unique combinations</td></tr>
+      <tr><td><code>indexes</code></td><td>Speeds up searches on columns you filter often</td></tr>
+    </table>
+    <p>A constraint is enforced by the database itself, so it holds even when code elsewhere forgets to check. Create a migration after adding one, as usual:</p>
+    <pre><code>python manage.py makemigrations blog
+python manage.py migrate</code></pre>
+    <div class="callout warn">
+      <strong>Constraint errors:</strong> Creating a duplicate title for the same author now raises <code>IntegrityError</code>. Forms check uniqueness for you, but shell code and imports need to handle the exception.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Signals</h2>
+    <p>A <strong>signal</strong> announces that something happened, such as a model being saved. Receivers listen for the signal and react. This lets you add behaviour without editing the model or the view that saved it.</p>
+    <pre><code># blog/signals.py
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .models import Post
+
+@receiver(post_save, sender=Post)
+def announce_new_post(sender, instance, created, **kwargs):
+    if created and instance.is_published:
+        print(f"New post published: {instance.title}")</code></pre>
+    <p>Connect the receiver when the app starts, in <code>apps.py</code>:</p>
+    <pre><code># blog/apps.py
+from django.apps import AppConfig
+
+class BlogConfig(AppConfig):
+    name = "blog"
+
+    def ready(self):
+        from . import signals  # noqa: F401</code></pre>
+    <div class="output">New post published: Hello Django</div>
+    <p>The output appears when a new published post is saved, for example from the shell or the admin.</p>
+    <div class="callout warn">
+      <strong>Use signals with care:</strong> Signals hide the connection between actions. When a signal sends an email or changes other data, a later developer may not know it happens. Prefer explicit method calls for core logic, and keep signals for side effects such as logging, cache clearing, or notifications.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 10</h2>
+    <ol>
+      <li><strong>Putting business rules only in views:</strong> the same rule must then be repeated in the admin, forms, and shell.</li>
+      <li><strong>Defining a custom manager first:</strong> it becomes the default and can hide records.</li>
+      <li><strong>Forgetting to make a migration after adding a constraint:</strong> the database keeps its old rules.</li>
+      <li><strong>Using a signal for something the caller should control explicitly:</strong> the code becomes hard to follow.</li>
+      <li><strong>Calling <code>save()</code> without <code>update_fields</code> in a method that changes one field:</strong> it can overwrite concurrent changes.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Model Methods</h3>
+      <p>Add the <code>publish()</code> method and the <code>word_count</code> property. Use them in the shell on a draft post, then confirm the post appears on the public list.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Custom QuerySet</h3>
+      <p>Write <code>PostQuerySet</code> with <code>published()</code> and <code>by_author()</code>. Use <code>as_manager()</code>, then update the Day 8 list view to use <code>Post.objects.published()</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Constraint</h3>
+      <p>Add the unique constraint from Lesson 5, run the migration, and try to create two posts with the same title for the same author. Record the error.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Signal</h3>
+      <p>Create the signal receiver and the <code>ready()</code> method. Create a published post in the shell and confirm the message prints. Create a draft and confirm nothing prints.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Use get_absolute_url</h3>
+      <p>Use <code>{{ post.get_absolute_url }}</code> in a template instead of building the link with <code>{% url %}</code>. Confirm the link works, then check that the admin's "View on site" button also appears.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Technique</th><th>Where you'll see it</th></tr>
+      <tr><td>Model methods such as publish()</td><td>Approving an order, marking an invoice paid, or closing a ticket</td></tr>
+      <tr><td>Custom QuerySets</td><td>Shops with <code>.in_stock()</code> and <code>.on_sale()</code> that read like sentences</td></tr>
+      <tr><td>Unique constraints</td><td>Preventing two accounts with the same email or two bookings for one seat</td></tr>
+      <tr><td>Signals</td><td>Sending a welcome email after sign-up or clearing a cache after an update</td></tr>
+      <tr><td>get_absolute_url</td><td>Sitemaps, feeds, and "View on site" in the admin</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> The admin, forms, and Django REST framework all call model methods and managers. Writing your logic there now means every tool benefits from it.</div>
+  </section>
+
+  <section>
+    <h2>Day 10 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 10 of 30 &middot; Next: Day 11 - Sessions, Cookies, and Messages</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the 'fat models, thin views' principle?",
+      options: ["Models should contain HTML", "Business rules belong on the model, so every part of the project shares them", "Views should hold all the database code", "Models should have no methods"],
+      answer: 1,
+      explain: "Putting rules on the model means views, forms, admin, and the shell all follow the same logic."
+    },
+    {
+      q: "Why use save(update_fields=['is_published'])?",
+      options: ["It is faster to type", "It writes only the named column, avoiding overwriting other changes", "It creates a new post", "It is required for booleans"],
+      answer: 1,
+      explain: "Limiting the save to specific fields prevents accidental overwrites of data changed elsewhere."
+    },
+    {
+      q: "What does @property allow you to do with word_count?",
+      options: ["Call it with parentheses only", "Read it like an attribute, such as post.word_count", "Delete it", "Store it in the database"],
+      answer: 1,
+      explain: "A property is computed when read and is accessed without parentheses."
+    },
+    {
+      q: "What does PostQuerySet.as_manager() do?",
+      options: ["Creates a superuser", "Makes the QuerySet's methods available on Post.objects", "Deletes the QuerySet", "Creates a migration"],
+      answer: 1,
+      explain: "as_manager() exposes the custom QuerySet methods through the model's manager."
+    },
+    {
+      q: "Why should the plain objects manager be defined first when you add a second manager?",
+      options: ["Python requires it", "The first manager becomes the default, which Django uses for related lookups and admin", "It makes queries faster", "It deletes the second manager"],
+      answer: 1,
+      explain: "The default manager affects many built-in operations, so putting plain objects first avoids hidden records."
+    },
+    {
+      q: "What does a UniqueConstraint on ['author', 'title'] enforce?",
+      options: ["Each title is unique across all authors", "No author can have two posts with the same title", "Each author has exactly one post", "Titles must be in capitals"],
+      answer: 1,
+      explain: "The constraint applies to the combination, so different authors can share a title."
+    },
+    {
+      q: "Why must you run migrate after adding a constraint?",
+      options: ["Constraints exist only in Python", "The database must be updated to enforce the new rule", "It deletes old posts", "Migrations are optional"],
+      answer: 1,
+      explain: "Constraints live in the database, so the migration must apply them to the table."
+    },
+    {
+      q: "Which decorator connects a receiver to a signal?",
+      options: ["@signal", "@receiver", "@connect", "@listen"],
+      answer: 1,
+      explain: "The @receiver decorator registers a function to run when the given signal is sent."
+    },
+    {
+      q: "Where is a signal receiver normally connected so it runs when the app starts?",
+      options: ["In the template", "In the apps.py ready() method", "In settings.py only, as a string", "In the migration file"],
+      answer: 1,
+      explain: "ready() runs once Django loads the app, which is when signal receivers should be imported."
+    },
+    {
+      q: "What is the main risk of signals?",
+      options: ["They are too fast", "They hide side effects, so later developers may not know what happens on save", "They cannot read the model", "They block the database"],
+      answer: 1,
+      explain: "Signals connect actions implicitly, which can make the code harder to follow and debug."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 11!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

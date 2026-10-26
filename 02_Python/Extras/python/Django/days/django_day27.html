@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 27</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 27 of 30</span>
+  <h1>API Versioning and Throttling Deep Dive</h1>
+  <p>Estimated time: about 1.5 hours &middot; Versioning strategies, serving two versions side by side, scoped throttles, custom throttle classes, and the 429 response</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Version an API?</h2>
+    <p>Once mobile apps and other clients depend on your API, changing a field name breaks them. Versioning lets you release a new shape while old clients keep using the old one.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A version is like a product edition. Owners of the old model keep their manual, and new buyers get the new one. Both still work.</div>
+    <p>The rule of thumb: add fields freely, but rename or remove them only in a new version.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Choosing a Versioning Strategy</h2>
+    <p>DRF offers several ways for a client to say which version it wants:</p>
+    <table>
+      <tr><th>Class</th><th>How the client asks</th><th>Example</th></tr>
+      <tr><td><code>URLPathVersioning</code></td><td>Version in the URL path</td><td><code>/api/v1/posts/</code></td></tr>
+      <tr><td><code>NamespaceVersioning</code></td><td>URL namespace (<code>v1</code>, <code>v2</code>)</td><td><code>/v1/posts/</code> via namespaces</td></tr>
+      <tr><td><code>QueryParameterVersioning</code></td><td>Query string parameter</td><td><code>/api/posts/?version=2</code></td></tr>
+      <tr><td><code>AcceptHeaderVersioning</code></td><td>Media type in the <code>Accept</code> header</td><td><code>Accept: application/json; version=2.0</code></td></tr>
+      <tr><td><code>HostNameVersioning</code></td><td>Subdomain</td><td><code>v2.api.example.com</code></td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Most common choice:</strong> <code>URLPathVersioning</code>. The version is visible in logs, easy to test in a browser, and easy to cache.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: URL Path Versioning</h2>
+    <p>Turn on the versioning class in settings, then give the URL a <code>version</code> part:</p>
+    <pre><code># settings.py
+REST_FRAMEWORK = {
+    # ...existing settings...
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
+    "DEFAULT_VERSION": "1",
+    "ALLOWED_VERSIONS": ["1", "2"],
+}</code></pre>
+    <pre><code># blog/urls.py
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+from .api_views import PostViewSet
+
+router = DefaultRouter()
+router.register("posts", PostViewSet, basename="post")
+
+urlpatterns = [
+    path("api/<str:version>/", include(router.urls)),
+]</code></pre>
+    <p>Inside a view, <code>request.version</code> holds the version string from the URL. A request for <code>/api/3/posts/</code> is rejected because <code>3</code> isn't in <code>ALLOWED_VERSIONS</code>.</p>
+    <div class="callout warn">
+      <strong>Check the URL pattern:</strong> The URL must contain the version segment, and its keyword must match <code>VERSION_PARAM</code>, which defaults to <code>version</code>. If it doesn't match, <code>request.version</code> will be <code>None</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Different Behaviour per Version</h2>
+    <p>Branch on <code>request.version</code> inside the serializer or viewset. Keep the difference small and clear:</p>
+    <pre><code>class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.version == "2":
+            return PostSerializerV2     # renamed fields and new shape
+        return PostSerializer           # the original v1 shape</code></pre>
+    <div class="output">GET /api/1/posts/  -&gt; {"title": "Hello", "author": 3}
+GET /api/2/posts/  -&gt; {"title": "Hello", "author": {"id": 3, "name": "Asha"}}</div>
+    <div class="callout tip">
+      <strong>Two serializers, one queryset:</strong> Keeping the data access the same and changing only the serializer is the cleanest way to version. Your business logic stays in one place.</div>
+    <div class="callout warn">
+      <strong>Don't let versions drift:</strong> Every fix to shared logic must reach both versions. Remove old versions on a schedule and announce the date in advance.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Throttling Recap and Scoped Rates</h2>
+    <p>Day 26 set global limits for anonymous and signed-in users. Often a single endpoint needs its own limit, such as a login or an expensive search. <code>ScopedRateThrottle</code> lets each view declare a named scope:</p>
+    <pre><code># settings.py
+REST_FRAMEWORK = {
+    # ...existing settings...
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "search": "30/minute",
+        "uploads": "10/hour",
+    },
+}</code></pre>
+    <pre><code>from rest_framework.throttling import ScopedRateThrottle
+
+class PostViewSet(viewsets.ModelViewSet):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "search"
+    # ...rest of the viewset...</code></pre>
+    <p>Only views with a <code>throttle_scope</code> are limited, and only by that scope's rate. A view without a scope is not throttled by this class.</p>
+    <div class="callout tip">
+      <strong>Rate format:</strong> Rates are <code>number/period</code>, where the period is <code>second</code>, <code>minute</code>, <code>hour</code>, or <code>day</code>. Examples: <code>100/hour</code>, <code>5/second</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: The 429 Response</h2>
+    <p>When a client goes over the limit, DRF returns <code>429 Too Many Requests</code>. It also sends a <code>Retry-After</code> header with the number of seconds to wait:</p>
+    <div class="output">HTTP/1.1 429 Too Many Requests
+Retry-After: 42
+
+{"detail": "Request was throttled. Expected available in 42 seconds."}</div>
+    <p>A well-behaved client reads <code>Retry-After</code> and pauses. Your own tests can check the status code and that the header is present.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: A Custom Throttle</h2>
+    <p>Sometimes you want to limit by something other than the IP or user, such as the API key in a header. Subclass <code>SimpleRateThrottle</code> and define the cache key:</p>
+    <pre><code># blog/throttles.py
+from rest_framework.throttling import SimpleRateThrottle
+
+class ApiKeyThrottle(SimpleRateThrottle):
+    scope = "api_key"
+
+    def get_cache_key(self, request, view):
+        key = request.headers.get("X-API-Key")
+        if not key:
+            return None                 # None means: don't throttle this request
+        return self.cache_format % {"scope": self.scope, "ident": key}</code></pre>
+    <pre><code>REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_RATES": {
+        # ...other scopes...
+        "api_key": "500/day",
+    },
+}</code></pre>
+    <div class="callout warn">
+      <strong>Don't trust the header blindly:</strong> A client can change its <code>X-API-Key</code> value to escape the limit. Throttle by a value you verified (such as a token's user), or combine it with the IP address.</div>
+    <div class="callout tip">
+      <strong>Returning None:</strong> If <code>get_cache_key</code> returns <code>None</code>, DRF skips throttling for that request. This is how you exempt internal calls.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Testing Versions and Throttles</h2>
+    <p>Throttle counts live in the cache, so tests must clear it between runs or earlier tests will affect later ones:</p>
+    <pre><code>from django.core.cache import cache
+from django.test import override_settings
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+
+class VersionAndThrottleTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_v1_returns_original_shape(self):
+        response = self.client.get("/api/1/posts/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unknown_version_is_rejected(self):
+        response = self.client.get("/api/9/posts/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @override_settings(REST_FRAMEWORK={
+        "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.AnonRateThrottle"],
+        "DEFAULT_THROTTLE_RATES": {"anon": "2/minute"},
+    })
+    def test_third_anonymous_request_is_throttled(self):
+        url = "/api/1/posts/"
+        self.client.get(url)
+        self.client.get(url)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+        self.assertIn("Retry-After", response)</code></pre>
+    <div class="callout tip">
+      <strong>Why override_settings:</strong> Throttle classes read their rates when DRF loads them. Overriding the setting for one test keeps the low limit from affecting the rest of the suite.</div>
+    <div class="callout warn">
+      <strong>Caching in tests:</strong> If your test settings use a cache that other tests share, <code>cache.clear()</code> in <code>setUp</code> is essential. Otherwise a test that runs later may get throttled by requests from an earlier test.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 27</h2>
+    <ol>
+      <li><strong>Mismatched URL keyword:</strong> the pattern must use <code>&lt;str:version&gt;</code>, or <code>request.version</code> is <code>None</code>.</li>
+      <li><strong>Forgetting <code>ALLOWED_VERSIONS</code>:</strong> unexpected versions can reach your code.</li>
+      <li><strong>Duplicated business logic across versions:</strong> share the queryset and service code; version only the shape.</li>
+      <li><strong>A scope with no matching rate:</strong> the throttle has nothing to enforce, so check <code>DEFAULT_THROTTLE_RATES</code>.</li>
+      <li><strong>Trusting client-supplied keys for throttling:</strong> verify them first.</li>
+      <li><strong>Not clearing the cache in tests:</strong> counts carry over between tests.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> API from the last few days.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Add Versions</h3>
+      <p>Switch to <code>URLPathVersioning</code>, set <code>ALLOWED_VERSIONS</code> to <code>["1", "2"]</code>, and visit <code>/api/1/posts/</code> and <code>/api/2/posts/</code>. Try <code>/api/3/posts/</code> and note the error.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Two Shapes</h3>
+      <p>Create <code>PostSerializerV2</code> that nests the author's name. Switch serializers in <code>get_serializer_class</code> based on <code>request.version</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Scoped Throttle</h3>
+      <p>Put <code>ScopedRateThrottle</code> on the list view with the scope <code>"search"</code> at <code>5/minute</code>. Send six requests and confirm the sixth gets 429 with a <code>Retry-After</code> header.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Custom Throttle</h3>
+      <p>Write <code>ApiKeyThrottle</code>. Send requests with different <code>X-API-Key</code> values and confirm each key has its own count.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Tests</h3>
+      <p>Write the three tests from Lesson 8 and run <code>python manage.py test</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Pattern</th><th>Where you'll see it</th></tr>
+      <tr><td>URL path versions</td><td>Public APIs such as payment and mapping services with <code>/v1/</code> and <code>/v2/</code></td></tr>
+      <tr><td>Scoped throttles</td><td>Stricter limits on login, password reset, and search endpoints</td></tr>
+      <tr><td>Per-key limits</td><td>Paid API plans with different monthly quotas</td></tr>
+      <tr><td>Retry-After handling</td><td>Client SDKs that back off automatically on 429</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Looking ahead:</strong> Tomorrow you'll prepare the project for production with Docker, so the same code runs the same way on any server.</div>
+  </section>
+
+  <section>
+    <h2>Day 27 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 27 of 30 &middot; Next: Day 28 - Docker for Django</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which rule of thumb keeps existing clients safe when changing an API?",
+      options: ["Rename fields freely", "Add fields freely, but rename or remove fields only in a new version", "Remove old fields first", "Never change anything"],
+      answer: 1,
+      explain: "Adding fields is usually safe. Renaming or removing breaks clients that depend on the old shape."
+    },
+    {
+      q: "Which versioning class puts the version in the URL path?",
+      options: ["AcceptHeaderVersioning", "QueryParameterVersioning", "URLPathVersioning", "HostNameVersioning"],
+      answer: 2,
+      explain: "URLPathVersioning reads the version from a path segment such as /api/1/."
+    },
+    {
+      q: "What does request.version hold when the URL pattern has no matching version keyword?",
+      options: ["The default version always", "None", "The number 0", "An error is raised at startup"],
+      answer: 1,
+      explain: "If the keyword doesn't match VERSION_PARAM, DRF cannot find a version, so request.version is None."
+    },
+    {
+      q: "What does ALLOWED_VERSIONS do?",
+      options: ["It sets the database version", "It lists versions the API accepts; others are rejected", "It sets the Python version", "It enables throttling"],
+      answer: 1,
+      explain: "Only listed versions are accepted, so unknown versions are not routed to your code."
+    },
+    {
+      q: "What does ScopedRateThrottle require on a view?",
+      options: ["A throttle_scope attribute", "A custom cache backend", "A Token model", "A signal"],
+      answer: 0,
+      explain: "The view names its scope with throttle_scope, and DEFAULT_THROTTLE_RATES gives that scope its rate."
+    },
+    {
+      q: "Which HTTP status does a throttled request receive?",
+      options: ["403 Forbidden", "409 Conflict", "429 Too Many Requests", "503 Service Unavailable"],
+      answer: 2,
+      explain: "429 is the status for rate limits, and DRF also sends Retry-After."
+    },
+    {
+      q: "What does the Retry-After header tell the client?",
+      options: ["The API version to use", "How long in seconds to wait before retrying", "The user's password", "Where the server is located"],
+      answer: 1,
+      explain: "Retry-After gives the wait time, so well-behaved clients can pause instead of hammering the server."
+    },
+    {
+      q: "What should get_cache_key return to skip throttling for a request?",
+      options: ["0", "An empty string", "None", "False"],
+      answer: 2,
+      explain: "Returning None tells DRF not to apply the throttle to that request."
+    },
+    {
+      q: "Why is trusting an X-API-Key header for throttling risky?",
+      options: ["Headers cannot be read", "A client can change the value to get a fresh count", "It is too slow", "Throttling ignores headers"],
+      answer: 1,
+      explain: "A client can send any key it likes, so verify keys before using them to count requests."
+    },
+    {
+      q: "Why call cache.clear() in setUp for throttle tests?",
+      options: ["To delete the database", "So request counts from earlier tests do not affect later ones", "To speed up migrations", "To reset the admin password"],
+      answer: 1,
+      explain: "Throttle counts are stored in the cache. Clearing it gives each test a clean count."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 28!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

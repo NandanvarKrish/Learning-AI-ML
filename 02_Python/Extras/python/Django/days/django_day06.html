@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 6</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 6 of 30</span>
+  <h1>Forms and User Input</h1>
+  <p>Estimated time: about 1.5 hours &middot; Form classes, ModelForm, handling GET and POST, validation, cleaned_data, CSRF protection, and redirect after POST</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Forms Matter</h2>
+    <p>Almost every useful site receives input: sign-up forms, comments, search boxes, and checkout pages. Users make mistakes, and some enter malicious data. Django's form system handles the hard parts: displaying fields, checking values, showing errors, and protecting against attacks.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A form is a bouncer at the door. It checks every guest's ticket (the data) against the rules before anyone gets inside the venue (your database).</div>
+    <p>Never trust data from the browser. Anyone can send any values, even ones your HTML doesn't offer. Django's forms validate on the server, which is where the real checking must happen.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: A Plain Form Class</h2>
+    <p>Create <code>blog/forms.py</code> and describe the fields. Django builds the HTML inputs for you:</p>
+    <pre><code># blog/forms.py
+from django import forms
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=50)
+    email = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)</code></pre>
+    <p>Test it in the shell before using it in a page. Passing a dictionary of data creates a <strong>bound</strong> form, which can be validated:</p>
+    <pre><code>&gt;&gt;&gt; from blog.forms import ContactForm
+&gt;&gt;&gt; f = ContactForm({"name": "Sam", "email": "bad", "message": "Hi"})
+&gt;&gt;&gt; f.is_valid()
+False
+&gt;&gt;&gt; list(f.errors["email"])
+['Enter a valid email address.']
+
+&gt;&gt;&gt; g = ContactForm({"name": "Sam", "email": "sam@example.com", "message": "Hi"})
+&gt;&gt;&gt; g.is_valid()
+True
+&gt;&gt;&gt; g.cleaned_data["email"]
+'sam@example.com'</code></pre>
+    <div class="output">False
+['Enter a valid email address.']
+True
+'sam@example.com'</div>
+    <table>
+      <tr><th>Field type</th><th>Checks</th></tr>
+      <tr><td><code>CharField</code></td><td>Text, with optional <code>max_length</code> and <code>min_length</code></td></tr>
+      <tr><td><code>EmailField</code></td><td>A valid email format</td></tr>
+      <tr><td><code>IntegerField</code></td><td>A whole number, with optional <code>min_value</code> and <code>max_value</code></td></tr>
+      <tr><td><code>BooleanField</code></td><td>A checkbox</td></tr>
+      <tr><td><code>DateField</code></td><td>A valid date</td></tr>
+      <tr><td><code>ChoiceField</code></td><td>One value from a list</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Key idea:</strong> <code>cleaned_data</code> holds only the validated, converted values. Always use <code>cleaned_data</code>, never the raw request data.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: ModelForm</h2>
+    <p>Most forms create or edit a model. A <strong>ModelForm</strong> builds the fields from the model, so you don't repeat yourself:</p>
+    <pre><code># blog/forms.py
+from django import forms
+from .models import Post
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ["author", "title", "body", "is_published"]</code></pre>
+    <p>The <code>fields</code> list controls what appears in the form. Leave out fields the user shouldn't set, such as <code>created_at</code>, which is filled in automatically.</p>
+    <div class="callout warn">
+      <strong>Watch the required fields:</strong> A post needs an author. If you leave <code>author</code> out of <code>fields</code>, saving will fail, because the database requires a value. Include it, or set it in the view before saving.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Handling GET and POST in a View</h2>
+    <p>A form page does two jobs: show an empty form (GET), and process submitted data (POST). Handle both in one view:</p>
+    <pre><code># blog/views.py
+from django.shortcuts import redirect, render
+from .forms import PostForm
+
+def post_create(request):
+    if request.method == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("post_list")
+    else:
+        form = PostForm()
+    return render(request, "blog/post_form.html", {"form": form})</code></pre>
+    <p>Add the route in <code>blog/urls.py</code>:</p>
+    <pre><code>path("posts/new/", views.post_create, name="post_create"),</code></pre>
+    <p>Here's the flow:</p>
+    <ol>
+      <li>GET: the view creates an empty form and shows it.</li>
+      <li>POST: the view creates a form from the submitted data and checks it.</li>
+      <li>If the data is valid, it saves and redirects. If not, the same page appears again with error messages.</li>
+    </ol>
+    <div class="callout tip">
+      <strong>Post/Redirect/Get:</strong> After a successful save, always <code>redirect()</code>. If you rendered a page instead, refreshing the browser would submit the form a second time and could create duplicate posts.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: The Template and CSRF Protection</h2>
+    <pre><code># blog/templates/blog/post_form.html
+{% extends "base.html" %}
+{% block content %}
+  &lt;h1&gt;New post&lt;/h1&gt;
+  &lt;form method="post"&gt;
+    {% csrf_token %}
+    {{ form.as_p }}
+    &lt;button type="submit"&gt;Save&lt;/button&gt;
+  &lt;/form&gt;
+{% endblock %}</code></pre>
+    <p>Two details matter here:</p>
+    <ul>
+      <li><code>{% csrf_token %}</code> adds a hidden token. Django checks it on every POST, which blocks attacks that trick a logged-in user's browser into submitting forms on another site (CSRF).</li>
+      <li><code>{{ form.as_p }}</code> prints every field with its label, input, and error messages, each wrapped in a paragraph. Other options are <code>as_table</code>, <code>as_ul</code>, and <code>as_div</code>.</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Common error:</strong> Forgetting <code>{% csrf_token %}</code> makes every submission fail with "CSRF verification failed" (HTTP 403). Always include it in POST forms.</div>
+    <p>When a field has an error, Django shows it automatically. For example, a title that is too short appears as:</p>
+    <div class="output">&lt;ul class="errorlist"&gt;&lt;li&gt;Title must be at least 5 characters.&lt;/li&gt;&lt;/ul&gt;</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Custom Validation</h2>
+    <p>Add rules beyond the field types with a <code>clean_&lt;fieldname&gt;</code> method. Raise <code>ValidationError</code> when a value is not acceptable:</p>
+    <pre><code># blog/forms.py
+from django import forms
+from .models import Post
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ["author", "title", "body", "is_published"]
+
+    def clean_title(self):
+        title = self.cleaned_data["title"].strip()
+        if len(title) &lt; 5:
+            raise forms.ValidationError("Title must be at least 5 characters.")
+        if title.isupper():
+            raise forms.ValidationError("Please don't write the title in capitals only.")
+        return title</code></pre>
+    <p>Rules that involve several fields belong in <code>clean()</code>:</p>
+    <pre><code>    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("is_published") and not cleaned.get("body"):
+            raise forms.ValidationError("A published post needs body text.")
+        return cleaned</code></pre>
+    <div class="callout tip">
+      <strong>Order matters:</strong> Django runs each <code>clean_&lt;field&gt;</code> method first, then <code>clean()</code>. Always call <code>super().clean()</code> in <code>clean()</code> so the default checks still run.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Editing an Existing Object</h2>
+    <p>To edit a post, pass the existing object as <code>instance</code>. The form then fills in the current values and saves changes to that object instead of creating a new one:</p>
+    <pre><code># blog/views.py
+from django.shortcuts import get_object_or_404, redirect, render
+from .forms import PostForm
+from .models import Post
+
+def post_edit(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    if request.method == "POST":
+        form = PostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect("post_list")
+    else:
+        form = PostForm(instance=post)
+    return render(request, "blog/post_form.html", {"form": form})</code></pre>
+    <p>The same template works for creating and editing, because the form holds all the information it needs.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 6</h2>
+    <ol>
+      <li><strong>Using <code>request.POST</code> data directly:</strong> use <code>form.cleaned_data</code> after <code>is_valid()</code>.</li>
+      <li><strong>Forgetting <code>{% csrf_token %}</code>:</strong> POST requests fail with a 403 error.</li>
+      <li><strong>Saving without calling <code>is_valid()</code>:</strong> invalid data can reach the database.</li>
+      <li><strong>Rendering instead of redirecting after success:</strong> refreshing causes duplicate submissions.</li>
+      <li><strong>Leaving required fields out of <code>fields</code>:</strong> the save fails with an integrity error.</li>
+      <li><strong>Forgetting <code>instance=</code> when editing:</strong> Django creates a new object instead of updating the existing one.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Continue in your <code>mysite</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Try the Contact Form in the Shell</h3>
+      <p>Create <code>ContactForm</code> from Lesson 2. Test it with a valid set of data and with a bad email. Confirm <code>is_valid()</code> returns True and False as expected.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Create Posts with a Form</h3>
+      <p>Build <code>PostForm</code> and the <code>post_create</code> view with its template. Visit <code>/posts/new/</code>, submit a post, and confirm it appears on the posts list page.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Add a Title Rule</h3>
+      <p>Add the <code>clean_title</code> method from Lesson 6. Submit a title that is too short and check the error message appears on the form.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Edit a Post</h3>
+      <p>Add the <code>post_edit</code> view and a URL such as <code>posts/&lt;int:post_id&gt;/edit/</code>. Change a post's title and confirm the existing post is updated, not duplicated.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Test CSRF</h3>
+      <p>Temporarily remove <code>{% csrf_token %}</code> from the form and submit it. Record the error you see, then put the token back.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Form</th><th>Where you'll see it</th></tr>
+      <tr><td>Sign-up and login</td><td>Every site with user accounts</td></tr>
+      <tr><td>ModelForm for create and edit</td><td>Admin-style content editors, product catalogues, profile settings</td></tr>
+      <tr><td>Custom clean methods</td><td>Checking passwords, coupon codes, or business rules</td></tr>
+      <tr><td>Contact form</td><td>Company websites that send messages without exposing email addresses</td></tr>
+      <tr><td>CSRF protection</td><td>Banking, shopping, and any site where a click can change data</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's built-in login and password-change pages are forms. Understanding forms today makes Day 16's authentication much easier.</div>
+  </section>
+
+  <section>
+    <h2>Day 6 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 6 of 30 &middot; Next: Day 7 - Week 1 Project: A Mini Blog</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Why must you validate form data on the server?",
+      options: ["Browsers cannot run JavaScript", "Anyone can send any data, bypassing the browser's checks", "Server validation is faster", "It is optional in Django"],
+      answer: 1,
+      explain: "Browser checks can be bypassed, so the server must always validate what it receives."
+    },
+    {
+      q: "What does form.is_valid() return when all fields pass their checks?",
+      options: ["None", "True", "The form data", "The number of fields"],
+      answer: 1,
+      explain: "is_valid() returns True when every field and custom check passes."
+    },
+    {
+      q: "Which attribute holds the validated, converted values after is_valid()?",
+      options: ["request.POST", "cleaned_data", "errors", "fields"],
+      answer: 1,
+      explain: "cleaned_data contains the checked values, converted to the correct Python types."
+    },
+    {
+      q: "What is a ModelForm?",
+      options: ["A form that is not connected to a model", "A form whose fields are generated from a model", "A form that deletes models", "A template tag"],
+      answer: 1,
+      explain: "ModelForm builds its fields from a model's definition, so you don't repeat yourself."
+    },
+    {
+      q: "Why should a successful POST be followed by a redirect?",
+      options: ["Redirects are faster", "Refreshing the page would not resubmit the form and create duplicates", "Django requires it", "It removes the csrf token"],
+      answer: 1,
+      explain: "Post/Redirect/Get prevents accidental duplicate submissions when users refresh."
+    },
+    {
+      q: "What does {% csrf_token %} protect against?",
+      options: ["Slow pages", "Forged form submissions from other sites", "Large uploads", "Broken images"],
+      answer: 1,
+      explain: "The token proves that the form came from your own site, which blocks cross-site request forgery."
+    },
+    {
+      q: "Which method adds a custom rule for the title field?",
+      options: ["clean_title", "title_clean", "validate_title_now", "check"],
+      answer: 0,
+      explain: "Django calls methods named clean_<fieldname> to run custom validation for that field."
+    },
+    {
+      q: "What does passing instance=post to a ModelForm do?",
+      options: ["Deletes the post", "Fills the form with the post's values and updates that object when saved", "Creates a copy of the post", "Locks the post"],
+      answer: 1,
+      explain: "The instance tells the form to edit the existing object rather than create a new one."
+    },
+    {
+      q: "Where should a rule that compares two fields go?",
+      options: ["The template", "The clean() method", "The URL pattern", "The migration file"],
+      answer: 1,
+      explain: "clean() can access several fields at once, so multi-field rules belong there."
+    },
+    {
+      q: "What does {{ form.as_p }} do?",
+      options: ["Prints the form's fields inside paragraphs, with labels and errors", "Saves the form", "Deletes the errors", "Creates a superuser"],
+      answer: 0,
+      explain: "as_p renders each field with its label, input, and any error messages wrapped in paragraphs."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 7!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

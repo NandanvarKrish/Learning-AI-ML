@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 27</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 27 of 30</span>
+  <h1>Intro to pandas</h1>
+  <p>Estimated time: about 1.5 hours &middot; DataFrames and Series, reading CSV, selecting, filtering, grouping, and basic summaries</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: What Is pandas?</h2>
+    <p>pandas is a third-party library for working with tabular data, the kind you'd see in a spreadsheet. It handles thousands or millions of rows efficiently, and it provides readable methods for cleaning, filtering, and summarising. You installed third-party packages on Day 13, and you'll use a virtual environment for this one, as on Day 25.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> If a list is a single column of numbers, a pandas DataFrame is an entire spreadsheet: rows, named columns, and tools for sorting and totalling across them.</div>
+    <pre><code># In your activated virtual environment
+pip install pandas
+python -c "import pandas; print(pandas.__version__)"</code></pre>
+    <div class="output">2.x.x</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Series and DataFrame</h2>
+    <p>pandas has two core types:</p>
+    <table>
+      <tr><th>Type</th><th>What it is</th><th>Like</th></tr>
+      <tr><td><code>Series</code></td><td>One labelled column of values</td><td>A single column in a spreadsheet</td></tr>
+      <tr><td><code>DataFrame</code></td><td>A table of rows and named columns</td><td>A whole spreadsheet</td></tr>
+    </table>
+    <pre><code>import pandas as pd
+
+marks = pd.Series([82, 95, 70], name="marks")
+print(marks)
+
+df = pd.DataFrame({
+    "name": ["Sam", "Ali", "Sara"],
+    "marks": [82, 95, 70],
+    "city": ["Surat", "Pune", "Surat"],
+})
+print(df)</code></pre>
+    <div class="output">0    82
+1    95
+2    70
+Name: marks, dtype: int64
+
+   name  marks   city
+0   Sam     82  Surat
+1   Ali     95   Pune
+2  Sara     70  Surat</div>
+    <div class="callout tip">
+      <strong>Convention:</strong> <code>import pandas as pd</code> is the standard alias. Every pandas tutorial and most projects use it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Reading a CSV File</h2>
+    <p>Day 11 taught you the <code>csv</code> module. pandas reads a CSV in a single line, and it turns the columns into the right types automatically.</p>
+    <pre><code>import pandas as pd
+
+df = pd.read_csv("students.csv")
+print(df.head())      # first 5 rows
+print(df.shape)       # (rows, columns)
+print(df.dtypes)      # type of each column</code></pre>
+    <div class="output">   name  marks   city
+0   Sam     82  Surat
+...
+(3, 3)
+name     object
+marks     int64
+city     object
+dtype: object</div>
+    <div class="callout warn">
+      <strong>Note:</strong> <code>object</code> in dtypes usually means text. Numbers that pandas reads as text are a common cleaning task, which you'll handle with <code>pd.to_numeric</code> later in the course.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Selecting Columns and Rows</h2>
+    <pre><code>import pandas as pd
+
+df = pd.DataFrame({
+    "name": ["Sam", "Ali", "Sara"],
+    "marks": [82, 95, 70],
+    "city": ["Surat", "Pune", "Surat"],
+})
+
+print(df["name"])              # one column, as a Series
+print(df[["name", "marks"]])   # several columns, as a DataFrame
+print(df.iloc[0])              # first row, by position
+print(df.loc[1, "marks"])      # row with label 1, column marks</code></pre>
+    <div class="output">0     Sam
+1     Ali
+2    Sara
+Name: name, dtype: object
+
+   name  marks
+0   Sam     82
+1   Ali     95
+2  Sara     70
+
+name     Sam
+marks     82
+city   Surat
+Name: 0, dtype: object
+
+95</div>
+    <table>
+      <tr><th>Method</th><th>Selects by</th></tr>
+      <tr><td><code>df["col"]</code></td><td>Column name</td></tr>
+      <tr><td><code>df.iloc[i]</code></td><td>Position (integer location)</td></tr>
+      <tr><td><code>df.loc[label, col]</code></td><td>Row label and column name</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Filtering Rows</h2>
+    <p>A condition on a column gives a True or False value for each row. Using that inside square brackets keeps only the rows that are True. This works like the list comprehension filter from Day 18.</p>
+    <pre><code>import pandas as pd
+
+df = pd.DataFrame({
+    "name": ["Sam", "Ali", "Sara"],
+    "marks": [82, 95, 70],
+    "city": ["Surat", "Pune", "Surat"],
+})
+
+high = df[df["marks"] >= 80]
+print(high)
+
+surat_high = df[(df["city"] == "Surat") & (df["marks"] > 75)]
+print(surat_high)</code></pre>
+    <div class="output">   name  marks   city
+0   Sam     82  Surat
+1   Ali     95   Pune
+
+  name  marks   city
+0  Sam     82  Surat</div>
+    <div class="callout warn">
+      <strong>Important:</strong> Combine conditions with <code>&amp;</code> (and) and <code>|</code> (or), not <code>and</code> and <code>or</code>. Wrap each condition in parentheses, because <code>&amp;</code> binds more tightly than comparisons.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Adding and Changing Columns</h2>
+    <p>Assign to a new column name to create it. Calculations apply to every row at once, so you don't write a loop.</p>
+    <pre><code>import pandas as pd
+
+df = pd.DataFrame({"name": ["Sam", "Ali"], "marks": [82, 95]})
+
+df["percent"] = df["marks"] / 100
+df["grade"] = df["marks"].apply(lambda m: "A" if m >= 90 else "B")
+print(df)</code></pre>
+    <div class="output">  name  marks  percent grade
+0  Sam     82     0.82     B
+1  Ali     95     0.95     A</div>
+    <div class="callout tip">
+      <strong>Connection to Day 10:</strong> <code>.apply(lambda ...)</code> works like <code>map</code>, applying a function to each value in the column.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Summaries with describe and value_counts</h2>
+    <pre><code>import pandas as pd
+
+df = pd.DataFrame({
+    "name": ["Sam", "Ali", "Sara", "Ravi"],
+    "marks": [82, 95, 70, 88],
+    "city": ["Surat", "Pune", "Surat", "Surat"],
+})
+
+print(df["marks"].mean())          # average
+print(df["marks"].max())           # highest
+print(df.describe())               # summary of numeric columns
+print(df["city"].value_counts())   # how often each value appears</code></pre>
+    <div class="output">83.75
+95
+       marks
+count   4.00
+mean   83.75
+std    10.47
+min    70.00
+25%    79.00
+50%    85.00
+75%    89.75
+max    95.00
+
+city
+Surat    3
+Pune     1
+Name: count, dtype: int64</div>
+    <p><code>value_counts()</code> is the counting pattern from Day 6, done for you in one method call.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Grouping Data with groupby</h2>
+    <p><code>groupby</code> splits rows into groups by a column, applies a calculation to each group, and combines the results. It's the pandas version of the "totals by category" pattern from Day 7.</p>
+    <pre><code>import pandas as pd
+
+sales = pd.DataFrame({
+    "city": ["Surat", "Pune", "Surat", "Pune", "Surat"],
+    "amount": [500, 300, 700, 200, 400],
+})
+
+totals = sales.groupby("city")["amount"].sum()
+print(totals)
+
+print(sales.groupby("city")["amount"].mean())</code></pre>
+    <div class="output">city
+Pune     500
+Surat   1600
+Name: amount, dtype: int64
+
+city
+Pune     250.0
+Surat    533.333333
+Name: amount, dtype: float64</div>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> <code>groupby</code> is like sorting your receipts into piles by shop, then adding up each pile.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 9: Saving Results</h2>
+    <pre><code>import pandas as pd
+
+df = pd.read_csv("students.csv")
+top = df[df["marks"] >= 80]
+top.to_csv("top_students.csv", index=False)    # index=False avoids an extra column</code></pre>
+    <p>You can also use <code>to_excel</code> for spreadsheet files, but that needs an additional package. CSV needs nothing extra.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 27</h2>
+    <ol>
+      <li><strong>Using and or or in filters:</strong> use <code>&amp;</code> and <code>|</code>, with parentheses around each condition.</li>
+      <li><strong>Forgetting index=False when saving:</strong> the row numbers are written as an extra column.</li>
+      <li><strong>Confusing iloc and loc:</strong> <code>iloc</code> uses positions, and <code>loc</code> uses labels.</li>
+      <li><strong>Expecting in-place changes:</strong> many methods return a new DataFrame. Assign the result back, or use <code>inplace=True</code>.</li>
+      <li><strong>Numbers stored as text:</strong> dtype <code>object</code> for a numeric column means the values need converting.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints. Create a <code>students.csv</code> file with at least six rows and columns for name, marks, and city.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Load and Inspect</h3>
+      <p>Read <code>students.csv</code> into a DataFrame. Print the shape, the column names, and the first three rows.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Filter</h3>
+      <p>Show only students with marks of 75 or more. Then show students from one chosen city with marks above 60.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Add a Column</h3>
+      <p>Add a column called <code>passed</code> that is True when marks are 50 or more, and False otherwise. Use a vectorised expression, not a loop.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Summaries</h3>
+      <p>Print the average, highest, and lowest marks. Then show how many students are in each city using <code>value_counts</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Group Averages</h3>
+      <p>Use <code>groupby</code> to find the average marks for each city, rounded to one decimal place.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Save a Report</h3>
+      <p>Create a DataFrame of students who passed, sort it by marks from highest to lowest with <code>sort_values</code>, and save it to <code>passed.csv</code> with <code>index=False</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Task</th><th>Where you'll see it</th></tr>
+      <tr><td>Reading and cleaning CSV exports</td><td>Bank statements, sales data, survey results, sensor logs</td></tr>
+      <tr><td>Filtering</td><td>Finding overdue invoices, high-value customers, or failed transactions</td></tr>
+      <tr><td>groupby summaries</td><td>Revenue by region, average rating by product, monthly active users</td></tr>
+      <tr><td>describe and value_counts</td><td>Quick exploration of a new dataset before analysis</td></tr>
+      <tr><td>Saving reports</td><td>Sending results to colleagues as CSV files for spreadsheet tools</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's ORM can export query results to pandas, and data analysts use pandas for reports built from a Django database.</div>
+  </section>
+
+  <section>
+    <h2>Day 27 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 27 of 30 &middot; Next: Day 28 - SQLite and Databases</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is a DataFrame in pandas?",
+      options: ["A single list", "A table of rows and named columns", "A dictionary of functions", "A file format"],
+      answer: 1,
+      explain: "A DataFrame is a two-dimensional table, similar to a spreadsheet."
+    },
+    {
+      q: "What is the standard alias for pandas?",
+      options: ["pd", "pdx", "pandas_lib", "pan"],
+      answer: 0,
+      explain: "import pandas as pd is the convention used by almost everyone."
+    },
+    {
+      q: "Which command reads a CSV file into a DataFrame?",
+      options: ["pd.open_csv()", "pd.read_csv()", "pd.load()", "csv.pandas()"],
+      answer: 1,
+      explain: "pd.read_csv reads the file and creates a DataFrame in one step."
+    },
+    {
+      q: "What does df['marks'] return?",
+      options: ["A DataFrame", "A Series of the marks column", "A number", "A list of dictionaries"],
+      answer: 1,
+      explain: "Selecting a single column with one set of brackets returns a Series."
+    },
+    {
+      q: "Which operator combines two filter conditions with 'and'?",
+      options: ["and", "&", "&&", "+"],
+      answer: 1,
+      explain: "pandas uses & for element-wise and. The Python keyword and does not work on Series."
+    },
+    {
+      q: "What does df.iloc[0] select?",
+      options: ["The column named 0", "The first row, by position", "The first column", "The value 0"],
+      answer: 1,
+      explain: "iloc selects by integer position, so [0] is the first row."
+    },
+    {
+      q: "What is the purpose of groupby?",
+      options: ["To sort the DataFrame", "To split rows into groups and calculate a result for each group", "To delete duplicate rows", "To read files"],
+      answer: 1,
+      explain: "groupby splits data by a column's values, applies a calculation, and combines the results."
+    },
+    {
+      q: "What does value_counts() return for a column?",
+      options: ["The total of the column", "How many times each distinct value appears", "The column's data type", "The first value"],
+      answer: 1,
+      explain: "value_counts counts occurrences of each unique value, the same idea as the Day 6 counting pattern."
+    },
+    {
+      q: "Why use index=False in to_csv?",
+      options: ["To make the file faster", "To stop pandas writing the row numbers as an extra column", "To hide columns", "To compress the file"],
+      answer: 1,
+      explain: "Without index=False, the row labels are saved as an extra first column."
+    },
+    {
+      q: "What does df.describe() show?",
+      options: ["The file path", "Summary statistics such as count, mean, min, and max for numeric columns", "The column names only", "The Python version"],
+      answer: 1,
+      explain: "describe gives a quick statistical summary of the numeric columns."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 28!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

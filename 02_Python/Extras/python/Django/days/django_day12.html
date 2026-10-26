@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 12</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 12 of 30</span>
+  <h1>Errors, Debugging, and Custom Error Pages</h1>
+  <p>Estimated time: about 1.5 hours &middot; Reading tracebacks, raising HTTP errors, custom 404 and 500 pages, logging, and debugging with breakpoints</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Errors Are Information</h2>
+    <p>Every developer meets errors daily. A good error tells you what went wrong, where, and why. Django's job is to show that clearly during development and to hide the details from visitors in production.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A warning light on a car dashboard. The light doesn't fix the engine, but it tells you where to look. Read the light, then go to the engine.</div>
+    <p>Two modes control what visitors see:</p>
+    <table>
+      <tr><th>Setting</th><th>Development (<code>DEBUG = True</code>)</th><th>Production (<code>DEBUG = False</code>)</th></tr>
+      <tr><td>Unhandled exception</td><td>Detailed traceback with code and variables</td><td>Generic 500 error page, details written to logs</td></tr>
+      <tr><td>Missing page</td><td>Detailed list of URL patterns that were tried</td><td>Your custom 404 page, or a simple default</td></tr>
+      <tr><td>Static files</td><td>Served by <code>runserver</code></td><td>Served by a web server, after <code>collectstatic</code></td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Never deploy with DEBUG = True:</strong> The detailed pages reveal your code, settings, and sometimes secret keys. Keep it on only while developing.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Reading a Traceback</h2>
+    <p>A traceback lists the chain of calls that led to an error. Read it from the bottom up:</p>
+    <div class="output">Traceback (most recent call last):
+  File "blog/views.py", line 12, in post_detail
+    post = Post.objects.get(pk=post_id)
+  ...
+blog.models.Post.DoesNotExist: Post matching query does not exist.</div>
+    <ol>
+      <li><strong>The last line</strong> names the error type and message: <code>Post.DoesNotExist</code>.</li>
+      <li><strong>The line above it</strong> shows the code that raised it, here the <code>get()</code> call.</li>
+      <li><strong>The lines above that</strong> show how you got there: the view, then the request handling.</li>
+    </ol>
+    <p>The fix for this error is to use <code>get_object_or_404</code> (Day 4), which returns a 404 page instead of crashing. Knowing the error name tells you which tool to reach for.</p>
+    <table>
+      <tr><th>Error</th><th>Usual cause</th><th>Typical fix</th></tr>
+      <tr><td><code>DoesNotExist</code></td><td><code>get()</code> finds no row</td><td><code>get_object_or_404</code>, or <code>filter().first()</code></td></tr>
+      <tr><td><code>MultipleObjectsReturned</code></td><td><code>get()</code> matches several rows</td><td>Make the lookup more specific, or use <code>filter()</code></td></tr>
+      <tr><td><code>NoReverseMatch</code></td><td>A <code>{% url %}</code> name or argument is wrong</td><td>Check <code>name=</code> and the argument types in <code>urls.py</code></td></tr>
+      <tr><td><code>TemplateDoesNotExist</code></td><td>The template path is wrong</td><td>Check the folder structure and <code>TEMPLATES</code> settings</td></tr>
+      <tr><td><code>DisallowedHost</code></td><td>The domain is not in <code>ALLOWED_HOSTS</code></td><td>Add the host name to <code>ALLOWED_HOSTS</code></td></tr>
+      <tr><td><code>OperationalError: no such table</code></td><td>Migrations were not run</td><td><code>makemigrations</code> then <code>migrate</code></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Raising HTTP Errors on Purpose</h2>
+    <p>Sometimes an error is the correct response. A visitor asks for a post that is a draft, or a user tries to open someone else's page. Raise the matching exception to send the right status code:</p>
+    <pre><code># blog/views.py
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
+from .models import Post
+
+def post_detail(request, pk):
+    try:
+        post = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        raise Http404("No such post")
+    if not post.is_published and not request.user.is_staff:
+        raise PermissionDenied
+    return render(request, "blog/post_detail.html", {"post": post})</code></pre>
+    <table>
+      <tr><th>Exception</th><th>Status</th><th>Meaning</th></tr>
+      <tr><td><code>Http404</code></td><td>404</td><td>The page does not exist</td></tr>
+      <tr><td><code>PermissionDenied</code></td><td>403</td><td>The page exists, but this visitor may not see it</td></tr>
+      <tr><td><code>SuspiciousOperation</code></td><td>400</td><td>The request looks malformed or tampered with</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Choosing a status:</strong> Use 404 when you don't want to reveal that something exists. For a draft post, many sites return 404 to outsiders, so they can't discover hidden content.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Custom Error Pages</h2>
+    <p>Create these templates in your project's <code>templates</code> folder. Django uses them automatically when <code>DEBUG = False</code>:</p>
+    <div class="tree">templates/
+├── base.html
+├── 404.html     # page not found
+├── 403.html     # permission denied
+└── 500.html     # server error</div>
+    <pre><code># templates/404.html
+{% extends "base.html" %}
+{% block title %}Page not found{% endblock %}
+{% block content %}
+  &lt;h1&gt;Page not found&lt;/h1&gt;
+  &lt;p&gt;The page you asked for does not exist. &lt;a href="{% url 'post_list' %}"&gt;Browse the posts&lt;/a&gt;.&lt;/p&gt;
+{% endblock %}</code></pre>
+    <div class="callout warn">
+      <strong>Keep 500.html simple:</strong> The server error page may be shown when the database or the template engine has failed. A 500 template must not depend on the database, and it cannot use <code>base.html</code> if that file is the source of the error. Keep it static, with plain HTML and no template tags beyond the basics.</div>
+    <p>To test your 404 page locally, set <code>DEBUG = False</code> and <code>ALLOWED_HOSTS = ["127.0.0.1", "localhost"]</code>, restart, and visit a missing address. Set <code>DEBUG</code> back to True afterwards.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Logging</h2>
+    <p>Printing to the console disappears when the server stops. Django uses Python's <code>logging</code> module, which can write to the console, a file, or an error-tracking service:</p>
+    <pre><code># mysite/settings.py
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "blog": {"handlers": ["console"], "level": "INFO"},
+    },
+}</code></pre>
+    <pre><code># blog/views.py
+import logging
+from django.shortcuts import get_object_or_404, render
+from .models import Post
+
+logger = logging.getLogger(__name__)
+
+def post_detail(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    logger.info("Viewing post %s", post.pk)
+    return render(request, "blog/post_detail.html", {"post": post})</code></pre>
+    <div class="output">Viewing post 1</div>
+    <table>
+      <tr><th>Level</th><th>Use for</th></tr>
+      <tr><td><code>debug()</code></td><td>Detailed information during development</td></tr>
+      <tr><td><code>info()</code></td><td>Normal events, such as a post being viewed</td></tr>
+      <tr><td><code>warning()</code></td><td>Something unexpected that the app handled</td></tr>
+      <tr><td><code>error()</code></td><td>A failure that needs attention</td></tr>
+      <tr><td><code>exception()</code></td><td>An error, with the full traceback included automatically</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Use <code>%s</code>, not f-strings, in logging calls:</strong> Logging formats the message only if that level is enabled, so it skips the work when the message won't be shown.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Debugging with Breakpoints</h2>
+    <p>Print statements work, but a breakpoint lets you pause the code and inspect every variable. Python 3.7 and later provide <code>breakpoint()</code>:</p>
+    <pre><code># blog/views.py
+def post_detail(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    breakpoint()                 # execution pauses here
+    return render(request, "blog/post_detail.html", {"post": post})</code></pre>
+    <p>When the request reaches that line, the terminal shows a <code>(Pdb)</code> prompt. Useful commands:</p>
+    <table>
+      <tr><th>Command</th><th>Action</th></tr>
+      <tr><td><code>p post</code></td><td>Print a variable</td></tr>
+      <tr><td><code>p post.title</code></td><td>Print an attribute</td></tr>
+      <tr><td><code>n</code></td><td>Run the next line</td></tr>
+      <tr><td><code>c</code></td><td>Continue until the next breakpoint</td></tr>
+      <tr><td><code>q</code></td><td>Quit the debugger</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Remove breakpoints before committing:</strong> A forgotten <code>breakpoint()</code> pauses the server for every visitor on a live site. Search your code for it before each commit.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Built-in Checks</h2>
+    <p>Before you run the server, ask Django to check your project for common problems:</p>
+    <pre><code>python manage.py check
+python manage.py check --deploy</code></pre>
+    <div class="output">System check identified no issues (0 silenced).</div>
+    <p>The first command checks your models, URLs, and settings. The second checks production settings, such as <code>DEBUG</code>, <code>SECRET_KEY</code>, and HTTPS options, and lists warnings you should fix before going live.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 12</h2>
+    <ol>
+      <li><strong>Leaving <code>DEBUG = True</code> in production:</strong> it exposes code and settings to anyone who triggers an error.</li>
+      <li><strong>Catching every exception silently:</strong> use specific exceptions, and log the rest. A bare <code>except:</code> hides real bugs.</li>
+      <li><strong>Making the 500 page depend on the database:</strong> it fails exactly when you need it.</li>
+      <li><strong>Using f-strings in logging calls:</strong> use <code>%s</code> arguments so formatting is deferred.</li>
+      <li><strong>Forgetting to read the last line of the traceback:</strong> it names the error, which is the fastest clue.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Trigger and Read an Error</h3>
+      <p>Visit <code>/posts/999/</code> with a missing id and read the traceback or 404 page. Write down the exception name, then change the view to use <code>get_object_or_404</code> and confirm the error disappears.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Custom 404</h3>
+      <p>Create <code>templates/404.html</code>, set <code>DEBUG = False</code> with the correct <code>ALLOWED_HOSTS</code>, and visit a missing page. Confirm your page appears. Restore <code>DEBUG = True</code> afterwards.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Permission Check</h3>
+      <p>Add the draft check from Lesson 3 to <code>post_detail</code>. Confirm that an anonymous visitor gets an error for a draft post, and that the published post still loads.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Logging</h3>
+      <p>Add the logging configuration and a <code>logger.info</code> line to the detail view. View a post and confirm the message appears in the terminal.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Breakpoint</h3>
+      <p>Add <code>breakpoint()</code> to the detail view, visit the page, use <code>p post.title</code> at the <code>(Pdb)</code> prompt, then continue with <code>c</code>. Remove the breakpoint afterwards.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Practice</th><th>Where you'll see it</th></tr>
+      <tr><td>Custom 404 pages</td><td>Friendly "page not found" pages with search and navigation on major sites</td></tr>
+      <tr><td>Logging</td><td>Tracking unusual activity, slow requests, and failed payments</td></tr>
+      <tr><td>Error-tracking services</td><td>Teams that receive an alert when a production error occurs</td></tr>
+      <tr><td><code>check --deploy</code></td><td>Release checklists before a site goes live</td></tr>
+      <tr><td>PermissionDenied</td><td>Admin areas and private pages that must stay hidden</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django's admin and login views raise the same HTTP exceptions you used today, so the patterns you learned here apply across the whole framework.</div>
+  </section>
+
+  <section>
+    <h2>Day 12 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 12 of 30 &middot; Next: Day 13 - Testing Your Django App</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Where should you read first in a traceback?",
+      options: ["The top line", "The last line, which names the error", "The middle line only", "The file size"],
+      answer: 1,
+      explain: "The final line gives the exception type and message, which is the fastest clue to the problem."
+    },
+    {
+      q: "What does raising Http404 do?",
+      options: ["Restarts the server", "Sends a 404 Not Found response", "Deletes the post", "Logs the user out"],
+      answer: 1,
+      explain: "Raising Http404 makes Django return a standard Not Found response."
+    },
+    {
+      q: "Which status code does PermissionDenied produce?",
+      options: ["400", "403", "404", "500"],
+      answer: 1,
+      explain: "403 means the page exists, but the visitor is not allowed to see it."
+    },
+    {
+      q: "Where should 404.html be placed to be used automatically?",
+      options: ["In the static folder", "In the project's templates folder, when DEBUG is False", "In the migrations folder", "In the admin folder only"],
+      answer: 1,
+      explain: "Django looks for 404.html and 500.html in the templates folders and uses them when DEBUG is False."
+    },
+    {
+      q: "Why should the 500 error template avoid depending on the database?",
+      options: ["Templates cannot use HTML", "A server error may be caused by the database, so the error page itself might fail", "500 pages are always cached", "It is slower"],
+      answer: 1,
+      explain: "If the cause of the error is the database, a page that needs it will fail too."
+    },
+    {
+      q: "Why should logging calls use %s arguments rather than f-strings?",
+      options: ["f-strings are not allowed", "Logging formats the message only when that level is enabled, saving work", "%s is faster to type", "f-strings disable logging"],
+      answer: 1,
+      explain: "Deferred formatting avoids building the message when it will not be logged."
+    },
+    {
+      q: "Which logging level is used for an error that needs attention?",
+      options: ["debug", "info", "warning", "error"],
+      answer: 3,
+      explain: "error() marks a failure that should be investigated."
+    },
+    {
+      q: "What does breakpoint() do in Python 3.7 and later?",
+      options: ["Ends the program", "Pauses execution and opens the debugger", "Deletes the variable", "Creates a log file"],
+      answer: 1,
+      explain: "breakpoint() starts the debugger at that line, so you can inspect variables."
+    },
+    {
+      q: "What does python manage.py check --deploy look for?",
+      options: ["Missing migrations only", "Production-related settings and security warnings", "Unused templates", "Slow queries"],
+      answer: 1,
+      explain: "The deploy check reports settings such as DEBUG and SECRET_KEY that need attention before going live."
+    },
+    {
+      q: "Why is a bare 'except:' around database code risky?",
+      options: ["It makes Python crash", "It hides real bugs that should be handled or logged", "It is required by Django", "It speeds up queries"],
+      answer: 1,
+      explain: "Catching everything silently can conceal errors, so catch specific exceptions and log the rest."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 13!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

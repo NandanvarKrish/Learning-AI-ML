@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 7</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .tree { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .check { list-style: none; padding-left: 0; }
+  .check li::before { content: "\2610  "; color: var(--py-yellow); }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 7 of 30</span>
+  <h1>Week 1 Project: A Mini Blog</h1>
+  <p>Estimated time: about 1.5 hours &middot; Put Days 1 to 6 together: models, admin, views, templates, static files, and forms in one working site</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Project Overview</h2>
+    <p>This week you learned the building blocks of a Django site. Today you combine them into a small blog where visitors can read published posts, and where you can create, edit, and delete posts through the site.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Each day you learned a single tool, such as a hammer or a saw. Today you build a bookshelf with all of them. The result matters more than any one cut.</div>
+    <p>The finished project will have these pages:</p>
+    <table>
+      <tr><th>Address</th><th>Purpose</th><th>Built from</th></tr>
+      <tr><td><code>/posts/</code></td><td>List of published posts</td><td>Views, templates (Day 4)</td></tr>
+      <tr><td><code>/posts/&lt;id&gt;/</code></td><td>One post in full</td><td>get_object_or_404 (Day 4)</td></tr>
+      <tr><td><code>/posts/new/</code></td><td>Form to create a post</td><td>ModelForm (Day 6)</td></tr>
+      <tr><td><code>/posts/&lt;id&gt;/edit/</code></td><td>Form to edit a post</td><td>ModelForm with instance (Day 6)</td></tr>
+      <tr><td><code>/posts/&lt;id&gt;/delete/</code></td><td>Confirm, then delete a post</td><td>POST with redirect (Day 6)</td></tr>
+      <tr><td><code>/admin/</code></td><td>Staff manage authors and posts</td><td>Admin (Day 3)</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Step 1: Set Up the Project</h2>
+    <p>Create a fresh project so the week's work stays separate from your earlier practice:</p>
+    <pre><code>mkdir mini-blog
+cd mini-blog
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install django pillow
+django-admin startproject miniblog .
+python manage.py startapp blog</code></pre>
+    <p>Notice the final <code>.</code> in <code>startproject</code>. It creates the project in the current folder instead of a nested one.</p>
+    <p>Add <code>"blog"</code> to <code>INSTALLED_APPS</code>, and set up the template and static folders from Days 4 and 5:</p>
+    <div class="tree">mini-blog/
+├── manage.py
+├── miniblog/
+│   ├── settings.py     # add "blog" to INSTALLED_APPS
+│   └── urls.py
+├── templates/
+│   └── base.html       # shared layout (add to TEMPLATES DIRS)
+└── blog/
+    ├── models.py
+    ├── forms.py
+    ├── views.py
+    ├── urls.py         # create this file
+    ├── admin.py
+    ├── static/blog/style.css
+    └── templates/blog/
+        ├── post_list.html
+        ├── post_detail.html
+        ├── post_form.html
+        └── post_confirm_delete.html</div>
+    <div class="callout warn">
+      <strong>Settings check:</strong> In <code>settings.py</code>, <code>TEMPLATES[0]["DIRS"]</code> must contain <code>[BASE_DIR / "templates"]</code>, or Django won't find <code>base.html</code>.</div>
+  </section>
+
+  <section>
+    <h2>Step 2: Models</h2>
+    <p>Use the author and post models from Day 3, with the same fields. This is the data layer for the whole project:</p>
+    <pre><code># blog/models.py
+from django.db import models
+
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Post(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="posts")
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    cover = models.ImageField(upload_to="covers/", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title</code></pre>
+    <pre><code>python manage.py makemigrations blog
+python manage.py migrate
+python manage.py createsuperuser</code></pre>
+    <div class="callout tip">
+      <strong>Before going further:</strong> Create one author and two posts in the admin, one published and one as a draft. You'll use these to test every page.</div>
+  </section>
+
+  <section>
+    <h2>Step 3: Admin</h2>
+    <pre><code># blog/admin.py
+from django.contrib import admin
+from .models import Author, Post
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ("title", "author", "is_published", "created_at")
+    list_filter = ("is_published", "author")
+    search_fields = ("title", "body")
+
+admin.site.register(Author)</code></pre>
+    <p>The admin is your back office for checking data. The public pages you build below are for visitors.</p>
+  </section>
+
+  <section>
+    <h2>Step 4: Forms</h2>
+    <pre><code># blog/forms.py
+from django import forms
+from .models import Post
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ["author", "title", "body", "cover", "is_published"]
+
+    def clean_title(self):
+        title = self.cleaned_data["title"].strip()
+        if len(title) &lt; 5:
+            raise forms.ValidationError("Title must be at least 5 characters.")
+        return title</code></pre>
+    <div class="callout tip">
+      <strong>Why <code>cover</code> is in the list:</strong> It's optional thanks to <code>blank=True</code>, so the form accepts posts with no image. Use <code>enctype="multipart/form-data"</code> on the template's form tag so uploads work (see Step 7).</div>
+  </section>
+
+  <section>
+    <h2>Step 5: Views</h2>
+    <p>Write each view as a small function that handles one job. The list shows only published posts, while the detail page refuses unpublished posts:</p>
+    <pre><code># blog/views.py
+from django.shortcuts import get_object_or_404, redirect, render
+from .forms import PostForm
+from .models import Post
+
+def post_list(request):
+    posts = Post.objects.filter(is_published=True)
+    return render(request, "blog/post_list.html", {"posts": posts})
+
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, pk=post_id, is_published=True)
+    return render(request, "blog/post_detail.html", {"post": post})
+
+def post_create(request):
+    if request.method == "POST":
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("post_list")
+    else:
+        form = PostForm()
+    return render(request, "blog/post_form.html", {"form": form})
+
+def post_edit(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    if request.method == "POST":
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect("post_detail", post_id=post.id)
+    else:
+        form = PostForm(instance=post)
+    return render(request, "blog/post_form.html", {"form": form, "post": post})
+
+def post_delete(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    if request.method == "POST":
+        post.delete()
+        return redirect("post_list")
+    return render(request, "blog/post_confirm_delete.html", {"post": post})</code></pre>
+    <div class="callout warn">
+      <strong>Important:</strong> File uploads arrive in <code>request.FILES</code>, not <code>request.POST</code>. Forms with an image must receive both, as shown above.</div>
+    <div class="callout tip">
+      <strong>Delete is a POST:</strong> A GET request only shows the confirmation page. Only the POST actually deletes. This stops a link or image from deleting a post by accident.</div>
+  </section>
+
+  <section>
+    <h2>Step 6: URLs</h2>
+    <pre><code># blog/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("posts/", views.post_list, name="post_list"),
+    path("posts/new/", views.post_create, name="post_create"),
+    path("posts/&lt;int:post_id&gt;/", views.post_detail, name="post_detail"),
+    path("posts/&lt;int:post_id&gt;/edit/", views.post_edit, name="post_edit"),
+    path("posts/&lt;int:post_id&gt;/delete/", views.post_delete, name="post_delete"),
+]</code></pre>
+    <pre><code># miniblog/urls.py
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", include("blog.urls")),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)</code></pre>
+    <div class="callout tip">
+      <strong>Named routes:</strong> Every link in the templates uses <code>{% url 'name' %}</code>. If you ever change an address, the links still work.</div>
+  </section>
+
+  <section>
+    <h2>Step 7: Templates and Static Files</h2>
+    <p>Build the shared layout first. Every page extends it:</p>
+    <pre><code># templates/base.html
+{% load static %}
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;{% block title %}Mini Blog{% endblock %}&lt;/title&gt;
+  &lt;link rel="stylesheet" href="{% static 'blog/style.css' %}"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;nav&gt;
+    &lt;a href="{% url 'post_list' %}"&gt;All posts&lt;/a&gt;
+    &lt;a href="{% url 'post_create' %}"&gt;New post&lt;/a&gt;
+    &lt;a href="/admin/"&gt;Admin&lt;/a&gt;
+  &lt;/nav&gt;
+  &lt;main&gt;{% block content %}{% endblock %}&lt;/main&gt;
+  &lt;footer&gt;Mini Blog &amp;copy; 2026&lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    <p>The list page loops over posts and handles the empty case:</p>
+    <pre><code># blog/templates/blog/post_list.html
+{% extends "base.html" %}
+{% block content %}
+  &lt;h1&gt;Latest posts&lt;/h1&gt;
+  {% for post in posts %}
+    &lt;article&gt;
+      &lt;h2&gt;&lt;a href="{% url 'post_detail' post.id %}"&gt;{{ post.title }}&lt;/a&gt;&lt;/h2&gt;
+      &lt;p&gt;By {{ post.author.name }} on {{ post.created_at|date:"d M Y" }}&lt;/p&gt;
+      &lt;p&gt;{{ post.body|truncatewords:25 }}&lt;/p&gt;
+    &lt;/article&gt;
+  {% empty %}
+    &lt;p&gt;No published posts yet.&lt;/p&gt;
+  {% endfor %}
+{% endblock %}</code></pre>
+    <p>The detail page includes the cover image, edit and delete links, and the body:</p>
+    <pre><code># blog/templates/blog/post_detail.html
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+  &lt;h1&gt;{{ post.title }}&lt;/h1&gt;
+  &lt;p&gt;By {{ post.author.name }} on {{ post.created_at|date:"d M Y" }}&lt;/p&gt;
+  {% if post.cover %}
+    &lt;img src="{{ post.cover.url }}" alt="{{ post.title }}"&gt;
+  {% endif %}
+  &lt;div&gt;{{ post.body|linebreaks }}&lt;/div&gt;
+  &lt;p&gt;
+    &lt;a href="{% url 'post_edit' post.id %}"&gt;Edit&lt;/a&gt; |
+    &lt;a href="{% url 'post_delete' post.id %}"&gt;Delete&lt;/a&gt;
+  &lt;/p&gt;
+{% endblock %}</code></pre>
+    <p>The form template handles both creating and editing, and it needs <code>enctype</code> for uploads:</p>
+    <pre><code># blog/templates/blog/post_form.html
+{% extends "base.html" %}
+{% block content %}
+  &lt;h1&gt;{% if post %}Edit post{% else %}New post{% endif %}&lt;/h1&gt;
+  &lt;form method="post" enctype="multipart/form-data"&gt;
+    {% csrf_token %}
+    {{ form.as_p }}
+    &lt;button type="submit"&gt;Save&lt;/button&gt;
+  &lt;/form&gt;
+{% endblock %}</code></pre>
+    <p>The delete confirmation page sends a POST, with a token:</p>
+    <pre><code># blog/templates/blog/post_confirm_delete.html
+{% extends "base.html" %}
+{% block content %}
+  &lt;h1&gt;Delete "{{ post.title }}"?&lt;/h1&gt;
+  &lt;p&gt;This cannot be undone.&lt;/p&gt;
+  &lt;form method="post"&gt;
+    {% csrf_token %}
+    &lt;button type="submit"&gt;Yes, delete it&lt;/button&gt;
+    &lt;a href="{% url 'post_detail' post.id %}"&gt;Cancel&lt;/a&gt;
+  &lt;/form&gt;
+{% endblock %}</code></pre>
+    <p>Finally, the stylesheet from Day 5, in <code>blog/static/blog/style.css</code>:</p>
+    <pre><code>body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+nav a { margin-right: 1rem; }
+h1 { color: #0C4B33; }
+article { border-bottom: 1px solid #ddd; padding-bottom: 1rem; margin-bottom: 1rem; }
+img { max-width: 100%; border-radius: 8px; }</code></pre>
+  </section>
+
+  <section>
+    <h2>Step 8: Test by Hand</h2>
+    <p>Check each item before you call the project finished. Real testing finds more problems than reading code does.</p>
+    <ul class="check">
+      <li>Visit <code>/posts/</code> and confirm only the published post appears.</li>
+      <li>Visit the detail page for the draft post and confirm you get a 404 page.</li>
+      <li>Create a new post with a title shorter than 5 characters and confirm the error appears.</li>
+      <li>Create a valid post with a cover image and confirm the image appears on its detail page.</li>
+      <li>Edit a post and confirm the same post is updated, not duplicated.</li>
+      <li>Delete a post, confirm the page, and confirm it no longer appears in the list.</li>
+      <li>Visit <code>/posts/1/delete/</code> without submitting and confirm nothing is deleted.</li>
+      <li>Check the admin still shows every post, including drafts.</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Debug tip:</strong> When something breaks, read the traceback from the bottom up. The last line names the error, and the lines above show where in your code it happened.</div>
+  </section>
+
+  <section>
+    <h2>Step 9: Save to Git</h2>
+    <p>Put the finished project under version control, as you learned on Day 29. Keep personal data and uploads out of the repository:</p>
+    <pre><code>printf "venv/\n__pycache__/\n*.pyc\ndb.sqlite3\nmedia/\nstaticfiles/\n" &gt; .gitignore
+git init
+git add .
+git commit -m "Week 1: mini blog with posts, forms, and admin"</code></pre>
+    <div class="callout tip">
+      <strong>Why ignore <code>db.sqlite3</code>?</strong> It holds your data and changes constantly. Each developer should create their own database with <code>migrate</code>.</div>
+  </section>
+
+  <section>
+    <h2>Week 1 Review</h2>
+    <table>
+      <tr><th>Day</th><th>Topic</th><th>Where it appears in the mini blog</th></tr>
+      <tr><td>1</td><td>Projects, apps, views, URLs</td><td>Project and blog app setup</td></tr>
+      <tr><td>2</td><td>Models and the ORM</td><td>Post model, queries in views</td></tr>
+      <tr><td>3</td><td>Admin and relationships</td><td>Author FK, admin registration</td></tr>
+      <tr><td>4</td><td>Templates</td><td>base.html, list and detail pages</td></tr>
+      <tr><td>5</td><td>Static and media</td><td>style.css, cover uploads</td></tr>
+      <tr><td>6</td><td>Forms</td><td>Create, edit, validation, CSRF, delete</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Common Mistakes at This Stage</h2>
+    <ol>
+      <li><strong>Forgetting <code>request.FILES</code>:</strong> the cover upload is silently ignored.</li>
+      <li><strong>Missing <code>enctype="multipart/form-data"</code>:</strong> the browser sends only the file name, or nothing.</li>
+      <li><strong>Deleting with GET:</strong> always use a POST form for destructive actions.</li>
+      <li><strong>Showing drafts on public pages:</strong> filter with <code>is_published=True</code> in every public view.</li>
+      <li><strong>Hard-coding addresses:</strong> use <code>{% url %}</code> everywhere.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <div class="practical">
+      <h3>Practical 1: Build the Project</h3>
+      <p>Follow Steps 1 to 4 from scratch. Run <code>makemigrations</code> and <code>migrate</code>, then confirm the admin shows the Post and Author models.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Build the Pages</h3>
+      <p>Complete Steps 5 to 7. Visit every address in the table on the Project Overview and confirm each one loads.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Test by Hand</h3>
+      <p>Work through every item in Step 8. For each failed check, fix the code and test again before moving on.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Add a Feature</h3>
+      <p>Add a "Latest 3 posts" block to <code>base.html</code>, or a count of published posts in the footer. Use the template language from Day 4 and a query from Day 2.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Commit</h3>
+      <p>Complete Step 9 and make your first commit. Write one sentence describing what the project does.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Mini blog feature</th><th>Where you'll see it</th></tr>
+      <tr><td>Published and draft states</td><td>Newsrooms, course platforms, and any content workflow</td></tr>
+      <tr><td>Create, edit, delete forms</td><td>Every content management system and admin tool</td></tr>
+      <tr><td>Cover image uploads</td><td>Article headers, product photos, profile pictures</td></tr>
+      <tr><td>Admin for staff</td><td>Companies that need their own dashboards without building one</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Next step:</strong> Day 8 moves to class-based views, which reduce the repeated code you wrote today, such as list, detail, create, and delete views.</div>
+  </section>
+
+  <section>
+    <h2>Day 7 Quiz</h2>
+    <p>Ten questions on Week 1. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 7 of 30 &middot; Week 1 complete. Next: Day 8 - Class-Based Views</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Why does the public list view filter with is_published=True?",
+      options: ["To make queries faster", "So draft posts are never shown to visitors", "Because the field is required", "To sort the posts"],
+      answer: 1,
+      explain: "Public pages should show only published content, while drafts remain visible in the admin."
+    },
+    {
+      q: "Which command creates the project in the current folder instead of a nested one?",
+      options: ["django-admin startproject miniblog", "django-admin startproject miniblog .", "python manage.py startproject", "django new miniblog"],
+      answer: 1,
+      explain: "The final period tells startproject to use the current folder."
+    },
+    {
+      q: "Why must the upload form use enctype='multipart/form-data'?",
+      options: ["To make the page colourful", "So the browser sends the uploaded file along with the other data", "To disable CSRF", "To speed up the server"],
+      answer: 1,
+      explain: "Without this encoding, the browser does not send file contents, so the upload is lost."
+    },
+    {
+      q: "Where do uploaded files appear in the view?",
+      options: ["request.POST", "request.FILES", "request.GET", "request.user"],
+      answer: 1,
+      explain: "Files are kept separately in request.FILES, and the form needs both POST and FILES."
+    },
+    {
+      q: "Why should deleting a post require a POST request?",
+      options: ["POST is faster", "A link or image visited with GET could delete data by accident", "GET cannot show a page", "Django forbids GET for models"],
+      answer: 1,
+      explain: "Only deliberate form submissions should change data, so GET only shows the confirmation page."
+    },
+    {
+      q: "What does get_object_or_404(Post, pk=post_id, is_published=True) return for an unpublished post?",
+      options: ["The post", "None", "A 404 Not Found response", "An empty list"],
+      answer: 2,
+      explain: "If no matching published post exists, the function returns a standard 404 response."
+    },
+    {
+      q: "Why is the form template shared between create and edit?",
+      options: ["Django cannot have two templates", "The form already knows whether it has an instance, so the same markup works for both", "Editing is not allowed", "The template is cached"],
+      answer: 1,
+      explain: "A ModelForm with an instance fills in existing values, so one template serves both pages."
+    },
+    {
+      q: "Why does the settings check require TEMPLATES[0]['DIRS'] to include BASE_DIR / 'templates'?",
+      options: ["So the database can find templates", "So Django can find the shared base.html in the project folder", "So static files are compressed", "So migrations run"],
+      answer: 1,
+      explain: "DIRS tells Django where to find project-level templates such as base.html."
+    },
+    {
+      q: "What does {% url 'post_detail' post.id %} protect you from?",
+      options: ["Slow pages", "Broken links if the URL pattern changes", "Duplicate posts", "Image upload errors"],
+      answer: 1,
+      explain: "Links built from route names update automatically when addresses change."
+    },
+    {
+      q: "Why is db.sqlite3 usually left out of Git?",
+      options: ["It is too small to matter", "It holds personal data that changes constantly and should be created locally with migrate", "Git cannot store binary files", "Django deletes it on commit"],
+      answer: 1,
+      explain: "Databases hold changing, personal data, so each developer should create their own with migrations."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. Week 1 complete. Ready for Day 8!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 29</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 29 of 30</span>
+  <h1>Monitoring, Performance and CI Basics</h1>
+  <p>Estimated time: about 1.5 hours &middot; Health checks, error tracking, finding slow queries, database indexes, and a GitHub Actions pipeline that runs your tests on every push</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Knowing When Something Breaks</h2>
+    <p>A shipped app needs three kinds of visibility: it should tell you it's alive, tell you when code fails, and tell you when it gets slow. Yesterday's container runs, but you still need to know how it behaves.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> A car dashboard shows the engine is running (health), warning lights tell you about faults (errors), and the fuel and speed gauges show how hard it's working (performance).</div>
+    <table>
+      <tr><th>Question</th><th>Tool in this lesson</th></tr>
+      <tr><td>Is it up?</td><td>A health check endpoint</td></tr>
+      <tr><td>What failed, and where?</td><td>Logging and an error tracker</td></tr>
+      <tr><td>What is slow?</td><td>Query counting and the debug toolbar</td></tr>
+      <tr><td>Did a change break something?</td><td>Automated tests in CI</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 2: A Health Check Endpoint</h2>
+    <p>Load balancers and container platforms call a simple URL to decide whether to send traffic to a server. The check should be cheap and should also confirm the database answers:</p>
+    <pre><code># blog/views.py
+from django.db import connection
+from django.http import JsonResponse
+
+def health(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "ok", "database": "ok"})
+    except Exception:
+        return JsonResponse({"status": "error", "database": "down"}, status=503)</code></pre>
+    <pre><code># config/urls.py
+urlpatterns = [
+    path("health/", health, name="health"),
+    # ...other routes...
+]</code></pre>
+    <div class="output">$ curl -i http://localhost:8000/health/
+HTTP/1.1 200 OK
+{"status": "ok", "database": "ok"}</div>
+    <div class="callout warn">
+      <strong>Keep it public but quiet:</strong> The health endpoint should reveal nothing sensitive. Don't include version numbers, settings, or user data. Also keep it out of the login requirement and out of throttling so the platform can always reach it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Error Tracking</h2>
+    <p>Day 12 taught you to read tracebacks and write logs. In production, nobody watches the log file all day, so an error tracker such as Sentry collects exceptions, groups them, and alerts you. The Python SDK connects with a few lines:</p>
+    <pre><code># config/settings/prod.py
+import os
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN", ""),
+    traces_sample_rate=0.1,        # sample 10% of requests for performance data
+    send_default_pii=False,        # don't send personal details by default
+)</code></pre>
+    <div class="callout tip">
+      <strong>Environment variable for the DSN:</strong> The DSN is a project address that is safe to keep out of Git. Setting it empty in development turns reporting off, so local errors stay local.</div>
+    <div class="callout warn">
+      <strong>Privacy first:</strong> Error reports can include request data. Leave personal-data sending off unless you have a clear reason and a privacy policy that covers it.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Finding Slow Queries</h2>
+    <p>The most common slow page is one that runs many queries, as you saw with N+1 problems on Day 9. Django can count them for you. The test below fails if a view runs more queries than you expect:</p>
+    <pre><code>from django.test import TestCase
+from django.urls import reverse
+
+class PostListQueryTests(TestCase):
+    def test_list_page_uses_few_queries(self):
+        with self.assertNumQueries(3):
+            self.client.get(reverse("post-list"))</code></pre>
+    <p>When a count changes, you can print the actual queries with the <code>CaptureQueriesContext</code> helper:</p>
+    <pre><code>from django.db import connection
+from django.test.utils import CaptureQueriesContext
+
+with CaptureQueriesContext(connection) as ctx:
+    self.client.get(reverse("post-list"))
+for q in ctx.captured_queries:
+    print(q["sql"][:80])</code></pre>
+    <div class="callout tip">
+      <strong>Fix with Day 9 tools:</strong> Repeated queries usually disappear with <code>select_related</code> for foreign keys and <code>prefetch_related</code> for many-to-many relations.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: The Debug Toolbar (Development Only)</h2>
+    <p><code>django-debug-toolbar</code> shows every query, its time, and its source on each page. It is for development only, so add it to the development settings:</p>
+    <pre><code># config/settings/dev.py
+INSTALLED_APPS += ["debug_toolbar"]
+MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
+INTERNAL_IPS = ["127.0.0.1"]</code></pre>
+    <pre><code># config/urls.py  (only when DEBUG is True)
+from django.conf import settings
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]</code></pre>
+    <div class="callout warn">
+      <strong>Never in production:</strong> The toolbar reveals SQL and internals. Keep it out of <code>prod.py</code> entirely, not merely hidden behind <code>DEBUG</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Database Indexes</h2>
+    <p>An index lets the database find rows without scanning the whole table, like an index at the back of a book. Add one to fields you filter or sort by often:</p>
+    <pre><code>class Post(models.Model):
+    title = models.CharField(max_length=200)
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["is_published", "-created_at"], name="published_recent_idx"),
+        ]</code></pre>
+    <pre><code>python manage.py makemigrations
+python manage.py migrate</code></pre>
+    <table>
+      <tr><th>Add an index when...</th><th>Skip it when...</th></tr>
+      <tr><td>A field is used often in <code>filter()</code> or <code>order_by()</code></td><td>The table is tiny</td></tr>
+      <tr><td>A foreign key is queried often (Django adds one automatically)</td><td>Most queries read the whole table anyway</td></tr>
+      <tr><td>A query is slow in the logs or toolbar</td><td>The field changes on almost every write</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Indexes cost something:</strong> Every index is updated on every insert and update. Add them where reads are common and writes are modest, and measure before and after.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Caching Recap</h2>
+    <p>Day 20's cache is the most effective performance tool for pages that many visitors read but few people change. Combine it with the health and query checks above to confirm it helps:</p>
+    <pre><code>from django.core.cache import cache
+
+def popular_posts():
+    posts = cache.get("popular_posts")
+    if posts is None:
+        posts = list(Post.objects.filter(is_published=True).order_by("-views")[:10])
+        cache.set("popular_posts", posts, timeout=300)   # five minutes
+    return posts</code></pre>
+    <div class="callout warn">
+      <strong>Measure, then cache:</strong> Caching a fast page adds complexity for no benefit. Use <code>assertNumQueries</code> and the toolbar to find the real bottleneck first.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: A CI Pipeline with GitHub Actions</h2>
+    <p>Continuous integration (CI) runs your checks automatically whenever code is pushed. A GitHub Actions workflow file lives in your repository:</p>
+    <pre><code># .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: blog_test
+          POSTGRES_USER: blog
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 3s --health-retries 10
+
+    env:
+      DJANGO_SECRET_KEY: ci-only-not-secret
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      POSTGRES_HOST: localhost
+      POSTGRES_DB: blog_test
+      POSTGRES_USER: blog
+      POSTGRES_PASSWORD: ci-only-password
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py test</code></pre>
+    <div class="output">Run python manage.py test
+Found 42 test(s).
+....................................
+Ran 42 tests in 6.318s
+
+OK</div>
+    <table>
+      <tr><th>Step</th><th>What it catches</th></tr>
+      <tr><td><code>check</code></td><td>Broken settings and misconfigured apps</td></tr>
+      <tr><td><code>makemigrations --check</code></td><td>Model changes that have no migration file yet</td></tr>
+      <tr><td><code>test</code></td><td>Behaviour that broke since the last push</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Secrets in CI:</strong> The values above are throwaway test values, so they're safe in the file. Real deployment secrets belong in GitHub's encrypted secrets, read as <code>${{ secrets.NAME }}</code>.</div>
+    <div class="callout warn">
+      <strong>A red build is a feature:</strong> If the pipeline fails, don't merge. Fix the test or the code first, because a passing pipeline is what makes it safe to deploy.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 29</h2>
+    <ol>
+      <li><strong>Making the health check login-only or throttled:</strong> the platform can't reach it, and it looks like the app is down.</li>
+      <li><strong>Sending personal data to error trackers by default:</strong> keep <code>send_default_pii</code> off unless you need it.</li>
+      <li><strong>Shipping the debug toolbar:</strong> keep it in development settings only.</li>
+      <li><strong>Adding indexes without measuring:</strong> they slow down writes, so check the query first.</li>
+      <li><strong>Forgetting <code>makemigrations --check</code> in CI:</strong> a model change without a migration only fails in production.</li>
+      <li><strong>Ignoring a failing pipeline:</strong> a failing build means the last change is not safe.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use your <code>mini-blog</code> project from the last few days.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Health Check</h3>
+      <p>Add the <code>health</code> view and URL. Visit <code>/health/</code>, then stop the database and confirm the response becomes 503.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Count Queries</h3>
+      <p>Write <code>assertNumQueries</code> for the post list. Run it, read the actual number from <code>CaptureQueriesContext</code>, then add <code>select_related</code> if the author is loaded per post.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Add an Index</h3>
+      <p>Add the <code>published_recent_idx</code> index, run the migration, and confirm <code>showmigrations</code> lists it as applied.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: CI Pipeline</h3>
+      <p>Create <code>.github/workflows/ci.yml</code> from Lesson 8, push to a GitHub repository, and watch the Actions tab. Fix any step that fails.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Break It on Purpose</h3>
+      <p>Change a model field without creating a migration, push, and confirm the <code>makemigrations --check</code> step fails. Then create the migration and confirm the build passes.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Practice</th><th>Where you'll see it</th></tr>
+      <tr><td>Health endpoints</td><td>Load balancers that remove unhealthy servers from rotation</td></tr>
+      <tr><td>Error tracking</td><td>Teams that get alerts for a new exception within minutes</td></tr>
+      <tr><td>Query-count tests</td><td>Stopping performance regressions before they reach users</td></tr>
+      <tr><td>CI pipelines</td><td>Every pull request on a team shows green or red before merging</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Looking ahead:</strong> Tomorrow is the capstone. You'll combine everything from this course into one web app and ship it.</div>
+  </section>
+
+  <section>
+    <h2>Day 29 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 29 of 30 &middot; Next: Day 30 - Capstone: Build and Ship a Web App</footer>
+
+<script>
+  const questions = [
+    {
+      q: "What is the main purpose of a health check endpoint?",
+      options: ["To show users the site's news", "To let load balancers and platforms confirm the server is responding", "To change the database password", "To send emails"],
+      answer: 1,
+      explain: "Platforms call the health URL to decide whether to route traffic to the server."
+    },
+    {
+      q: "Why should a health check also query the database?",
+      options: ["To store visitor counts", "So it reports a failure when the app can't reach its database", "To run migrations", "To clear the cache"],
+      answer: 1,
+      explain: "A server that can't reach the database is not really healthy, so the check should return an error."
+    },
+    {
+      q: "What does an error tracker such as Sentry add beyond log files?",
+      options: ["Faster page loads", "Grouped exception reports and alerts", "Automatic migrations", "Free hosting"],
+      answer: 1,
+      explain: "Error trackers collect, group, and alert on exceptions, so nobody has to read logs all day."
+    },
+    {
+      q: "What does assertNumQueries(3) check?",
+      options: ["That the page loads in 3 seconds", "That the code inside runs exactly 3 database queries", "That there are 3 users", "That the response has 3 headers"],
+      answer: 1,
+      explain: "assertNumQueries fails the test if the number of database queries differs from the expected count."
+    },
+    {
+      q: "Which fix usually removes repeated queries for foreign keys?",
+      options: ["select_related", "DEBUG = True", "A longer PAGE_SIZE", "A new SECRET_KEY"],
+      answer: 0,
+      explain: "select_related joins related rows in one query, which removes the N+1 pattern from Day 9."
+    },
+    {
+      q: "Why must the debug toolbar stay out of production settings?",
+      options: ["It makes pages slower to render in browsers", "It reveals SQL and internal details", "It requires Python 2", "It deletes migrations"],
+      answer: 1,
+      explain: "The toolbar shows queries and internals, which should never be visible to the public."
+    },
+    {
+      q: "What is the trade-off of adding a database index?",
+      options: ["Reads get slower", "Writes become slower, because the index must be updated too", "Migrations are removed", "Security is weakened"],
+      answer: 1,
+      explain: "Indexes speed up reads but add work to every insert and update."
+    },
+    {
+      q: "What does makemigrations --check --dry-run do in CI?",
+      options: ["Creates migrations and commits them", "Fails if model changes have no migration file", "Deletes old migrations", "Deploys the site"],
+      answer: 1,
+      explain: "The check reports pending model changes without writing files, so a missing migration fails the build."
+    },
+    {
+      q: "Where should real deployment secrets be stored for a GitHub Actions workflow?",
+      options: ["Directly in the workflow YAML", "In GitHub's encrypted secrets, read with ${{ secrets.NAME }}", "In a public README", "In the Dockerfile"],
+      answer: 1,
+      explain: "Encrypted secrets keep real values out of the repository while the workflow can still use them."
+    },
+    {
+      q: "What is the right response to a failing CI pipeline?",
+      options: ["Merge anyway and fix it later", "Disable the failing step", "Fix the code or test before merging", "Delete the workflow file"],
+      answer: 2,
+      explain: "A failing pipeline means the change is not verified, so it should be fixed before it is merged or deployed."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 30!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

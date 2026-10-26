@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django in 30 Days - Day 9</title>
+<style>
+  :root {
+    --dj-green: #0C4B33;
+    --dj-green-light: #44B78B;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--dj-green), #1d6b4b);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--dj-green-light);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #d6f2e6; }
+  .badge {
+    display: inline-block;
+    background: var(--dj-green-light);
+    color: #06201a;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--dj-green-light); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--dj-green-light);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .data { background: var(--code-bg); border-radius: 10px; padding: 14px 16px; font-family: Consolas, monospace; font-size: 0.92rem; white-space: pre; overflow-x: auto; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--dj-green-light);
+    color: #06201a;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DJANGO DAY 9 of 30</span>
+  <h1>Querysets in Depth</h1>
+  <p>Estimated time: about 1.5 hours &middot; Lazy evaluation, Q and F objects, aggregation and annotation, values, exists, and avoiding the N+1 query problem</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Sample Data for Today</h2>
+    <p>Every example today uses the same small dataset, so you can check the results yourself. Create these in the admin or the shell. Dates don't matter here, but titles and views do:</p>
+    <div class="data">Author   Name    Email
+Asha     Asha    asha@example.com
+Ravi     Ravi    ravi@example.com
+
+Post                  Author  Published  Views
+Model tips            Asha    True       40
+Views explained       Asha    True       25
+Forms made easy       Ravi    False      10</div>
+    <div class="callout tip">
+      <strong>Tip:</strong> Results in this lesson use <code>order_by("title")</code> so the order is predictable. Without an explicit order, the database may return rows in any order.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Querysets Are Lazy</h2>
+    <p>A queryset describes the data you want, but does not hit the database until you use the results. You can build it up step by step:</p>
+    <pre><code>&gt;&gt;&gt; qs = Post.objects.all()                 # no query yet
+&gt;&gt;&gt; qs = qs.filter(is_published=True)      # still no query
+&gt;&gt;&gt; qs = qs.order_by("title")              # still no query
+&gt;&gt;&gt; for post in qs:                        # the query runs here
+...     print(post.title)</code></pre>
+    <div class="output">Model tips
+Views explained</div>
+    <p>A queryset caches its results after the first evaluation. Looping over it twice does not run the query twice.</p>
+    <table>
+      <tr><th>Triggers evaluation</th><th>Does not trigger it</th></tr>
+      <tr><td>Looping, <code>list()</code></td><td><code>filter()</code>, <code>exclude()</code>, <code>order_by()</code></td></tr>
+      <tr><td><code>len()</code>, <code>bool()</code>, <code>print()</code></td><td><code>values()</code>, <code>select_related()</code></td></tr>
+      <tr><td><code>get()</code>, <code>first()</code>, <code>exists()</code>, <code>count()</code></td><td>Slicing with <code>[:n]</code> (until you evaluate it)</td></tr>
+    </table>
+    <div class="callout warn">
+      <strong>Watch out:</strong> <code>count()</code> asks the database to count, while <code>len(qs)</code> loads every row into memory and then counts them. Use <code>count()</code> when you only need the number.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 3: Combining Conditions with Q</h2>
+    <p>Keyword arguments in <code>filter()</code> are combined with AND. For OR and NOT, use <code>Q</code> objects with <code>|</code>, <code>&amp;</code>, and <code>~</code>:</p>
+    <pre><code>&gt;&gt;&gt; from django.db.models import Q
+
+&gt;&gt;&gt; Post.objects.filter(is_published=True, views__gt=30).order_by("title")
+&gt;&gt;&gt; Post.objects.filter(Q(is_published=True) | Q(views__gt=20)).order_by("title")
+&gt;&gt;&gt; Post.objects.filter(~Q(author__name="Ravi")).order_by("title")</code></pre>
+    <div class="output">&lt;QuerySet [&lt;Post: Model tips&gt;]&gt;
+&lt;QuerySet [&lt;Post: Model tips&gt;, &lt;Post: Views explained&gt;]&gt;
+&lt;QuerySet [&lt;Post: Model tips&gt;, &lt;Post: Views explained&gt;]&gt;</div>
+    <p>Check each line against the data table. The first line needs both conditions: Model tips has 40 views and is published. Forms made easy is excluded by both the OR line and the NOT line.</p>
+    <table>
+      <tr><th>Operator</th><th>Meaning</th></tr>
+      <tr><td><code>|</code></td><td>OR</td></tr>
+      <tr><td><code>&amp;</code></td><td>AND</td></tr>
+      <tr><td><code>~</code></td><td>NOT</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Comparing Fields with F</h2>
+    <p><code>F</code> refers to a field value in the database, so you can compare fields to each other or change a value without fetching it into Python first:</p>
+    <pre><code>&gt;&gt;&gt; from django.db.models import F
+
+&gt;&gt;&gt; Post.objects.filter(views__gte=F("id") * 10).order_by("title")   # compare against a calculation
+&gt;&gt;&gt; Post.objects.update(views=F("views") + 5)                       # safe increment in the database
+3</code></pre>
+    <div class="output">3</div>
+    <p>After the update, the views are 45, 30, and 15. The update ran as one SQL statement, which avoids a common bug: two users increasing the same value at once, where one increment is lost.</p>
+    <div class="callout tip">
+      <strong>Why F matters:</strong> Doing <code>post.views += 1; post.save()</code> reads the value into Python first. If two requests run at the same time, one increment can overwrite the other. <code>F</code> does the arithmetic inside the database.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Aggregation</h2>
+    <p><code>aggregate()</code> computes one summary value for the whole queryset:</p>
+    <pre><code>&gt;&gt;&gt; from django.db.models import Sum, Avg, Count, Max
+
+&gt;&gt;&gt; Post.objects.aggregate(total=Sum("views"))
+&gt;&gt;&gt; Post.objects.aggregate(avg=Avg("views"))
+&gt;&gt;&gt; Post.objects.aggregate(best=Max("views"), posts=Count("id"))</code></pre>
+    <div class="output">{'total': 75}
+{'avg': 25.0}
+{'best': 40, 'posts': 3}</div>
+    <p>These numbers are from the original data, before the Lesson 4 update. Your results after that update will be 45, 30, and 15 instead. Check your own numbers against your data.</p>
+    <p>Here's how to count only the published posts with <code>filter</code> inside an aggregate:</p>
+    <pre><code>&gt;&gt;&gt; Post.objects.aggregate(published=Count("id", filter=Q(is_published=True)))</code></pre>
+    <div class="output">{'published': 2}</div>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Annotation: Per-Row Values</h2>
+    <p><code>annotate()</code> adds a calculated value to <em>each row</em>. The Author-to-Post relationship from Day 3 makes this useful:</p>
+    <pre><code>&gt;&gt;&gt; from django.db.models import Count, Q
+
+&gt;&gt;&gt; authors = Author.objects.annotate(
+...     post_count=Count("posts"),
+...     published_count=Count("posts", filter=Q(posts__is_published=True)),
+... ).order_by("name")
+&gt;&gt;&gt; for a in authors:
+...     print(a.name, a.post_count, a.published_count)</code></pre>
+    <div class="output">Asha 2 2
+Ravi 1 0</div>
+    <div class="callout tip">
+      <strong>Aggregate vs annotate:</strong> <code>aggregate()</code> returns one dictionary for the whole queryset. <code>annotate()</code> returns a queryset in which each object has an extra attribute, such as <code>a.post_count</code>.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 7: values and values_list</h2>
+    <p>Sometimes you don't need model objects, just specific fields. <code>values()</code> returns dictionaries, and <code>values_list()</code> returns tuples:</p>
+    <pre><code>&gt;&gt;&gt; Post.objects.order_by("title").values("title", "views")
+&gt;&gt;&gt; Post.objects.order_by("title").values_list("title", flat=True)
+&gt;&gt;&gt; Post.objects.values("author__name").distinct()</code></pre>
+    <div class="output">&lt;QuerySet [{'title': 'Forms made easy', 'views': 10}, {'title': 'Model tips', 'views': 40}, {'title': 'Views explained', 'views': 25}]&gt;
+&lt;QuerySet ['Forms made easy', 'Model tips', 'Views explained']&gt;
+&lt;QuerySet [{'author__name': 'Asha'}, {'author__name': 'Ravi'}]&gt;</div>
+    <p><code>flat=True</code> gives a plain list of values rather than tuples, which works only with one field. Notice <code>author__name</code> follows the foreign key from Day 3.</p>
+    <div class="callout tip">
+      <strong>When to use values:</strong> For reports, exports, and charts, you usually don't need full objects. Requesting only the fields you need makes the query lighter.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: exists, first, and Slicing</h2>
+    <pre><code>&gt;&gt;&gt; Post.objects.filter(views__gt=100).exists()
+&gt;&gt;&gt; Post.objects.order_by("title").first()
+&gt;&gt;&gt; Post.objects.order_by("-views")[:2]</code></pre>
+    <div class="output">False
+&lt;Post: Forms made easy&gt;
+&lt;QuerySet [&lt;Post: Model tips&gt;, &lt;Post: Views explained&gt;]&gt;</div>
+    <ul>
+      <li><code>exists()</code> is faster than <code>count() &gt; 0</code>, because the database can stop at the first match.</li>
+      <li><code>first()</code> returns None instead of raising an error when the queryset is empty. <code>get()</code> raises an error in that case.</li>
+      <li>Slicing with <code>[:n]</code> becomes a SQL <code>LIMIT</code>, so only those rows are fetched.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Lesson 9: The N+1 Query Problem</h2>
+    <p>A common performance mistake is looping over objects and touching related data inside the loop:</p>
+    <pre><code># Slow: one query for posts, then one query per post for the author
+for post in Post.objects.all():
+    print(post.title, post.author.name)
+
+# Fast: the author is fetched in the same query
+for post in Post.objects.select_related("author"):
+    print(post.title, post.author.name)</code></pre>
+    <p>With three posts, the slow version runs about four queries (one for the posts plus one per author lookup). The fast version runs one query. The gap grows quickly: with a thousand posts, the slow version runs about a thousand and one queries.</p>
+    <table>
+      <tr><th>Method</th><th>Use for</th></tr>
+      <tr><td><code>select_related()</code></td><td>ForeignKey and one-to-one fields (joined in one query)</td></tr>
+      <tr><td><code>prefetch_related()</code></td><td>ManyToMany and reverse ForeignKey fields (a second query, combined in Python)</td></tr>
+    </table>
+    <pre><code>&gt;&gt;&gt; Post.objects.prefetch_related("tags")       # loads tags efficiently
+&gt;&gt;&gt; Author.objects.prefetch_related("posts")    # loads each author's posts</code></pre>
+    <div class="callout warn">
+      <strong>Measure, don't guess:</strong> Use Django Debug Toolbar or <code>django.test.utils.CaptureQueriesContext</code> to count the queries a page runs before and after changes.</div>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 9</h2>
+    <ol>
+      <li><strong>Using <code>len(qs)</code> to count:</strong> use <code>qs.count()</code> to let the database count.</li>
+      <li><strong>Using <code>|</code> in place of <code>,</code> inside filter:</strong> keyword arguments are AND. Use <code>Q</code> objects for OR.</li>
+      <li><strong>Incrementing with Python arithmetic:</strong> use <code>F()</code> to avoid lost updates.</li>
+      <li><strong>Expecting <code>get()</code> to return None:</strong> it raises an error. Use <code>first()</code> when the result might be missing.</li>
+      <li><strong>Looping over related objects without select_related:</strong> this causes the N+1 problem.</li>
+      <li><strong>Forgetting <code>order_by</code>:</strong> results and pagination can change between requests.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Use the <code>mini-blog</code> project and the shell. Add extra posts if you need more data.</p>
+
+    <div class="practical">
+      <h3>Practical 1: Q Objects</h3>
+      <p>Write one query returning posts that are either published or have more than 30 views. Predict the result from the data table before running it.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Aggregation</h3>
+      <p>Find the average views of published posts only, using <code>aggregate()</code> and <code>filter=</code> inside the aggregate. Check your answer by hand.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Annotate Authors</h3>
+      <p>Annotate each author with the total views across their posts, using <code>Sum("posts__views")</code>. Print each name and total.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Measure the N+1 Problem</h3>
+      <p>Use <code>django.db.connection.queries</code> with <code>DEBUG=True</code> in the shell, or the Django test client, to count queries for a loop over posts that accesses <code>post.author.name</code>. Then add <code>select_related("author")</code> and count again.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: values_list Report</h3>
+      <p>Write a query that returns the titles of all published posts as a flat list, sorted alphabetically, and print the result.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Technique</th><th>Where you'll see it</th></tr>
+      <tr><td>Q objects</td><td>Search boxes that match a title <em>or</em> a body, and filters that exclude categories</td></tr>
+      <tr><td>F expressions</td><td>Stock counts, like-counters, and bank balances updated safely</td></tr>
+      <tr><td>Aggregation</td><td>Sales totals, dashboards, and monthly reports</td></tr>
+      <tr><td>Annotation</td><td>Showing "12 comments" next to each article in a list</td></tr>
+      <tr><td>select_related and prefetch_related</td><td>Fast product lists and feeds that show related data</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Admin list views and Django REST framework both use these same queryset tools. Mastering them now makes both easier to tune later.</div>
+  </section>
+
+  <section>
+    <h2>Day 9 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Django in 30 Days &middot; Day 9 of 30 &middot; Next: Day 10 - Model Methods and Custom Managers</footer>
+
+<script>
+  const questions = [
+    {
+      q: "When does a queryset run its SQL query?",
+      options: ["At the moment filter() is called", "When its results are actually needed, such as in a loop", "When the server starts", "After every save"],
+      answer: 1,
+      explain: "Querysets are lazy: they wait until you iterate, slice to a list, or call a method like count()."
+    },
+    {
+      q: "What does Q(a=1) | Q(b=2) produce?",
+      options: ["AND of both conditions", "OR of both conditions", "NOT of both conditions", "A list of two querysets"],
+      answer: 1,
+      explain: "The pipe operator combines Q objects with OR."
+    },
+    {
+      q: "Why is Post.objects.update(views=F('views') + 1) safer than fetching and saving?",
+      options: ["It is prettier", "The addition happens in the database, so simultaneous updates don't overwrite each other", "It is required by Django", "It creates a new post"],
+      answer: 1,
+      explain: "Doing the arithmetic in SQL avoids lost updates when two requests change the same value."
+    },
+    {
+      q: "What is the difference between aggregate() and annotate()?",
+      options: ["There is no difference", "aggregate() returns one summary dictionary; annotate() adds a value to each object", "annotate() deletes rows", "aggregate() is only for text"],
+      answer: 1,
+      explain: "aggregate() summarises the whole queryset, while annotate() calculates a value per row."
+    },
+    {
+      q: "What does Count('posts') on an Author annotation count?",
+      options: ["The number of authors", "The number of posts related to each author", "The number of characters in the name", "The number of tags"],
+      answer: 1,
+      explain: "The related name 'posts' lets the annotation count each author's related posts."
+    },
+    {
+      q: "Which method returns None instead of raising an error when nothing matches?",
+      options: ["get()", "first()", "update()", "delete()"],
+      answer: 1,
+      explain: "first() returns None for an empty queryset, while get() raises DoesNotExist."
+    },
+    {
+      q: "Which is the correct tool for a foreign key relation to avoid the N+1 problem?",
+      options: ["select_related()", "exists()", "values_list()", "distinct()"],
+      answer: 0,
+      explain: "select_related() joins the foreign key's data into the main query, so no extra query runs per row."
+    },
+    {
+      q: "Which method fits ManyToMany relations?",
+      options: ["select_related()", "prefetch_related()", "first()", "order_by()"],
+      answer: 1,
+      explain: "prefetch_related() loads ManyToMany and reverse foreign key data in a second query and combines it."
+    },
+    {
+      q: "What does values_list('title', flat=True) return?",
+      options: ["A list of dictionaries", "A queryset of plain values, such as strings", "Full Post objects", "A count"],
+      answer: 1,
+      explain: "flat=True returns single values rather than tuples when only one field is requested."
+    },
+    {
+      q: "Why is exists() often faster than count() > 0?",
+      options: ["It caches results", "The database can stop at the first match instead of counting every row", "It skips the database", "It sorts the results"],
+      answer: 1,
+      explain: "exists() only needs to know whether a match exists, so the database can stop early."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 10!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>

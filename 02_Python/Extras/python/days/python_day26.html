@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python in 30 Days - Day 26</title>
+<style>
+  :root {
+    --py-blue: #3776AB;
+    --py-yellow: #FFD43B;
+    --bg: #0f1724;
+    --card: #172235;
+    --text: #e6edf7;
+    --muted: #9fb0c8;
+    --code-bg: #0b1220;
+    --ok: #34d399;
+    --bad: #f87171;
+    --line: #22314d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--py-blue), #1e4d7a);
+    padding: 36px 20px;
+    text-align: center;
+    border-bottom: 4px solid var(--py-yellow);
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.1rem; }
+  header p { margin: 0; color: #dbe7f5; }
+  .badge {
+    display: inline-block;
+    background: var(--py-yellow);
+    color: #1b2433;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 22px;
+    border: 1px solid var(--line);
+  }
+  h2 { margin-top: 0; color: var(--py-yellow); font-size: 1.45rem; }
+  h3 { color: #8ec5ff; margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    border-left: 4px solid var(--py-yellow);
+    margin: 12px 0;
+  }
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 0.93rem; }
+  p code, li code { background: #22314d; padding: 1px 6px; border-radius: 5px; }
+  .output {
+    background: #0c1a14;
+    color: var(--ok);
+    font-family: Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: -4px 0 14px;
+    white-space: pre-wrap;
+  }
+  .callout {
+    background: #1d2c45;
+    border-left: 4px solid #8ec5ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+  .warn { border-left-color: var(--bad); }
+  .tip { border-left-color: var(--ok); }
+  .analogy { border-left-color: var(--py-yellow); }
+  .practical { border: 1px dashed #3b5378; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #22314d; }
+  .quiz-q { margin-bottom: 18px; }
+  .quiz-q p { font-weight: 600; margin: 0 0 8px; }
+  .opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #1d2c45;
+    color: var(--text);
+    border: 1px solid #2c4166;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #26395a; }
+  .opt.correct { background: #14412f; border-color: var(--ok); }
+  .opt.wrong { background: #4a1d1d; border-color: var(--bad); }
+  .opt:disabled { cursor: default; }
+  .feedback { font-size: 0.92rem; min-height: 1.2em; margin-top: 4px; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.bad { color: var(--bad); }
+  button.primary {
+    background: var(--py-yellow);
+    color: #1b2433;
+    border: none;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #score { font-size: 1.15rem; font-weight: 700; margin-top: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">DAY 26 of 30</span>
+  <h1>Testing with pytest</h1>
+  <p>Estimated time: about 1.5 hours &middot; Why tests matter, writing test functions, assert, fixtures, parametrize, pytest.raises</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Lesson 1: Why Test?</h2>
+    <p>A test is a small program that checks whether another piece of code behaves as expected. Tests catch bugs early, and they let you change code later without fear, because you can run the tests again and see what broke.</p>
+    <div class="callout analogy">
+      <strong>Analogy:</strong> Tests are like a building inspector. The inspector checks each part against the plan. You don't wait until the roof collapses to find out a beam was weak.</div>
+    <p>Python has a built-in <code>assert</code> statement, and the <strong>pytest</strong> library builds on it to make testing much easier to organise and read.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 2: Installing pytest</h2>
+    <p>Create a virtual environment first, as you learned on Day 25, then install pytest inside it.</p>
+    <pre><code># With your environment active
+pip install pytest
+pytest --version</code></pre>
+    <div class="output">pytest 8.x.x</div>
+    <p>Your version number may differ, but the commands work the same way.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 3: The assert Statement</h2>
+    <p><code>assert</code> checks that a condition is True. If it is False, Python raises an <code>AssertionError</code>.</p>
+    <pre><code>x = 5
+assert x == 5          # passes silently
+assert x > 10          # raises AssertionError</code></pre>
+    <div class="output">Traceback (most recent call last):
+  ...
+AssertionError</div>
+    <div class="callout tip">
+      <strong>Note:</strong> Python can skip asserts when run with optimisation flags, so don't use <code>assert</code> to validate user input. Use <code>if</code> and <code>raise</code>, as you learned on Day 12.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 4: Writing Your First Test</h2>
+    <p>Put the code you want to test in one file, and the tests in another file whose name starts with <code>test_</code>. pytest finds test files and test functions automatically, and any function whose name starts with <code>test_</code> is a test.</p>
+    <p>Create <code>calculator.py</code>:</p>
+    <pre><code># calculator.py
+def add(a, b):
+    return a + b
+
+def divide(a, b):
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b</code></pre>
+    <p>Create <code>test_calculator.py</code> in the same folder:</p>
+    <pre><code># test_calculator.py
+from calculator import add, divide
+
+def test_add_positive_numbers():
+    assert add(2, 3) == 5
+
+def test_add_negative_numbers():
+    assert add(-2, -3) == -5
+
+def test_divide():
+    assert divide(10, 2) == 5</code></pre>
+    <p>Run pytest from the folder:</p>
+    <pre><code>pytest</code></pre>
+    <div class="output">============ test session starts ============
+collected 3 items
+
+test_calculator.py ...                        [100%]
+
+============ 3 passed in 0.02s ============</div>
+    <p>Each dot means one passed test. A failure shows an F, and pytest prints the details.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 5: Reading a Failing Test</h2>
+    <p>When a test fails, pytest shows the values it compared, which helps you find the problem.</p>
+    <pre><code>def test_add_wrong():
+    assert add(2, 2) == 5</code></pre>
+    <div class="output">E       assert 4 == 5
+E        +  where 4 = add(2, 2)
+
+test_calculator.py:12: AssertionError</div>
+    <p>The line starting with <code>E</code> shows what was expected and what happened. Read it first, then look at the line number.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 6: Testing Exceptions with pytest.raises</h2>
+    <p>Sometimes the correct behaviour is to raise an error. <code>pytest.raises</code> checks that the right exception is raised.</p>
+    <pre><code>import pytest
+from calculator import divide
+
+def test_divide_by_zero_raises():
+    with pytest.raises(ValueError):
+        divide(10, 0)
+
+def test_error_message():
+    with pytest.raises(ValueError, match="Cannot divide"):
+        divide(1, 0)</code></pre>
+    <p>If <code>divide(10, 0)</code> does not raise ValueError, the test fails. The <code>match</code> argument also checks the message text, using a regex from Day 24.</p>
+  </section>
+
+  <section>
+    <h2>Lesson 7: Testing Many Cases with parametrize</h2>
+    <p>Instead of writing one test per case, use <code>@pytest.mark.parametrize</code> to run the same test with several inputs.</p>
+    <pre><code>import pytest
+from calculator import add
+
+@pytest.mark.parametrize("a, b, expected", [
+    (1, 1, 2),
+    (0, 5, 5),
+    (-3, 3, 0),
+    (10, -4, 6),
+])
+def test_add_cases(a, b, expected):
+    assert add(a, b) == expected</code></pre>
+    <div class="output">test_calculator.py ....                          [100%]
+4 passed</div>
+    <div class="callout tip">
+      <strong>Why this helps:</strong> Each row is a separate test. If one row fails, pytest tells you exactly which inputs caused it, and the others still run.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 8: Fixtures for Shared Setup</h2>
+    <p>A fixture is a function that prepares something for tests, such as a sample list or a temporary file. Mark it with <code>@pytest.fixture</code>, then name it as a parameter in any test that needs it.</p>
+    <pre><code>import pytest
+
+@pytest.fixture
+def sample_scores():
+    return [70, 85, 90]
+
+def test_average(sample_scores):
+    assert sum(sample_scores) / len(sample_scores) == 81.66666666666667
+
+def test_max(sample_scores):
+    assert max(sample_scores) == 90</code></pre>
+    <p>Fixtures avoid repeating setup code in every test. pytest runs the fixture fresh for each test that uses it, so tests don't affect each other.</p>
+
+    <h3>Temporary files with tmp_path</h3>
+    <p>pytest provides a built-in fixture called <code>tmp_path</code>, a temporary folder that is removed after the tests finish. It's ideal for testing file code from Day 11.</p>
+    <pre><code>def save_note(path, text):
+    with open(path, "w") as f:
+        f.write(text)
+
+def test_save_note(tmp_path):
+    file = tmp_path / "note.txt"
+    save_note(file, "hello")
+    assert file.read_text() == "hello"</code></pre>
+    <div class="callout tip">
+      <strong>Good habit:</strong> Tests should never touch your real data files. <code>tmp_path</code> keeps them isolated.</div>
+  </section>
+
+  <section>
+    <h2>Lesson 9: Testing Classes</h2>
+    <p>You can test classes from Days 15 to 21 the same way. Create an object inside the test and check its methods.</p>
+    <pre><code># bank.py
+class Account:
+    def __init__(self, balance=0):
+        self.balance = balance
+
+    def withdraw(self, amount):
+        if amount > self.balance:
+            raise ValueError("Insufficient funds")
+        self.balance -= amount
+
+# test_bank.py
+import pytest
+from bank import Account
+
+def test_withdraw_reduces_balance():
+    acc = Account(100)
+    acc.withdraw(30)
+    assert acc.balance == 70
+
+def test_overdraw_raises():
+    acc = Account(50)
+    with pytest.raises(ValueError):
+        acc.withdraw(80)</code></pre>
+    <p>Each test creates a fresh object, so one test never changes another's starting data.</p>
+  </section>
+
+  <section>
+    <h2>Common Mistakes on Day 26</h2>
+    <ol>
+      <li><strong>Forgetting the test_ prefix:</strong> pytest skips functions and files that don't start with <code>test_</code>.</li>
+      <li><strong>Testing too much in one function:</strong> keep each test focused on one behaviour, so failures are easy to understand.</li>
+      <li><strong>Using assert for input validation:</strong> asserts can be disabled, so validate input with <code>if</code> and <code>raise</code>.</li>
+      <li><strong>Sharing state between tests:</strong> create fresh objects or use fixtures, so tests can run in any order.</li>
+      <li><strong>Running pytest outside the environment:</strong> it may not find your project's packages. Activate first.</li>
+      <li><strong>Writing a test that always passes:</strong> check that a test can fail, by temporarily breaking the code.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Practicals</h2>
+    <p>Try each one before looking at any hints. Create a new folder for these tests, with an active virtual environment.</p>
+
+    <div class="practical">
+      <h3>Practical 1: First Test File</h3>
+      <p>Write <code>strings_utils.py</code> with a function <code>reverse(text)</code> that returns the text backwards. Write at least three tests in <code>test_strings_utils.py</code>, including an empty string. Run <code>pytest</code>.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 2: Make a Test Fail</h3>
+      <p>Add a bug to <code>reverse</code> on purpose, such as returning the text unchanged. Run pytest, read the failure, then fix the bug.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 3: Parametrize</h3>
+      <p>Write a function <code>is_even(n)</code>. Use <code>@pytest.mark.parametrize</code> to test it with 0, 1, 2, -4, and 7, and their expected results.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 4: Test an Exception</h3>
+      <p>Write <code>safe_sqrt(n)</code> that raises ValueError for negative numbers. Test that it raises the error, and that the message contains "negative".</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 5: Fixture for Data</h3>
+      <p>Create a fixture that returns a list of five student dictionaries (name and marks). Write two tests that use it: one for the highest mark, and one for the number of students.</p>
+    </div>
+    <div class="practical">
+      <h3>Practical 6: Test the Library</h3>
+      <p>Take the Book class from the Day 21 library project. Write tests that check <code>__repr__</code> output, sorting with <code>__lt__</code>, and that the EBook subclass reports itself as a Book.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real-World Uses</h2>
+    <table>
+      <tr><th>Practice</th><th>Where you'll see it</th></tr>
+      <tr><td>Unit tests</td><td>Checking one function or class in isolation, which is the most common kind of test</td></tr>
+      <tr><td>Parametrized tests</td><td>Checking many input combinations, such as tax rules across income ranges</td></tr>
+      <tr><td>Fixtures</td><td>Preparing database connections or sample data shared across dozens of tests</td></tr>
+      <tr><td>Continuous integration</td><td>Running the full test suite automatically every time code is pushed</td></tr>
+      <tr><td>Regression tests</td><td>Making sure a fixed bug never comes back</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Django preview:</strong> Django has its own test runner built on the same ideas. pytest-django is a popular plugin that lets you use the fixtures and style you learned today on Django projects.</div>
+  </section>
+
+  <section>
+    <h2>Day 26 Quiz</h2>
+    <p>Ten questions. Click an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <button class="primary" onclick="showScore()">Show Score</button>
+    <div id="score"></div>
+  </section>
+
+</main>
+
+<footer>Python in 30 Days &middot; Day 26 of 30 &middot; Next: Day 27 - Intro to pandas</footer>
+
+<script>
+  const questions = [
+    {
+      q: "Which file name pattern does pytest use to find test files by default?",
+      options: ["check_*.py", "test_*.py", "*_spec.py", "tests.py only"],
+      answer: 1,
+      explain: "pytest looks for files whose names start with test_ by default."
+    },
+    {
+      q: "What does assert x == 5 do when x is 4?",
+      options: ["Prints a warning", "Raises AssertionError", "Sets x to 5", "Does nothing"],
+      answer: 1,
+      explain: "A False assert raises AssertionError, which pytest reports as a failed test."
+    },
+    {
+      q: "Which function name is picked up as a test?",
+      options: ["check_add", "add_test", "test_add", "Test_add"],
+      answer: 2,
+      explain: "pytest runs functions whose names start with test_ (lowercase)."
+    },
+    {
+      q: "What does a dot (.) in pytest output mean?",
+      options: ["A failed test", "A passed test", "A skipped file", "A warning"],
+      answer: 1,
+      explain: "Each dot represents one passing test, while F marks a failure."
+    },
+    {
+      q: "What does pytest.raises(ValueError) check?",
+      options: ["That no error occurs", "That the code inside raises ValueError", "That a variable is a number", "That the file exists"],
+      answer: 1,
+      explain: "pytest.raises passes only if the block raises the specified exception."
+    },
+    {
+      q: "What does @pytest.mark.parametrize do?",
+      options: ["Makes a test run faster", "Runs one test function once for each set of inputs", "Skips the test", "Sorts the tests"],
+      answer: 1,
+      explain: "parametrize creates a separate test for each row of inputs and expected values."
+    },
+    {
+      q: "What is a fixture?",
+      options: ["A type of error", "A function that prepares data or setup for tests", "A file format", "A test runner"],
+      answer: 1,
+      explain: "Fixtures provide shared setup, and tests request them by naming them as parameters."
+    },
+    {
+      q: "Why is tmp_path useful when testing file code?",
+      options: ["It makes files faster", "It gives a temporary folder that is removed after tests, keeping real data safe", "It creates the test file automatically", "It deletes your project"],
+      answer: 1,
+      explain: "tmp_path gives each test an isolated temporary folder, so real files are never touched."
+    },
+    {
+      q: "Why should assert not be used to validate user input?",
+      options: ["It is slower", "Asserts can be disabled with optimisation flags, so the check might not run", "It only works on numbers", "It is a syntax error"],
+      answer: 1,
+      explain: "Because asserts can be turned off, real input validation should use if and raise."
+    },
+    {
+      q: "Which command runs the tests in the current folder?",
+      options: ["pytest", "run tests", "python test", "pip test"],
+      answer: 0,
+      explain: "Typing pytest in the terminal finds and runs the test files."
+    }
+  ];
+
+  const quizDiv = document.getElementById("quiz");
+  const answered = new Array(questions.length).fill(false);
+  let score = 0;
+
+  questions.forEach((item, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "quiz-q";
+    wrap.innerHTML = `<p>Q${i + 1}. ${item.q}</p>`;
+    const fb = document.createElement("div");
+    fb.className = "feedback";
+
+    item.options.forEach((opt, j) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.textContent = opt;
+      btn.onclick = () => {
+        if (answered[i]) return;
+        answered[i] = true;
+        const btns = wrap.querySelectorAll("button.opt");
+        btns.forEach(b => b.disabled = true);
+        if (j === item.answer) {
+          btn.classList.add("correct");
+          score++;
+          fb.className = "feedback ok";
+          fb.textContent = "Correct! " + item.explain;
+        } else {
+          btn.classList.add("wrong");
+          btns[item.answer].classList.add("correct");
+          fb.className = "feedback bad";
+          fb.textContent = "Not quite. " + item.explain;
+        }
+      };
+      wrap.appendChild(btn);
+    });
+
+    wrap.appendChild(fb);
+    quizDiv.appendChild(wrap);
+  });
+
+  function showScore() {
+    const total = questions.length;
+    const unanswered = answered.filter(a => !a).length;
+    let msg = `You scored ${score} / ${total}.`;
+    if (unanswered > 0) msg += ` (${unanswered} question(s) not answered yet)`;
+    if (score === total) msg += " Excellent. You're ready for Day 27!";
+    else if (score >= total * 0.6) msg += " Good work. Re-read the explanations for the ones you missed.";
+    else msg += " Revisit the lessons above, then try again.";
+    document.getElementById("score").textContent = msg;
+  }
+</script>
+
+</body>
+</html>
