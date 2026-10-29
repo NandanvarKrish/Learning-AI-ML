@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn – Day 4 | Multi-Plot Grids</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--rose:#BE185D;
+    --text:#2C1B04;--muted:#B45309;--code-bg:#1D1002;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 100%);color:#fff;padding:64px 40px 56px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.15;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:640px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#F59E0B;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#FCD34D;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#78350F;font-style:italic;} .op{color:#FDE68A;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.blue{border-color:var(--blue);background:#EFF6FF;} .callout.green{border-color:var(--green);background:#ECFDF5;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;} .callout.purple{border-color:var(--purple);background:#F5F3FF;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.blue .callout-title{color:var(--blue);} .callout.green .callout-title{color:var(--green);}
+  .callout.red .callout-title{color:var(--red);} .callout.purple .callout-title{color:var(--purple);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .grid-visual{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 0;max-width:320px;}
+  .grid-cell{aspect-ratio:1;background:var(--tag-bg);border:2px solid var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--accent2);font-weight:600;}
+  .grid-cell.diag{background:var(--accent);color:#fff;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#B45309,#0891B2);padding:28px;border-radius:10px;color:#fff;margin-bottom:22px;} .task-hero h3{color:#fff;margin:0 0 8px;font-size:18px;} .task-hero p{margin:0;opacity:.92;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Day 4 of 5</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">80%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:80%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Full Course · Day 4</div>
+  <h1>Multi-Plot <span>Grids</span></h1>
+  <p>FacetGrid, PairGrid, and pairplot — the tools for exploring many variables and many subgroups at once, systematically.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔲 FacetGrid</span>
+    <span class="hero-pill">🔳 PairGrid</span>
+    <span class="hero-pill">🔗 pairplot</span>
+    <span class="hero-pill">🎨 clustermap</span>
+    <span class="hero-pill">🧩 Custom mapping</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔲</div>
+    <div><h2>FacetGrid — The Engine Behind relplot/displot/catplot</h2><p>Build custom faceted grids with ANY plotting function</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><strong>FacetGrid</strong> is the underlying class that powers relplot(), displot(), and catplot()'s faceting. Using it DIRECTLY gives you full control, including the ability to map ANY function — even custom or Matplotlib functions — onto the grid.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>)
+tips = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)
+
+<span class="cm"># Step 1: Create the grid SKELETON — defines rows/cols/hue, but draws nothing yet</span>
+g = <span class="op">sns</span>.<span class="fn">FacetGrid</span>(tips, col=<span class="st">'time'</span>, row=<span class="st">'smoker'</span>, hue=<span class="st">'sex'</span>, height=<span class="nm">4</span>)
+
+<span class="cm"># Step 2: .map() applies a plotting function to EVERY facet automatically</span>
+g.<span class="fn">map</span>(<span class="op">sns</span>.<span class="fn">scatterplot</span>, <span class="st">'total_bill'</span>, <span class="st">'tip'</span>)   <span class="cm"># positional column names, not data=</span>
+g.<span class="fn">add_legend</span>()
+
+<span class="cm"># map() works with ANY plotting function that takes x, y or a single array — even Matplotlib!</span>
+g2 = <span class="op">sns</span>.<span class="fn">FacetGrid</span>(tips, col=<span class="st">'day'</span>, col_wrap=<span class="nm">2</span>, height=<span class="nm">3.5</span>)
+g2.<span class="fn">map</span>(<span class="op">plt</span>.<span class="fn">hist</span>, <span class="st">'total_bill'</span>, bins=<span class="nm">15</span>, color=<span class="st">'#B45309'</span>)   <span class="cm"># plain Matplotlib function works too!</span>
+
+<span class="cm"># map_dataframe() — when the function needs the WHOLE row (e.g., for custom multi-column logic)</span>
+<span class="kw">def</span> <span class="fn">custom_annotate</span>(data, **kwargs):
+    <span class="op">plt</span>.<span class="fn">scatter</span>(data[<span class="st">'total_bill'</span>], data[<span class="st">'tip'</span>], **kwargs)
+    <span class="op">plt</span>.<span class="fn">axhline</span>(data[<span class="st">'tip'</span>].<span class="fn">mean</span>(), color=<span class="st">'red'</span>, linestyle=<span class="st">'--'</span>)
+
+g3 = <span class="op">sns</span>.<span class="fn">FacetGrid</span>(tips, col=<span class="st">'time'</span>)
+g3.<span class="fn">map_dataframe</span>(custom_annotate)   <span class="cm"># receives the FULL sub-DataFrame per facet</span></pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Method</th><th>Function Receives</th><th>Use When</th></tr>
+        <tr><td><code>.map(func, 'x', 'y')</code></td><td>Positional arrays for named columns</td><td>Standard plotting functions (scatterplot, plt.hist)</td></tr>
+        <tr><td><code>.map_dataframe(func)</code></td><td>The full facet's DataFrame subset</td><td>Custom functions needing multiple columns or row-wise logic</td></tr>
+      </table>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Why Learn FacetGrid Directly?</div>
+      relplot()/displot()/catplot() cover 90% of use cases, but sometimes you need a chart type they don't support (a custom annotation, a Matplotlib-only function, or unusual per-facet logic). FacetGrid gives you that flexibility while keeping automatic faceting.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔳</div>
+    <div><h2>PairGrid &amp; pairplot() — Every Variable Against Every Other</h2><p>The fastest way to explore relationships across an entire dataset</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="grid-visual">
+      <div class="grid-cell diag">hist A</div><div class="grid-cell">A×B</div><div class="grid-cell">A×C</div>
+      <div class="grid-cell">B×A</div><div class="grid-cell diag">hist B</div><div class="grid-cell">B×C</div>
+      <div class="grid-cell">C×A</div><div class="grid-cell">C×B</div><div class="grid-cell diag">hist C</div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:-6px;">A 3-variable pairplot: diagonal shows each variable's own distribution; off-diagonal cells show every pairwise scatter relationship.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre>penguins = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'penguins'</span>).<span class="fn">dropna</span>()
+
+<span class="cm"># pairplot() — the QUICK, one-line way to see EVERY numeric column pair at once</span>
+<span class="op">sns</span>.<span class="fn">pairplot</span>(penguins)
+
+<span class="cm"># Color by species, customize diagonal to KDE instead of histogram</span>
+<span class="op">sns</span>.<span class="fn">pairplot</span>(penguins, hue=<span class="st">'species'</span>, diag_kind=<span class="st">'kde'</span>, palette=<span class="st">'Set2'</span>)
+
+<span class="cm"># Only include SPECIFIC columns (avoid clutter with irrelevant variables)</span>
+<span class="op">sns</span>.<span class="fn">pairplot</span>(penguins,
+             vars=[<span class="st">'bill_length_mm'</span>,<span class="st">'bill_depth_mm'</span>,<span class="st">'flipper_length_mm'</span>],
+             hue=<span class="st">'species'</span>)
+
+<span class="cm"># Different plot kinds for the off-diagonal cells</span>
+<span class="op">sns</span>.<span class="fn">pairplot</span>(penguins, hue=<span class="st">'species'</span>, kind=<span class="st">'reg'</span>)     <span class="cm"># adds regression lines to every off-diagonal panel</span>
+<span class="op">sns</span>.<span class="fn">pairplot</span>(penguins, hue=<span class="st">'species'</span>, kind=<span class="st">'kde'</span>)     <span class="cm"># 2D density instead of scatter</span>
+
+<span class="cm"># ── PairGrid — the underlying class, for FULL manual control ──</span>
+g = <span class="op">sns</span>.<span class="fn">PairGrid</span>(penguins, hue=<span class="st">'species'</span>, vars=[<span class="st">'bill_length_mm'</span>,<span class="st">'bill_depth_mm'</span>,<span class="st">'flipper_length_mm'</span>])
+g.<span class="fn">map_diag</span>(<span class="op">sns</span>.<span class="fn">histplot</span>)              <span class="cm"># what goes on the diagonal (self vs self)</span>
+g.<span class="fn">map_upper</span>(<span class="op">sns</span>.<span class="fn">scatterplot</span>)          <span class="cm"># what goes ABOVE the diagonal</span>
+g.<span class="fn">map_lower</span>(<span class="op">sns</span>.<span class="fn">kdeplot</span>)              <span class="cm"># what goes BELOW the diagonal — can be DIFFERENT from upper!</span>
+g.<span class="fn">add_legend</span>()</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 pairplot() vs PairGrid</div>
+      <code>pairplot()</code> is the quick, one-line convenience function (like relplot vs FacetGrid). <code>PairGrid</code> gives you the power to put DIFFERENT chart types on the diagonal, upper triangle, and lower triangle — e.g., histograms on the diagonal, scatter above, and KDE contours below, all in ONE grid.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🎨</div>
+    <div><h2>clustermap() — Heatmap + Hierarchical Clustering</h2><p>Reordering rows/columns to reveal hidden groupings</p></div>
+  </div>
+  <div class="section-body">
+
+    <p><code>clustermap()</code> combines a heatmap with <strong>hierarchical clustering</strong> — it automatically REORDERS rows and columns so similar ones are placed next to each other, revealing natural groupings that a fixed alphabetical/original order would hide.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Basic clustermap on numeric penguin measurements</span>
+numeric_penguins = penguins.<span class="fn">select_dtypes</span>(include=<span class="st">'number'</span>)
+<span class="op">sns</span>.<span class="fn">clustermap</span>(numeric_penguins.<span class="fn">corr</span>(), annot=<span class="kw">True</span>, cmap=<span class="st">'coolwarm'</span>, center=<span class="nm">0</span>)
+<span class="cm"># Notice: rows/columns are REORDERED — similar variables cluster together,
+# with dendrograms (tree diagrams) shown on the side indicating cluster structure</span>
+
+<span class="cm"># Standardize data first (z-score) — often necessary before clustering raw measurements</span>
+<span class="op">sns</span>.<span class="fn">clustermap</span>(numeric_penguins, standard_scale=<span class="nm">1</span>, cmap=<span class="st">'viridis'</span>)   <span class="cm"># standardize by column (axis 1)</span>
+
+<span class="cm"># Control clustering method and distance metric</span>
+<span class="op">sns</span>.<span class="fn">clustermap</span>(numeric_penguins.<span class="fn">corr</span>(),
+                method=<span class="st">'average'</span>,    <span class="cm"># linkage method: 'average', 'single', 'complete', 'ward'</span>
+                metric=<span class="st">'euclidean'</span>,   <span class="cm"># distance metric</span>
+                cmap=<span class="st">'mako'</span>,
+                figsize=(<span class="nm">8</span>,<span class="nm">8</span>))
+
+<span class="cm"># Disable clustering on one axis only (e.g., keep columns in original order)</span>
+<span class="op">sns</span>.<span class="fn">clustermap</span>(numeric_penguins.<span class="fn">corr</span>(), col_cluster=<span class="kw">False</span>)
+
+<span class="cm"># Add a color strip showing species for each row (row_colors)</span>
+species_colors = penguins[<span class="st">'species'</span>].<span class="fn">map</span>({<span class="st">'Adelie'</span>:<span class="st">'#B45309'</span>, <span class="st">'Chinstrap'</span>:<span class="st">'#0891B2'</span>, <span class="st">'Gentoo'</span>:<span class="st">'#7C3AED'</span>})
+<span class="op">sns</span>.<span class="fn">clustermap</span>(numeric_penguins, row_colors=species_colors, standard_scale=<span class="nm">1</span>)</pre>
+    </div>
+
+    <div class="fbox">
+      <div class="ft">🎨 What the Dendrograms Mean</div>
+      <div class="fm">Tree branches on the side show HOW items were grouped</div>
+      <div class="fm">Items joined at LOWER heights = more similar to each other</div>
+      <div class="fm">Items joined at HIGHER heights = less similar, grouped later</div>
+      <div class="fnote">clustermap() is a quick way to spot which variables (or observations) naturally group together, without formal clustering algorithms.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">🧩</div>
+    <div><h2>Custom Mapping onto Grids</h2><p>Combining multiple chart types within one FacetGrid or PairGrid</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Layer MULTIPLE .map() calls to combine chart types in the SAME facets</span>
+g = <span class="op">sns</span>.<span class="fn">FacetGrid</span>(tips, col=<span class="st">'time'</span>, height=<span class="nm">4.5</span>)
+g.<span class="fn">map</span>(<span class="op">sns</span>.<span class="fn">scatterplot</span>, <span class="st">'total_bill'</span>, <span class="st">'tip'</span>, alpha=<span class="nm">0.6</span>)
+g.<span class="fn">map</span>(<span class="op">sns</span>.<span class="fn">regplot</span>, <span class="st">'total_bill'</span>, <span class="st">'tip'</span>, scatter=<span class="kw">False</span>, color=<span class="st">'red'</span>)
+<span class="cm"># Scatter points AND a regression line, both mapped onto the SAME faceted grid</span>
+
+<span class="cm"># Add reference lines to every facet with a custom function</span>
+<span class="kw">def</span> <span class="fn">add_mean_line</span>(x, **kwargs):
+    <span class="op">plt</span>.<span class="fn">axvline</span>(x.<span class="fn">mean</span>(), color=<span class="st">'black'</span>, linestyle=<span class="st">'--'</span>, linewidth=<span class="nm">1</span>)
+
+g2 = <span class="op">sns</span>.<span class="fn">FacetGrid</span>(tips, col=<span class="st">'day'</span>, col_wrap=<span class="nm">2</span>)
+g2.<span class="fn">map</span>(<span class="op">sns</span>.<span class="fn">histplot</span>, <span class="st">'total_bill'</span>)
+g2.<span class="fn">map</span>(add_mean_line, <span class="st">'total_bill'</span>)     <span class="cm"># adds a mean-marker vertical line to EVERY facet</span>
+
+<span class="cm"># Set shared titles, axis labels, and limits across ALL facets at once</span>
+g2.<span class="fn">set_titles</span>(<span class="st">'{col_name}'</span>)              <span class="cm"># use just the value, not 'day = Thur'</span>
+g2.<span class="fn">set_axis_labels</span>(<span class="st">'Total Bill'</span>, <span class="st">'Count'</span>)
+g2.<span class="fn">set</span>(xlim=(<span class="nm">0</span>,<span class="nm">60</span>))                    <span class="cm"># apply xlim to every facet simultaneously</span>
+g2.<span class="fn">fig</span>.<span class="fn">suptitle</span>(<span class="st">'Bill Distribution by Day'</span>, y=<span class="nm">1.02</span>)</pre>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">✅ The Layering Pattern</div>
+      Calling <code>.map()</code> multiple times on the SAME grid object layers each new plotting call ON TOP of the previous ones, within every facet simultaneously. This is how you build "scatter + regression line" or "histogram + reference line" combos across an entire faceted grid.
+    </div>
+
+    <div class="card-grid">
+      <div class="mini-card"><div class="mc-name">sns.FacetGrid()</div><div class="mc-desc">Custom faceted grid engine</div><div class="mc-ex">.map(), .map_dataframe()</div></div>
+      <div class="mini-card"><div class="mc-name">sns.pairplot()</div><div class="mc-desc">Quick all-pairs scatter matrix</div><div class="mc-ex">hue, diag_kind, vars</div></div>
+      <div class="mini-card"><div class="mc-name">sns.PairGrid()</div><div class="mc-desc">Manual pairwise grid control</div><div class="mc-ex">map_diag/upper/lower</div></div>
+      <div class="mini-card"><div class="mc-name">sns.clustermap()</div><div class="mc-desc">Heatmap + auto-reordering</div><div class="mc-ex">row_colors, standard_scale</div></div>
+      <div class="mini-card"><div class="mc-name">g.set_titles()</div><div class="mc-desc">Custom facet title format</div><div class="mc-ex">'{col_name}'</div></div>
+      <div class="mini-card"><div class="mc-name">g.set(xlim=)</div><div class="mc-desc">Apply setting to ALL facets</div><div class="mc-ex">shared axis limits</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 20 Questions</h2><p>FacetGrid, PairGrid, pairplot, clustermap. Need 16/20 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#B45309">🏆</div>
+    <div><h2>Real-World Task — Iris Species Full Exploratory Grid Suite</h2><p>Estimated time: 85–100 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You are a <strong>Research Data Analyst</strong> at a botanical institute. Using the classic 'iris' dataset, build a complete multi-plot grid exploratory suite to understand how 3 iris species differ across 4 measurements.</p>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#B45309">1</div><h4>Phase 1 — Setup</h4><span class="phase-time">~10 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Load and Inspect</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'ticks'</span>)
+iris = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'iris'</span>)
+<span class="fn">print</span>(iris[<span class="st">'species'</span>].<span class="fn">value_counts</span>())
+<span class="fn">print</span>(iris.<span class="fn">describe</span>())</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Pairwise Exploration</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 1: Full pairplot()</h5>
+          <p>Build a pairplot() of all 4 numeric measurements, colored by species, with diag_kind='kde'. Identify which pair of measurements most cleanly SEPARATES the 3 species visually.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 2: Custom PairGrid with Mixed Chart Types</h5>
+          <p>Build a PairGrid with map_diag=histplot, map_upper=scatterplot, map_lower=kdeplot, colored by species. Compare the visual information density against the simpler pairplot().</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Custom FacetGrid</h4><span class="phase-time">~30 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 3: Faceted Distribution with Mean Lines</h5>
+          <p>Build a FacetGrid faceted by species (col='species'), map histplot for petal_length, THEN map a custom function that draws a vertical dashed line at that species' mean petal length.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Chart 4: Scatter + Regression Layered</h5>
+          <p>Build a FacetGrid faceted by species with scatterplot AND regplot(scatter=False) layered together for petal_length vs petal_width, revealing if the length-width relationship differs by species.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div><h4>Phase 4 — Clustering Analysis</h4><span class="phase-time">~15 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Chart 5: Clustermap with Species Color Strip</h5>
+          <p>Build a clustermap() of the 4 standardized numeric measurements (standard_scale=1), with row_colors mapping each row to its species color, to visually confirm species naturally cluster together based purely on measurements.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Completion Checklist</div>
+      <ul class="checklist">
+        <li>Loaded iris dataset and reviewed species distribution</li>
+        <li>Built a full pairplot with hue and KDE diagonal</li>
+        <li>Identified the best-separating measurement pair</li>
+        <li>Built a custom PairGrid with mixed diagonal/upper/lower chart types</li>
+        <li>Built a FacetGrid with histogram + custom mean-line function layered</li>
+        <li>Built a FacetGrid with scatter + regression line layered per species</li>
+        <li>Built a clustermap with standardized values and species color strip</li>
+        <li>Confirmed species cluster naturally based on measurements alone</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenge (Extra 15 min)</div>
+      Write a custom function that adds BOTH a mean line AND a text annotation showing the exact mean value, then map it onto a FacetGrid faceted by species for sepal_width — combining custom annotation logic with Seaborn's automatic faceting.
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Full Course — 5-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Statistical Plots &amp; Themes</span>
+    <span class="day-pill done">Day 2 · Distribution &amp; Categorical</span>
+    <span class="day-pill done">Day 3 · Relationship &amp; Regression</span>
+    <span class="day-pill done active">Day 4 · Multi-Plot Grids</span>
+    <span class="day-pill">Day 5 · Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {q:"What is the relationship between FacetGrid and functions like relplot()/displot()/catplot()?",opts:["They are unrelated","FacetGrid is the underlying CLASS that powers the automatic faceting (col=/row=) capability in relplot, displot, and catplot — using FacetGrid directly gives you the same faceting with more manual flexibility","FacetGrid is deprecated in favor of these functions","relplot() is built on top of catplot()"],ans:1,explain:"relplot(), displot(), and catplot() are convenient wrappers that internally use FacetGrid to handle the col=/row= faceting logic. Using FacetGrid directly exposes this same faceting engine but with full manual control over what gets plotted in each facet via .map()."},
+  {code:"g = sns.FacetGrid(tips, col='time', hue='sex')\ng.map(sns.scatterplot, 'total_bill', 'tip')",q:"What does the .map() method do here?",opts:["Creates a geographic map","Applies the sns.scatterplot function to EVERY facet in the grid automatically, using 'total_bill' and 'tip' as the x and y columns for each subset of data","Maps colors to a colormap only","Combines all facets into one plot"],ans:1,explain:".map(func, x_col, y_col) tells the FacetGrid to call the given function once per facet, automatically passing that facet's subset of data for the specified columns. This applies scatterplot() consistently across every time/sex combination in the grid."},
+  {code:"g.map(plt.hist, 'total_bill', bins=15)",q:"Why does this work even though plt.hist is a plain Matplotlib function, not a Seaborn one?",opts:["This would raise an error","FacetGrid.map() is compatible with ANY plotting function that accepts an array as its main positional argument, including plain Matplotlib functions — it's not restricted to Seaborn-only functions","plt.hist is secretly a Seaborn function","bins=15 is invalid syntax"],ans:1,explain:"FacetGrid.map() is generically designed to work with any callable that takes data arrays as arguments (positionally) — this includes native Matplotlib functions like plt.hist, plt.scatter, or plt.plot, not just Seaborn-specific ones, offering great flexibility."},
+  {q:"When would you use .map_dataframe() instead of .map() on a FacetGrid?",opts:["Never — .map() always works","When your custom plotting function needs access to the FULL sub-DataFrame for that facet (e.g., to reference multiple columns together or compute a per-facet statistic), rather than just single pre-extracted x/y arrays","map_dataframe() is faster","They are identical methods with different names"],ans:1,explain:".map() passes specific extracted columns as arrays. .map_dataframe() instead passes the ENTIRE DataFrame subset for that facet to your function — necessary when your custom function needs to work with multiple columns together, like computing df['tip']/df['total_bill'] inside the function."},
+  {q:"What does pairplot() show by default for a DataFrame with several numeric columns?",opts:["Only one scatter plot of the first two columns","A GRID showing every pairwise combination of numeric columns as scatter plots in the off-diagonal cells, with each variable's own distribution (histogram) on the diagonal cells","A single correlation heatmap","A 3D visualization only"],ans:1,explain:"pairplot() automatically creates an N×N grid (N = number of numeric columns) where off-diagonal cells show scatter plots between each PAIR of variables, and diagonal cells show each variable's own univariate distribution (histogram by default) — giving a comprehensive overview of all relationships at once."},
+  {code:"sns.pairplot(penguins, hue='species', diag_kind='kde')",q:"What does diag_kind='kde' change?",opts:["Nothing — invalid parameter","Changes the DIAGONAL cells (which show each variable's own distribution) from the default histogram to a smooth KDE curve instead","Changes the off-diagonal scatter plots to KDE","Removes the diagonal cells entirely"],ans:1,explain:"diag_kind controls what type of plot appears in the diagonal cells (where a variable would be plotted against itself). The default is often 'auto' (histogram or kde depending on hue), but explicitly setting diag_kind='kde' ensures smooth density curves are used instead of histogram bars on the diagonal."},
+  {q:"What is the key difference between pairplot() and PairGrid?",opts:["They produce completely different visualizations by default","pairplot() is a quick, one-line convenience function with sensible defaults; PairGrid is the underlying class offering FULL manual control, including the ability to use DIFFERENT plot types for the diagonal, upper triangle, and lower triangle", "PairGrid cannot use hue=","pairplot() is deprecated"],ans:1,explain:"This mirrors the FacetGrid vs relplot() relationship. pairplot() gives you a good default all-pairs grid in one line. PairGrid requires more setup (map_diag, map_upper, map_lower) but lets you mix DIFFERENT chart types across the diagonal/upper/lower sections — impossible with the simpler pairplot() alone."},
+  {code:"g = sns.PairGrid(penguins, hue='species')\ng.map_diag(sns.histplot)\ng.map_upper(sns.scatterplot)\ng.map_lower(sns.kdeplot)",q:"What visual layout results from this code?",opts:["All cells show identical scatter plots","Histograms on the diagonal, scatter plots ABOVE the diagonal, and KDE density plots BELOW the diagonal — three DIFFERENT chart types combined in one grid","Only the diagonal is populated","An error, since you can't mix chart types"],ans:1,explain:"map_diag/map_upper/map_lower let you independently assign different plotting functions to each region of the grid. This example creates histograms on the diagonal, scatter plots in the upper triangle, and KDE contour plots in the lower triangle — a richer combination than pairplot()'s uniform approach."},
+  {q:"What does clustermap() do that a regular heatmap() does not?",opts:["clustermap() only works with correlation matrices","clustermap() applies HIERARCHICAL CLUSTERING to automatically REORDER rows and/or columns so similar ones are placed adjacent to each other, and displays dendrograms (tree diagrams) showing the clustering structure — a regular heatmap keeps the original data order", "They are functionally identical","clustermap() cannot show numeric values in cells"],ans:1,explain:"A standard heatmap() displays data in whatever row/column order it's given (e.g., alphabetical or original data order). clustermap() computes similarity between rows/columns using hierarchical clustering, then REORDERS them to group similar items together, revealing natural structure — with dendrograms visualizing how items were grouped."},
+  {q:"In a clustermap dendrogram, what does it mean when two items are joined together at a LOWER height in the tree?",opts:["They are less similar to each other","They are MORE SIMILAR to each other — items joined at lower heights in a dendrogram are more closely related, while those joined higher up are less similar and grouped together later in the clustering process","Height has no meaning","Lower height means the items are unrelated"],ans:1,explain:"In hierarchical clustering dendrograms, the height (or distance) at which two branches merge represents how dissimilar those groups are. Merging at a LOW height means the items were very similar and got grouped together early; merging at a HIGH height means they're quite different and only got combined much later in the process."},
+  {code:"sns.clustermap(numeric_penguins, standard_scale=1)",q:"Why is standard_scale=1 often applied before clustering raw measurement data?",opts:["It has no real purpose","It standardizes (z-score normalizes) each COLUMN so all variables are on a comparable scale (mean 0, std 1) before computing similarity/clustering — without this, variables with naturally larger numeric ranges (like body_mass_g in grams) would dominate the clustering distance calculation over smaller-scale variables (like bill_depth_mm)", "It removes missing values","It converts the data to percentages"],ans:1,explain:"Clustering algorithms compute distances between data points. If one variable has a much larger numeric range (e.g., body_mass_g in thousands vs bill_depth_mm in tens), it will disproportionately dominate the distance calculation. standard_scale (or manual z-score normalization) puts all variables on the same relative scale first, ensuring each contributes fairly to the clustering."},
+  {q:"What does `row_colors=species_colors` add to a clustermap()?",opts:["Changes the heatmap's main colormap","Adds a colored STRIP alongside the rows, where each row's color corresponds to a categorical label (like species) — letting you visually check whether the clustering (which uses only the numeric data) happens to group same-category rows together", "Removes row labels","Sorts rows alphabetically by color"],ans:1,explain:"row_colors adds a thin colored bar next to the heatmap rows, colored according to some external categorical variable (like species). This is a great validation tool: since the clustering algorithm only sees the numeric measurements (not the species label), seeing the color strip naturally group by color CONFIRMS that the measurements themselves distinguish the categories well."},
+  {code:"g = sns.FacetGrid(tips, col='time')\ng.map(sns.scatterplot, 'total_bill', 'tip')\ng.map(sns.regplot, 'total_bill', 'tip', scatter=False, color='red')",q:"What does calling .map() TWICE on the same grid object accomplish?",opts:["The second .map() call replaces the first entirely","Both plotting calls are LAYERED on top of each other within each facet — first the scatter points are drawn, then the regression line (with scatter=False so it doesn't redraw points) is layered on top, combining both elements in every facet", "This causes an error — .map() can only be called once","Creates two separate figures"],ans:1,explain:"Multiple .map() calls on the same FacetGrid object layer their output within each facet, in the order called. Here, scatter points are drawn first, then a regression line (scatter=False prevents redundant duplicate points) is layered on top — combining both visual elements consistently across all facets."},
+  {q:"What is the purpose of `g.set_titles('{col_name}')` when working with a FacetGrid?",opts:["It has no effect","Customizes the automatically-generated facet titles' FORMAT — by default Seaborn might show something like 'time = Lunch', but this template shows just the value ('Lunch') for cleaner, more concise facet titles", "It sets the overall figure title","It removes all titles"],ans:1,explain:"set_titles() lets you customize the template string used for automatic per-facet titles. The default often includes the variable name (e.g., 'time = Lunch'), but '{col_name}' as the template shows ONLY the value itself, producing cleaner titles when the context is already clear from the overall figure layout."},
+  {q:"Why might a researcher build BOTH a pairplot() (quick, default) AND a custom PairGrid (map_diag/upper/lower) for the SAME dataset during exploratory analysis?",opts:["This is always redundant and wasteful","pairplot() gives a fast first overview to identify interesting variable pairs; a custom PairGrid can then provide a richer, more information-dense view (e.g., different chart types per region) focused on refining the specific patterns already noticed in the quick pairplot", "PairGrid always replaces the need for pairplot entirely","They must always be built in the opposite order"],ans:1,explain:"A common exploratory workflow: use pairplot() first for a fast, broad overview of ALL variable relationships to spot which pairs look interesting. Then, build a more customized PairGrid (perhaps mixing histogram/scatter/KDE across diagonal/upper/lower) to dig deeper into the specific relationships that seemed most notable from the initial quick pass."},
+  {q:"If a clustermap() built on 4 numeric iris measurements shows that samples naturally cluster into 3 distinct groups matching known species labels (shown via row_colors), what does this suggest?",opts:["The clustering algorithm is broken","The 4 measurements alone contain enough distinguishing information to naturally separate the 3 species WITHOUT being told the species labels in advance — validating that these features are informative for species classification, which is a genuinely useful data science insight", "Clustering always perfectly matches any label","This result is coincidental and meaningless"],ans:1,explain:"This is a powerful UNSUPERVISED validation: the clustering algorithm has NO knowledge of species labels — it only sees numeric measurements and groups similar rows together based on those. If the resulting clusters happen to align with known species (shown via the row_colors strip), this strongly suggests these measurements are genuinely informative features for distinguishing species — useful validation before building a formal classification model."},
+  {q:"What does `g2.set(xlim=(0,60))` accomplish when called on a FacetGrid object g2?",opts:["Sets xlim on only the first facet","Applies the SAME x-axis limit (0 to 60) to EVERY facet/subplot in the grid simultaneously, ensuring all panels share a consistent, comparable x-axis scale", "Removes the x-axis entirely from all facets","Only works with a single-facet grid"],ans:1,explain:"The .set() method on a Grid object is a convenience for applying the SAME Matplotlib Axes setting (like xlim, ylim, xlabel) across ALL facets simultaneously, rather than looping through g2.axes.flat manually and setting it on each one individually — ensuring visual consistency across the whole faceted grid."},
+  {q:"Why is FacetGrid.map() described as working with 'positional' column name arguments rather than data= and x=/y= keyword arguments (as used in axes-level functions like sns.scatterplot directly)?",opts:["There is no difference in syntax","FacetGrid already knows the data (passed when creating the grid) and handles subsetting per facet internally; .map() just needs the COLUMN NAMES (as positional strings) to tell each mapped function which columns to plot within that facet's already-subsetted data", "map() cannot accept column names at all","Only works with numeric column indices, not names"],ans:1,explain:"When you create a FacetGrid(data, ...), the underlying data and faceting structure is already established. The .map(func, 'col1', 'col2') call then just needs to know WHICH columns to extract and pass as positional arguments to func for each facet's data subset — a slightly different, more streamlined syntax pattern than calling scatterplot() directly with data=/x=/y=."},
+  {q:"What could be a downside of building a pairplot() on a DataFrame with 10+ numeric columns?",opts:["pairplot() cannot handle more than 4 columns technically","The resulting grid becomes VERY large (10×10 = 100 cells) and each individual scatter panel becomes small and hard to read, making the overall figure cluttered and slow to render — often better to select a SUBSET of the most relevant columns using vars=", "There is no downside regardless of column count","pairplot() automatically limits to 4 columns"],ans:1,explain:"With N numeric columns, pairplot() creates an N×N grid — 10 columns means 100 small panels, each quite cramped and hard to interpret individually, and potentially slow to render. In practice, using the vars= parameter to select only the most analytically relevant subset of columns (perhaps 3-6) produces a more readable, useful pairplot."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review FacetGrid and PairGrid mechanics, then try again! 📚"],[50,75,"Good progress! Focus on clustermap and layering .map() calls. 💪"],[75,90,"Strong Day 4! Multi-plot grid skills are solid. 🎉"],[90,101,"Excellent! Day 4 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>
