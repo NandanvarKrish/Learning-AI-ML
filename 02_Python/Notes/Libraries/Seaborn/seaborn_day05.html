@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn – Day 5 | Capstone Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F0FDFA;--surface:#FFFFFF;--border:#99F6E4;--accent:#0F766E;--accent2:#134E4A;
+    --green:#059669;--red:#EF233C;--gold:#B45309;--blue:#3B82F6;--purple:#7C3AED;--rose:#BE185D;
+    --text:#042F2E;--muted:#0F766E;--code-bg:#02120F;--code-text:#99F6E4;--tag-bg:#CCFBF1;--tag-text:#134E4A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(15,118,110,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#0F766E 0%,#134E4A 50%,#B45309 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🌊';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#B45309,#F59E0B);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#5EEAD4;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .kw{color:#5EEAD4;} .fn{color:#93C5FD;} .st{color:#FDE68A;} .nm{color:#FCA5A5;} .cm{color:#134E4A;font-style:italic;} .op{color:#99F6E4;} .hl{color:#fff;font-weight:600;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.gold{border-color:var(--gold);background:#FFFBEB;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.rose{border-color:var(--rose);background:#FDF2F8;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+  .callout .callout-title{color:var(--accent);} .callout.green .callout-title{color:var(--green);} .callout.gold .callout-title{color:var(--gold);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.rose .callout-title{color:var(--rose);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#134E4A,#0F766E);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#0F766E,#134E4A,#B45309);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#0F766E,#B45309);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;} .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .certificate{border:3px solid var(--gold);border-radius:16px;padding:40px;text-align:center;background:linear-gradient(135deg,#FFFBEB,#F0FDFA);margin-top:32px;position:relative;overflow:hidden;}
+  .certificate::before{content:'🌊';font-size:200px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.04;}
+  .certificate .cert-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+  .certificate h2{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);margin-bottom:8px;}
+  .certificate .cert-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin:16px 0;}
+  .certificate p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto 20px;}
+  .cert-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;}
+  .cert-skill{background:var(--accent);color:#fff;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Day 5 of 5 · Final</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">100%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Full Course · Day 5 · Capstone</div>
+  <h1>Statistical Dashboard<br><span>Capstone Project</span></h1>
+  <p>The final day. Learn objects-interface styling, combine EVERY Seaborn technique into one comprehensive HR analytics report.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🆕 Objects Interface (so.Plot)</span>
+    <span class="hero-pill">🎨 Custom Style Sheets</span>
+    <span class="hero-pill">📐 Combining Grids with Matplotlib</span>
+    <span class="hero-pill">📊 20 MCQs</span>
+    <span class="hero-pill">🏆 Full Capstone Dashboard</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎓 <strong>Final Day!</strong> You've covered Themes → Distributions/Categorical → Regression → Multi-Plot Grids. Today closes the loop with a comprehensive statistical dashboard capstone.</p>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🆕</div>
+    <div><h2>The Objects Interface — seaborn.objects (so)</h2><p>Seaborn's modern, composable, grammar-of-graphics API</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Since Seaborn 0.12, a NEW interface called <strong>seaborn.objects</strong> (imported as <code>so</code>) offers a more composable, "grammar of graphics" style API — inspired by ggplot2's layered approach. It coexists with the classic function-based API you've learned.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">import</span> seaborn.objects <span class="kw">as</span> <span class="op">so</span>
+<span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+
+tips = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)
+
+<span class="cm"># Classic function-based API (what you've learned all week)</span>
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'time'</span>)
+
+<span class="cm"># NEW objects interface — build a plot by CHAINING layers together</span>
+(
+    <span class="op">so</span>.<span class="fn">Plot</span>(tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, color=<span class="st">'time'</span>)
+    .<span class="fn">add</span>(<span class="op">so</span>.<span class="fn">Dot</span>())              <span class="cm"># adds a scatter/dot layer</span>
+)
+
+<span class="cm"># Layer MULTIPLE marks — points AND a regression line, composed explicitly</span>
+(
+    <span class="op">so</span>.<span class="fn">Plot</span>(tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+    .<span class="fn">add</span>(<span class="op">so</span>.<span class="fn">Dot</span>(alpha=<span class="nm">0.5</span>))
+    .<span class="fn">add</span>(<span class="op">so</span>.<span class="fn">Line</span>(), <span class="op">so</span>.<span class="fn">PolyFit</span>(order=<span class="nm">1</span>))   <span class="cm"># a STAT transform (PolyFit) + a mark (Line)</span>
+)
+
+<span class="cm"># Faceting in the objects interface</span>
+(
+    <span class="op">so</span>.<span class="fn">Plot</span>(tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>)
+    .<span class="fn">facet</span>(col=<span class="st">'time'</span>, row=<span class="st">'smoker'</span>)
+    .<span class="fn">add</span>(<span class="op">so</span>.<span class="fn">Dot</span>())
+)</pre>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Classic API</th><th>Objects API (so)</th></tr>
+        <tr><td><code>sns.scatterplot(data, x, y)</code></td><td><code>so.Plot(data, x, y).add(so.Dot())</code></td></tr>
+        <tr><td>relplot(kind='line')</td><td><code>.add(so.Line())</code></td></tr>
+        <tr><td>col=/row= parameter</td><td><code>.facet(col=, row=)</code> method</td></tr>
+        <tr><td>Function-per-chart-type</td><td>Composable Mark + Stat objects, mixed freely</td></tr>
+      </table>
+    </div>
+
+    <div class="callout blue">
+      <div class="callout-title">💡 Should You Switch to the Objects API?</div>
+      The classic function API (scatterplot, relplot, etc.) remains fully supported and is what most existing code/tutorials use — you do NOT need to abandon it. The objects interface is newer, more flexible for combining unusual layer combinations, but has a steeper learning curve. Understanding both is valuable, but the classic API is what you'll encounter most often in practice today.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🎨</div>
+    <div><h2>Building Custom Style Sheets</h2><p>Reusable branded themes across a whole analysis</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># Define a reusable brand configuration function</span>
+<span class="kw">def</span> <span class="fn">apply_brand_theme</span>():
+    <span class="op">sns</span>.<span class="fn">set_theme</span>(
+        style=<span class="st">'whitegrid'</span>,
+        palette=[<span class="st">'#0F766E'</span>,<span class="st">'#B45309'</span>,<span class="st">'#7C3AED'</span>,<span class="st">'#BE185D'</span>,<span class="st">'#0891B2'</span>],
+        font=<span class="st">'sans-serif'</span>,
+        rc={
+            <span class="st">'axes.titlesize'</span>: <span class="nm">15</span>,
+            <span class="st">'axes.titleweight'</span>: <span class="st">'bold'</span>,
+            <span class="st">'axes.labelsize'</span>: <span class="nm">11</span>,
+            <span class="st">'figure.titlesize'</span>: <span class="nm">18</span>,
+            <span class="st">'grid.alpha'</span>: <span class="nm">0.25</span>,
+        }
+    )
+
+apply_brand_theme()   <span class="cm"># call once, applies to everything after</span>
+
+<span class="cm"># rc= dict inside set_theme() gives fine-grained rcParams control alongside style/palette</span>
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'ticks'</span>, rc={<span class="st">'axes.spines.top'</span>:<span class="kw">False</span>, <span class="st">'axes.spines.right'</span>:<span class="kw">False</span>})
+
+<span class="cm"># Save/reuse a specific palette as a named object</span>
+brand_palette = <span class="op">sns</span>.<span class="fn">color_palette</span>([<span class="st">'#0F766E'</span>,<span class="st">'#B45309'</span>,<span class="st">'#7C3AED'</span>])
+<span class="op">sns</span>.<span class="fn">set_palette</span>(brand_palette)</pre>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-title">✅ Wrap Theme Setup in a Function</div>
+      For any real project spanning multiple notebooks or scripts, wrapping your theme configuration in a function like <code>apply_brand_theme()</code> (rather than repeating the set_theme call everywhere) ensures ONE consistent source of truth for your visual branding — change it once, and every chart across the whole project updates.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">📐</div>
+    <div><h2>Combining Seaborn Grids with Custom Matplotlib Layouts</h2><p>Embedding figure-level Seaborn output into larger compositions</p></div>
+  </div>
+  <div class="section-body">
+
+    <p>Figure-level functions (relplot, catplot, pairplot) create their OWN figure — but you can still extract and reposition their content, or build a hybrid dashboard mixing axes-level Seaborn calls into a custom Matplotlib GridSpec.</p>
+
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm"># The RECOMMENDED pattern: use AXES-LEVEL Seaborn functions inside a custom GridSpec dashboard</span>
+fig = <span class="op">plt</span>.<span class="fn">figure</span>(figsize=(<span class="nm">16</span>, <span class="nm">10</span>))
+gs = fig.<span class="fn">add_gridspec</span>(<span class="nm">2</span>, <span class="nm">3</span>, hspace=<span class="nm">0.4</span>, wspace=<span class="nm">0.35</span>)
+
+ax1 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">0</span>, :<span class="nm">2</span>])       <span class="cm"># top-left, spans 2 columns</span>
+ax2 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">0</span>, <span class="nm">2</span>])        <span class="cm"># top-right</span>
+ax3 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">0</span>])
+ax4 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">1</span>])
+ax5 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">2</span>])
+
+<span class="cm"># Every axes-level Seaborn function accepts ax= — this is the key integration point</span>
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, ax=ax1)
+<span class="op">sns</span>.<span class="fn">boxplot</span>(data=tips, x=<span class="st">'time'</span>, y=<span class="st">'tip'</span>, ax=ax2)
+<span class="op">sns</span>.<span class="fn">histplot</span>(data=tips, x=<span class="st">'total_bill'</span>, kde=<span class="kw">True</span>, ax=ax3)
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>, hue=<span class="st">'sex'</span>, ax=ax4)
+<span class="op">sns</span>.<span class="fn">heatmap</span>(tips.<span class="fn">select_dtypes</span>(<span class="st">'number'</span>).<span class="fn">corr</span>(), annot=<span class="kw">True</span>, ax=ax5)
+
+fig.<span class="fn">suptitle</span>(<span class="st">'Restaurant Analytics Dashboard'</span>, fontsize=<span class="nm">18</span>, fontweight=<span class="st">'bold'</span>)</pre>
+    </div>
+
+    <div class="callout rose">
+      <div class="callout-title">⚠️ Figure-Level Functions Don't Fit This Pattern</div>
+      Remember: relplot(), catplot(), pairplot(), jointplot(), and lmplot() manage their OWN figure and can't accept ax=. For a custom dashboard combining many chart types into one cohesive layout, use the AXES-LEVEL equivalents (scatterplot, boxplot, histplot, kdeplot, regplot, heatmap) with ax=, exactly as demonstrated above.
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Final Practice MCQs — 20 Questions</h2><p>Objects interface, style sheets, dashboard composition, and the full course. Pass: 16/20.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">20</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">16</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPSTONE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#0F766E,#B45309)">🏆</div>
+    <div><h2>Capstone Project — Full HR People Analytics Dashboard</h2><p>Estimated time: 3–4 hours &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐⭐ &nbsp;|&nbsp; Uses ALL 5 days</p></div>
+  </div>
+  <div class="section-body">
+
+    <div class="cap-hero">
+      <h3>📋 Project Brief — Vantage Corp People Analytics Report</h3>
+      <p>You are the <strong>Lead People Analytics Scientist</strong> at <em>Vantage Corp</em>. HR leadership needs a complete statistical report on employee satisfaction, compensation equity, performance distributions, and attrition risk factors. Build it using EVERY technique from Days 1-5.</p>
+      <span class="cap-badge">Day 1: Themes, relplot, lineplot</span>
+      <span class="cap-badge">Day 2: Distributions &amp; catplot</span>
+      <span class="cap-badge">Day 3: Regression &amp; heatmap</span>
+      <span class="cap-badge">Day 4: FacetGrid/PairGrid</span>
+      <span class="cap-badge">Day 5: Custom Dashboard</span>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0F766E">1</div><h4>Phase 1 — Data Generation</h4><span class="phase-time">~20 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Generate a Realistic HR Dataset</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">STARTER CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> <span class="op">np</span>
+
+<span class="op">np</span>.random.<span class="fn">seed</span>(<span class="nm">7</span>)
+n = <span class="nm">400</span>
+
+departments = <span class="op">np</span>.random.<span class="fn">choice</span>([<span class="st">'Engineering'</span>,<span class="st">'Sales'</span>,<span class="st">'Marketing'</span>,<span class="st">'Support'</span>,<span class="st">'HR'</span>], n,
+                                p=[<span class="nm">0.35</span>,<span class="nm">0.25</span>,<span class="nm">0.15</span>,<span class="nm">0.15</span>,<span class="nm">0.10</span>])
+tenure_years = <span class="op">np</span>.random.<span class="fn">exponential</span>(<span class="nm">3</span>, n).<span class="fn">clip</span>(<span class="nm">0.1</span>,<span class="nm">20</span>)
+base_pay = {<span class="st">'Engineering'</span>:<span class="nm">95000</span>,<span class="st">'Sales'</span>:<span class="nm">75000</span>,<span class="st">'Marketing'</span>:<span class="nm">70000</span>,<span class="st">'Support'</span>:<span class="nm">55000</span>,<span class="st">'HR'</span>:<span class="nm">60000</span>}
+salary = <span class="op">np</span>.<span class="fn">array</span>([base_pay[d] <span class="kw">for</span> d <span class="kw">in</span> departments]) + tenure_years*<span class="nm">2500</span> + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>,<span class="nm">8000</span>,n)
+satisfaction = (<span class="nm">10</span> - tenure_years*<span class="nm">0.15</span> + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>,<span class="nm">1.5</span>,n)).<span class="fn">clip</span>(<span class="nm">1</span>,<span class="nm">10</span>)
+performance = <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">7</span>,<span class="nm">1.3</span>,n).<span class="fn">clip</span>(<span class="nm">1</span>,<span class="nm">10</span>)
+gender = <span class="op">np</span>.random.<span class="fn">choice</span>([<span class="st">'Male'</span>,<span class="st">'Female'</span>], n)
+remote = <span class="op">np</span>.random.<span class="fn">choice</span>([<span class="st">'Remote'</span>,<span class="st">'Hybrid'</span>,<span class="st">'Onsite'</span>], n, p=[<span class="nm">0.3</span>,<span class="nm">0.4</span>,<span class="nm">0.3</span>])
+attrition_risk = ((<span class="nm">10</span>-satisfaction)*<span class="nm">0.4</span> + (<span class="nm">10</span>-performance)*<span class="nm">0.2</span> + <span class="op">np</span>.random.<span class="fn">normal</span>(<span class="nm">0</span>,<span class="nm">1</span>,n)).<span class="fn">clip</span>(<span class="nm">0</span>,<span class="nm">10</span>)
+
+hr = <span class="op">pd</span>.<span class="fn">DataFrame</span>({
+    <span class="st">'department'</span>:departments, <span class="st">'tenure_years'</span>:tenure_years.<span class="fn">round</span>(<span class="nm">1</span>),
+    <span class="st">'salary'</span>:salary.<span class="fn">round</span>(<span class="nm">0</span>), <span class="st">'satisfaction'</span>:satisfaction.<span class="fn">round</span>(<span class="nm">1</span>),
+    <span class="st">'performance'</span>:performance.<span class="fn">round</span>(<span class="nm">1</span>), <span class="st">'gender'</span>:gender,
+    <span class="st">'work_mode'</span>:remote, <span class="st">'attrition_risk'</span>:attrition_risk.<span class="fn">round</span>(<span class="nm">1</span>)
+})
+<span class="fn">print</span>(hr.<span class="fn">describe</span>())</pre></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#7C3AED">2</div><h4>Phase 2 — Distribution &amp; Categorical Analysis</h4><span class="phase-time">~45 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body open">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Set the Brand Theme</h5>
+          <p>Define and apply an apply_brand_theme() function using teal/gold palette colors, whitegrid style, and custom rc settings for title sizes.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Salary Distribution Analysis</h5>
+          <p>Build a histplot with KDE overlay of salary by department (multiple='layer'), plus a box+swarm combo of salary by department and gender to check for compensation gaps.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Satisfaction &amp; Performance Categorical Breakdown</h5>
+          <p>Use catplot(kind='violin') for satisfaction by department, split by gender. Use catplot(kind='bar') for average performance by work_mode.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#059669">3</div><h4>Phase 3 — Regression &amp; Correlation</h4><span class="phase-time">~40 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Tenure vs Satisfaction Regression</h5>
+          <p>Build a regplot of tenure_years vs satisfaction with a residual plot alongside to check linearity. Build an lmplot faceted by department to see if the relationship varies.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Full Correlation Heatmap</h5>
+          <p>Build a masked, annotated correlation heatmap of all numeric HR variables. Identify the strongest predictor of attrition_risk.</p>
+        </div></div>
+        <div class="task-step"><div class="step-dot">3</div><div class="step-content">
+          <h5>Pairwise Exploration</h5>
+          <p>Build a pairplot of tenure_years, salary, satisfaction, performance, attrition_risk, colored by work_mode, to spot any additional patterns.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="task-phase">
+      <div class="task-phase-header" onclick="togglePhase(this)">
+        <div class="phase-num" style="background:#0891B2">4</div><h4>Phase 4 — Final Combined Dashboard</h4><span class="phase-time">~45 min</span><span class="chevron">▼</span>
+      </div>
+      <div class="task-phase-body">
+        <div class="task-step"><div class="step-dot">1</div><div class="step-content">
+          <h5>Build a Custom GridSpec Dashboard Using Axes-Level Functions</h5>
+          <div class="code-wrap"><div class="code-header"><span class="code-lang">CODE</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre>fig = <span class="op">plt</span>.<span class="fn">figure</span>(figsize=(<span class="nm">18</span>, <span class="nm">11</span>))
+gs = fig.<span class="fn">add_gridspec</span>(<span class="nm">2</span>, <span class="nm">3</span>, hspace=<span class="nm">0.45</span>, wspace=<span class="nm">0.3</span>)
+fig.<span class="fn">suptitle</span>(<span class="st">'Vantage Corp — People Analytics Report'</span>, fontsize=<span class="nm">20</span>, fontweight=<span class="st">'bold'</span>)
+
+ax1 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">0</span>, :<span class="nm">2</span>])
+<span class="op">sns</span>.<span class="fn">boxplot</span>(data=hr, x=<span class="st">'department'</span>, y=<span class="st">'salary'</span>, hue=<span class="st">'gender'</span>, ax=ax1)
+ax1.<span class="fn">set_title</span>(<span class="st">'Salary by Department &amp; Gender'</span>)
+
+ax2 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">0</span>, <span class="nm">2</span>])
+<span class="op">sns</span>.<span class="fn">heatmap</span>(hr.<span class="fn">select_dtypes</span>(<span class="st">'number'</span>).<span class="fn">corr</span>(), annot=<span class="kw">True</span>, cmap=<span class="st">'coolwarm'</span>, center=<span class="nm">0</span>, ax=ax2, cbar=<span class="kw">False</span>, fmt=<span class="st">'.2f'</span>)
+ax2.<span class="fn">set_title</span>(<span class="st">'Correlation Matrix'</span>)
+
+ax3 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">0</span>])
+<span class="op">sns</span>.<span class="fn">regplot</span>(data=hr, x=<span class="st">'tenure_years'</span>, y=<span class="st">'satisfaction'</span>, ax=ax3, scatter_kws={<span class="st">'alpha'</span>:<span class="nm">0.4</span>})
+ax3.<span class="fn">set_title</span>(<span class="st">'Tenure vs Satisfaction'</span>)
+
+ax4 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">1</span>])
+<span class="op">sns</span>.<span class="fn">violinplot</span>(data=hr, x=<span class="st">'work_mode'</span>, y=<span class="st">'attrition_risk'</span>, ax=ax4)
+ax4.<span class="fn">set_title</span>(<span class="st">'Attrition Risk by Work Mode'</span>)
+
+ax5 = fig.<span class="fn">add_subplot</span>(gs[<span class="nm">1</span>, <span class="nm">2</span>])
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=hr, x=<span class="st">'performance'</span>, y=<span class="st">'attrition_risk'</span>, hue=<span class="st">'department'</span>, ax=ax5, s=<span class="nm">40</span>)
+ax5.<span class="fn">set_title</span>(<span class="st">'Performance vs Attrition Risk'</span>)
+
+fig.<span class="fn">savefig</span>(<span class="st">'vantage_hr_dashboard.png'</span>, dpi=<span class="nm">200</span>, bbox_inches=<span class="st">'tight'</span>)</pre></div>
+        </div></div>
+        <div class="task-step"><div class="step-dot">2</div><div class="step-content">
+          <h5>Print an Executive Summary</h5>
+          <p>Compute and print key findings: average satisfaction by department, the department with the highest attrition risk, and the salary gap (if any) between genders within the same department.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding:20px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✅ Capstone Completion Checklist</div>
+      <ul class="checklist">
+        <li>Generated realistic 400-employee HR dataset with department, salary, satisfaction, performance</li>
+        <li>Applied a custom brand theme function</li>
+        <li>Built salary distribution histplot with KDE by department</li>
+        <li>Built box+swarm salary comparison by department and gender</li>
+        <li>Built split violin plot of satisfaction by department and gender</li>
+        <li>Built catplot bar chart of performance by work mode</li>
+        <li>Built regplot + residplot for tenure vs satisfaction</li>
+        <li>Built faceted lmplot by department</li>
+        <li>Built masked, annotated correlation heatmap</li>
+        <li>Identified strongest predictor of attrition risk</li>
+        <li>Built pairplot of 5 key numeric variables colored by work mode</li>
+        <li>Assembled final 2×3 custom GridSpec dashboard using axes-level functions</li>
+        <li>Exported the dashboard as high-resolution PNG</li>
+        <li>Printed an executive summary with key findings</li>
+      </ul>
+    </div>
+
+    <div class="callout gold" style="margin-top:16px;">
+      <div class="callout-title">🎯 Stretch Challenges — Prove Mastery</div>
+      <ol style="margin-top:8px;">
+        <li><strong>Objects interface version</strong>: Rebuild the tenure vs satisfaction regression using the so.Plot() objects interface with so.Dot() and so.PolyFit().</li>
+        <li><strong>Clustering validation</strong>: Build a clustermap of standardized numeric HR features with department as row_colors — do departments naturally cluster?</li>
+        <li><strong>Automated report function</strong>: Wrap the whole capstone into a function <code>generate_hr_report(df, output_path)</code> that could run monthly with fresh HR data.</li>
+      </ol>
+    </div>
+
+    <div class="certificate">
+      <div class="cert-title">Certificate of Completion</div>
+      <h2>Seaborn Full Course</h2>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">This certifies that you have completed all 5 days of</div>
+      <div class="cert-name">🌊 Seaborn Mastery Track</div>
+      <p>You have built expertise in statistical visualization, distribution analysis, regression diagnostics, multi-plot grids, and comprehensive dashboard construction.</p>
+      <div class="cert-skills">
+        <span class="cert-skill">✓ Themes &amp; Palettes</span>
+        <span class="cert-skill">✓ relplot &amp; lineplot</span>
+        <span class="cert-skill">✓ histplot/kdeplot/ecdfplot</span>
+        <span class="cert-skill">✓ catplot Family</span>
+        <span class="cert-skill">✓ regplot &amp; lmplot</span>
+        <span class="cert-skill">✓ jointplot &amp; heatmap</span>
+        <span class="cert-skill">✓ FacetGrid &amp; PairGrid</span>
+        <span class="cert-skill">✓ clustermap</span>
+        <span class="cert-skill">✓ Objects Interface</span>
+        <span class="cert-skill">✓ Dashboard Composition</span>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--muted);">⭐ 100 MCQs passed &nbsp;|&nbsp; 5 Real-World Projects &nbsp;|&nbsp; 1 Full HR Analytics Capstone</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Full Course — Complete! 🎉</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Statistical Plots &amp; Themes</span>
+    <span class="day-pill done">Day 2 · Distribution &amp; Categorical</span>
+    <span class="day-pill done">Day 3 · Relationship &amp; Regression</span>
+    <span class="day-pill done">Day 4 · Multi-Plot Grids</span>
+    <span class="day-pill done active">Day 5 · Capstone ✓</span>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:var(--muted);">Next up: <strong>SciPy</strong> — scientific computing and statistical testing!</div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"import seaborn.objects as so\n(so.Plot(tips, x='total_bill', y='tip').add(so.Dot()))",q:"What is seaborn.objects (so) relative to the classic function-based API?",opts:["A completely separate, incompatible library","A newer, more COMPOSABLE 'grammar of graphics' style interface (added in Seaborn 0.12+) that coexists with the classic function API (scatterplot, relplot, etc.) rather than replacing it","A deprecated legacy interface","Only usable for 3D plots"],ans:1,explain:"The objects interface (so) offers a different, layer-based way of building plots inspired by grammar-of-graphics systems like ggplot2. It coexists alongside the classic function API you've used all week — both remain valid and supported approaches in modern Seaborn."},
+  {code:"so.Plot(tips, x='total_bill', y='tip').add(so.Dot()).add(so.Line(), so.PolyFit(order=1))",q:"What does chaining two separate .add() calls accomplish?",opts:["Only the last .add() call has any effect","LAYERS multiple visual marks together — first a Dot layer (scatter points), then a Line layer computed via a PolyFit statistical transform (regression line) — both appearing in the same plot", "This causes an error","Creates two separate plots"],ans:1,explain:"The objects interface builds plots by composing multiple layers via chained .add() calls. Each .add() can combine a Mark (like Dot or Line) with an optional Stat transform (like PolyFit). Multiple .add() calls layer these elements together in the final rendered plot, similar to layering scatter+regplot in the classic API."},
+  {q:"Should you feel obligated to abandon the classic function-based API (scatterplot, relplot, etc.) in favor of the newer objects interface?",opts:["Yes, the classic API is deprecated and will stop working soon","No — the classic API remains fully supported and is what most existing code, tutorials, and documentation use; the objects interface offers additional flexibility for certain advanced compositions but doesn't replace the classic API", "Yes, objects interface is required for all new Seaborn code","The classic API only works with old Python versions"],ans:1,explain:"Both interfaces are actively supported in modern Seaborn. The classic function API remains the most commonly used and documented approach. The objects interface is a newer, additional tool that's particularly useful for complex custom layer compositions, but learning it is supplementary rather than mandatory for effective Seaborn usage."},
+  {code:"def apply_brand_theme():\n    sns.set_theme(style='whitegrid', palette=[...], rc={...})\napply_brand_theme()",q:"What is the benefit of wrapping theme configuration in a function like this?",opts:["No benefit — it's identical to calling set_theme() directly each time","Centralizes the visual branding configuration in ONE place; if the brand palette or style needs to change later, only ONE function needs updating, rather than finding and editing every individual set_theme() call scattered across a project", "Functions run faster than direct calls","This is required syntax for set_theme()"],ans:1,explain:"This is a maintainability best practice, especially for larger projects spanning multiple scripts/notebooks. A single apply_brand_theme() function serves as the single source of truth for visual branding — updating the palette or style once inside the function automatically propagates everywhere the function is called, rather than requiring find-and-replace across many files."},
+  {q:"Why can't figure-level Seaborn functions like relplot(), catplot(), or pairplot() be directly inserted into a custom Matplotlib GridSpec dashboard using ax=?",opts:["This is just an arbitrary limitation with no real reason","Figure-level functions create and manage their OWN entire Figure object (potentially containing multiple faceted subplots) — they don't accept an ax= parameter because they need control over the whole figure, not just one Axes slot within someone else's layout", "Figure-level functions are broken","ax= only works with pandas Series, not DataFrames"],ans:1,explain:"Figure-level functions (relplot, catplot, pairplot, jointplot, lmplot) may create MULTIPLE subplots via faceting, requiring control over the entire Figure. This is fundamentally incompatible with being placed into ONE specific Axes slot of an externally-managed GridSpec — hence they don't accept ax=, unlike their axes-level counterparts."},
+  {code:"ax1 = fig.add_subplot(gs[0, :2])\nsns.boxplot(data=hr, x='department', y='salary', ax=ax1)",q:"What makes this pattern work for building a custom multi-chart dashboard?",opts:["boxplot() is a figure-level function","boxplot() is an AXES-LEVEL function that accepts ax=, allowing it to be placed into ONE specific subplot position within a larger custom Matplotlib GridSpec layout alongside other charts", "This code will raise an error","ax1 must be created using plt.subplots() only"],ans:1,explain:"Axes-level Seaborn functions (boxplot, scatterplot, histplot, regplot, heatmap, violinplot, etc.) all accept an ax= parameter, letting them be drawn into a SPECIFIC pre-existing Matplotlib Axes — this is exactly what's needed to combine multiple different Seaborn charts into one custom-composed dashboard figure alongside other chart types."},
+  {q:"When building a comprehensive multi-chart dashboard combining several different Seaborn visualizations (box plot, heatmap, regression, violin), which category of Seaborn functions should you use?",opts:["Only figure-level functions (relplot, catplot, etc.)","AXES-LEVEL functions (boxplot, heatmap, regplot, violinplot, scatterplot, histplot, kdeplot) since they accept ax= and can be individually placed into specific positions within a custom GridSpec layout", "It doesn't matter which category is used","Only the objects interface (so.Plot) supports dashboards"],ans:1,explain:"For combining multiple DIFFERENT chart types into one cohesive custom dashboard layout (built with plt.subplots() or fig.add_gridspec()), you need axes-level functions since they accept ax= and integrate into a pre-existing subplot grid — figure-level functions manage their own separate figure and can't be embedded this way."},
+  {q:"In the HR capstone, why is a box+swarm combo chart useful for comparing salary across departments AND gender?",opts:["It only shows the mean value","It combines the SUMMARY statistics (median, quartiles, outliers via the box) with the ACTUAL individual data points (via the swarm), revealing both the overall compensation pattern per group AND the underlying sample distribution/potential outliers or gaps that summary statistics alone might hide", "Swarm plots replace the need for box plots entirely", "This combination is not possible in Seaborn"],ans:1,explain:"This combo (introduced in Day 2, applied here in the capstone) provides both a quick statistical summary (box plot showing median/IQR) AND the ability to see every individual employee's actual salary (swarm points) — useful for spotting potential pay equity issues or outliers that a summary statistic alone might mask."},
+  {q:"Why would a People Analytics report build a correlation heatmap of numeric HR variables (tenure, salary, satisfaction, performance, attrition_risk) as an early analysis step?",opts:["It's purely decorative","A correlation heatmap quickly reveals which pairs of variables have the strongest linear relationships — for example, quickly identifying whether SATISFACTION or PERFORMANCE more strongly predicts ATTRITION RISK — guiding deeper investigation toward the most impactful variables first", "Correlation heatmaps cannot include more than 2 variables","This step is typically skipped in real analysis"],ans:1,explain:"A correlation heatmap serves as an efficient EXPLORATORY step: by seeing all pairwise correlations at once, an analyst can quickly identify which factors (like satisfaction, performance, tenure) show the strongest relationship with a key outcome (attrition_risk), helping prioritize which variables deserve deeper regression/causal investigation rather than treating all variables with equal initial attention."},
+  {q:"What would building an lmplot() faceted by department (col='department') for tenure vs satisfaction reveal that a single overall regplot() would not?",opts:["Nothing different — they show identical information","Whether the TENURE-SATISFACTION relationship (its slope/strength) DIFFERS across departments — for example, perhaps satisfaction declines faster with tenure in one department than another, a pattern invisible if all departments are combined into one overall regression line", "Faceting always produces worse results", "lmplot() cannot facet by more than one variable"],ans:1,explain:"A single overall regplot() combines ALL departments into one averaged relationship, potentially hiding important differences. Faceting the regression by department (via lmplot's col=) reveals whether each department has its OWN distinct relationship pattern — critical for HR to know if, say, Engineering shows a much steeper satisfaction decline with tenure than other departments, requiring department-specific interventions."},
+  {q:"Why might combining regplot() AND residplot() together (as suggested for the tenure vs satisfaction analysis) provide more insight than just regplot() alone?",opts:["residplot() is redundant with regplot()","regplot() shows the FITTED relationship and confidence band, while residplot() specifically diagnoses whether that linear fit is actually APPROPRIATE by checking if residuals show a pattern (indicating non-linearity) or scatter randomly (confirming a good linear fit)", "They must always be used interchangeably","residplot() only works with categorical variables"],ans:1,explain:"regplot() shows you WHAT the fitted line looks like, but doesn't tell you whether a straight line is the RIGHT model. residplot() specifically diagnoses fit quality — random scatter around zero suggests linearity is appropriate, while a curved pattern would suggest the tenure-satisfaction relationship is actually non-linear and a different model (or transformation) is needed."},
+  {q:"What role does a pairplot() colored by 'work_mode' (Remote/Hybrid/Onsite) play in the final phase of the HR capstone, AFTER already building individual charts in earlier phases?",opts:["It's purely redundant with earlier individual charts", "It provides a comprehensive OVERVIEW checking for any additional patterns or relationships across ALL key numeric variables simultaneously that might not have been specifically investigated in the individual targeted charts built in earlier phases — a good practice before finalizing an analysis", "pairplot() cannot be combined with hue for categorical coloring", "It replaces the need for the correlation heatmap"],ans:1,explain:"While earlier phases built TARGETED charts examining specific relationships (like tenure vs satisfaction), a final pairplot() colored by a relevant category serves as a comprehensive 'catch-all' check — quickly scanning ALL pairwise numeric relationships at once to catch any unexpected patterns or work-mode-related clustering that the more focused individual charts might have missed."},
+  {q:"In the final dashboard code, why is `cbar=False` set specifically for the heatmap panel (ax2) within the larger GridSpec dashboard?",opts:["cbar=False is required syntax and has no visual purpose", "Since the heatmap is one relatively small panel among several others in a crowded multi-chart dashboard, omitting its individual colorbar (which would take up additional space) helps keep the compact panel less cluttered — a common space-saving choice in dense dashboard layouts", "cbar=False removes the heatmap's color encoding entirely", "It's a typo and should always be cbar=True"],ans:1,explain:"In a dense multi-panel dashboard where space is limited, a colorbar takes up additional room next to its heatmap panel. For an already-small panel within a larger grid, omitting the colorbar (cbar=False) is a common practical space-saving choice — especially if the annotated numeric values (annot=True) already convey the exact correlation values without needing the colorbar."},
+  {q:"What does the phrase 'this is exactly what's needed to combine multiple different Seaborn charts into one custom-composed dashboard figure' primarily depend on regarding function choice?",opts:["Using only figure-level functions throughout","Consistently choosing AXES-LEVEL Seaborn functions (which accept ax=) for every chart placed into the custom GridSpec, since figure-level functions cannot be inserted into a pre-existing subplot position", "The order in which charts are added", "The specific color palette chosen"],ans:1,explain:"The entire custom dashboard composition pattern hinges on using axes-level functions (which accept ax=) rather than figure-level functions (which manage their own figure) for every individual chart placed within the custom GridSpec — this distinction, taught throughout the course, is the key technical requirement enabling flexible multi-chart dashboard construction."},
+  {q:"Why does the capstone's synthetic HR data intentionally build 'satisfaction' as a function that DECREASES somewhat with tenure_years (with added noise), rather than pure random noise?",opts:["This makes the resulting charts objectively better looking with no analytical purpose", "It creates a REALISTIC, discoverable pattern in the data (declining satisfaction with tenure) that the regression, residual, and faceted analysis techniques taught throughout the course can actually detect and interpret meaningfully — pure random noise would make the regression/correlation exercises pointless since there'd be nothing real to find", "Real HR data never shows such patterns", "This is a coding error, not intentional"],ans:1,explain:"For instructional exercises to be meaningful, the underlying synthetic data needs to contain REAL, discoverable patterns (like satisfaction genuinely correlating with tenure) so that the regression, correlation, and residual analysis techniques taught throughout the course actually reveal something insightful — practicing statistical detection methods on pure noise would defeat the pedagogical purpose."},
+  {q:"What is the value of printing an 'executive summary' (average satisfaction by department, highest attrition risk department, gender salary gap) AFTER building all the visual analysis in the capstone?",opts:["Executives never read visual charts, only text", "It translates the visual/statistical findings into a CONCISE, ACTIONABLE text summary of the KEY takeaways — mirroring how real business deliverables often need both detailed visual analysis (for those who want to dig deeper) AND a distilled executive summary (for decision-makers who need the bottom-line insights quickly)", "This step is unnecessary busywork with no real value", "Executive summaries should replace all charts entirely"],ans:1,explain:"Real-world business analytics deliverables typically need BOTH the detailed visual analysis (dashboards, charts) for those who want to explore the data AND a distilled, text-based executive summary highlighting the key actionable findings for decision-makers with limited time — this capstone step mirrors that professional communication practice."},
+  {q:"Looking back across the full 5-day Seaborn course, what unifying theme connects Day 1's 'figure-level vs axes-level' distinction to Day 5's dashboard composition capstone?",opts:["There is no meaningful connection between these topics", "Understanding WHICH category (figure-level vs axes-level) a given Seaborn function belongs to is the FOUNDATIONAL knowledge that determines HOW it can be used — axes-level functions integrate into custom multi-panel dashboards via ax=, while figure-level functions offer convenient automatic faceting but manage their own figure — this distinction, introduced Day 1, becomes essential practical knowledge for Day 5's dashboard construction", "Figure-level and axes-level functions were merged into one category by Day 5", "This distinction only mattered for Day 1 and has no later relevance"],ans:1,explain:"The figure-level vs axes-level distinction, introduced early (Day 1) as a seemingly abstract architectural detail, turns out to be CRITICAL practical knowledge by Day 5 — knowing that only axes-level functions accept ax= directly determines which functions CAN be used when composing a custom multi-panel dashboard, tying the course's foundational concepts directly to its capstone deliverable."},
+  {q:"What is the primary reason someone might use `sns.set_theme(rc={'axes.spines.top': False, ...})` rather than manually calling `ax.spines['top'].set_visible(False)` on every individual chart in a large project?",opts:["The rc= approach only works for a single chart", "Setting it once globally via set_theme()'s rc= parameter applies the styling to EVERY chart created afterward automatically, avoiding the need to repeat the same manual spine-hiding code on every single individual chart throughout a large multi-chart project — a significant maintenance and consistency improvement", "ax.spines manipulation is deprecated", "There is no meaningful difference in effort between the two approaches"],ans:1,explain:"This exemplifies the broader lesson about global theming (introduced Day 1, reinforced through the course): configuring styling ONCE via set_theme()'s rc= parameter automatically applies to all SUBSEQUENT charts, dramatically reducing repetitive code and ensuring visual consistency — compared to manually re-applying the same Matplotlib styling calls on every individual chart throughout a multi-chart analysis or dashboard project."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review figure-level vs axes-level and dashboard composition, then try again! 📚"],[50,75,"Almost there! Focus on the objects interface and combined dashboards. 💪"],[75,90,"Strong finish! You've completed the Seaborn course. 🎉"],[90,101,"Perfect score — Seaborn Master achieved! 🏆🌊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — Course Complete! 5 days × 20 MCQs = 100 total questions.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');b.classList.toggle('open');ch.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

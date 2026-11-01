@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn (Condensed) – Day 1 | Setup + Relational & Distribution Charts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FDF2F8;--surface:#FFFFFF;--border:#FBCFE8;--accent:#BE185D;--accent2:#831843;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;
+    --text:#3F0A24;--muted:#9D174D;--code-bg:#22040F;--code-text:#FBCFE8;--tag-bg:#FCE7F3;--tag-text:#831843;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#BE185D 0%,#831843 100%);color:#fff;padding:56px 40px 48px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(26px,5vw,44px);font-weight:800;line-height:1.15;margin-bottom:16px;}
+  .hero h1 span{color:#FBCFE8;} .hero p{max-width:620px;margin:0 auto 24px;opacity:.9;font-size:14.5px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:24px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:18px 26px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;} .section-header p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:24px;}
+  .func-block{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .func-head{background:var(--bg);padding:12px 18px;border-bottom:1px solid var(--border);}
+  .func-sig{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:600;color:var(--accent2);}
+  .func-desc{font-size:13.5px;color:var(--muted);margin-top:4px;}
+  .func-body{padding:14px 18px;}
+  .func-params{font-size:13px;margin-bottom:10px;}
+  .func-params code{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:10px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:10.5px;color:#EC4899;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:10.5px;padding:3px 9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:var(--code-text);}
+  .kw{color:#F9A8D4;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#831843;font-style:italic;} .op{color:#FBCFE8;}
+  .real-tag{display:inline-flex;align-items:center;gap:5px;background:#ECFDF5;color:#065F46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:12px 0;} table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:var(--accent);color:#fff;padding:8px 12px;text-align:left;font-weight:600;} td{padding:8px 12px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--code-bg);color:var(--code-text);padding:7px 11px;border-radius:6px;margin:7px 0;display:block;white-space:pre;}
+  .q-options{padding:12px 18px;display:grid;gap:7px;}
+  .opt{display:flex;align-items:center;gap:9px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13.5px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:22px;height:22px;border-radius:6px;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 18px 12px;padding:9px 13px;border-radius:8px;font-size:12.5px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .btn{padding:10px 22px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#BE185D,#831843);color:#fff;border-radius:14px;padding:26px;text-align:center;display:none;margin-top:18px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:48px;font-weight:800;} .score-box .score-msg{font-size:15px;opacity:.9;margin-top:5px;} .score-box .score-detail{font-size:12.5px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#BE185D,#059669);padding:24px;border-radius:10px;color:#fff;margin-bottom:18px;} .task-hero h3{color:#fff;margin:0 0 6px;font-size:17px;} .task-hero p{margin:0;opacity:.92;font-size:13.5px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:5px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:14px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:24px 40px;text-align:center;margin-top:32px;}
+  .day-footer .series{font-size:12.5px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:40px 20px 36px;}.section-body{padding:16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Condensed · Day 1 of 3</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">33%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:33%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Condensed Course · Day 1</div>
+  <h1>Setup + <span>Relational &amp; Distribution Charts</span></h1>
+  <p>The core setup pattern and the 4 functions you'll use in almost every statistical analysis — each with a real business scenario.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">⚙️ set_theme()</span>
+    <span class="hero-pill">⚫ scatterplot()</span>
+    <span class="hero-pill">📈 lineplot()</span>
+    <span class="hero-pill">📊 histplot()</span>
+    <span class="hero-pill">🌊 kdeplot()</span>
+    <span class="hero-pill">📊 15 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">⚙️</div>
+    <div><h2>The Setup — 3 Lines You'll Write Every Time</h2><p>Import convention and global theming</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">import seaborn as sns; sns.set_theme(style=, palette=)</div>
+        <div class="func-desc">Sets a consistent visual theme for every chart made afterward — colors, gridlines, fonts.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>style</code> = 'whitegrid' (clean, good for reports), 'darkgrid' (default) &nbsp;|&nbsp; <code>palette</code> = 'deep', 'colorblind', or a custom list of hex colors</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A data team puts <code>sns.set_theme(style='whitegrid', palette='colorblind')</code> at the top of every notebook so every chart in every report looks consistent AND is accessible to colorblind viewers.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="kw">import</span> seaborn <span class="kw">as</span> <span class="op">sns</span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> <span class="op">plt</span>
+<span class="kw">import</span> pandas <span class="kw">as</span> <span class="op">pd</span>
+
+<span class="op">sns</span>.<span class="fn">set_theme</span>(style=<span class="st">'whitegrid'</span>, palette=<span class="st">'deep'</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 The Big Idea Behind Seaborn</div>
+      Instead of manually pulling columns out of a DataFrame like Matplotlib requires, Seaborn functions take <code>data=df</code> and <code>x='column_name'</code> — pass the WHOLE DataFrame once, then reference columns by NAME. This is the single biggest reason Seaborn is faster to use for real datasets.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">⚫</div>
+    <div><h2>sns.scatterplot() — Relationships, With Extra Dimensions</h2><p>Seaborn's superpower: encode 3+ variables in one call</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.scatterplot(data=df, x=, y=, hue=, size=)</div>
+        <div class="func-desc">Plots points, automatically color-coding and/or sizing by extra columns.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>hue</code> = column to color-code by (categories get automatic distinct colors) &nbsp;|&nbsp; <code>size</code> = column to size points by</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A restaurant chain analyzing bill amount vs tip, colored by day of week and sized by party size — 4 variables, one chart, one line of code.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>tips = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)   <span class="cm"># built-in practice dataset</span>
+
+<span class="op">sns</span>.<span class="fn">scatterplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>,
+                hue=<span class="st">'day'</span>, size=<span class="st">'size'</span>, sizes=(<span class="nm">30</span>,<span class="nm">200</span>))
+<span class="cm"># hue='day' auto-colors by weekday; size='size' scales dots by party size</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">📈</div>
+    <div><h2>sns.lineplot() — Trends With Automatic Confidence Bands</h2><p>Trends over time, with statistics built in</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.lineplot(data=df, x=, y=, hue=, errorbar='ci')</div>
+        <div class="func-desc">Draws a trend line, and automatically shades a confidence interval if multiple y-values exist per x.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>errorbar</code> = 'ci' (95% confidence interval, default), 'sd' (±1 std dev), or None (no band)</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A pharma company plotting patient recovery scores over time, across many patients — the shaded band shows how confident we should be in the average trend, without manually computing statistics.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>fmri = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'fmri'</span>)
+<span class="op">sns</span>.<span class="fn">lineplot</span>(data=fmri, x=<span class="st">'timepoint'</span>, y=<span class="st">'signal'</span>, hue=<span class="st">'region'</span>)
+<span class="cm"># Shaded band = 95% CI computed automatically — in raw Matplotlib you'd compute this yourself</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ This Auto-CI Feature is Seaborn's Real Differentiator</div>
+      If your data has multiple measurements per x-value (repeated patients, repeated trials), lineplot() automatically aggregates and shows uncertainty — Matplotlib's <code>plot()</code> has NO equivalent built-in behavior.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📊</div>
+    <div><h2>sns.histplot() — Distribution With a Smooth Overlay</h2><p>A better default histogram than Matplotlib's</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.histplot(data=df, x=, bins=, kde=True, hue=)</div>
+        <div class="func-desc">A histogram with an optional smooth density curve overlay, and easy group comparison via hue.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>kde=True</code> overlays a smooth curve &nbsp;|&nbsp; <code>hue</code> = compare multiple groups' distributions in one chart</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">An e-commerce team comparing "time to checkout" distribution between mobile and desktop users, to see if mobile users take noticeably longer.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="op">sns</span>.<span class="fn">histplot</span>(data=checkout_df, x=<span class="st">'checkout_seconds'</span>,
+             hue=<span class="st">'device'</span>, kde=<span class="kw">True</span>, bins=<span class="nm">25</span>, multiple=<span class="st">'layer'</span>)
+<span class="cm"># multiple='layer' overlays both groups semi-transparently; try 'stack' for a different comparison</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🌊</div>
+    <div><h2>sns.kdeplot() — Smooth Distribution Comparison</h2><p>Cleaner than overlapping histograms for comparing shapes</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.kdeplot(data=df, x=, hue=, fill=True)</div>
+        <div class="func-desc">Draws smooth density curves — great for overlaying several groups' distribution SHAPES.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>fill=True</code> shades under the curve for easier visual comparison</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">Comparing exam score distributions across 3 different teaching methods — overlapping histograms would look cluttered with bars; smooth kdeplot curves stay readable even with 3+ groups on one chart.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="op">sns</span>.<span class="fn">kdeplot</span>(data=exam_df, x=<span class="st">'score'</span>, hue=<span class="st">'method'</span>, fill=<span class="kw">True</span>, alpha=<span class="nm">0.4</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Function</th><th>Best For</th></tr>
+        <tr><td>histplot()</td><td>Actual bin counts, comparing exact frequencies</td></tr>
+        <tr><td>kdeplot()</td><td>Comparing overall SHAPE across 2-4+ groups cleanly</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 15 Questions</h2><p>Setup, scatterplot, lineplot, histplot, kdeplot. Need 12/15 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">15</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">12</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#BE185D">🏆</div>
+    <div><h2>Real-World Task — Restaurant Tipping Analysis</h2><p>Estimated time: 40–50 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>Using Seaborn's built-in 'tips' dataset, answer 4 business questions a restaurant manager would actually ask.</p>
+    </div>
+    <ul class="checklist">
+      <li>Set a global theme with sns.set_theme()</li>
+      <li>Scatterplot: bill vs tip, colored by time (Lunch/Dinner), sized by party size</li>
+      <li>Lineplot: average tip percentage by day of week, with confidence band</li>
+      <li>Histplot: total_bill distribution, split by smoker status with kde=True</li>
+      <li>Kdeplot: overlay tip_pct distributions for Lunch vs Dinner, filled</li>
+    </ul>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Condensed Course — 3-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done active">Day 1 · Setup + Relational &amp; Distribution</span>
+    <span class="day-pill">Day 2 · Categorical &amp; Regression</span>
+    <span class="day-pill">Day 3 · Multi-Plot Grids &amp; Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"sns.set_theme(style='whitegrid', palette='colorblind')",q:"What does this single line accomplish?",opts:["It only affects the very next chart created","It sets a GLOBAL visual theme — style (gridlines/background) and color palette — applied to EVERY chart created afterward, ensuring visual consistency across an entire notebook/report without repeating styling code each time", "It loads a specific dataset named 'whitegrid'","This line only works with scatterplot(), not other chart types"],ans:1,explain:"sns.set_theme() is Seaborn's recommended entry-point call, setting GLOBAL defaults (style=visual theme, palette=color scheme) that apply automatically to every subsequent chart in the session — avoiding the need to manually restyle every individual chart."},
+  {code:"sns.scatterplot(data=tips, x='total_bill', y='tip')",q:"What is the key syntactic advantage of this over Matplotlib's ax.scatter(tips['total_bill'], tips['tip'])?",opts:["There is no real difference between the two approaches","Seaborn lets you pass the WHOLE DataFrame once (data=tips) and reference columns by STRING NAME (x='total_bill') — cleaner and less repetitive than manually extracting each column as a separate array like Matplotlib requires", "Matplotlib cannot plot data from Pandas DataFrames at all","Seaborn only works with column names, never with raw arrays"],ans:1,explain:"This is Seaborn's core convenience: pass the DataFrame once via data=, then reference columns by their STRING NAMES for x, y, hue, etc. — rather than manually extracting each column as a separate array (tips['total_bill'], tips['tip']) as pure Matplotlib requires."},
+  {code:"sns.scatterplot(data=tips, x='total_bill', y='tip', hue='day', size='size')",q:"How many distinct variables does this single scatterplot call visually encode?",opts:["2 — just x and y","4 — x-position (total_bill), y-position (tip), color (hue='day'), and marker size (size='size') — all in ONE function call, without needing to manually loop through groups or write separate plotting code for each", "Only 1, since hue and size cancel each other out","This causes an error since you can't combine hue and size"],ans:1,explain:"Each parameter maps a different column to a visual aesthetic: x/y for position, hue for color-coding by category, and size for marker size. This single call encodes 4 distinct variables simultaneously — something that would require significantly more manual code in raw Matplotlib (looping through groups, manually assigning colors)."},
+  {code:"sns.lineplot(data=fmri, x='timepoint', y='signal', hue='region')",q:"If multiple rows share the SAME timepoint value (repeated measurements), what does lineplot() do automatically?",opts:["It raises an error for duplicate x-values","It automatically computes the MEAN signal for each timepoint and draws a SHADED CONFIDENCE INTERVAL band around the line — a statistical aggregation step that would need to be done manually in Matplotlib", "It only plots the first matching value, ignoring the rest","It averages ALL columns together regardless of relevance"],ans:1,explain:"This is Seaborn's signature statistical feature: when multiple y-values exist for the same x (like repeated patient measurements at the same timepoint), lineplot() automatically aggregates them (computing the mean by default) and displays a shaded confidence interval band — a multi-step statistical process that Matplotlib's plot() has no automatic equivalent for."},
+  {code:"sns.histplot(data=checkout_df, x='checkout_seconds', kde=True)",q:"What does kde=True add to this histogram?",opts:["Nothing visible changes","It overlays a smooth DENSITY CURVE on top of the histogram bars, showing the underlying distribution shape in addition to the raw binned counts", "It removes the histogram bars entirely, showing only a curve","kde=True converts the chart to a bar chart"],ans:1,explain:"kde=True adds a smooth Kernel Density Estimate curve overlaid on top of the histogram's bars — combining the intuitive 'raw counts per bin' view with a smoother representation of the underlying distribution's overall shape, in one chart."},
+  {code:"sns.histplot(data=df, x='bill', hue='smoker', multiple='layer')",q:"What does multiple='layer' control?",opts:["It has no visible effect","It controls HOW the separate hue-group histograms COMBINE visually when overlapping — 'layer' draws them semi-transparently on top of each other; alternatives like 'stack' would instead stack the bars vertically", "It limits the chart to showing only 1 layer of data","multiple= only accepts numeric values, not strings like 'layer'"],ans:1,explain:"When using hue= with histplot(), multiple different groups' histograms need to be combined visually somehow. multiple='layer' (the default) draws them overlapping and semi-transparent. Other options like 'stack' would instead stack the bars vertically so total height shows the combined count — different visual strategies for comparing grouped distributions."},
+  {q:"Why might a kdeplot() be preferred over histplot() when comparing 3 OR MORE groups' distributions on one chart?",opts:["kdeplot() and histplot() would look identical with 3+ groups","With 3+ overlapping histograms (bars), the chart can quickly become visually CLUTTERED and hard to read; kdeplot()'s SMOOTH curves remain cleaner and more distinguishable even with several overlapping groups, making shape comparison easier", "histplot() cannot technically support more than 2 groups via hue=","kdeplot() only works with exactly 2 groups, not 3+"],ans:1,explain:"Overlapping histogram BARS from 3+ groups can create significant visual clutter, with bars from different groups intermixing and becoming hard to distinguish. kdeplot()'s SMOOTH continuous curves remain more visually distinguishable even with several overlapping groups, making it a cleaner choice specifically for comparing the SHAPE of multiple distributions at once."},
+  {code:"sns.kdeplot(data=exam_df, x='score', hue='method', fill=True, alpha=0.4)",q:"What does fill=True combined with alpha=0.4 accomplish?",opts:["fill=True removes the curve entirely, alpha has no effect","fill=True shades the area UNDER each density curve; alpha=0.4 makes that shaded area semi-transparent (40% opaque) — together, this lets multiple overlapping group distributions remain visible and comparable even where they overlap, rather than one completely obscuring another", "fill=True and alpha=0.4 together always produce a solid black chart","These parameters only work with histplot(), not kdeplot()"],ans:1,explain:"fill=True shades the region beneath each density curve (rather than just showing an outline). Combined with alpha=0.4 (40% opacity/60% transparency), overlapping filled regions from DIFFERENT groups remain visible through each other rather than one opaque fill completely hiding another — essential for comparing multiple overlapping distributions on the same chart."},
+  {code:"sns.lineplot(data=fmri, x='timepoint', y='signal', errorbar='sd')",q:"What does errorbar='sd' change compared to the default?",opts:["It removes the shaded band entirely","The shaded band now represents ±1 STANDARD DEVIATION around the mean, instead of the default 95% confidence interval — a different (typically wider) representation of data spread", "'sd' is invalid syntax and causes an error","It changes the line color to standard deviation-based colors"],ans:1,explain:"errorbar controls what the shaded uncertainty band represents. The default 'ci' shows a 95% confidence interval (via bootstrap resampling). Setting errorbar='sd' instead shows ±1 standard deviation from the mean — a different statistical representation of spread, often visually wider than the default confidence interval band."},
+  {q:"Why does the lesson emphasize that Seaborn's data=/x=/y= pattern (passing column NAMES) is 'the single biggest reason Seaborn is faster to use for real datasets' compared to raw Matplotlib?",opts:["This claim is incorrect and Seaborn actually requires MORE code than Matplotlib","With a real DataFrame containing many columns, referring to columns by NAME (x='total_bill') is more readable, less error-prone, and requires less manual code than extracting each column as a separate array first (Matplotlib's typical approach: ax.scatter(df['total_bill'], df['tip']) — especially once you need to add hue=/size=/style= for additional variables, where Seaborn's approach scales far more gracefully", "Matplotlib cannot technically read data from Pandas DataFrames under any circumstances", "Seaborn functions run measurably faster in terms of computation time, unrelated to code readability"],ans:1,explain:"When working with a real DataFrame (often containing dozens of columns), Seaborn's pattern of passing the DataFrame once (data=df) and referencing columns by NAME (x='total_bill', hue='day') is both more concise AND scales much more gracefully as you add MORE mapped variables (hue, size, style) — compared to Matplotlib's typical approach of manually extracting each needed column as a separate array before plotting, which becomes increasingly verbose as more variables get involved."},
+  {q:"In the restaurant tipping task, why might a manager specifically want a LINEPLOT (with confidence band) for 'average tip percentage by day of week', rather than just a simple bar chart of averages?",opts:["A lineplot and bar chart of averages would show identical, equally complete information", "The lineplot's automatically-computed CONFIDENCE INTERVAL band additionally communicates how CONFIDENT/RELIABLE each day's average estimate actually is — a bar chart showing only the average value would hide this important uncertainty information, potentially making a noisy, unreliable estimate (from a day with few observations) look just as trustworthy as a well-supported one", "Bar charts cannot technically display day-of-week data","Lineplot() only works with continuous numeric x-axes, making day-of-week impossible to plot"],ans:1,explain:"A simple bar chart of average values treats every average as equally certain/reliable, regardless of how much underlying data supports it. Lineplot()'s automatic confidence interval band reveals additional information: a day with FEW transactions might show a wide, uncertain confidence band (signaling 'this average isn't very reliable yet'), while a day with MANY transactions might show a narrow, confident band — this uncertainty information is valuable for a manager deciding how much to trust each day's reported average, and would be completely invisible in a simple bar chart of averages alone."},
+  {q:"Why would comparing 'time to checkout' between mobile and desktop users (histplot with hue='device') be a genuinely useful business analysis, beyond just satisfying curiosity?",opts:["This analysis provides no actionable business value","If the distributions reveal that MOBILE users consistently take meaningfully LONGER to complete checkout, this is a concrete, actionable signal suggesting the mobile checkout FLOW/UX might have friction points worth investigating and improving — directly informing a potential product/engineering priority based on real user behavior data", "Checkout time is unrelated to any meaningful business metric","This comparison would be equally informative regardless of what the actual distributions show"],ans:1,explain:"This kind of behavioral distribution comparison directly informs PRODUCT DECISIONS: if mobile checkout times are meaningfully longer or show a different shape (e.g., a secondary peak suggesting some mobile users abandon and retry), this is concrete evidence suggesting the mobile experience may have friction points worth prioritizing for improvement — turning a statistical visualization into an actionable business insight rather than just an interesting but inconsequential observation."},
+  {q:"What would it mean if the kdeplot() comparing exam scores across 3 teaching methods showed one method's curve as CLEARLY shifted to the right (higher scores) with minimal overlap with the others?",opts:["This pattern has no meaningful interpretation", "It would suggest that teaching method produces MEANINGFULLY HIGHER exam scores compared to the other methods, with the LACK of overlap between curves suggesting this isn't just random noise/chance — though a formal hypothesis test (like ANOVA, covered in the SciPy course) would be needed to rigorously CONFIRM this visual impression with statistical significance", "This would indicate a plotting error, since all 3 curves should always overlap completely", "Kdeplot() automatically performs and displays a formal statistical significance test"],ans:1,explain:"A kdeplot showing one group's curve clearly shifted with minimal overlap versus the others provides a strong VISUAL indication that this group's outcomes may be meaningfully different — the more separated the curves, the less likely this difference is purely due to random variation. However, kdeplot() itself only VISUALIZES the distributions — it doesn't perform any formal statistical test. Confirming whether this visual difference is statistically significant (not just apparent) would require a formal hypothesis test (like a one-way ANOVA, as covered in statistical analysis contexts), with the kdeplot serving as a valuable exploratory FIRST step suggesting where such formal testing might be worthwhile."},
+  {q:"Reflecting on today's 4 core functions (scatterplot, lineplot, histplot, kdeplot), what determines WHICH one to reach for, given a specific business question?",opts:["Always default to scatterplot() regardless of the actual question being asked", "Match the function to the QUESTION TYPE: relationship between TWO numeric variables (possibly with extra dimensions via hue/size) → scatterplot; a trend or pattern across an ORDERED sequence like time, ideally with uncertainty → lineplot; the SHAPE/spread of ONE numeric variable via exact bin counts → histplot; the SHAPE of one variable for CLEAN comparison across several groups → kdeplot", "The choice of function is arbitrary and doesn't meaningfully affect communication", "Only lineplot() and scatterplot() are actually useful; histplot and kdeplot serve no real purpose"],ans:1,explain:"Each function serves a distinct analytical PURPOSE: scatterplot for relationships between numeric variables (possibly encoding extra dimensions via hue/size); lineplot specifically for trends across an ordered sequence like time (with automatic uncertainty quantification); histplot for precise distributional detail via exact bin counts; kdeplot for CLEAN comparison of distribution shapes across multiple groups where overlapping histogram bars would be too cluttered. Thoughtfully matching function choice to the actual analytical QUESTION at hand — as demonstrated throughout today's restaurant analysis, which uses all 4 for their specifically appropriate purposes — is the core skill this lesson builds."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review setup and the 4 core functions, then try again! 📚"],[50,75,"Good progress! Focus on hue/size mapping and errorbar. 💪"],[75,90,"Strong Day 1! Relational/distribution charts are solid. 🎉"],[90,101,"Excellent! Day 1 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 12/15 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

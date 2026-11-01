@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 57 — Full Data Workflow Practice</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+.milestone{background:var(--ink); color:var(--paper); border-radius:8px; padding:26px; text-align:center; margin:24px 0;}
+.milestone .big{font-size:24px; font-family:var(--font-display); color:var(--accent-soft);}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:14px; margin:12px 0; white-space:pre-wrap;}
+.step-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+.recap-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+.recap-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px 14px;}
+.recap-box .day{font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:bold; margin-bottom:4px;}
+.recap-box .formula{font-family:var(--font-mono); font-size:12px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:10px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.progress-wrap{background:var(--ink); border-radius:8px; padding:20px; color:var(--paper); margin:16px 0;}
+.progress-bar-bg{background:#2a3442; border-radius:20px; height:14px; overflow:hidden; margin-top:10px;}
+.progress-bar-fill{background:var(--accent); height:100%; width:0%; transition:width 0.3s;}
+.progress-text{font-family:var(--font-mono); font-size:14px; margin-top:8px;}
+.self-check-btn{background:var(--accent); color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer; font-size:12px; margin-top:8px;}
+.lab{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.lab h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.lab textarea{width:100%; min-height:150px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:13px; border-radius:6px; border:1px solid #3a4658; padding:12px;}
+.lab-buttons{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
+.lab-buttons button{background:#2a3442; color:#e8e3d5; border:1px solid #444; padding:8px 14px; border-radius:4px; cursor:pointer; font-size:13px;}
+.lab-buttons button:hover{background:var(--accent); border-color:var(--accent);}
+.lab-result{margin-top:14px; font-family:var(--font-mono); font-size:13px;}
+.result-code{background:#0f151d; padding:10px 14px; border-radius:6px; margin-top:8px; overflow-x:auto; white-space:pre-wrap;}
+table.df-table{border-collapse:collapse; width:100%; font-size:12px; margin-top:6px;}
+table.df-table th, table.df-table td{border:1px solid #3a4658; padding:5px 8px; text-align:center;}
+table.df-table th{background:#2a3442; color:#f0dcc8;}
+table.df-table tr:nth-child(even){background:#16202b;}
+td.missing{color:#e8837a; font-style:italic;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:12px; max-width:100%;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 57 of 210 · Phase 2 Data Libraries Complete</span>
+    <h1>Full Data Workflow Practice</h1>
+    <div class="subtitle">~2 hours · Load → clean → explore → visualize, end to end</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="milestone">
+  <div class="big">Data libraries complete 🎉</div>
+  <p style="color:#cfc8b8; margin-top:8px;">NumPy, Pandas, Matplotlib — today you run the whole pipeline on one messy dataset.</p>
+</div>
+
+<section>
+  <h2><span class="num">01</span> Recap — Days 51–56</h2>
+  <div class="recap-grid">
+    <div class="recap-box"><div class="day">Day 51 · NumPy</div><div class="formula">np.array() · vectorized math · .mean() .std()</div></div>
+    <div class="recap-box"><div class="day">Day 52 · Pandas</div><div class="formula">DataFrame · .head() .shape .describe()</div></div>
+    <div class="recap-box"><div class="day">Day 53 · Filter/Sort</div><div class="formula">pd.read_csv() · df[df[c]&gt;x] · .sort_values()</div></div>
+    <div class="recap-box"><div class="day">Day 54 · Cleaning</div><div class="formula">.isnull().sum() · .fillna() · .value_counts()</div></div>
+    <div class="recap-box"><div class="day">Day 55 · Charts</div><div class="formula">plt.plot() · plt.bar()</div></div>
+    <div class="recap-box"><div class="day">Day 56 · Charts</div><div class="formula">plt.scatter() · plt.hist(bins=n)</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span> The standard workflow</h2>
+  <p>Almost every real analysis follows this same sequence. Today you'll run all five steps on one dataset.</p>
+  <div class="panel">
+    <p class="step-tag">Step 1 — Load</p>
+    <div class="code">import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("sales.csv")</div>
+
+    <p class="step-tag">Step 2 — Look at it</p>
+    <div class="code">print(df.head())
+print(df.shape)
+print(df.info())</div>
+
+    <p class="step-tag">Step 3 — Check for problems</p>
+    <div class="code">print(df.isnull().sum())         # missing values?
+print(df["region"].value_counts())   # imbalanced categories?
+print(df.describe())              # any impossible min/max values?</div>
+
+    <p class="step-tag">Step 4 — Clean</p>
+    <div class="code">df["revenue"] = df["revenue"].fillna(df["revenue"].mean())
+df = df.dropna(subset=["region"])   # drop rows missing a critical field</div>
+
+    <p class="step-tag">Step 5 — Explore & visualize</p>
+    <div class="code">top = df[df["revenue"] > 1000].sort_values("revenue", ascending=False)
+
+plt.hist(df["revenue"], bins=8)
+plt.title("Revenue Distribution")
+plt.show()
+
+plt.scatter(df["ad_spend"], df["revenue"])
+plt.xlabel("Ad Spend")
+plt.ylabel("Revenue")
+plt.show()</div>
+  </div>
+  <p><strong>Note step 3.</strong> Beginners often skip straight from loading to modeling — checking for missing values, class imbalance, and impossible values first is what separates a reliable analysis from one that silently produces garbage.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Interactive Lab — run the workflow yourself</h2>
+  <div class="lab">
+    <h3>A deliberately messy dataset (note the blanks)</h3>
+    <textarea id="csvInput">month,region,ad_spend,revenue
+Jan,North,500,2100
+Feb,North,700,2800
+Mar,South,300,
+Apr,North,900,3600
+May,South,,1400
+Jun,East,450,1900
+Jul,North,1100,4200
+Aug,South,350,1500
+Sep,East,600,2300
+Oct,North,800,3100
+Nov,,250,1100
+Dec,South,950,3800</textarea>
+    <div class="lab-buttons">
+      <button onclick="labHead()">1. .head()</button>
+      <button onclick="labShape()">2. .shape / .describe()</button>
+      <button onclick="labMissing()">3. .isnull().sum()</button>
+      <button onclick="labCounts()">3b. .value_counts()</button>
+      <button onclick="labClean()">4. Clean (fillna + dropna)</button>
+      <button onclick="labHist()">5a. Histogram</button>
+      <button onclick="labScatter()">5b. Scatter</button>
+      <button onclick="labFilter()">5c. Filter + sort</button>
+    </div>
+    <div class="lab-result" id="labResult"></div>
+    <canvas id="labCanvas" width="600" height="280" style="display:none;"></canvas>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Work through the buttons in order — that sequence IS the workflow. Try editing the CSV to add more missing values and see how the cleaning step responds.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Self-Assessment Tracker</h2>
+  <div class="progress-wrap">
+    <div class="progress-text" id="progressText">0 / 10 attempted</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> 10 Mixed Problems — Days 51–56</h2>
+  <div id="mixed"></div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Readiness Check (10 questions)</h2>
+  <p>This closes out the data-libraries stretch. Below 7/10 means it's worth revisiting the specific day before moving into Phase 3's machine learning.</p>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Phase 3 begins next — actual machine learning. You'll start with what ML is, supervised vs. unsupervised learning, and then build your first real model. Every tool from Days 51–57 gets used in every single one of those days.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 57 of 210 · AI & ML Study Plan · Phase 2 Complete</div>
+</footer>
+
+<script>
+function parseCSV(text){
+  const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
+  return {headers: lines[0], rows: lines.slice(1)};
+}
+function isNumericCol(rows, idx){
+  const vals = rows.map(r=>r[idx]).filter(v=>v!=='');
+  return vals.length>0 && vals.every(v=>!isNaN(parseFloat(v)));
+}
+function renderTable(headers, rows){
+  let html = '<table class="df-table"><tr><th></th>' + headers.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+  rows.forEach((r,i) => {
+    html += '<tr><th>'+i+'</th>' + r.map(c=>`<td class="${c===''?'missing':''}">${c===''?'NaN':c}</td>`).join('') + '</tr>';
+  });
+  return html + '</table>';
+}
+function hideCanvas(){ document.getElementById('labCanvas').style.display='none'; }
+function showCanvas(){ document.getElementById('labCanvas').style.display='block'; }
+
+function labHead(){
+  hideCanvas();
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  document.getElementById('labResult').innerHTML =
+    `<div class="result-code">&gt;&gt;&gt; df.head()\n${renderTable(headers, rows.slice(0,5))}</div>`;
+}
+function labShape(){
+  hideCanvas();
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  let out = `&gt;&gt;&gt; df.shape\n(${rows.length}, ${headers.length})\n\n&gt;&gt;&gt; df.describe()\n`;
+  let html = '<table class="df-table"><tr><th></th>';
+  const numCols = headers.map((h,i)=>isNumericCol(rows,i)?i:null).filter(x=>x!==null);
+  numCols.forEach(i=>html+=`<th>${headers[i]}</th>`);
+  html += '</tr>';
+  ['count','mean','std','min','max'].forEach(stat=>{
+    html += `<tr><th>${stat}</th>`;
+    numCols.forEach(i=>{
+      const vals = rows.map(r=>r[i]).filter(v=>v!=='').map(Number);
+      let v;
+      if(stat==='count') v = vals.length;
+      else if(stat==='mean') v = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+      else if(stat==='std'){ const m=vals.reduce((a,b)=>a+b,0)/vals.length; v=Math.sqrt(vals.reduce((a,b)=>a+(b-m)**2,0)/vals.length).toFixed(1); }
+      else if(stat==='min') v = Math.min(...vals);
+      else v = Math.max(...vals);
+      html += `<td>${v}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table>';
+  document.getElementById('labResult').innerHTML = `<div class="result-code">${out}${html}</div>`;
+}
+function labMissing(){
+  hideCanvas();
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  let out = '&gt;&gt;&gt; df.isnull().sum()\n';
+  headers.forEach((h,i)=>{
+    const c = rows.filter(r=>r[i]==='').length;
+    out += `${h.padEnd(12)} ${c}\n`;
+  });
+  out += '\n# Two columns have gaps — decide how to handle each.';
+  document.getElementById('labResult').innerHTML = `<div class="result-code">${out}</div>`;
+}
+function labCounts(){
+  hideCanvas();
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const idx = headers.indexOf('region');
+  const counts = {};
+  rows.forEach(r=>{ const v = r[idx]===''?'(missing)':r[idx]; counts[v]=(counts[v]||0)+1; });
+  let out = '&gt;&gt;&gt; df["region"].value_counts()\n';
+  Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).forEach(k=>{ out += `${k.padEnd(12)} ${counts[k]}\n`; });
+  out += '\n# North dominates — worth noting if region becomes a model feature.';
+  document.getElementById('labResult').innerHTML = `<div class="result-code">${out}</div>`;
+}
+let cleanedRows = null;
+function getClean(){
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const cleaned = rows.filter(r => r[headers.indexOf('region')] !== '').map(r=>r.slice());
+  ['ad_spend','revenue'].forEach(col=>{
+    const i = headers.indexOf(col);
+    const vals = cleaned.map(r=>r[i]).filter(v=>v!=='').map(Number);
+    const mean = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(0);
+    cleaned.forEach(r=>{ if(r[i]==='') r[i]=mean; });
+  });
+  return {headers, cleaned};
+}
+function labClean(){
+  hideCanvas();
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const {cleaned} = getClean();
+  const out = `&gt;&gt;&gt; df["revenue"] = df["revenue"].fillna(df["revenue"].mean())
+&gt;&gt;&gt; df["ad_spend"] = df["ad_spend"].fillna(df["ad_spend"].mean())
+&gt;&gt;&gt; df = df.dropna(subset=["region"])
+
+# ${rows.length} rows → ${cleaned.length} rows (dropped rows missing region)
+# Numeric gaps filled with each column's mean\n`;
+  document.getElementById('labResult').innerHTML = `<div class="result-code">${out}${renderTable(headers, cleaned)}</div>`;
+}
+function labHist(){
+  const {headers, cleaned} = getClean();
+  const idx = headers.indexOf('revenue');
+  const data = cleaned.map(r=>parseFloat(r[idx]));
+  showCanvas();
+  const canvas = document.getElementById('labCanvas');
+  const ctx = canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const bins=6, min=Math.min(...data), max=Math.max(...data), bw=(max-min)/bins;
+  const counts=new Array(bins).fill(0);
+  data.forEach(v=>{ let i=Math.floor((v-min)/bw); if(i>=bins)i=bins-1; counts[i]++; });
+  const maxC=Math.max(...counts), pad=40, plotW=w-pad*2, plotH=h-pad*2, barW=plotW/bins;
+  ctx.strokeStyle='#1b2430'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(pad,h-pad); ctx.lineTo(w-pad,h-pad); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad); ctx.stroke();
+  ctx.fillStyle='#1b2430'; ctx.font='bold 13px Georgia'; ctx.textAlign='center';
+  ctx.fillText('Revenue Distribution', w/2, 22);
+  counts.forEach((c,i)=>{
+    const bh=(c/maxC)*plotH, x=pad+i*barW, y=h-pad-bh;
+    ctx.fillStyle='#c05621'; ctx.fillRect(x+1,y,barW-2,bh);
+    ctx.fillStyle='#1b2430'; ctx.font='10px monospace';
+    if(c>0) ctx.fillText(c, x+barW/2, y-4);
+    ctx.fillStyle='#6b6459';
+    ctx.fillText(Math.round(min+i*bw), x+barW/2, h-pad+14);
+  });
+  document.getElementById('labResult').innerHTML = `<div class="result-code">&gt;&gt;&gt; plt.hist(df["revenue"], bins=6)\n&gt;&gt;&gt; plt.show()</div>`;
+}
+function labScatter(){
+  const {headers, cleaned} = getClean();
+  const xi = headers.indexOf('ad_spend'), yi = headers.indexOf('revenue');
+  const pts = cleaned.map(r=>({x:parseFloat(r[xi]), y:parseFloat(r[yi])}));
+  showCanvas();
+  const canvas = document.getElementById('labCanvas');
+  const ctx = canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const pad=45;
+  const minX=Math.min(...pts.map(p=>p.x)), maxX=Math.max(...pts.map(p=>p.x));
+  const minY=Math.min(...pts.map(p=>p.y)), maxY=Math.max(...pts.map(p=>p.y));
+  const sx=v=>pad+((v-minX)/(maxX-minX))*(w-pad*2);
+  const sy=v=>h-pad-((v-minY)/(maxY-minY))*(h-pad*2);
+  ctx.strokeStyle='#1b2430'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(pad,h-pad); ctx.lineTo(w-pad,h-pad); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad); ctx.stroke();
+  ctx.fillStyle='#1b2430'; ctx.font='bold 13px Georgia'; ctx.textAlign='center';
+  ctx.fillText('Ad Spend vs Revenue', w/2, 22);
+  ctx.fillStyle='#c05621';
+  pts.forEach(p=>{ ctx.beginPath(); ctx.arc(sx(p.x),sy(p.y),5,0,2*Math.PI); ctx.fill(); });
+  ctx.fillStyle='#6b6459'; ctx.font='11px monospace';
+  ctx.fillText('Ad Spend →', w/2, h-pad+24);
+  document.getElementById('labResult').innerHTML =
+    `<div class="result-code">&gt;&gt;&gt; plt.scatter(df["ad_spend"], df["revenue"])\n&gt;&gt;&gt; plt.show()\n\n# Clear positive correlation — but remember Day 13:\n# this does NOT prove ad spend CAUSES revenue.</div>`;
+}
+function labFilter(){
+  hideCanvas();
+  const {headers, cleaned} = getClean();
+  const ri = headers.indexOf('revenue');
+  const filtered = cleaned.filter(r=>parseFloat(r[ri])>2000).sort((a,b)=>parseFloat(b[ri])-parseFloat(a[ri]));
+  document.getElementById('labResult').innerHTML =
+    `<div class="result-code">&gt;&gt;&gt; df[df["revenue"] &gt; 2000].sort_values("revenue", ascending=False)\n${renderTable(headers, filtered)}</div>`;
+}
+labHead();
+
+const mixedData = [
+  { tag:"Day 51 · NumPy", q:"arr = np.array([2,4,6]). What does arr * 3 produce, and how does that differ from a plain Python list?", steps:"[6,12,18] — NumPy multiplies each element. A plain list [2,4,6]*3 would instead duplicate the list three times." },
+  { tag:"Day 51 · NumPy", q:"scores = np.array([70,80,90]). Write code for the mean and standard deviation.", steps:"scores.mean()  → 80.0\nscores.std()   → ~8.16" },
+  { tag:"Day 52 · Pandas", q:"Build a DataFrame with columns 'name' and 'age' from a dictionary.", steps:'df = pd.DataFrame({"name": ["A","B"], "age": [25, 30]})' },
+  { tag:"Day 52 · Pandas", q:"What's the difference between df['age'] and df[['age']]?", steps:"df['age'] returns a Series (one column). df[['age']] returns a one-column DataFrame." },
+  { tag:"Day 53 · Filtering", q:"Write a filter for rows where age > 30 AND city is 'Surat'.", steps:'df[(df["age"] > 30) & (df["city"] == "Surat")]\n# Note & not "and", and parentheses around each condition' },
+  { tag:"Day 53 · Sorting", q:"Sort df by 'salary' highest first.", steps:'df.sort_values("salary", ascending=False)' },
+  { tag:"Day 54 · Cleaning", q:"How do you check how many missing values each column has?", steps:"df.isnull().sum()" },
+  { tag:"Day 54 · Imbalance", q:"A target column has 970 'no' and 30 'yes'. What accuracy would an always-predict-'no' model get, and why is that a problem?", steps:"97% — yet it catches 0% of the 'yes' cases it presumably exists to detect. Accuracy alone is misleading on imbalanced data." },
+  { tag:"Day 55 · Charts", q:"You want to compare total sales across 4 product categories. Line chart or bar chart? Why?", steps:"Bar chart — categories are unordered, so a connecting line would falsely imply a trend between them." },
+  { tag:"Day 56 · Charts", q:"You want to see whether study hours relate to exam scores. Which chart, and what's the key caveat?", steps:"Scatter plot. Caveat: even a strong visual trend shows correlation only — never proof of causation (Day 13)." }
+];
+let attempted=0;
+const total=mixedData.length;
+function updateProgress(){
+  document.getElementById('progressText').textContent = `${attempted} / ${total} attempted`;
+  document.getElementById('progressFill').style.width = (attempted/total*100)+'%';
+}
+const mixedEl = document.getElementById('mixed');
+mixedData.forEach((item,i)=>{
+  const box=document.createElement('div');
+  box.className='panel'; box.style.marginBottom='10px';
+  let marked=false;
+  box.innerHTML = `
+    <div><span class="step-tag">${item.tag}</span></div>
+    <p><strong>${i+1}.</strong> ${item.q}</p>
+    <details><summary>Reveal Answer</summary><div class="details-body">
+      <div class="code">${item.steps}</div>
+      <button class="self-check-btn">✓ Got it right</button>
+      <button class="self-check-btn" style="background:var(--bad);">✗ Missed it</button>
+    </div></details>`;
+  box.querySelectorAll('.self-check-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      if(!marked){ marked=true; attempted++; updateProgress(); }
+      box.querySelectorAll('.self-check-btn').forEach(b=>b.style.opacity='0.4');
+      btn.style.opacity='1'; btn.style.fontWeight='bold';
+    };
+  });
+  mixedEl.appendChild(box);
+});
+
+const quizData = [
+  { q:"What is the standard first step after loading any new dataset?", opts:["Train a model immediately","Look at it — .head(), .shape, .info()","Delete half the rows","Plot everything at once"], correct:1, explain:"Understanding what you have comes before anything else." },
+  { q:"df.isnull().sum() returns:", opts:["Total rows","Missing value count per column","The sum of all values","Column names"], correct:1, explain:"Per-column count of NaN values." },
+  { q:"Which correctly filters for two conditions in pandas?", opts:['df[df.a>1 and df.b<5]','df[(df.a>1) & (df.b<5)]','df[df.a>1 & df.b<5]','df[df.a>1 or df.b<5]'], correct:1, explain:"& with parentheses around each condition." },
+  { q:"A histogram of a numeric column shows:", opts:["Relationship between two variables","The distribution/shape of that one variable","Category counts only","Missing values"], correct:1, explain:"Histograms bin numeric values to reveal distribution shape." },
+  { q:"A scatter plot showing a strong upward trend proves:", opts:["x causes y","Correlation between x and y — nothing about causation","Nothing at all","The data is clean"], correct:1, explain:"Day 13's lesson applies directly to every scatter plot you'll ever read." },
+  { q:"Why check .value_counts() on a target column before modeling?", opts:["It isn't necessary","To detect class imbalance, which makes accuracy misleading","To sort the data","To fill missing values"], correct:1, explain:"Imbalance detection is a standard pre-modeling check." },
+  { q:"df.sort_values('age') — does the original df change?", opts:["Yes","No, unless reassigned","Only for numeric columns","It raises an error"], correct:1, explain:"Most pandas operations return a new object rather than mutating." },
+  { q:"Filling a missing 'price' column with 0 is risky because:", opts:["fillna doesn't accept 0","0 is a real, meaningful price value — it distorts the data rather than marking it as unknown","Prices can't be numeric","There's no risk"], correct:1, explain:"0 isn't a neutral placeholder; it changes what the data says." },
+  { q:"Which tool would you reach for to compare sales across 5 regions?", opts:["Scatter plot","Bar chart","Histogram","Line chart"], correct:1, explain:"Unordered categories → bar chart." },
+  { q:"What comes next in the study plan after Day 57?", opts:["More Python syntax","Phase 3 — actual machine learning","Nothing, the plan ends","Repeating Phase 1 math"], correct:1, explain:"Phase 3 begins ML proper, using every tool from Days 51–57." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item,i)=>{
+  const box=document.createElement('div');
+  box.className='quiz-q';
+  box.innerHTML=`<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt,j)=>{
+    const btn=document.createElement('button');
+    btn.className='opt'; btn.textContent=opt;
+    btn.onclick=()=>{
+      box.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+      if(j===item.correct) btn.classList.add('correct');
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb=document.createElement('div');
+      fb.className='feedback'; fb.textContent=item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

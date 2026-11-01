@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn (Condensed) – Day 3 | Multi-Plot Grids & Capstone</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;--rose:#BE185D;
+    --text:#2C1B04;--muted:#B45309;--code-bg:#1D1002;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--rose));border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 100%);color:#fff;padding:56px 40px 48px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(26px,5vw,44px);font-weight:800;line-height:1.15;margin-bottom:16px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:620px;margin:0 auto 24px;opacity:.9;font-size:14.5px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#BE185D,#F472B6);padding:14px 22px;display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:13.5px;font-weight:500;margin:0;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:24px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:18px 26px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;} .section-header p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:24px;}
+  .func-block{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .func-head{background:var(--bg);padding:12px 18px;border-bottom:1px solid var(--border);}
+  .func-sig{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:600;color:var(--accent2);}
+  .func-desc{font-size:13.5px;color:var(--muted);margin-top:4px;}
+  .func-body{padding:14px 18px;}
+  .func-params{font-size:13px;margin-bottom:10px;}
+  .func-params code{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:10px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:10.5px;color:#F59E0B;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:10.5px;padding:3px 9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:var(--code-text);}
+  .kw{color:#FCD34D;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#78350F;font-style:italic;} .op{color:#FDE68A;}
+  .real-tag{display:inline-flex;align-items:center;gap:5px;background:#ECFDF5;color:#065F46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.red .callout-title{color:var(--red);}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--code-bg);color:var(--code-text);padding:7px 11px;border-radius:6px;margin:7px 0;display:block;white-space:pre;}
+  .q-options{padding:12px 18px;display:grid;gap:7px;}
+  .opt{display:flex;align-items:center;gap:9px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13.5px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:22px;height:22px;border-radius:6px;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 18px 12px;padding:9px 13px;border-radius:8px;font-size:12.5px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .btn{padding:10px 22px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#BE185D);color:#fff;border-radius:14px;padding:28px;text-align:center;display:none;margin-top:18px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:50px;font-weight:800;} .score-box .score-msg{font-size:15px;opacity:.9;margin-top:5px;} .score-box .score-detail{font-size:12.5px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#B45309,#BE185D);padding:24px;border-radius:10px;color:#fff;margin-bottom:18px;} .task-hero h3{color:#fff;margin:0 0 6px;font-size:17px;} .task-hero p{margin:0;opacity:.92;font-size:13.5px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:3px 11px;border-radius:99px;font-size:11px;font-weight:600;margin-top:10px;margin-right:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:5px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:14px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .certificate{border:3px solid var(--accent);border-radius:16px;padding:32px;text-align:center;background:linear-gradient(135deg,#FFFBEB,#FDF2F8);margin-top:26px;}
+  .certificate .cert-title{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+  .certificate h2{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--accent2);margin-bottom:8px;}
+  .cert-skills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;}
+  .cert-skill{background:var(--accent);color:#fff;padding:4px 12px;border-radius:99px;font-size:11.5px;font-weight:600;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:24px 40px;text-align:center;margin-top:32px;}
+  .day-footer .series{font-size:12.5px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:40px 20px 36px;}.section-body{padding:16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Condensed · Day 3 of 3 · Final</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">100%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:100%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Condensed Course · Day 3 · Final</div>
+  <h1>Multi-Plot Grids &amp; <span>Capstone</span></h1>
+  <p>Explore an entire dataset in one call, facet by category, then combine 3 days of functions into one polished analysis.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🔗 pairplot()</span>
+    <span class="hero-pill">🔲 relplot() Faceting</span>
+    <span class="hero-pill">🎨 clustermap() (Bonus)</span>
+    <span class="hero-pill">📊 15 MCQs</span>
+    <span class="hero-pill">🏆 Capstone Analysis</span>
+  </div>
+</div>
+
+<div class="grad-banner">
+  <p>🎓 <strong>Final day!</strong> These two functions are what most analysts reach for first when exploring a brand-new dataset.</p>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔗</div>
+    <div><h2>sns.pairplot() — Every Variable vs Every Other, Instantly</h2><p>The fastest way to explore a new dataset</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.pairplot(data=df, hue=, vars=, diag_kind='kde')</div>
+        <div class="func-desc">Builds a grid: every numeric column plotted against every other, plus each column's own distribution on the diagonal.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params">
+          <code>hue</code> = color by a category &nbsp;|&nbsp; <code>vars</code> = limit to specific columns (avoid clutter) &nbsp;|&nbsp; <code>diag_kind</code> = 'hist' or 'kde' for the diagonal
+        </div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A new analyst joining a bank's fraud team gets a fresh dataset of 6 transaction features — one <code>pairplot()</code> call reveals every relationship AND every distribution AND how fraud vs non-fraud cases differ, in under a second, instead of building 15+ separate charts manually.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>penguins = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'penguins'</span>).<span class="fn">dropna</span>()
+
+<span class="op">sns</span>.<span class="fn">pairplot</span>(penguins,
+             hue=<span class="st">'species'</span>,
+             vars=[<span class="st">'bill_length_mm'</span>,<span class="st">'bill_depth_mm'</span>,<span class="st">'flipper_length_mm'</span>],
+             diag_kind=<span class="st">'kde'</span>)
+<span class="cm"># One call → a full grid of scatter plots (off-diagonal) + density curves (diagonal),
+# colored by species — reveals which measurements best separate the 3 species</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout yellow">
+      <div class="callout-title">⚠️ Limit vars= for Datasets With Many Columns</div>
+      With 10+ numeric columns, pairplot() creates a 10×10 grid — 100 tiny, hard-to-read panels. Use <code>vars=[...]</code> to select just the 3-6 most relevant columns for a readable, useful result.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🔲</div>
+    <div><h2>Faceting — col= and row= on Any Figure-Level Function</h2><p>Automatic small-multiples, no manual subplot loop</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.relplot(data=df, x=, y=, col=, row=, kind='scatter')</div>
+        <div class="func-desc">Automatically splits your chart into a GRID of subplots, one per category — instead of writing a manual loop.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>col</code> = split into separate columns by this category &nbsp;|&nbsp; <code>row</code> = ALSO split into rows by a second category</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A retailer comparing bill-vs-tip patterns separately for Lunch/Dinner AND Male/Female — instead of 4 manual charts, one line of code builds a clean 2×2 grid automatically.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="op">sns</span>.<span class="fn">relplot</span>(data=tips, x=<span class="st">'total_bill'</span>, y=<span class="st">'tip'</span>,
+            col=<span class="st">'time'</span>, row=<span class="st">'sex'</span>, hue=<span class="st">'smoker'</span>,
+            kind=<span class="st">'scatter'</span>, height=<span class="nm">4</span>)
+<span class="cm"># Produces a 2×2 grid (2 times × 2 sexes), colored further by smoker status</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 This Works on displot() and catplot() Too</div>
+      col=/row= faceting isn't unique to relplot() — it works the SAME way on <code>sns.displot()</code> (distributions) and <code>sns.catplot()</code> (categorical charts, with kind='box'/'violin'/'bar' etc). Learn the pattern once, use it everywhere.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">🎨</div>
+    <div><h2>sns.clustermap() — Bonus: Auto-Grouping Similar Rows</h2><p>A heatmap that reorders itself to reveal hidden clusters</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.clustermap(df.corr(), annot=True, cmap='coolwarm')</div>
+        <div class="func-desc">Like heatmap(), but automatically REORDERS rows/columns so similar ones sit next to each other.</div>
+      </div>
+      <div class="func-body">
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A retail analyst with 20 product categories' sales data uses clustermap() to automatically discover which categories tend to sell together seasonally — the reordering visually groups them without manual sorting.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>numeric_cols = penguins.<span class="fn">select_dtypes</span>(include=<span class="st">'number'</span>)
+<span class="op">sns</span>.<span class="fn">clustermap</span>(numeric_cols.<span class="fn">corr</span>(), annot=<span class="kw">True</span>, cmap=<span class="st">'coolwarm'</span>, center=<span class="nm">0</span>)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 15 Questions</h2><p>pairplot, faceting, clustermap. Need 12/15 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">15</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">12</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPSTONE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#B45309,#BE185D)">🏆</div>
+    <div><h2>Capstone — Full Penguin Species Analysis</h2><p>Estimated time: 55–70 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐⭐ &nbsp;|&nbsp; Uses all 3 days</p></div>
+  </div>
+  <div class="section-body">
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>Using the built-in 'penguins' dataset, run a complete exploratory analysis a research team could actually use, combining every function from this condensed course.</p>
+      <span class="cap-badge">Day 1: scatterplot, histplot</span>
+      <span class="cap-badge">Day 2: boxplot, violinplot, heatmap</span>
+      <span class="cap-badge">Day 3: pairplot, faceted relplot</span>
+    </div>
+
+    <ul class="checklist">
+      <li>sns.set_theme() applied globally</li>
+      <li>pairplot() of key measurements, colored by species, to get the full overview first</li>
+      <li>Faceted relplot(): bill measurements by species (col), split by sex (hue)</li>
+      <li>Boxplot or violinplot: body mass by species</li>
+      <li>Heatmap: correlation matrix of all numeric measurements</li>
+      <li>A short written conclusion: which measurement(s) best distinguish the 3 species?</li>
+    </ul>
+
+    <div class="callout" style="margin-top:14px;">
+      <div class="callout-title">🎯 Stretch Challenge</div>
+      Try clustermap() on the correlation matrix and compare whether the auto-reordering reveals anything the plain heatmap didn't make as obvious.
+    </div>
+
+    <div class="certificate">
+      <div class="cert-title">Certificate of Completion</div>
+      <h2>Seaborn Condensed Course</h2>
+      <p style="font-size:13.5px;color:var(--muted);max-width:480px;margin:0 auto;">3 focused days, essential functions only, every one explained with a real business scenario.</p>
+      <div class="cert-skills">
+        <span class="cert-skill">✓ set_theme/scatterplot/lineplot</span>
+        <span class="cert-skill">✓ histplot/kdeplot</span>
+        <span class="cert-skill">✓ box/violin/barplot</span>
+        <span class="cert-skill">✓ regplot/heatmap</span>
+        <span class="cert-skill">✓ pairplot/Faceting</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Condensed Course — Complete! 🎉</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Setup + Relational &amp; Distribution</span>
+    <span class="day-pill done">Day 2 · Categorical &amp; Regression</span>
+    <span class="day-pill done active">Day 3 · Multi-Plot Grids &amp; Capstone ✓</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"sns.pairplot(penguins, hue='species', vars=['bill_length_mm','bill_depth_mm','flipper_length_mm'])",q:"What does this single function call produce?",opts:["A single scatter plot of just 2 variables","A full GRID showing every pairwise combination of the 3 specified variables as scatter plots (off-diagonal), plus each variable's own distribution (diagonal) — all colored by species — in ONE call, replacing what would take many manual charts otherwise", "Only a correlation heatmap, no scatter plots","This causes an error since vars= requires exactly 2 columns"],ans:1,explain:"pairplot() automatically builds an N×N grid (N = number of vars specified) where off-diagonal cells show scatter plots for every pair of variables, and diagonal cells show each variable's own distribution — all with hue-based coloring — providing a comprehensive overview of relationships and distributions in one single function call."},
+  {q:"Why does the lesson recommend using vars=[...] to LIMIT pairplot() to a specific subset of columns, rather than always using ALL numeric columns in a dataset?",opts:["vars= is required syntax and pairplot() cannot function without it", "With MANY numeric columns (say 10+), pairplot() would create a huge N×N grid (like 10×10 = 100 tiny panels) that becomes cramped, hard to read, and slow to render; limiting to the most analytically RELEVANT 3-6 columns via vars= produces a much more readable, useful, and faster result", "Using vars= makes pairplot() run measurably slower than using all columns", "This recommendation only applies to datasets with fewer than 3 columns"],ans:1,explain:"With many numeric columns, pairplot()'s N×N grid can quickly become impractically large (e.g., 100 tiny, cramped panels for 10 columns) — both hard to visually interpret and slower to render. Selecting just the most analytically relevant subset of columns via vars= produces a more focused, readable, and practically useful result."},
+  {code:"sns.relplot(data=tips, x='total_bill', y='tip', col='time', row='sex')",q:"What layout does this specific combination of col= and row= produce?",opts:["A single combined chart with all data overlaid","A GRID of separate subplot panels — one panel for EACH combination of 'time' value AND 'sex' value (e.g., if time has 2 values and sex has 2 values, this produces a 2×2 grid of 4 total panels)", "Exactly 1 panel, since col= and row= cancel each other out","This causes a syntax error since you cannot use both col= and row= together"],ans:1,explain:"When BOTH col= and row= are specified, relplot() (and other figure-level functions) create a full GRID with one panel for EVERY COMBINATION of the row and column category values. With 2 values for 'time' and 2 for 'sex', this produces a 2×2 grid of 4 separate panels, each showing only the data matching that specific row/column combination."},
+  {q:"What is the key advantage of using col=/row= faceting (on relplot, displot, or catplot) instead of manually writing a for-loop with plt.subplots() to create the same grid of charts?",opts:["There is no practical advantage — both approaches require identical amounts of code", "Faceting handles ALL the grid layout, spacing, shared axis scaling, and per-panel filtering AUTOMATICALLY in one function call — dramatically less code than manually looping through category combinations, creating each subplot, filtering the data for that combination, and plotting it yourself", "Manual for-loops with plt.subplots() are always faster to execute at runtime", "Faceting only works with numeric x/y data, unlike manual subplot loops"],ans:1,explain:"Building the equivalent grid manually would require writing a loop that iterates through every row/column category combination, creates each individual subplot, FILTERS the DataFrame for just that combination's data, and plots it — several lines of repetitive boilerplate code. Seaborn's col=/row= faceting handles ALL of this automatically in one function call, dramatically reducing the code needed for a very common analytical pattern."},
+  {q:"According to the lesson, which OTHER Seaborn figure-level functions (besides relplot) support the SAME col=/row= faceting syntax?",opts:["No other functions support this same faceting syntax","sns.displot() (for distribution charts) and sns.catplot() (for categorical charts, using kind='box'/'violin'/'bar' etc.) — both support the identical col=/row= faceting pattern, meaning the faceting SKILL learned here transfers directly to distribution and categorical analysis too", "Only axes-level functions like boxplot() support faceting, not figure-level ones","Faceting only works with scatter-type charts, never histograms or box plots"],ans:1,explain:"The col=/row= faceting pattern is consistently available across Seaborn's figure-level functions — not just relplot(), but also displot() (for histograms/KDE/ECDF distributions) and catplot() (for categorical charts like box/violin/bar via its kind= parameter). Learning this faceting pattern once, as taught here, transfers directly to building faceted grids of ANY of these chart types."},
+  {code:"sns.clustermap(numeric_cols.corr(), annot=True, cmap='coolwarm')",q:"What does clustermap() do DIFFERENTLY from a plain sns.heatmap() on the same data?",opts:["clustermap() and heatmap() are functionally identical with no differences", "clustermap() additionally applies HIERARCHICAL CLUSTERING to automatically REORDER the rows and columns so that SIMILAR ones are placed adjacent to each other, potentially revealing groupings/patterns that the ORIGINAL (unsorted) order in a plain heatmap() would not make as visually obvious", "clustermap() can only display exactly 2x2 matrices, unlike heatmap()", "clustermap() removes all correlation values below a certain threshold automatically"],ans:1,explain:"While both display similar color-coded grid data, clustermap() ADDITIONALLY applies hierarchical clustering algorithms to REORDER rows/columns, grouping similar ones together — this can reveal natural groupings or patterns (like which variables tend to move together) that might not be immediately obvious when rows/columns are left in their original, unsorted order, as a plain heatmap() would show them."},
+  {q:"In the capstone's penguin analysis, why would building a pairplot() FIRST (before more targeted charts) be a sensible workflow choice?",opts:["Workflow order has no actual bearing on the quality of the resulting analysis", "A pairplot() serves as an efficient EXPLORATORY first step — quickly revealing ALL pairwise relationships and distributions across key variables at once, helping identify which SPECIFIC relationships (e.g., which measurement pair most clearly separates the species) are worth investigating in MORE targeted detail with subsequent charts (like a dedicated faceted relplot or boxplot)", "pairplot() must always be technically run last in any Seaborn analysis", "Building charts in any particular order would produce completely different final numeric results"],ans:1,explain:"Starting with pairplot() provides an efficient, comprehensive FIRST OVERVIEW of all pairwise relationships and distributions at once — this broad initial scan helps identify which SPECIFIC patterns or relationships (e.g., 'flipper length seems to cleanly separate species') are most worth investigating further with more targeted, deeper analysis (like a dedicated faceted chart or box plot focusing specifically on that relationship) — a sensible, efficient exploratory-to-targeted analytical workflow."},
+  {q:"Why might a research team specifically care about identifying WHICH physical measurement(s) 'best distinguish' the 3 penguin species, as the capstone's concluding question asks?",opts:["This question has no practical scientific or analytical value", "Identifying which measurements most clearly SEPARATE the species (show minimal overlap between species' value ranges) has genuine practical value — for example, informing which measurements would be MOST USEFUL for quickly/reliably classifying an unknown penguin's species in the field, or for building an automated species-classification model using the fewest, most informative measurements", "All measurements are always equally useful for distinguishing species with no variation","This question can only be answered using clustermap(), no other Seaborn function"],ans:1,explain:"Identifying which specific measurements most clearly separate species groups (with minimal value-range overlap between species) has genuine PRACTICAL research value — such measurements would be the most USEFUL and EFFICIENT choices for quickly classifying an unknown specimen in the field, or for building a streamlined classification model that relies on the fewest, most informative measurements rather than needing to measure everything. This kind of 'which features best distinguish groups' question is a common, practically important type of exploratory analysis question across many real-world scientific and business contexts."},
+  {q:"Reflecting on the full 3-day condensed Seaborn course, what is the PROGRESSION in complexity/scope from Day 1 to Day 3?",opts:["There is no meaningful progression; all 3 days cover equally simple, isolated single-chart functions", "Day 1 covers SINGLE relationships and distributions (one x, one y, maybe hue/size); Day 2 covers GROUP comparisons and statistical relationships (categories, regression fits, correlation); Day 3 covers WHOLE-DATASET exploration (pairplot showing everything at once) and AUTOMATIC MULTI-PANEL composition (faceting) — progressing from single charts toward increasingly comprehensive, automated multi-chart analysis", "Day 3's functions are strictly simpler and less powerful than Day 1's functions", "The 3 days cover completely unrelated, disconnected topics with no logical progression"],ans:1,explain:"The course's 3-day arc reflects a deliberate progression: Day 1 establishes SINGLE-CHART fundamentals (one relationship or one distribution at a time, with basic hue/size encoding); Day 2 extends this to GROUP comparisons and statistical relationships (comparing categories, fitting regression lines, correlation analysis); Day 3 culminates in WHOLE-DATASET exploration (pairplot examining everything at once) and AUTOMATED multi-panel composition (faceting, replacing manual subplot loops) — moving from individual chart mastery toward increasingly comprehensive, efficient, automated analytical workflows appropriate for real dataset exploration."},
+  {q:"Why does this condensed 3-day format explicitly favor 'practical business scenario for every function' over broader theoretical coverage of Seaborn's full capabilities?",opts:["This approach provides strictly less total value than a comprehensive theoretical course", "The condensed format prioritizes getting a learner to PRACTICAL, IMMEDIATELY-APPLICABLE competency as efficiently as possible — pairing each function directly with a concrete real-world scenario helps learners understand not just HOW a function works, but WHEN and WHY they'd actually reach for it in real analytical work, which is often the harder, more valuable skill to build than memorizing syntax alone", "Practical scenarios are only included for entertainment value with no learning benefit", "This approach makes the course technically less accurate than a purely theoretical one"],ans:1,explain:"As explicitly requested for this condensed format, pairing each function directly with a REAL business scenario (rather than purely abstract syntax explanation) helps build the often-harder skill of knowing WHEN and WHY to reach for a specific tool in real analytical work — not just memorizing what parameters exist. This trades some theoretical breadth/depth for practical, applied competency, aiming to get learners productively using these tools on real problems as efficiently as possible."},
+  {q:"What would be the most likely NEXT logical step for a learner who has now completed both the condensed Matplotlib AND Seaborn courses?",opts:["There is no logical next step; visualization learning is now fully complete with no further application needed", "Apply BOTH sets of skills TOGETHER on a real dataset of personal interest (work data, a hobby, public datasets) — since Seaborn is built ON TOP OF Matplotlib, combining Seaborn's convenient statistical functions with Matplotlib's fine-grained customization (annotations, twin axes, custom styling) represents the natural, practical culmination of both condensed courses, moving from guided exercises to self-directed real-world application", "Learners should immediately forget everything from the Matplotlib course before starting any Seaborn work", "The only valid next step is enrolling in a completely unrelated area of study"],ans:1,explain:"Since Seaborn is explicitly built ON TOP OF Matplotlib (every Seaborn plot ultimately produces Matplotlib Figure/Axes objects that can be further customized with Matplotlib functions), the natural culmination of completing BOTH condensed courses is applying them TOGETHER on a self-chosen real dataset — using Seaborn's convenient, statistically-aware functions for the core analysis, then layering in Matplotlib techniques (annotations, twin axes, custom styling, export settings) for final polish — moving from structured, guided coursework toward independent, practical application on problems that genuinely matter to the learner."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review pairplot and faceting, then try again! 📚"],[50,75,"Good progress! Focus on clustermap and workflow order. 💪"],[75,90,"Strong finish! You've completed the condensed course. 🎉"],[90,101,"Perfect score — Seaborn Condensed Master! 🏆🌊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — Course Complete!`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

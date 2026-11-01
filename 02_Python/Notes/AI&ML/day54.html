@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 54 — Missing & Imbalanced Data</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:130px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 16px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:10px; margin-right:8px;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:13px;}
+.result-code{background:#0f151d; padding:10px 14px; border-radius:6px; margin-top:8px; overflow-x:auto;}
+table.df-table{border-collapse:collapse; width:100%; font-size:13px; margin-top:6px;}
+table.df-table th, table.df-table td{border:1px solid #3a4658; padding:6px 10px; text-align:center;}
+table.df-table th{background:#2a3442; color:#f0dcc8;}
+table.df-table tr:nth-child(even){background:#16202b;}
+td.missing{color:#e8837a; font-style:italic;}
+.balance-row{display:flex; gap:10px; align-items:center; margin:10px 0;}
+.balance-row input{width:100px; padding:8px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono);}
+.balance-bar{display:flex; height:36px; border-radius:6px; overflow:hidden; margin:14px 0;}
+.balance-bar .maj{background:#c05621;}
+.balance-bar .min{background:#2f6d4f;}
+.balance-bar div{display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--font-mono); font-size:12px;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 54 of 210 · Phase 2: Data Handling Libraries</span>
+    <h1>Missing & Imbalanced Data</h1>
+    <div class="subtitle">~2 hours · The two data problems you'll meet in almost every real dataset</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Real datasets are never perfectly clean. Missing values (blank cells) and imbalanced classes (one outcome vastly outnumbering another, like fraud cases vs. normal transactions) are two of the most common real-world data problems — and both can silently break or mislead a model if you don't handle them deliberately.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Missing data — detecting it</h2>
+  <div class="code">import pandas as pd
+df = pd.read_csv("customers.csv")
+
+print(df.isnull())          # True/False for every cell
+print(df.isnull().sum())    # count of missing values PER COLUMN</div>
+  <p>Missing values in Pandas show up as <strong>NaN</strong> ("Not a Number"). <code>.isnull().sum()</code> is almost always the first thing you run on a new dataset — it tells you immediately which columns have gaps, and how many.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Two strategies: dropna() and fillna()</h2>
+  <div class="code">df_clean = df.dropna()                          # remove any row with a missing value
+df_filled = df.fillna(0)                         # replace missing values with 0
+df_filled2 = df["age"].fillna(df["age"].mean())  # fill with the column's mean (Day 6!)</div>
+  <p><strong>dropna()</strong> is simple but throws away data — sometimes acceptable, sometimes wasteful if it removes a large chunk of your dataset. <strong>fillna()</strong> keeps every row but requires you to choose a sensible replacement value — filling a numeric column with its own mean (exactly Day 6's concept) is a common, reasonable default.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Real-world example (filling missing ages)</h2>
+  <div class="panel">
+    <p class="example-tag">A genuinely typical cleaning step</p>
+    <div class="code">df = pd.read_csv("customers.csv")
+print(df.isnull().sum())
+# name           0
+# age            3
+# order_value    0
+
+mean_age = df["age"].mean()
+df["age"] = df["age"].fillna(mean_age)
+print(df.isnull().sum())
+# age            0   — all filled</div>
+    <p>Three customers had no recorded age — rather than losing those rows entirely, filling with the average age keeps the data usable while making a reasonable, clearly-stated assumption.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Imbalanced data — the classification trap</h2>
+  <div class="panel">
+    <p class="example-tag">One of the most important lessons before Phase 3</p>
+    <p>Imagine a fraud detection dataset: 950 normal transactions, 50 fraudulent ones. A "lazy" model that <strong>always predicts "not fraud"</strong>, never actually checking anything, would still be <strong>95% accurate</strong> — because it's right on all 950 normal cases and only wrong on the 50 fraud cases.</p>
+    <div class="code">accuracy = 950 / 1000 = 0.95   # 95% "accurate" — but completely useless!</div>
+    <p><strong>This is exactly why accuracy alone is a dangerous, misleading metric on imbalanced data.</strong> A model can look great on paper while never actually catching the thing you built it for. You'll formally meet better metrics (precision, recall) in Phase 3 — for now, the key lesson is: <strong>always check your class balance before trusting an accuracy number.</strong></p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Checking for imbalance</h2>
+  <div class="code">print(df["fraud"].value_counts())
+# False    950
+# True      50</div>
+  <p><code>.value_counts()</code> is the standard, fast way to check how many rows fall into each category — run this on any classification target column before doing anything else.</p>
+</section>
+
+<section>
+  <h2><span class="num">07</span> A preview of fixes (covered fully in Phase 3)</h2>
+  <div class="panel">
+    <p><strong>Oversampling</strong> — duplicate (or synthetically generate) more examples of the minority class.</p>
+    <p><strong>Undersampling</strong> — remove some examples of the majority class to balance things out.</p>
+    <p><strong>Class weights</strong> — tell the model to "pay more attention" to mistakes on the minority class during training.</p>
+    <p>You don't need to implement these yet — just recognize the vocabulary and the underlying problem they solve, since you'll meet them properly once you start training classifiers.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Filling missing values with 0 without thinking about meaning.</strong> An age of 0, or a price of 0, might be nonsensical for your data — 0 is a value with real meaning, not a neutral placeholder.</p>
+    <p><strong>Mistake 2 — Calling dropna() without checking how much data you'd lose.</strong> Always check <code>df.isnull().sum()</code> and the row count before and after — dropping 40% of your rows might be a serious problem.</p>
+    <p><strong>Mistake 3 — Trusting accuracy alone on an imbalanced dataset.</strong> As shown above, a 95%-accurate model can be worthless — always check the class balance first.</p>
+    <p><strong>Mistake 4 — Forgetting to check value_counts() before modeling.</strong> Skipping this step means you might not even realize your data is imbalanced until your model mysteriously fails on the minority class in production.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — Missing Data Playground</h2>
+  <div class="solver">
+    <h3>Leave some cells blank to simulate missing values</h3>
+    <textarea id="csvInput">name,age,order_value
+Asha,28,1200
+Rohan,,800
+Priya,25,
+Meera,41,950
+Karan,,2100</textarea>
+    <button onclick="showMissing()">df.isnull().sum()</button>
+    <button onclick="showDropna()">Simulate dropna()</button>
+    <button onclick="showFillna()">Simulate fillna(mean)</button>
+    <div class="solver-result" id="missingResult"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Try it yourself — Class Imbalance Visualizer</h2>
+  <div class="solver">
+    <h3>Enter counts for two classes</h3>
+    <div class="balance-row">
+      <label>Majority class count:</label>
+      <input type="number" id="majCount" value="950">
+      <label>Minority class count:</label>
+      <input type="number" id="minCount" value="50">
+      <button onclick="showBalance()">Analyze</button>
+    </div>
+    <div id="balanceResult"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 55 begins Matplotlib — visualizing your data with charts, which makes spotting exactly these kinds of issues (missing patterns, imbalance) far more intuitive than reading numbers alone.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 54 of 210 · AI & ML Study Plan · Phase 2: Data Handling Libraries</div>
+</footer>
+
+<script>
+function parseCSV(text){
+  const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
+  const headers = lines[0];
+  const rows = lines.slice(1);
+  return {headers, rows};
+}
+function renderTable(headers, rows){
+  let html = '<table class="df-table"><tr><th></th>' + headers.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+  rows.forEach((r, i) => {
+    html += '<tr><th>' + i + '</th>' + r.map(c=>`<td class="${c===''?'missing':''}">${c===''?'NaN':c}</td>`).join('') + '</tr>';
+  });
+  html += '</table>';
+  return html;
+}
+function showMissing(){
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  let out = '';
+  headers.forEach((h, idx) => {
+    const count = rows.filter(r => r[idx] === '').length;
+    out += `${h.padEnd(15)} ${count}\n`;
+  });
+  document.getElementById('missingResult').innerHTML = `<div>df.isnull().sum()</div><div class="result-code" style="white-space:pre;">${out}</div>${renderTable(headers, rows)}`;
+}
+function showDropna(){
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const clean = rows.filter(r => r.every(c => c !== ''));
+  document.getElementById('missingResult').innerHTML = `<div>df.dropna()  — ${clean.length} of ${rows.length} rows kept</div><div class="result-code">${renderTable(headers, clean)}</div>`;
+}
+function showFillna(){
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const filled = rows.map(r => r.slice());
+  headers.forEach((h, idx) => {
+    const nums = rows.map(r=>r[idx]).filter(v=>v!=='').map(Number);
+    if(nums.length === rows.filter(r=>r[idx]!=='').length && nums.every(n=>!isNaN(n))){
+      const mean = (nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(1);
+      filled.forEach(r => { if(r[idx]==='') r[idx] = mean + ' (filled)'; });
+    }
+  });
+  document.getElementById('missingResult').innerHTML = `<div>df.fillna(df.mean())</div><div class="result-code">${renderTable(headers, filled)}</div>`;
+}
+showMissing();
+
+function showBalance(){
+  const maj = parseFloat(document.getElementById('majCount').value) || 0;
+  const min = parseFloat(document.getElementById('minCount').value) || 0;
+  const total = maj + min;
+  const majPct = ((maj/total)*100).toFixed(1);
+  const minPct = ((min/total)*100).toFixed(1);
+  const html = `
+    <div class="balance-bar">
+      <div class="maj" style="width:${majPct}%;">${majPct}%</div>
+      <div class="min" style="width:${minPct}%;">${minPct}%</div>
+    </div>
+    <p style="font-family:var(--font-mono); font-size:13px;">
+    A model that ALWAYS predicts the majority class would score:<br>
+    <strong style="color:var(--accent); font-size:18px;">${majPct}% accuracy</strong><br>
+    ...while catching <strong style="color:var(--bad);">0%</strong> of the minority class it presumably exists to detect.
+    </p>
+  `;
+  document.getElementById('balanceResult').innerHTML = html;
+}
+showBalance();
+
+const quizData = [
+  { q: "df.isnull().sum() tells you:", opts: ["The total number of rows","How many missing values exist in each column","The sum of all numeric values","Nothing useful"], correct: 1, explain: "It's a per-column count of missing (NaN) values." },
+  { q: "What does df.dropna() do?", opts: ["Fills missing values with 0","Removes rows containing any missing value","Removes columns only","Does nothing"], correct: 1, explain: "By default, it removes any row with at least one NaN." },
+  { q: "Why might filling a missing 'age' column with 0 be a bad idea?", opts: [
+      "0 is always the correct choice",
+      "An age of 0 has real, different meaning (a newborn) and doesn't represent 'missing' — it could badly distort analysis",
+      "fillna() doesn't accept numbers",
+      "There's no problem with this approach"
+    ], correct: 1, explain: "0 isn't a neutral placeholder here — it changes the meaning of the data." },
+  { q: "A dataset has 990 'normal' and 10 'fraud' cases. A model that always predicts 'normal' would score what accuracy?", opts: ["50%","99%","10%","0%"], correct: 1, explain: "990/1000 = 99% — despite never actually detecting fraud." },
+  { q: "Why is high accuracy potentially misleading on imbalanced data?", opts: [
+      "Accuracy is always a perfect metric",
+      "A model can achieve high accuracy simply by favoring the majority class, while completely failing at the minority class",
+      "Accuracy can't be calculated on imbalanced data",
+      "This only applies to regression, not classification"
+    ], correct: 1, explain: "This is exactly the trap illustrated by the fraud detection example." },
+  { q: "What does .value_counts() show you?", opts: ["The mean of a column","How many rows fall into each unique category/value","The column names","Missing value counts"], correct: 1, explain: "It's the standard tool for checking class balance in a categorical column." },
+  { q: "Which is NOT one of the standard approaches to handling imbalanced data?", opts: ["Oversampling the minority class","Undersampling the majority class","Using class weights","Deleting the minority class entirely"], correct: 3, explain: "Deleting the minority class would remove the very thing you're trying to detect — the opposite of a real fix." },
+  { q: "Why is filling a numeric column with its own mean often a reasonable default?", opts: [
+      "It's not reasonable at all",
+      "It keeps the row usable and introduces a plausible, central estimate rather than an arbitrary placeholder",
+      "It always improves model accuracy",
+      "Mean filling never changes the data's statistics"
+    ], correct: 1, explain: "It's a reasonable, common default — though it's still an assumption worth being aware of, not a perfect fix." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

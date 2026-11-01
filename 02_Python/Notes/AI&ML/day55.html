@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 55 — Matplotlib: Line & Bar Charts</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:110px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.solver input[type=text]{width:100%; padding:8px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-body); margin:6px 0;}
+.solver-row{display:flex; gap:10px; align-items:center; margin:10px 0; flex-wrap:wrap;}
+.solver select, .solver button{padding:8px 14px; border-radius:4px; border:1px solid #444; font-family:var(--font-body); cursor:pointer;}
+.solver select{background:#2a3442; color:#fff;}
+.solver button{background:var(--accent); color:#fff; border:none; font-weight:bold;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.result-code{background:#0f151d; padding:10px 14px; border-radius:6px; margin-top:10px; font-family:var(--font-mono); font-size:13px; white-space:pre-wrap;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 55 of 210 · Phase 2: Data Handling Libraries</span>
+    <h1>Matplotlib: Line & Bar Charts</h1>
+    <div class="subtitle">~2 hours · Seeing your data, not just reading it</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Numbers in a table hide patterns that jump out instantly in a chart — trends, outliers, gaps. Before modeling anything, real data work almost always includes a visualization step, and after modeling, you'll plot results to explain them. Matplotlib is the foundational Python plotting library — even fancier tools (Seaborn, Plotly) are typically built on top of it or designed to feel similar.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> The basic setup</h2>
+  <div class="code">import matplotlib.pyplot as plt
+
+plt.plot([1, 2, 3, 4], [10, 25, 15, 30])
+plt.show()</div>
+  <p><code>plt</code> is the standard alias, exactly like <code>np</code> and <code>pd</code> before it. <code>plt.show()</code> displays the chart — in scripts you must call it explicitly; in Jupyter notebooks or Colab, charts often display automatically, but calling it is still good habit.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Line charts — for trends over a sequence</h2>
+  <div class="code">days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+sales = [1200, 1500, 900, 1800, 2000, 1100, 1700]
+
+plt.plot(days, sales)
+plt.xlabel("Day")
+plt.ylabel("Sales (₹)")
+plt.title("Weekly Sales")
+plt.show()</div>
+  <p>Line charts are ideal when the x-axis represents something continuous or sequential — time, in this case. The line visually connects each point, emphasizing the trend from one value to the next.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Bar charts — for comparing categories</h2>
+  <div class="code">categories = ["Electronics", "Clothing", "Groceries"]
+totals = [45000, 32000, 28000]
+
+plt.bar(categories, totals)
+plt.xlabel("Category")
+plt.ylabel("Total Sales (₹)")
+plt.title("Sales by Category")
+plt.show()</div>
+  <p>Bar charts are better for comparing distinct, unordered categories — there's no "trend" between "Electronics" and "Clothing," so a line connecting them would be misleading. This choice (line vs. bar) matters more than it might seem: it's about matching the chart to what kind of comparison you're actually making.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Real-world example (reconnects Day 30/34's sales data)</h2>
+  <div class="panel">
+    <p class="example-tag">The exact dataset from earlier days, finally visualized</p>
+    <div class="code">daily_sales = [1200, 1500, 900, 1800, 2000, 1100, 1700]
+days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+
+plt.plot(days, daily_sales, marker="o")
+plt.title("Weekly Sales Trend")
+plt.xlabel("Day")
+plt.ylabel("Sales (₹)")
+plt.show()</div>
+    <p>The <code>marker="o"</code> argument adds a visible dot at each data point — a small but genuinely useful touch for readability. Looking at this chart, the Wednesday dip and weekend pattern are immediately obvious — far faster than scanning the raw list of numbers.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Mismatched x and y lengths.</strong> <code>plt.plot(x, y)</code> requires x and y to have the exact same number of values, or it raises an error.</p>
+    <p><strong>Mistake 2 — Using a line chart for unordered categories.</strong> Connecting "Electronics" to "Clothing" with a line implies a trend or order that doesn't exist — use a bar chart instead.</p>
+    <p><strong>Mistake 3 — Forgetting axis labels and a title.</strong> A chart with unlabeled axes is often meaningless to anyone (including future you) looking at it later — always label what's being shown.</p>
+    <p><strong>Mistake 4 — Forgetting plt.show() in a script.</strong> Without it, a chart may simply never appear when running a plain Python file (behavior differs slightly in notebooks, but the habit is worth keeping).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Try it yourself — Chart Builder</h2>
+  <div class="solver">
+    <h3>Enter labels and values, pick a chart type</h3>
+    <textarea id="chartData">Mon,1200
+Tue,1500
+Wed,900
+Thu,1800
+Fri,2000
+Sat,1100
+Sun,1700</textarea>
+    <div class="solver-row">
+      <label>Chart type:</label>
+      <select id="chartType">
+        <option value="line">Line</option>
+        <option value="bar">Bar</option>
+      </select>
+      <input type="text" id="chartTitle" value="Weekly Sales" placeholder="Title" style="flex:1;">
+      <button onclick="drawChart()">Plot</button>
+    </div>
+    <canvas id="plot" width="620" height="320"></canvas>
+    <div class="result-code" id="codeOutput"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 56 covers scatter plots and histograms — for visualizing the relationship between two variables, and the shape/distribution of a single variable (directly reconnecting to Phase 1's normal distribution week).
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 55 of 210 · AI & ML Study Plan · Phase 2: Data Handling Libraries</div>
+</footer>
+
+<script>
+function parseData(){
+  return document.getElementById('chartData').value.trim().split('\n').map(line => {
+    const [label, val] = line.split(',').map(s=>s.trim());
+    return {label, val: parseFloat(val)};
+  }).filter(d => d.label && !isNaN(d.val));
+}
+
+function drawChart(){
+  const data = parseData();
+  const type = document.getElementById('chartType').value;
+  const title = document.getElementById('chartTitle').value || 'Chart';
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  const padding = 50;
+  const maxVal = Math.max(...data.map(d=>d.val)) * 1.15;
+  const plotW = w - padding*2;
+  const plotH = h - padding*2;
+
+  // axes
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, h-padding); ctx.lineTo(w-padding, h-padding); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, h-padding); ctx.stroke();
+
+  // title
+  ctx.fillStyle = '#1b2430'; ctx.font = 'bold 15px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText(title, w/2, 26);
+
+  const n = data.length;
+  const slotW = plotW / n;
+
+  ctx.font = '11px monospace';
+  ctx.fillStyle = '#6b6459';
+
+  if(type === 'bar'){
+    data.forEach((d, i) => {
+      const barH = (d.val/maxVal) * plotH;
+      const x = padding + i*slotW + slotW*0.15;
+      const bw = slotW*0.7;
+      const y = h - padding - barH;
+      ctx.fillStyle = '#c05621';
+      ctx.fillRect(x, y, bw, barH);
+      ctx.fillStyle = '#1b2430'; ctx.textAlign = 'center';
+      ctx.fillText(d.label, x+bw/2, h-padding+16);
+      ctx.fillText(d.val, x+bw/2, y-6);
+    });
+  } else {
+    ctx.strokeStyle = '#c05621'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    data.forEach((d, i) => {
+      const x = padding + i*slotW + slotW/2;
+      const y = h - padding - (d.val/maxVal)*plotH;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    data.forEach((d, i) => {
+      const x = padding + i*slotW + slotW/2;
+      const y = h - padding - (d.val/maxVal)*plotH;
+      ctx.fillStyle = '#2f6d4f';
+      ctx.beginPath(); ctx.arc(x,y,5,0,2*Math.PI); ctx.fill();
+      ctx.fillStyle = '#1b2430'; ctx.textAlign = 'center';
+      ctx.fillText(d.label, x, h-padding+16);
+    });
+  }
+
+  const labels = data.map(d=>`"${d.label}"`).join(', ');
+  const values = data.map(d=>d.val).join(', ');
+  const plotCall = type==='bar' ? `plt.bar([${labels}], [${values}])` : `plt.plot([${labels}], [${values}], marker="o")`;
+  document.getElementById('codeOutput').textContent =
+`import matplotlib.pyplot as plt
+
+${plotCall}
+plt.title("${title}")
+plt.show()`;
+}
+drawChart();
+
+const quizData = [
+  { q: "What is matplotlib's standard import alias?", opts: ["import matplotlib as mp","import matplotlib.pyplot as plt","import plot as plt","import charts"], correct: 1, explain: "'plt' is the universal convention, just like np and pd." },
+  { q: "Which chart type is best for showing a trend over time (like daily sales)?", opts: ["Bar chart","Line chart","Neither works","Pie chart only"], correct: 1, explain: "Line charts suit continuous/sequential data like time." },
+  { q: "Which chart type is best for comparing unordered categories (like product types)?", opts: ["Line chart","Bar chart","Neither works","Only scatter plots"], correct: 1, explain: "Bar charts avoid implying a false trend/order between categories." },
+  { q: "plt.plot([1,2,3], [10,20]) — what happens?", opts: ["Plots fine","Raises an error due to mismatched lengths","Automatically pads the shorter list","Ignores the extra value silently"], correct: 1, explain: "x and y must have the same number of values." },
+  { q: "Why might connecting 'Electronics' and 'Clothing' with a line be misleading?", opts: [
+      "It isn't misleading at all",
+      "It implies a trend or order between categories that don't actually have one",
+      "Lines can't be drawn between text labels",
+      "Bar charts are always wrong for categories"
+    ], correct: 1, explain: "Categorical data usually has no inherent order, so a connecting line is a false visual signal." },
+  { q: "What does plt.title() do?", opts: ["Sets the x-axis label","Sets the y-axis label","Sets the chart's title","Changes the chart's color"], correct: 2, explain: "It adds a title displayed above the chart." },
+  { q: "Why is labeling axes (xlabel/ylabel) considered important, not optional?", opts: [
+      "It isn't important",
+      "Without labels, a chart's meaning is often unclear to anyone viewing it later, including your future self",
+      "Labels are required by Python syntax",
+      "Only needed for bar charts"
+    ], correct: 1, explain: "Unlabeled charts frequently become meaningless once you've forgotten the exact context." },
+  { q: "Why is visualizing data considered a standard early step in real ML projects?", opts: [
+      "It's purely decorative",
+      "Charts reveal patterns, trends, and outliers that are often invisible when just scanning raw numbers in a table",
+      "Only needed for the final report",
+      "Models require charts as direct input"
+    ], correct: 1, explain: "Visual inspection is one of the fastest ways to understand a dataset before modeling it." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seaborn (Condensed) – Day 2 | Categorical & Regression Charts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#F5F3FF;--surface:#FFFFFF;--border:#DDD6FE;--accent:#6D28D9;--accent2:#4C1D95;
+    --green:#059669;--red:#EF233C;--yellow:#F59E0B;
+    --text:#1E0B3A;--muted:#7C3AED;--code-bg:#160A2E;--code-text:#DDD6FE;--tag-bg:#EDE9FE;--tag-text:#4C1D95;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .progress-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .hero{background:linear-gradient(135deg,#6D28D9 0%,#4C1D95 100%);color:#fff;padding:56px 40px 48px;text-align:center;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.7;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(26px,5vw,44px);font-weight:800;line-height:1.15;margin-bottom:16px;}
+  .hero h1 span{color:#DDD6FE;} .hero p{max-width:620px;margin:0 auto 24px;opacity:.9;font-size:14.5px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:24px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:18px 26px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;} .section-header p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:24px;}
+  .func-block{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .func-head{background:var(--bg);padding:12px 18px;border-bottom:1px solid var(--border);}
+  .func-sig{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:600;color:var(--accent2);}
+  .func-desc{font-size:13.5px;color:var(--muted);margin-top:4px;}
+  .func-body{padding:14px 18px;}
+  .func-params{font-size:13px;margin-bottom:10px;}
+  .func-params code{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:10px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:10.5px;color:#A78BFA;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:10.5px;padding:3px 9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:var(--code-text);}
+  .kw{color:#C4B5FD;} .fn{color:#93C5FD;} .st{color:#86EFAC;} .nm{color:#FCA5A5;} .cm{color:#4C1D95;font-style:italic;} .op{color:#DDD6FE;}
+  .real-tag{display:inline-flex;align-items:center;gap:5px;background:#ECFDF5;color:#065F46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px;}
+  .callout.yellow{border-color:var(--yellow);background:#FFFBEB;} .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;color:var(--accent);}
+  .callout.yellow .callout-title{color:#92400E;} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:12px 0;} table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:var(--accent);color:#fff;padding:8px 12px;text-align:left;font-weight:600;} td{padding:8px 12px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--code-bg);color:var(--code-text);padding:7px 11px;border-radius:6px;margin:7px 0;display:block;white-space:pre;}
+  .q-options{padding:12px 18px;display:grid;gap:7px;}
+  .opt{display:flex;align-items:center;gap:9px;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13.5px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:22px;height:22px;border-radius:6px;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 18px 12px;padding:9px 13px;border-radius:8px;font-size:12.5px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  .btn{padding:10px 22px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#6D28D9,#4C1D95);color:#fff;border-radius:14px;padding:26px;text-align:center;display:none;margin-top:18px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:48px;font-weight:800;} .score-box .score-msg{font-size:15px;opacity:.9;margin-top:5px;} .score-box .score-detail{font-size:12.5px;opacity:.7;margin-top:4px;}
+  .task-hero{background:linear-gradient(135deg,#6D28D9,#059669);padding:24px;border-radius:10px;color:#fff;margin-bottom:18px;} .task-hero h3{color:#fff;margin:0 0 6px;font-size:17px;} .task-hero p{margin:0;opacity:.92;font-size:13.5px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:5px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:14px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:24px 40px;text-align:center;margin-top:32px;}
+  .day-footer .series{font-size:12.5px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:500;border:1px solid var(--border);color:var(--muted);}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:40px 20px 36px;}.section-body{padding:16px;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="logo">🌊 Seaborn</div><span class="sep">|</span><span class="day-label">Condensed · Day 2 of 3</span>
+  <div class="spacer"></div><span class="progress-label" style="margin-right:8px">66%</span>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:66%"></div></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Seaborn Condensed Course · Day 2</div>
+  <h1>Categorical &amp; <span>Regression Charts</span></h1>
+  <p>Comparing groups and finding trends — the 5 functions analysts reach for constantly, each with a real business scenario.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">📦 boxplot()</span>
+    <span class="hero-pill">🎻 violinplot()</span>
+    <span class="hero-pill">📊 barplot()</span>
+    <span class="hero-pill">📈 regplot()</span>
+    <span class="hero-pill">🔥 heatmap()</span>
+    <span class="hero-pill">📊 15 MCQs</span>
+    <span class="hero-pill">🏆 Real-World Task</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📦</div>
+    <div><h2>sns.boxplot() — Compare Groups' Summary Stats</h2><p>Median, spread, outliers — quick group comparison</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.boxplot(data=df, x=, y=, hue=)</div>
+        <div class="func-desc">One box per category, showing median, IQR (25th-75th percentile), and outliers.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>hue</code> = split each category further into sub-groups (e.g., by gender within each department)</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">HR comparing salary ranges across departments, split by seniority level — quickly spotting which department has the widest pay spread or concerning outliers.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>tips = <span class="op">sns</span>.<span class="fn">load_dataset</span>(<span class="st">'tips'</span>)
+<span class="op">sns</span>.<span class="fn">boxplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, hue=<span class="st">'smoker'</span>)
+<span class="cm"># One box per day, split into smoker/non-smoker sub-boxes</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">🎻</div>
+    <div><h2>sns.violinplot() — Full Shape Comparison</h2><p>Reveals patterns box plots hide</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.violinplot(data=df, x=, y=, hue=, split=True)</div>
+        <div class="func-desc">Shows the FULL density shape per category, not just summary numbers.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>split=True</code> — with exactly 2 hue groups, shows each half of the violin for direct visual comparison</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A product team checking if customer satisfaction scores are simply "average" vs actually SPLIT into two groups (very happy + very unhappy, few in between) — a box plot would mask this bimodal pattern; a violin reveals it instantly.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="op">sns</span>.<span class="fn">violinplot</span>(data=tips, x=<span class="st">'day'</span>, y=<span class="st">'total_bill'</span>, hue=<span class="st">'sex'</span>, split=<span class="kw">True</span>)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#059669">📊</div>
+    <div><h2>sns.barplot() — Compare Group Averages</h2><p>Not raw counts — the MEAN, with a confidence interval</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.barplot(data=df, x=, y=, errorbar='ci')</div>
+        <div class="func-desc">Shows the average of a numeric column per category, with an error bar showing uncertainty.</div>
+      </div>
+      <div class="func-body">
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">Comparing average order value across 5 marketing channels — the error bars immediately show which channels have enough data to trust the average, and which are still noisy.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="op">sns</span>.<span class="fn">barplot</span>(data=orders_df, x=<span class="st">'channel'</span>, y=<span class="st">'order_value'</span>, errorbar=<span class="st">'ci'</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-title">⚠️ barplot() ≠ Counting Rows</div>
+      <code>sns.barplot(x='day', y='total_bill')</code> shows the AVERAGE bill per day, NOT how many transactions happened. For raw counts of rows per category, use <code>sns.countplot(x='day')</code> instead — it needs no y= at all.
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#D97706">📈</div>
+    <div><h2>sns.regplot() — Scatter + Automatic Trend Line</h2><p>See the relationship AND its statistical fit, in one call</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.regplot(data=df, x=, y=, ci=95)</div>
+        <div class="func-desc">Scatter points PLUS a fitted regression line and confidence band — no manual np.polyfit() needed.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>ci</code> = confidence band around the fit line (None to hide it)</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A real estate analyst checking if house size predicts price, with the fitted line making the trend explicit rather than leaving viewers to eyeball a scatter cloud.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><span class="op">sns</span>.<span class="fn">regplot</span>(data=housing_df, x=<span class="st">'sqft'</span>, y=<span class="st">'price'</span>,
+             scatter_kws={<span class="st">'alpha'</span>:<span class="nm">0.4</span>}, line_kws={<span class="st">'color'</span>:<span class="st">'red'</span>})</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#0369A1">🔥</div>
+    <div><h2>sns.heatmap() — Correlation at a Glance</h2><p>Which variables move together?</p></div>
+  </div>
+  <div class="section-body">
+    <div class="func-block">
+      <div class="func-head">
+        <div class="func-sig">sns.heatmap(df.corr(), annot=True, cmap='coolwarm', center=0)</div>
+        <div class="func-desc">Colors a correlation matrix, with exact values printed in each cell.</div>
+      </div>
+      <div class="func-body">
+        <div class="func-params"><code>annot=True</code> prints the number in each cell &nbsp;|&nbsp; <code>center=0</code> ensures 0 correlation maps to the neutral middle color</div>
+        <div class="real-tag">💼 Real-world use</div>
+        <p style="font-size:13.5px;">A finance team scanning 15 economic indicators at once to spot which ones move together before building a forecasting model — a table of 15×15 numbers would take minutes to scan; a heatmap reveals it in seconds.</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">PYTHON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre>numeric_cols = tips.<span class="fn">select_dtypes</span>(include=<span class="st">'number'</span>)
+<span class="op">sns</span>.<span class="fn">heatmap</span>(numeric_cols.<span class="fn">corr</span>(), annot=<span class="kw">True</span>, cmap=<span class="st">'coolwarm'</span>, center=<span class="nm">0</span>, fmt=<span class="st">'.2f'</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">💡 One-Line Correlation Check on Any DataFrame</div>
+      <code>df.corr()</code> computes ALL pairwise correlations automatically. Feeding that straight into <code>sns.heatmap()</code> is the standard, near-universal first step of exploratory data analysis on any new numeric dataset.
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7C3AED">📊</div>
+    <div><h2>Practice MCQs — 15 Questions</h2><p>Box, violin, bar, regplot, heatmap. Need 12/15 to pass.</p></div>
+  </div>
+  <div class="section-body">
+    <div class="quiz-meta">
+      <div class="quiz-stat"><div class="num">15</div><div class="lbl">Questions</div></div>
+      <div class="quiz-stat"><div class="num">12</div><div class="lbl">Pass Mark</div></div>
+      <div class="quiz-stat"><div class="num" id="score-live">0</div><div class="lbl">Score</div></div>
+      <div class="quiz-stat"><div class="num" id="answered-live">0</div><div class="lbl">Answered</div></div>
+    </div>
+    <div id="quiz-container"></div>
+    <div class="quiz-btns">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit All Answers</button>
+      <button class="btn btn-outline" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div class="score-box" id="score-box">
+      <div class="big-score" id="final-score"></div><div class="score-msg" id="score-msg"></div><div class="score-detail" id="score-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REAL WORLD TASK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#6D28D9">🏆</div>
+    <div><h2>Real-World Task — Employee Compensation Review</h2><p>Estimated time: 45–55 minutes &nbsp;|&nbsp; Difficulty: ⭐⭐⭐</p></div>
+  </div>
+  <div class="section-body">
+    <div class="task-hero">
+      <h3>📋 Project Brief</h3>
+      <p>You're presenting to leadership on pay equity and performance. Build 5 charts answering their key questions.</p>
+    </div>
+    <ul class="checklist">
+      <li>Boxplot: salary by department, split by gender (hue)</li>
+      <li>Violinplot: same data as split violins — note anything the boxplot missed</li>
+      <li>Barplot: average bonus by performance rating, with confidence intervals</li>
+      <li>Regplot: years of experience vs salary, with fitted trend line</li>
+      <li>Heatmap: correlation matrix of experience, performance score, salary, and bonus</li>
+    </ul>
+  </div>
+</div>
+
+<div class="day-footer">
+  <div class="series">Seaborn Condensed Course — 3-Day Track</div>
+  <div class="days-row">
+    <span class="day-pill done">Day 1 · Setup + Relational &amp; Distribution</span>
+    <span class="day-pill done active">Day 2 · Categorical &amp; Regression</span>
+    <span class="day-pill">Day 3 · Multi-Plot Grids &amp; Capstone</span>
+  </div>
+</div>
+</div>
+
+<script>
+const questions=[
+  {code:"sns.boxplot(data=tips, x='day', y='total_bill', hue='smoker')",q:"What does hue='smoker' do to this boxplot?",opts:["It changes the box colors randomly with no structure","It SPLITS each day's single box into TWO separate boxes (smoker vs non-smoker), placed side by side — enabling direct comparison of the smoker/non-smoker distributions WITHIN each day category", "It removes the smoker column from the analysis entirely","hue= only works with numeric columns, not categorical ones like 'smoker'"],ans:1,explain:"hue= adds a further categorical split WITHIN each x-axis category — instead of one box per day, you get two boxes per day (one for smokers, one for non-smokers), positioned side-by-side, enabling direct visual comparison of both categorical dimensions simultaneously."},
+  {q:"Why might a violin plot reveal a 'bimodal' (two-peak) pattern in customer satisfaction scores that a box plot completely hides?",opts:["Violin plots and box plots always show identical information", "A box plot only shows 5 summary numbers (min, quartiles, max) — data genuinely split into two separate clusters (e.g., very satisfied and very unsatisfied customers, few in the middle) can still produce similar-looking summary statistics to a single-cluster distribution; a violin plot's smooth DENSITY CURVE directly shows the actual shape, immediately revealing BOTH peaks that summary statistics alone would obscure", "Violin plots cannot technically be used for satisfaction score data", "Bimodal patterns are impossible to represent in Seaborn"],ans:1,explain:"A box plot compresses data into just 5 summary numbers — genuinely bimodal data (two separate clusters) can still produce quartile statistics that LOOK similar to a single unified cluster's statistics. A violin plot's smooth density curve directly shows the actual SHAPE of the distribution, immediately revealing multiple peaks (bimodality) that the box plot's simplified summary would completely mask."},
+  {code:"sns.violinplot(data=tips, x='day', y='total_bill', hue='sex', split=True)",q:"What does split=True specifically accomplish here?",opts:["It creates 2 completely separate, independent charts","With EXACTLY 2 hue categories, split=True divides EACH violin shape in half — one half showing one hue group's density, the other half showing the other group's — rather than drawing 2 full separate violins side by side, making direct shape comparison at each x-position easier", "split=True removes half the data points from the analysis","This parameter only works when hue has exactly 3 or more categories"],ans:1,explain:"split=True is specifically designed for comparing exactly 2 hue groups. Instead of 2 full separate violin shapes per category (which can be harder to compare), it draws ONE violin per category split down the middle — left half = one hue group, right half = the other — making direct shape comparison between the 2 groups at each x-position more visually immediate."},
+  {code:"sns.barplot(data=orders_df, x='channel', y='order_value')",q:"What does this chart actually display for each channel?",opts:["The total COUNT of orders per channel","The AVERAGE order_value per channel (with a confidence interval error bar) — NOT a count of how many orders came through each channel; for counting rows, sns.countplot() would be the correct function instead", "The sum of all order values per channel","The maximum single order value per channel"],ans:1,explain:"sns.barplot() computes and displays the MEAN (average) of the specified numeric y= column for each category, along with an error bar showing statistical uncertainty in that estimate. This is commonly confused with simply counting rows — for that different purpose (frequency/count of observations per category), sns.countplot() is the correct function, requiring no y= argument at all."},
+  {code:"sns.countplot(data=tips, x='day')",q:"How does this differ fundamentally from sns.barplot(data=tips, x='day', y='total_bill')?",opts:["They produce functionally identical charts","countplot() shows how many ROWS/OBSERVATIONS exist for each day (pure frequency, no y= needed); barplot() (with y='total_bill' specified) instead shows the AVERAGE total_bill value for each day — fundamentally different questions being answered", "countplot() requires a y= parameter just like barplot()","barplot() cannot accept a y= parameter at all"],ans:1,explain:"This is a critical distinction: countplot() answers 'how many transactions happened on each day' (pure frequency/count, needs no y=). barplot() with y='total_bill' instead answers 'what was the AVERAGE bill amount on each day' (a numeric aggregate). These represent fundamentally different analytical questions, easily confused by beginners since both produce visually similar bar charts."},
+  {code:"sns.regplot(data=housing_df, x='sqft', y='price', ci=95)",q:"What THREE elements does this single function call produce together?",opts:["Only a fitted trend line, no data points shown","The RAW SCATTER POINTS of the actual data, PLUS an automatically FITTED regression line through them, PLUS a shaded 95% CONFIDENCE INTERVAL band around that fitted line — all computed and drawn in one function call", "Only the confidence interval band, no line or points","A bar chart, not a scatter-based visualization"],ans:1,explain:"regplot() combines three elements automatically: the raw scatter points showing actual observed data, a FITTED regression line computed from that data (using linear regression by default), and a shaded confidence interval band around that fitted line showing statistical uncertainty in the fit — all without any manual calculation required, unlike raw Matplotlib where you'd need np.polyfit() plus manual confidence interval computation."},
+  {code:"sns.heatmap(numeric_cols.corr(), annot=True, cmap='coolwarm', center=0)",q:"Why is center=0 specifically important for a CORRELATION heatmap?",opts:["center=0 has no meaningful effect on this type of data","Correlation values meaningfully range from -1 to +1 with 0 representing 'NO correlation' — setting center=0 ensures the colormap's NEUTRAL/middle color aligns EXACTLY with zero correlation, letting viewers instantly and correctly distinguish weak POSITIVE correlations (leaning one color) from weak NEGATIVE correlations (leaning the other color) by color alone", "center=0 removes all negative correlation values from the display","This parameter is only relevant for heatmaps showing exactly 2x2 matrices"],ans:1,explain:"Correlation coefficients meaningfully range from -1 (strong negative) through 0 (no relationship) to +1 (strong positive) — with 0 being a genuinely meaningful reference point. Setting center=0 with a diverging colormap (like 'coolwarm') ensures the colormap's neutral midpoint color aligns EXACTLY with zero correlation, allowing viewers to instantly and correctly distinguish weakly positive from weakly negative correlations by color intensity/direction alone, rather than a potentially misleading auto-scaled color range."},
+  {q:"What does annot=True add to a heatmap, and why is it commonly included in business/analytical reports?",opts:["It adds decorative borders around each cell with no informational value", "It prints the EXACT numeric value directly INSIDE each colored cell — combining the fast visual pattern-recognition benefit of color (scanning for the darkest/most intense cells) with the PRECISION of exact numbers, letting viewers both quickly spot patterns AND read precise values without needing a separate data table", "annot=True removes the color encoding, showing only numbers","This parameter only works with correlation matrices specifically, no other heatmap use case"],ans:1,explain:"annot=True (annotate) overlays the exact numeric value of each cell directly on top of the colored heatmap. This combines TWO complementary benefits: the visual pattern-recognition speed of color-coding (instantly scanning for the strongest/weakest relationships by intensity) AND the PRECISION of exact numeric values (for when a viewer needs to read/cite a specific correlation figure) — a very common combination in business/analytical reports where both quick pattern-spotting and precise figures matter."},
+  {q:"Why would an HR team specifically want a BOX or VIOLIN plot (rather than a simple bar chart of average salaries) when analyzing pay equity across departments split by gender?",opts:["Bar charts of averages would provide completely equivalent information for this purpose", "Box/violin plots show the FULL SPREAD/distribution of salaries within each group, not just the single average — this is important for pay equity analysis because two groups could have IDENTICAL average salaries while having very DIFFERENT spread (e.g., one group tightly clustered, another with much wider variation or specific outliers) — a nuance a simple average-only bar chart would completely hide, but is directly visible in the box/violin's full distributional view", "Only bar charts can technically display salary data by department","This choice has no bearing on the actual pay equity analysis being conducted"],ans:1,explain:"For genuine pay equity analysis, the FULL DISTRIBUTION matters, not just the average — two groups could have nearly IDENTICAL average salaries while having meaningfully different SPREAD (one group tightly clustered around a fair midpoint, another with wide variation or concerning outliers at the low end). A simple bar chart of averages would show these two very different scenarios as looking identical, while a box or violin plot directly reveals the actual spread/shape, providing genuinely more complete information for a nuanced pay equity assessment."},
+  {q:"In the compensation review task, why build BOTH a boxplot AND a violinplot of the SAME salary-by-department-by-gender data, rather than choosing just one?",opts:["This is purely redundant with zero additional analytical value", "The boxplot provides a QUICK, compact comparison across all department/gender combinations at once (easy to scan many groups); the violinplot ADDITIONALLY reveals the full SHAPE within each group, which could surface something meaningful (like bimodal salary clusters suggesting distinct pay tiers within a department) that the boxplot's compressed summary statistics wouldn't show — using both together provides a genuinely more complete picture than either alone", "Violin plots should always replace box plots entirely with no exceptions", "Combining both chart types on the same data would cause a rendering conflict"],ans:1,explain:"These two chart types serve genuinely complementary analytical purposes: the boxplot offers a QUICK, easily-scannable comparison across MANY groups at once (ideal for a fast overview across departments/genders); the violinplot ADDITIONALLY reveals shape details (like potential bimodality suggesting distinct pay tiers within one department) that could represent a genuinely important finding the boxplot's compressed summary would miss — building both, as this task requires, provides a more thorough analytical picture than relying on just one chart type."},
+  {q:"Why might a regplot() showing 'years of experience vs salary' with a fitted trend line be more immediately persuasive to leadership than showing just the raw scatter points alone?",opts:["A fitted trend line has no additional communicative value over raw points", "The fitted regression line makes the OVERALL TREND/RELATIONSHIP explicit and visually unmistakable, rather than requiring viewers to mentally 'eyeball' and infer a pattern from a cloud of scattered points themselves — for a leadership audience that needs to quickly grasp 'yes, experience clearly predicts salary here', the explicit fitted line communicates this conclusion far more directly and persuasively than raw points alone", "Fitted trend lines are only useful for scientific research, not business presentations", "Adding a trend line technically changes the underlying data being represented"],ans:1,explain:"While the raw scatter points contain the same underlying INFORMATION, requiring viewers to visually infer a trend from a cloud of individual points demands more cognitive effort and is more prone to individual interpretation/disagreement. An explicit FITTED trend line makes the overall relationship immediately and unambiguously visible — for a leadership audience that needs a quick, clear takeaway ('yes, there's a clear experience-salary relationship'), this explicit visual conclusion communicates the finding far more directly and persuasively than requiring the audience to draw their own inference from raw data points."},
+  {q:"Why would computing a correlation heatmap of (experience, performance score, salary, bonus) be a valuable EARLY step in this compensation analysis, before building the other more targeted charts?",opts:["A correlation heatmap provides no useful preliminary insight for this type of analysis", "The heatmap quickly reveals WHICH pairs of variables have the strongest relationships — for example, discovering that performance score correlates more strongly with bonus than with base salary would be a genuinely useful early finding, helping PRIORITIZE which specific relationships deserve the deeper, more targeted investigation (like the dedicated regplot) that follows", "This heatmap step should always be the very LAST analysis performed, never an early one","Correlation heatmaps can only be built with exactly 2 variables, making 4-variable analysis impossible"],ans:1,explain:"A correlation heatmap serves as an efficient EXPLORATORY step: by scanning all pairwise relationships among the 4 key variables at once, an analyst can quickly identify which specific relationships appear strongest and most worth investigating in DEEPER detail — for example, discovering performance score correlates more strongly with bonus than with base salary might specifically justify building a dedicated regplot for THAT particular relationship, rather than randomly choosing which relationships to visualize in more depth without this preliminary, efficient overview."},
+  {q:"Reflecting on today's 5 functions (box, violin, bar, regplot, heatmap), what unifying theme distinguishes CATEGORICAL comparison functions (box/violin/bar) from the REGRESSION/CORRELATION functions (regplot/heatmap)?",opts:["There is no meaningful distinction between these two groups of functions", "The categorical functions (box/violin/bar) answer 'how does a NUMERIC variable differ ACROSS DISTINCT GROUPS/categories' (like salary across departments); the regression/correlation functions (regplot/heatmap) instead answer 'how do TWO OR MORE NUMERIC variables RELATE to each other' (like experience predicting salary, or which metrics move together) — representing two fundamentally different types of analytical questions", "All 5 functions answer exactly the same underlying question with different visual styling","Categorical functions only work with text data, never with any numeric values at all"],ans:1,explain:"These two groups of functions address fundamentally different analytical QUESTION TYPES: box/violin/bar (categorical comparison functions) answer 'how does a numeric outcome DIFFER across distinct categorical GROUPS' (comparing salary across departments, satisfaction across regions); regplot/heatmap (relationship functions) instead answer 'how do multiple NUMERIC variables RELATE to or PREDICT each other' (does experience predict salary, which financial metrics move together). Recognizing which TYPE of question you're actually asking is the key step in choosing the appropriate function from today's toolkit."}
+];
+
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'],cb=q.code?`<code class="q-code">${q.code}</code>`:'';
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q}</div>${cb}</div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  document.getElementById('answered-live').textContent=userAnswers.filter(a=>a!==null).length;
+  document.getElementById('score-live').textContent=userAnswers.filter((a,i)=>a===questions[i].ans).length;
+}
+function submitQuiz(){
+  if(submitted)return;submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,50,"Review box/violin/bar and regplot/heatmap, then try again! 📚"],[50,75,"Good progress! Focus on the barplot vs countplot distinction. 💪"],[75,90,"Strong Day 2! Categorical and regression charts are solid. 🎉"],[90,101,"Excellent! Day 2 completely mastered. 🏆"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 12/15 (80%) to pass.`;
+  document.getElementById('score-live').textContent=correct;
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  document.getElementById('score-live').textContent='0';
+  document.getElementById('answered-live').textContent='0';
+  buildQuiz();
+}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+</script>
+</body>
+</html>

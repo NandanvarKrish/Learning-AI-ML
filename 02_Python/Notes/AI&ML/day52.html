@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 52 — Pandas: Series & DataFrames</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+.method-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; font-family:var(--font-mono); font-size:13px;}
+.method-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:10px 12px;}
+.method-box .m{color:var(--accent); font-weight:bold;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:120px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.op-buttons{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
+.op-buttons button{background:#2a3442; color:#e8e3d5; border:1px solid #444; padding:8px 14px; border-radius:4px; cursor:pointer; font-family:var(--font-body); font-size:13px;}
+.op-buttons button:hover{background:var(--accent); border-color:var(--accent);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:13px;}
+.result-code{background:#0f151d; padding:10px 14px; border-radius:6px; margin-top:8px; overflow-x:auto;}
+table.df-table{border-collapse:collapse; width:100%; font-size:13px; margin-top:6px;}
+table.df-table th, table.df-table td{border:1px solid #3a4658; padding:6px 10px; text-align:center;}
+table.df-table th{background:#2a3442; color:#f0dcc8;}
+table.df-table tr:nth-child(even){background:#16202b;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 52 of 210 · Phase 2: Data Handling Libraries</span>
+    <h1>Pandas: Series & DataFrames</h1>
+    <div class="subtitle">~2 hours · The tool you'll use to load and explore every real dataset from here on</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Pandas is where "raw data" becomes something you can actually work with. It's built on top of yesterday's NumPy, and it's the very first thing most real ML projects do: load a dataset, look at it, clean it. Nearly every Kaggle notebook, tutorial, or production pipeline you'll ever see starts with <code>import pandas as pd</code>.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Series — a single labeled column</h2>
+  <div class="code">import pandas as pd
+scores = pd.Series([85, 92, 78, 90])
+print(scores)
+# 0    85
+# 1    92
+# 2    78
+# 3    90
+# dtype: int64</div>
+  <p>A <strong>Series</strong> is a 1D labeled array — similar to a NumPy array, but with an index (the labels on the left, 0-3 by default) attached. Think of it as one column of a spreadsheet.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> DataFrame — a full table</h2>
+  <div class="code">data = {
+    "name": ["Asha", "Rohan", "Priya"],
+    "age": [28, 34, 25],
+    "order_value": [1200, 800, 1500]
+}
+df = pd.DataFrame(data)
+print(df)</div>
+  <p>A <strong>DataFrame</strong> is a 2D table — rows and columns, exactly like Day 18's matrix concept and Day 37's dictionary-of-records, but now a real, powerful object with built-in tools for exploring and cleaning. This dictionary-of-lists pattern (each key becomes a column) is the most common way to build a small DataFrame directly in code.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> First things to check on any DataFrame</h2>
+  <div class="method-grid">
+    <div class="method-box"><span class="m">.head(n)</span><br>First n rows (default 5)</div>
+    <div class="method-box"><span class="m">.tail(n)</span><br>Last n rows</div>
+    <div class="method-box"><span class="m">.shape</span><br>(rows, columns)</div>
+    <div class="method-box"><span class="m">.columns</span><br>List of column names</div>
+    <div class="method-box"><span class="m">.info()</span><br>Column types, missing value counts</div>
+    <div class="method-box"><span class="m">.describe()</span><br>Mean, std, min, max for numeric columns</div>
+  </div>
+  <p><strong><code>.describe()</code> is Day 6–7's entire statistics week, computed instantly for every numeric column at once</strong> — mean, standard deviation, min, max, and quartiles, without writing a single loop.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Selecting columns and rows</h2>
+  <div class="code">df["age"]              # one column, returned as a Series
+df[["name", "age"]]    # multiple columns, returned as a DataFrame
+
+df.loc[0]               # row with LABEL 0
+df.iloc[0]               # row at POSITION 0 (same result here, but conceptually different)
+df.iloc[0:2]             # first two rows by position</div>
+  <p><strong><code>.loc</code></strong> selects by label (the index value itself); <strong><code>.iloc</code></strong> selects by integer position, regardless of what the labels are. With a default 0,1,2... index they often look identical — the difference matters once you filter or reorder a DataFrame and the labels no longer match position.</p>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Real-world example (exploring a customer dataset)</h2>
+  <div class="panel">
+    <p class="example-tag">The first few lines of almost every real analysis</p>
+    <div class="code">df = pd.DataFrame({
+    "name": ["Asha", "Rohan", "Priya", "Meera"],
+    "age": [28, 34, 25, 41],
+    "order_value": [1200, 800, 1500, 950]
+})
+
+print(df.shape)          # (4, 3) — 4 rows, 3 columns
+print(df.columns)        # Index(['name', 'age', 'order_value'])
+print(df["order_value"].mean())   # 1112.5
+print(df.describe())     # full stats table for age and order_value</div>
+    <p>Four lines, and you already know the shape of your data, its column names, and complete summary statistics — this is genuinely how real exploration starts, every time.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Confusing .loc and .iloc.</strong> .loc uses the INDEX LABEL; .iloc uses POSITION. After sorting or filtering a DataFrame, these can point to completely different rows.</p>
+    <p><strong>Mistake 2 — Forgetting a single column selection returns a Series, not a DataFrame.</strong> <code>df["age"]</code> is a Series; <code>df[["age"]]</code> (double brackets) is a one-column DataFrame — subtly different types with different available methods.</p>
+    <p><strong>Mistake 3 — Assuming .describe() covers text columns too.</strong> By default it only summarizes NUMERIC columns — text/categorical columns need different exploration (like <code>.value_counts()</code>, coming soon).</p>
+    <p><strong>Mistake 4 — Forgetting the import alias.</strong> <code>pd.DataFrame(...)</code> without <code>import pandas as pd</code> causes a NameError, exactly like yesterday's NumPy import rule.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — DataFrame Playground</h2>
+  <div class="solver">
+    <h3>Paste CSV-like data (first row = column names)</h3>
+    <textarea id="csvInput">name,age,order_value
+Asha,28,1200
+Rohan,34,800
+Priya,25,1500
+Meera,41,950</textarea>
+    <div class="op-buttons">
+      <button onclick="runOp('head')">.head(3)</button>
+      <button onclick="runOp('shape')">.shape</button>
+      <button onclick="runOp('columns')">.columns</button>
+      <button onclick="runOp('describe')">.describe()</button>
+      <button onclick="runOp('mean')">Column mean</button>
+    </div>
+    <div class="solver-result" id="opResult"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 53 covers reading real CSV files with <code>pd.read_csv()</code>, and handling missing or imbalanced data — the actual messy-data cleaning work that comes right after loading.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 52 of 210 · AI & ML Study Plan · Phase 2: Data Handling Libraries</div>
+</footer>
+
+<script>
+function parseCSV(text){
+  const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
+  const headers = lines[0];
+  const rows = lines.slice(1);
+  return {headers, rows};
+}
+function isNumericCol(rows, colIdx){
+  return rows.every(r => r[colIdx] !== '' && !isNaN(parseFloat(r[colIdx])));
+}
+function renderTable(headers, rows){
+  let html = '<table class="df-table"><tr><th></th>' + headers.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+  rows.forEach((r, i) => {
+    html += '<tr><th>' + i + '</th>' + r.map(c=>`<td>${c}</td>`).join('') + '</tr>';
+  });
+  html += '</table>';
+  return html;
+}
+function runOp(op){
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const resEl = document.getElementById('opResult');
+  if(op === 'head'){
+    resEl.innerHTML = `<div>df.head(3)</div><div class="result-code">${renderTable(headers, rows.slice(0,3))}</div>`;
+  } else if(op === 'shape'){
+    resEl.innerHTML = `<div>df.shape</div><div class="result-code">(${rows.length}, ${headers.length})</div>`;
+  } else if(op === 'columns'){
+    resEl.innerHTML = `<div>df.columns</div><div class="result-code">Index([${headers.map(h=>`'${h}'`).join(', ')}])</div>`;
+  } else if(op === 'describe'){
+    let html = '<table class="df-table"><tr><th></th>';
+    const numericCols = headers.map((h,idx)=>isNumericCol(rows,idx)?idx:null).filter(x=>x!==null);
+    numericCols.forEach(idx => html += `<th>${headers[idx]}</th>`);
+    html += '</tr>';
+    const stats = ['count','mean','std','min','max'];
+    stats.forEach(stat => {
+      html += `<tr><th>${stat}</th>`;
+      numericCols.forEach(idx => {
+        const vals = rows.map(r=>parseFloat(r[idx]));
+        let v;
+        if(stat==='count') v = vals.length;
+        else if(stat==='mean') v = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
+        else if(stat==='std'){
+          const m = vals.reduce((a,b)=>a+b,0)/vals.length;
+          v = Math.sqrt(vals.reduce((a,b)=>a+Math.pow(b-m,2),0)/vals.length).toFixed(2);
+        }
+        else if(stat==='min') v = Math.min(...vals);
+        else if(stat==='max') v = Math.max(...vals);
+        html += `<td>${v}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</table>';
+    resEl.innerHTML = `<div>df.describe()</div><div class="result-code">${html}</div>`;
+  } else if(op === 'mean'){
+    const numericCols = headers.map((h,idx)=>isNumericCol(rows,idx)?idx:null).filter(x=>x!==null);
+    let out = '';
+    numericCols.forEach(idx => {
+      const vals = rows.map(r=>parseFloat(r[idx]));
+      const m = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
+      out += `df["${headers[idx]}"].mean()  →  ${m}\n`;
+    });
+    resEl.innerHTML = `<div class="result-code" style="white-space:pre-wrap;">${out}</div>`;
+  }
+}
+runOp('head');
+
+const quizData = [
+  { q: "A Series is best described as:", opts: ["A 2D table","A 1D labeled array (like one column)","A type of loop","A CSV file format"], correct: 1, explain: "Series = one labeled column; DataFrame = a full table of them." },
+  { q: "df = pd.DataFrame({'a':[1,2],'b':[3,4]}). What is df.shape?", opts: ["(2,2)","(4,)","(2,)","(1,2)"], correct: 0, explain: "2 rows, 2 columns → (2,2)." },
+  { q: "What does df['age'] return?", opts: ["A DataFrame","A Series","A list","A dictionary"], correct: 1, explain: "Single-bracket column selection returns a Series." },
+  { q: "What does df[['age']] (double brackets) return?", opts: ["A Series","A one-column DataFrame","An error","A tuple"], correct: 1, explain: "Double brackets select a list of columns, returning a DataFrame even with just one column." },
+  { q: "What's the key difference between .loc and .iloc?", opts: [
+      "No difference, interchangeable always",
+      ".loc uses index labels; .iloc uses integer position",
+      ".iloc is for columns only",
+      ".loc is deprecated"
+    ], correct: 1, explain: "This distinction matters especially after sorting or filtering, when labels and positions diverge." },
+  { q: "What does .describe() compute by default?", opts: ["Summary stats for all columns including text","Summary stats (mean, std, min, max, etc.) for NUMERIC columns only","Just the column names","Row counts only"], correct: 1, explain: "Text/categorical columns need separate exploration methods." },
+  { q: "Why is pd.DataFrame({...}) using a dictionary of lists a common way to build a small DataFrame?", opts: [
+      "It's not commonly used",
+      "Each dictionary key naturally becomes a column name, and its list becomes that column's values",
+      "It only works for numeric data",
+      "DataFrames can't be built from dictionaries"
+    ], correct: 1, explain: "This mirrors Day 37's dictionary structure, extended to a full table." },
+  { q: "Why is Pandas described as central to real ML workflows?", opts: [
+      "It's rarely used in practice",
+      "It's typically the very first tool used to load, explore, and clean real datasets before any modeling begins",
+      "Only used for visualization",
+      "Pandas replaces the need for any other library"
+    ], correct: 1, explain: "Loading and understanding your data is almost always the first practical step, and Pandas is the standard tool for it." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

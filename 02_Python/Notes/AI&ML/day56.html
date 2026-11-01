@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 56 — Scatter Plots & Histograms</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.solver-row label{font-family:var(--font-mono); font-size:13px; min-width:130px;}
+.solver input[type=range]{flex:1; min-width:120px;}
+.solver .val{font-family:var(--font-mono); background:#2a3442; padding:4px 10px; border-radius:4px; min-width:50px; text-align:center;}
+.solver button{background:var(--accent); color:#fff; border:none; padding:9px 16px; border-radius:4px; cursor:pointer; font-weight:bold; margin-top:8px;}
+.solver textarea{width:100%; min-height:100px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px;}
+canvas{background:#fdfcf8; border-radius:6px; margin-top:14px; max-width:100%;}
+.result-code{background:#0f151d; padding:10px 14px; border-radius:6px; margin-top:10px; font-family:var(--font-mono); font-size:13px; white-space:pre-wrap;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 56 of 210 · Phase 2: Data Handling Libraries</span>
+    <h1>Scatter Plots & Histograms</h1>
+    <div class="subtitle">~2 hours · Relationships between variables, and the shape of a single one</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>These two chart types answer the two most common questions you'll have about a dataset. A <strong>scatter plot</strong> asks: "are these two variables related?" — which is exactly the correlation question from Day 13, now visual. A <strong>histogram</strong> asks: "what shape is this data?" — exactly the distribution question from Day 8, now visual. Both are standard, everyday tools in real analysis.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Scatter plots — two variables at once</h2>
+  <div class="code">import matplotlib.pyplot as plt
+
+hours_studied = [1, 2, 3, 4, 5, 6, 7, 8]
+exam_score = [35, 42, 50, 58, 67, 72, 81, 88]
+
+plt.scatter(hours_studied, exam_score)
+plt.xlabel("Hours Studied")
+plt.ylabel("Exam Score")
+plt.title("Study Time vs Score")
+plt.show()</div>
+  <p>Each dot is one data point plotted at its (x, y) position. Unlike a line chart, points are NOT connected — which is correct here, because these are independent observations, not a sequence over time.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Reading a scatter plot (reconnects Day 13 and Day 20)</h2>
+  <div class="panel">
+    <p><strong>Upward-sloping cloud of points</strong> → positive correlation (as x rises, y tends to rise)</p>
+    <p><strong>Downward-sloping cloud</strong> → negative correlation</p>
+    <p><strong>Shapeless blob with no direction</strong> → little to no linear correlation</p>
+    <p><strong>And the crucial Day 13 caveat, restated:</strong> a strong visual trend in a scatter plot shows CORRELATION only. It never proves that x causes y — a confounding variable or reverse causation could equally explain the pattern.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Histograms — the shape of one variable</h2>
+  <div class="code">ages = [22, 25, 25, 27, 28, 28, 28, 30, 31, 33, 34, 35, 38, 41, 45]
+
+plt.hist(ages, bins=5)
+plt.xlabel("Age")
+plt.ylabel("Number of people")
+plt.title("Age Distribution")
+plt.show()</div>
+  <p>A histogram groups values into ranges ("bins") and shows how many values fall in each — this is literally Day 8's distribution concept, drawn. <strong>The <code>bins</code> parameter matters a lot:</strong> too few bins hides detail, too many makes the shape noisy and hard to read. Adjusting bins and re-looking is a normal, expected part of exploring data.</p>
+</section>
+
+<section>
+  <h2><span class="num">05</span> What a histogram tells you (reconnects Day 8)</h2>
+  <div class="panel">
+    <p class="example-tag">Every shape from Day 8, now recognizable at a glance</p>
+    <p><strong>Symmetric bell shape</strong> → roughly normal distribution (mean ≈ median)</p>
+    <p><strong>Long tail stretching right</strong> → right-skewed (mean pulled above median) — income, house prices</p>
+    <p><strong>Long tail stretching left</strong> → left-skewed</p>
+    <p><strong>Two separate humps</strong> → possibly two distinct subgroups mixed into one dataset, worth investigating</p>
+    <p>This is why plotting a histogram is often more informative than just reading <code>.describe()</code> — the shape reveals things that mean and standard deviation alone can hide entirely.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Reading causation into a scatter plot.</strong> A clear upward trend means correlation, not cause — Day 13's entire lesson applies directly here.</p>
+    <p><strong>Mistake 2 — Using a default bin count without checking alternatives.</strong> The same data can look normal or bimodal depending on bin choice — always try a couple of values.</p>
+    <p><strong>Mistake 3 — Using a scatter plot where a line chart fits better.</strong> For sequential/time data, a line chart shows the progression more clearly; scatter suits independent paired observations.</p>
+    <p><strong>Mistake 4 — Plotting a histogram of a categorical column.</strong> Histograms bin NUMERIC ranges — for categories, use a bar chart of <code>.value_counts()</code> instead.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Try it yourself — Scatter Plot Explorer</h2>
+  <div class="solver">
+    <h3>Adjust the correlation strength and see the scatter change</h3>
+    <div class="solver-row">
+      <label>Correlation (r)</label>
+      <input type="range" id="rSlider" min="-1" max="1" step="0.1" value="0.8">
+      <span class="val" id="rVal">0.8</span>
+    </div>
+    <button onclick="drawScatter()">Generate New Data</button>
+    <canvas id="scatterPlot" width="620" height="320"></canvas>
+    <div class="result-code" id="scatterCode"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Histogram Builder</h2>
+  <div class="solver">
+    <h3>Paste numbers, adjust the bin count</h3>
+    <textarea id="histData">22,25,25,27,28,28,28,30,31,33,34,35,38,41,45,29,30,32,27,26,31,33,29,28,36</textarea>
+    <div class="solver-row">
+      <label>Number of bins</label>
+      <input type="range" id="binSlider" min="3" max="15" step="1" value="6">
+      <span class="val" id="binVal">6</span>
+    </div>
+    <canvas id="histPlot" width="620" height="300"></canvas>
+    <div class="result-code" id="histCode"></div>
+  </div>
+  <p style="margin-top:14px; color:var(--muted); font-size:14px;">Drag the bin slider — notice how the same exact data can look smooth or jagged depending purely on bin count. That's exactly why the choice matters.</p>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 57 is a full data-visualization practice day — you'll take a realistic messy dataset and go through the complete load → clean → explore → visualize workflow end to end, putting Days 51–56 together.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 56 of 210 · AI & ML Study Plan · Phase 2: Data Handling Libraries</div>
+</footer>
+
+<script>
+// Scatter
+const rSlider = document.getElementById('rSlider');
+const rVal = document.getElementById('rVal');
+rSlider.addEventListener('input', () => { rVal.textContent = rSlider.value; drawScatter(); });
+
+function randNormal(){
+  let sum = 0;
+  for(let i=0;i<6;i++) sum += Math.random();
+  return sum - 3;
+}
+function drawScatter(){
+  const targetR = parseFloat(rSlider.value);
+  const n = 50;
+  const xs = [], ys = [];
+  for(let i=0;i<n;i++){
+    const x = randNormal();
+    const noise = randNormal();
+    const y = targetR*x + Math.sqrt(Math.max(0,1-targetR*targetR))*noise;
+    xs.push(x); ys.push(y);
+  }
+  const canvas = document.getElementById('scatterPlot');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const padding = 45;
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const sx = v => padding + ((v-minX)/(maxX-minX))*(w-padding*2);
+  const sy = v => h-padding - ((v-minY)/(maxY-minY))*(h-padding*2);
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, h-padding); ctx.lineTo(w-padding, h-padding); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, h-padding); ctx.stroke();
+
+  ctx.fillStyle = '#c05621';
+  for(let i=0;i<n;i++){
+    ctx.beginPath(); ctx.arc(sx(xs[i]), sy(ys[i]), 5, 0, 2*Math.PI); ctx.fill();
+  }
+  ctx.fillStyle = '#6b6459'; ctx.font = '11px monospace'; ctx.textAlign='center';
+  ctx.fillText('Variable X', w/2, h-padding+22);
+
+  let desc;
+  if(targetR > 0.5) desc = 'Strong positive correlation — points trend upward';
+  else if(targetR > 0.15) desc = 'Weak positive correlation';
+  else if(targetR > -0.15) desc = 'Little to no linear correlation — shapeless cloud';
+  else if(targetR > -0.5) desc = 'Weak negative correlation';
+  else desc = 'Strong negative correlation — points trend downward';
+
+  document.getElementById('scatterCode').textContent =
+`plt.scatter(x, y)
+plt.xlabel("Variable X")
+plt.ylabel("Variable Y")
+plt.show()
+
+# ${desc}
+# Remember (Day 13): correlation ≠ causation`;
+}
+
+// Histogram
+const binSlider = document.getElementById('binSlider');
+const binVal = document.getElementById('binVal');
+binSlider.addEventListener('input', () => { binVal.textContent = binSlider.value; drawHist(); });
+document.getElementById('histData').addEventListener('input', drawHist);
+
+function drawHist(){
+  const raw = document.getElementById('histData').value;
+  const data = raw.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n));
+  const bins = parseInt(binSlider.value);
+  const canvas = document.getElementById('histPlot');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  if(data.length===0) return;
+
+  const min = Math.min(...data), max = Math.max(...data);
+  const binWidth = (max-min)/bins;
+  const counts = new Array(bins).fill(0);
+  data.forEach(v => {
+    let idx = Math.floor((v-min)/binWidth);
+    if(idx >= bins) idx = bins-1;
+    counts[idx]++;
+  });
+  const maxCount = Math.max(...counts);
+  const padding = 45;
+  const plotW = w-padding*2, plotH = h-padding*2;
+  const barW = plotW/bins;
+
+  ctx.strokeStyle = '#1b2430'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padding, h-padding); ctx.lineTo(w-padding, h-padding); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, h-padding); ctx.stroke();
+
+  counts.forEach((c, i) => {
+    const barH = (c/maxCount)*plotH;
+    const x = padding + i*barW;
+    const y = h-padding-barH;
+    ctx.fillStyle = '#c05621';
+    ctx.fillRect(x+1, y, barW-2, barH);
+    ctx.fillStyle = '#1b2430'; ctx.font='10px monospace'; ctx.textAlign='center';
+    if(c>0) ctx.fillText(c, x+barW/2, y-4);
+    ctx.fillStyle = '#6b6459';
+    ctx.fillText(Math.round(min+i*binWidth), x+barW/2, h-padding+16);
+  });
+  ctx.fillStyle = '#6b6459'; ctx.font='11px monospace'; ctx.textAlign='center';
+  ctx.fillText('Value ranges (bins)', w/2, h-padding+32);
+
+  document.getElementById('histCode').textContent =
+`plt.hist(data, bins=${bins})
+plt.xlabel("Value")
+plt.ylabel("Frequency")
+plt.show()
+
+# ${data.length} values, range ${min} to ${max}`;
+}
+
+drawScatter();
+drawHist();
+
+const quizData = [
+  { q: "A scatter plot is best used to show:", opts: ["A trend over time only","The relationship between two variables","The count of categories","Missing values"], correct: 1, explain: "Each point shows one observation's (x,y) pair, revealing any relationship between the two variables." },
+  { q: "Points in a scatter plot trending clearly upward indicate:", opts: ["Negative correlation","Positive correlation","Causation is proven","No relationship"], correct: 1, explain: "Upward trend = positive correlation — but correlation only, never proven causation." },
+  { q: "A histogram shows:", opts: [
+      "The relationship between two variables",
+      "How many values fall into each range/bin of a single numeric variable",
+      "Category names only",
+      "Nothing useful about distribution"
+    ], correct: 1, explain: "Histograms reveal the distribution shape of one variable." },
+  { q: "Why does the 'bins' parameter matter in a histogram?", opts: [
+      "It doesn't affect anything",
+      "Too few bins hides detail; too many makes the shape noisy — the same data can look very different",
+      "It only changes the color",
+      "It controls the chart title"
+    ], correct: 1, explain: "Bin choice genuinely changes how a distribution appears, which is why it's worth experimenting with." },
+  { q: "A histogram with a long tail stretching to the right indicates:", opts: ["Left-skewed","Right-skewed","Perfectly normal","Bimodal"], correct: 1, explain: "Right-skew — mean pulled above median, exactly as covered on Day 8." },
+  { q: "A histogram showing two clear separate humps might suggest:", opts: [
+      "The data is perfectly normal",
+      "Two distinct subgroups may be mixed together in the dataset",
+      "The bin count must be wrong",
+      "The data has no meaning"
+    ], correct: 1, explain: "Bimodal shapes often indicate two different populations combined — worth investigating." },
+  { q: "For a CATEGORICAL column (like city names), which is appropriate?", opts: [
+      "A histogram",
+      "A bar chart of .value_counts()",
+      "A scatter plot",
+      "Nothing can visualize categories"
+    ], correct: 1, explain: "Histograms bin numeric ranges; categories need a bar chart of counts instead." },
+  { q: "Why is plotting a histogram often more informative than just reading .describe()?", opts: [
+      "It isn't — .describe() shows everything",
+      "The visual shape reveals skew, bimodality, and outliers that mean/std alone can completely hide",
+      "Histograms show causation",
+      ".describe() doesn't work on numeric data"
+    ], correct: 1, explain: "Two datasets can share the same mean and std while having entirely different shapes." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

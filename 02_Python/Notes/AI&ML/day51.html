@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 51 — NumPy: Arrays & Vectorized Math</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+.milestone{background:var(--ink); color:var(--paper); border-radius:8px; padding:26px; text-align:center; margin:24px 0;}
+.milestone .big{font-size:24px; font-family:var(--font-display); color:var(--accent-soft);}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+.func-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; font-family:var(--font-mono); font-size:13px;}
+.func-box{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:10px 12px;}
+.func-box .m{color:var(--accent); font-weight:bold;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver input[type=text]{width:100%; padding:10px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono); font-size:15px; margin:8px 0;}
+.op-buttons{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
+.op-buttons button{background:#2a3442; color:#e8e3d5; border:1px solid #444; padding:8px 14px; border-radius:4px; cursor:pointer; font-family:var(--font-body); font-size:13px;}
+.op-buttons button:hover{background:var(--accent); border-color:var(--accent);}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:14px; line-height:1.8;}
+.result-code{background:#0f151d; padding:10px 14px; border-radius:6px; margin-top:8px;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 51 of 210 · Phase 2: Data Handling Libraries</span>
+    <h1>NumPy: Arrays & Vectorized Math</h1>
+    <div class="subtitle">~2 hours · The array library nearly all of Python ML is built on top of</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="milestone">
+  <div class="big">Data libraries begin 📊</div>
+  <p style="color:#cfc8b8; margin-top:8px;">NumPy today, Pandas next — the tools you'll use to load and manipulate every real dataset from here forward.</p>
+</div>
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Pandas is built on NumPy. Scikit-learn expects NumPy arrays. TensorFlow and PyTorch's tensors work almost identically to NumPy arrays by design. Every single ML library you'll touch from here on either IS NumPy underneath, or was deliberately designed to feel like it. Today's concepts aren't just "one more library" — they're the shared vocabulary of the entire ecosystem.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Installing and importing</h2>
+  <div class="code">pip install numpy</div>
+  <div class="code">import numpy as np</div>
+  <p><code>np</code> is the near-universal convention for NumPy's alias — you will see it written exactly this way in virtually every tutorial, codebase, and library you ever encounter.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Creating an array</h2>
+  <div class="code">import numpy as np
+scores = np.array([85, 92, 78, 90, 88])
+print(scores)          # [85 92 78 90 88]
+print(type(scores))    # &lt;class 'numpy.ndarray'&gt;</div>
+  <p>This looks similar to a Python list, but it's a fundamentally different, faster, more capable object underneath — an <strong>ndarray</strong> (n-dimensional array).</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> The single biggest advantage: vectorized math</h2>
+  <div class="panel">
+    <p class="example-tag">This is the concept that makes NumPy worth learning</p>
+    <p>Remember the append-in-a-loop pattern from Day 35? To double every value in a plain Python list, you needed a loop:</p>
+    <div class="code"># The OLD way (plain Python list)
+prices = [100, 200, 300]
+doubled = []
+for i in range(len(prices)):
+    doubled.append(prices[i] * 2)</div>
+    <p>With a NumPy array, the same operation is one line, with NO loop at all:</p>
+    <div class="code"># The NumPy way
+prices = np.array([100, 200, 300])
+doubled = prices * 2
+print(doubled)   # [200 400 600]</div>
+    <p><strong>Every arithmetic operation on a NumPy array automatically applies to every element</strong> — this is called <strong>vectorization</strong>, and it's both dramatically less code AND dramatically faster (NumPy runs the loop internally, in optimized low-level code, not slow Python).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> A crucial contrast: lists vs. arrays with *</h2>
+  <div class="panel">
+    <div class="code">python_list = [1, 2, 3]
+print(python_list * 2)     # [1, 2, 3, 1, 2, 3]  — duplicates the list!
+
+numpy_array = np.array([1, 2, 3])
+print(numpy_array * 2)     # [2 4 6]  — multiplies each element!</div>
+    <p>The exact same <code>* 2</code> means completely different things depending on the type — this is a genuinely important distinction to internalize early, since the symbols look identical but the behavior is opposite in spirit.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Array attributes and aggregate functions</h2>
+  <div class="func-grid">
+    <div class="func-box"><span class="m">.shape</span><br>Dimensions, e.g. (5,)</div>
+    <div class="func-box"><span class="m">.ndim</span><br>Number of dimensions</div>
+    <div class="func-box"><span class="m">.dtype</span><br>Data type stored (e.g. int64)</div>
+    <div class="func-box"><span class="m">.sum()</span><br>Total of all elements</div>
+    <div class="func-box"><span class="m">.mean()</span><br>Average (Day 6, instantly!)</div>
+    <div class="func-box"><span class="m">.std()</span><br>Standard deviation (Day 7, instantly!)</div>
+    <div class="func-box"><span class="m">.max() / .min()</span><br>Largest / smallest value</div>
+    <div class="func-box"><span class="m">np.arange(a,b)</span><br>Like range(), but returns an array</div>
+  </div>
+  <div class="code">scores = np.array([85, 92, 78, 90, 88])
+print(scores.mean())   # 86.6
+print(scores.std())    # ~5.03
+print(scores.max())    # 92</div>
+  <p>Remember hand-calculating mean and standard deviation on Days 6–7? This is that exact same math, computed instantly, on any size of dataset, with zero manual loop-writing.</p>
+</section>
+
+<section>
+  <h2><span class="num">07</span> 2D arrays — real matrices (reconnects Day 18)</h2>
+  <div class="code">grid = np.array([[1, 2, 3], [4, 5, 6]])
+print(grid.shape)   # (2, 3) — 2 rows, 3 columns
+print(grid[0])      # [1 2 3] — first row
+print(grid[0, 1])   # 2 — row 0, column 1</div>
+  <p>This is Day 18's "matrix as a table of numbers" — except now it's a real, fast, directly usable object instead of a nested Python list you'd have to loop through manually.</p>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Forgetting the import.</strong> <code>np.array(...)</code> without <code>import numpy as np</code> first causes a NameError.</p>
+    <p><strong>Mistake 2 — Confusing array multiplication with matrix multiplication.</strong> <code>arr1 * arr2</code> multiplies element-by-element; real matrix multiplication (Day 19's row·column rule) needs <code>np.dot(arr1, arr2)</code> or the <code>@</code> operator instead.</p>
+    <p><strong>Mistake 3 — Shape mismatches.</strong> Operating on two arrays with incompatible shapes raises an error (or triggers "broadcasting" rules you'll learn more about soon) — always sanity-check <code>.shape</code> when something goes wrong.</p>
+    <p><strong>Mistake 4 — Expecting list methods to work identically.</strong> NumPy arrays don't have <code>.append()</code> the way lists do (technically <code>np.append()</code> exists but creates a whole new array each time — genuinely inefficient in a loop). Arrays are best built all at once, not grown incrementally.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Try it yourself — NumPy Array Playground</h2>
+  <div class="solver">
+    <h3>Enter numbers, pick an operation, see the equivalent NumPy code + result</h3>
+    <input type="text" id="arrayInput" value="85, 92, 78, 90, 88" placeholder="Comma-separated numbers">
+    <div class="op-buttons">
+      <button onclick="runOp('double')">× 2</button>
+      <button onclick="runOp('square')">Square each</button>
+      <button onclick="runOp('add10')">+ 10 to each</button>
+      <button onclick="runOp('sum')">.sum()</button>
+      <button onclick="runOp('mean')">.mean()</button>
+      <button onclick="runOp('std')">.std()</button>
+      <button onclick="runOp('max')">.max()</button>
+      <button onclick="runOp('min')">.min()</button>
+      <button onclick="runOp('reverse')">[::-1]</button>
+      <button onclick="runOp('shape')">.shape</button>
+    </div>
+    <div class="solver-result" id="opResult"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 52 begins Pandas — built directly on top of NumPy, and the tool you'll use for actually loading, cleaning, and exploring real datasets (CSV files, spreadsheets) from here on.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 51 of 210 · AI & ML Study Plan · Phase 2: Data Handling Libraries</div>
+</footer>
+
+<script>
+function parseArr(){
+  const raw = document.getElementById('arrayInput').value;
+  return raw.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n));
+}
+function mean(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
+function std(arr){
+  const m = mean(arr);
+  const variance = arr.reduce((a,b)=>a+Math.pow(b-m,2),0)/arr.length;
+  return Math.sqrt(variance);
+}
+function runOp(op){
+  const arr = parseArr();
+  const resEl = document.getElementById('opResult');
+  if(arr.length===0){ resEl.innerHTML = 'Enter valid comma-separated numbers.'; return; }
+  let code, result;
+  const arrStr = '[' + arr.join(', ') + ']';
+  switch(op){
+    case 'double': code = `arr * 2`; result = arr.map(x=>x*2); break;
+    case 'square': code = `arr ** 2`; result = arr.map(x=>x*x); break;
+    case 'add10': code = `arr + 10`; result = arr.map(x=>x+10); break;
+    case 'sum': code = `arr.sum()`; result = arr.reduce((a,b)=>a+b,0); break;
+    case 'mean': code = `arr.mean()`; result = mean(arr).toFixed(3); break;
+    case 'std': code = `arr.std()`; result = std(arr).toFixed(3); break;
+    case 'max': code = `arr.max()`; result = Math.max(...arr); break;
+    case 'min': code = `arr.min()`; result = Math.min(...arr); break;
+    case 'reverse': code = `arr[::-1]`; result = arr.slice().reverse(); break;
+    case 'shape': code = `arr.shape`; result = `(${arr.length},)`; break;
+  }
+  const resultStr = Array.isArray(result) ? '[' + result.join(', ') + ']' : result;
+  resEl.innerHTML = `
+    <div>arr = np.array(${arrStr})</div>
+    <div class="result-code">&gt;&gt;&gt; ${code}<br>${resultStr}</div>
+  `;
+}
+runOp('mean');
+
+const quizData = [
+  { q: "What is the standard convention for importing NumPy?", opts: ["import numpy","import numpy as np","from numpy import *","include numpy"], correct: 1, explain: "'np' is the near-universal alias used across virtually all Python code." },
+  { q: "python_list = [1,2,3]. What does python_list * 2 produce?", opts: ["[2,4,6]","[1,2,3,1,2,3]","Error","[1,2,3]"], correct: 1, explain: "Multiplying a plain list by 2 duplicates its contents, it doesn't do math on each element." },
+  { q: "arr = np.array([1,2,3]). What does arr * 2 produce?", opts: ["[1,2,3,1,2,3]","[2,4,6]","Error","[1,2,3]"], correct: 1, explain: "NumPy arrays apply arithmetic to every element (vectorization)." },
+  { q: "What does 'vectorization' mean in the NumPy context?", opts: [
+      "Converting text into vectors for NLP",
+      "Applying an operation to every element of an array at once, without writing an explicit loop",
+      "A type of graphics rendering",
+      "Only relevant for 3D arrays"
+    ], correct: 1, explain: "This is the core efficiency and convenience advantage of NumPy over plain Python loops." },
+  { q: "scores = np.array([80,90,100]). What does scores.mean() return?", opts: ["90","270","10","100"], correct: 0, explain: "(80+90+100)/3 = 90." },
+  { q: "grid = np.array([[1,2],[3,4]]). What is grid.shape?", opts: ["(4,)","(2,2)","(1,4)","(2,)"], correct: 1, explain: "2 rows, 2 columns → shape (2,2)." },
+  { q: "To perform real matrix multiplication (Day 19's row·column rule) on two NumPy arrays, you should use:", opts: ["The * operator","np.dot() or the @ operator","The + operator",".append()"], correct: 1, explain: "* does element-wise multiplication; np.dot()/@ performs true matrix multiplication." },
+  { q: "Why is NumPy described as foundational to the whole Python ML ecosystem?", opts: [
+      "It's rarely used in practice",
+      "Pandas, scikit-learn, and deep learning libraries are all built on or designed to closely mirror NumPy's array structure",
+      "Only used for basic arithmetic",
+      "It's being replaced by pure Python lists"
+    ], correct: 1, explain: "Nearly every major Python data/ML library either uses NumPy directly or mirrors its design." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>

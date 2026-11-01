@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Day 53 — Pandas: Reading CSVs, Filtering & Sorting</title>
+<style>
+:root{
+  --ink:#1b2430; --paper:#f6f3ea; --panel:#ffffff; --accent:#c05621;
+  --accent-soft:#f0dcc8; --line:#d8d2c2; --muted:#6b6459; --good:#2f6d4f; --bad:#b3432b;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.65; padding-bottom:60px;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+header{background:var(--ink); color:var(--paper); padding:40px 24px 34px; border-bottom:6px solid var(--accent);}
+header .wrap{display:flex; flex-direction:column; gap:6px;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:2px; text-transform:uppercase; font-size:12px; color:var(--accent); font-weight:bold;}
+h1{font-family:var(--font-display); font-size:32px; margin:4px 0 6px; font-weight:normal;}
+.subtitle{color:#cfc8b8; font-size:15px;}
+section{margin-top:38px;}
+h2{font-family:var(--font-display); font-size:22px; font-weight:normal; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px; display:flex; align-items:baseline; gap:10px;}
+h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:16px;}
+p{margin:0 0 14px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px 22px; margin:16px 0;}
+.code{font-family:var(--font-mono); background:var(--ink); color:#f5efe3; padding:14px 18px; border-radius:5px; font-size:15px; margin:12px 0; white-space:pre-wrap;}
+.example-tag{display:inline-block; font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase; background:var(--accent-soft); color:var(--accent); padding:3px 9px; border-radius:3px; margin-bottom:10px;}
+.warn-box{background:#fbe7e1; border:1px solid #e0a898; border-radius:6px; padding:14px 18px; margin:14px 0; font-size:14px; color:#8a3a2a;}
+details{background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:12px 0; padding:0;}
+summary{cursor:pointer; padding:14px 18px; font-weight:bold; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; color:var(--accent); font-size:20px;}
+details[open] summary::after{content:"–";}
+.details-body{padding:0 18px 18px; color:var(--muted);}
+.solver{background:var(--ink); color:var(--paper); border-radius:6px; padding:22px;}
+.solver h3{margin-top:0; font-family:var(--font-display); font-weight:normal; color:var(--accent-soft);}
+.solver textarea{width:100%; min-height:120px; background:#0f151d; color:#e8e3d5; font-family:var(--font-mono); font-size:14px; border-radius:6px; border:1px solid #3a4658; padding:12px; resize:vertical;}
+.filter-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:12px 0;}
+.filter-row select, .filter-row input{padding:8px; border-radius:4px; border:1px solid #444; background:#2a3442; color:#fff; font-family:var(--font-mono);}
+.filter-row button{background:var(--accent); color:#fff; border:none; padding:9px 16px; border-radius:4px; cursor:pointer; font-weight:bold;}
+.solver-result{margin-top:14px; font-family:var(--font-mono); font-size:13px;}
+.result-code{background:#0f151d; padding:10px 14px; border-radius:6px; margin-top:8px; overflow-x:auto;}
+table.df-table{border-collapse:collapse; width:100%; font-size:13px; margin-top:6px;}
+table.df-table th, table.df-table td{border:1px solid #3a4658; padding:6px 10px; text-align:center;}
+table.df-table th{background:#2a3442; color:#f0dcc8;}
+table.df-table tr:nth-child(even){background:#16202b;}
+.quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px; margin:14px 0;}
+.quiz-q p.question{font-weight:bold; margin-bottom:10px;}
+.opt{display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid var(--line); border-radius:4px; background:#fdfcf8; cursor:pointer; font-family:var(--font-body); font-size:15px;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{background:#e4f2ea; border-color:var(--good); color:var(--good); font-weight:bold;}
+.opt.wrong{background:#fbe7e1; border-color:var(--bad); color:var(--bad);}
+.feedback{margin-top:10px; font-size:14px; color:var(--muted);}
+.tie-in{border-left:4px solid var(--accent); padding:14px 18px; background:var(--accent-soft); border-radius:0 6px 6px 0; margin-top:20px;}
+.tie-in strong{color:var(--accent);}
+footer{max-width:760px; margin:50px auto 0; padding:20px 24px 0; border-top:1px solid var(--line); color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Day 53 of 210 · Phase 2: Data Handling Libraries</span>
+    <h1>Pandas: Reading CSVs, Filtering & Sorting</h1>
+    <div class="subtitle">~2 hours · Loading real files, and the most common operations after loading</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span class="num">01</span> Why this matters for AI/ML</h2>
+  <p>Almost every dataset you'll ever work with starts life as a CSV file. And the very first things you do after loading it — filtering to the rows you care about, sorting to see extremes — are operations you'll repeat constantly throughout any real analysis or ML project.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Reading a CSV file</h2>
+  <div class="code">import pandas as pd
+df = pd.read_csv("customers.csv")
+print(df.head())</div>
+  <p>One line loads an entire file into a DataFrame — this replaces the entire manual line.strip().split(",") process you built by hand on Day 43. If the file doesn't exist, you'll get a <code>FileNotFoundError</code>, exactly like Day 43's file handling — the same <code>try</code>/<code>except</code> pattern from Day 44 applies here too.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Filtering rows with conditions</h2>
+  <div class="code">df[df["age"] > 30]                    # only rows where age is over 30
+df[df["order_value"] >= 1000]         # only high-value orders</div>
+  <p>This is called <strong>boolean indexing</strong>: <code>df["age"] > 30</code> produces a Series of True/False values (one per row), and wrapping the DataFrame in that condition keeps only the True rows. It looks like magic at first, but it's really just Day 28's comparison operators applied to an entire column at once — the vectorization idea from Day 51, now used for filtering.</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Combining conditions — the #1 pandas gotcha</h2>
+  <div class="warn-box">
+    <strong>Critical: use <code>&</code> and <code>|</code>, NOT <code>and</code>/<code>or</code>, when combining pandas conditions.</strong> Python's regular <code>and</code>/<code>or</code> don't work correctly on entire columns of values — pandas requires the bitwise operators instead, and each condition needs its own parentheses.
+  </div>
+  <div class="code"># WRONG — will raise an error
+df[df["age"] > 30 and df["order_value"] > 1000]
+
+# RIGHT
+df[(df["age"] > 30) & (df["order_value"] > 1000)]
+
+# OR condition
+df[(df["age"] < 25) | (df["order_value"] > 2000)]</div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Sorting</h2>
+  <div class="code">df.sort_values("age")                       # ascending by default
+df.sort_values("order_value", ascending=False)   # descending</div>
+  <p>Like most Pandas operations, <code>sort_values()</code> returns a NEW sorted DataFrame — the original is unchanged unless you reassign it: <code>df = df.sort_values(...)</code>. This is exactly the same "returns new, doesn't mutate" pattern as Day 41's <code>sorted()</code>.</p>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Real-world example (filter + sort together)</h2>
+  <div class="panel">
+    <p class="example-tag">A genuinely everyday analysis task</p>
+    <div class="code">df = pd.read_csv("customers.csv")
+
+high_value = df[df["order_value"] > 1000]
+result = high_value.sort_values("age")
+print(result)</div>
+    <p>Or chained in one line, which you'll see constantly in real code:</p>
+    <div class="code">result = df[df["order_value"] > 1000].sort_values("age")</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Common mistakes to avoid</h2>
+  <div class="panel">
+    <p><strong>Mistake 1 — Using and/or instead of &/|.</strong> Covered above — this is genuinely the most common Pandas error beginners hit.</p>
+    <p><strong>Mistake 2 — Forgetting parentheses around each condition.</strong> <code>df[df["age"] > 30 & df["x"] > 1]</code> (missing parens) can raise confusing errors due to operator precedence — always wrap each condition: <code>(df["age"] > 30) & (df["x"] > 1)</code>.</p>
+    <p><strong>Mistake 3 — Expecting sort_values() to modify the original DataFrame.</strong> It returns a new one — reassign if you want to keep the sorted version.</p>
+    <p><strong>Mistake 4 — Not handling the file-not-found case.</strong> A typo'd filename or wrong folder causes a crash — wrapping <code>pd.read_csv()</code> in try/except (Day 44) is good practice for any real script.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Try it yourself — Filter & Sort Playground</h2>
+  <div class="solver">
+    <h3>Paste CSV-like data, then filter and sort it</h3>
+    <textarea id="csvInput">name,age,order_value
+Asha,28,1200
+Rohan,34,800
+Priya,25,1500
+Meera,41,950
+Karan,30,2100
+Divya,22,600</textarea>
+    <div class="filter-row">
+      <span style="font-family:var(--font-mono); font-size:13px;">Filter:</span>
+      <select id="filterCol"></select>
+      <select id="filterOp"><option>&gt;</option><option>&gt;=</option><option>&lt;</option><option>&lt;=</option><option>==</option></select>
+      <input type="text" id="filterVal" value="1000" style="width:80px;">
+      <button onclick="populateCols(); applyOps()">Apply Filter</button>
+    </div>
+    <div class="filter-row">
+      <span style="font-family:var(--font-mono); font-size:13px;">Sort by:</span>
+      <select id="sortCol"></select>
+      <select id="sortDir"><option value="asc">Ascending</option><option value="desc">Descending</option></select>
+      <button onclick="applyOps()">Apply Sort</button>
+    </div>
+    <div class="solver-result" id="opResult"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Predict the Output (8 questions)</h2>
+  <div id="quiz"></div>
+</section>
+
+<div class="tie-in">
+  <strong>Looking ahead:</strong> Day 54 covers handling missing and imbalanced data — what to do with blank/NaN values in a real dataset, and why an imbalanced dataset (e.g., 99% of one class) needs special care before modeling.
+</div>
+
+</div>
+
+<footer>
+  <div class="wrap" style="padding:0;">Day 53 of 210 · AI & ML Study Plan · Phase 2: Data Handling Libraries</div>
+</footer>
+
+<script>
+function parseCSV(text){
+  const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.trim()));
+  const headers = lines[0];
+  const rows = lines.slice(1);
+  return {headers, rows};
+}
+function isNumericCol(rows, colIdx){
+  return rows.every(r => r[colIdx] !== '' && !isNaN(parseFloat(r[colIdx])));
+}
+function renderTable(headers, rows){
+  let html = '<table class="df-table"><tr><th></th>' + headers.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+  rows.forEach((r, i) => {
+    html += '<tr><th>' + i + '</th>' + r.map(c=>`<td>${c}</td>`).join('') + '</tr>';
+  });
+  html += '</table>';
+  return html;
+}
+function populateCols(){
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const filterSel = document.getElementById('filterCol');
+  const sortSel = document.getElementById('sortCol');
+  filterSel.innerHTML = ''; sortSel.innerHTML = '';
+  headers.forEach(h => {
+    filterSel.innerHTML += `<option>${h}</option>`;
+    sortSel.innerHTML += `<option>${h}</option>`;
+  });
+}
+function applyOps(){
+  const {headers, rows} = parseCSV(document.getElementById('csvInput').value);
+  const fCol = document.getElementById('filterCol').value;
+  const fOp = document.getElementById('filterOp').value;
+  const fVal = document.getElementById('filterVal').value;
+  const sCol = document.getElementById('sortCol').value;
+  const sDir = document.getElementById('sortDir').value;
+
+  const fIdx = headers.indexOf(fCol);
+  const sIdx = headers.indexOf(sCol);
+  const numericFilter = isNumericCol(rows, fIdx) && !isNaN(parseFloat(fVal));
+
+  let filtered = rows.filter(r => {
+    let cell = r[fIdx];
+    let val = fVal;
+    if(numericFilter){ cell = parseFloat(cell); val = parseFloat(val); }
+    if(fOp === '>') return cell > val;
+    if(fOp === '>=') return cell >= val;
+    if(fOp === '<') return cell < val;
+    if(fOp === '<=') return cell <= val;
+    if(fOp === '==') return String(cell) === String(val);
+    return true;
+  });
+
+  const numericSort = isNumericCol(rows, sIdx);
+  filtered.sort((a,b) => {
+    let av = a[sIdx], bv = b[sIdx];
+    if(numericSort){ av = parseFloat(av); bv = parseFloat(bv); }
+    if(av < bv) return sDir==='asc' ? -1 : 1;
+    if(av > bv) return sDir==='asc' ? 1 : -1;
+    return 0;
+  });
+
+  const code = `df[df["${fCol}"] ${fOp} ${numericFilter?fVal:'"'+fVal+'"'}].sort_values("${sCol}", ascending=${sDir==='asc'?'True':'False'})`;
+  const resEl = document.getElementById('opResult');
+  resEl.innerHTML = `<div class="result-code">&gt;&gt;&gt; ${code}\n\n${renderTable(headers, filtered)}</div>`;
+}
+populateCols();
+applyOps();
+
+const quizData = [
+  { q: "pd.read_csv('data.csv') on a file that doesn't exist raises:", opts: ["IndexError","FileNotFoundError","ValueError","No error, returns empty DataFrame"], correct: 1, explain: "Same error type as Day 43's file handling." },
+  { q: "df[df['age'] > 30] returns:", opts: ["A single number","A new DataFrame with only rows where age > 30","The original DataFrame unchanged","An error"], correct: 1, explain: "This is boolean indexing/filtering." },
+  { q: "Which is correct for combining two conditions in pandas?", opts: [
+      "df[df['a']>1 and df['b']<5]",
+      "df[(df['a']>1) & (df['b']<5)]",
+      "df[df['a']>1 & df['b']<5]",
+      "df[df['a']>1 or df['b']<5]"
+    ], correct: 1, explain: "Pandas requires & / | with each condition properly parenthesized." },
+  { q: "df.sort_values('age'). Does this change the original df?", opts: ["Yes, always","No — it returns a new sorted DataFrame unless reassigned","Only sometimes","Causes an error"], correct: 1, explain: "Like most pandas operations, this returns a new object rather than mutating in place." },
+  { q: "df.sort_values('price', ascending=False) sorts:", opts: ["Smallest to largest","Largest to smallest","Alphabetically only","Randomly"], correct: 1, explain: "ascending=False reverses the default order to descending." },
+  { q: "Why does 'and'/'or' fail for combining pandas conditions, while '&'/'|' work?", opts: [
+      "There's no real reason, it's arbitrary",
+      "and/or expect single True/False values, but pandas conditions produce a whole Series of them — & and | are designed to work element-wise",
+      "and/or are deprecated in Python",
+      "& and | are faster, that's the only difference"
+    ], correct: 1, explain: "This is a genuinely important distinction rooted in how Python's and/or vs bitwise operators are evaluated." },
+  { q: "df[df['city']=='Mumbai'].sort_values('age') — what does this do, read left to right?", opts: [
+      "Sorts first, then filters",
+      "Filters to Mumbai rows first, then sorts the result by age",
+      "Causes an error since you can't chain methods",
+      "Only sorts, ignoring the filter"
+    ], correct: 1, explain: "Pandas operations chain left to right — filter happens first here, then sort operates on the filtered result." },
+  { q: "Why is 'df[df[\"order_value\"] > 1000].sort_values(\"age\")' described as a genuinely everyday pattern?", opts: [
+      "It's rarely used in practice",
+      "Filtering to relevant rows then sorting to inspect them is one of the most common first steps in real data exploration",
+      "This pattern doesn't actually work",
+      "Only used for financial data specifically"
+    ], correct: 1, explain: "This filter-then-sort chain is extremely common across virtually any kind of tabular data analysis." }
+];
+const quizEl = document.getElementById('quiz');
+quizData.forEach((item, i) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  box.innerHTML = `<p class="question">${i+1}. ${item.q}</p>`;
+  item.opts.forEach((opt, j) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      box.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      if(j === item.correct){ btn.classList.add('correct'); }
+      else { btn.classList.add('wrong'); box.querySelectorAll('.opt')[item.correct].classList.add('correct'); }
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.textContent = item.explain;
+      box.appendChild(fb);
+    };
+    box.appendChild(btn);
+  });
+  quizEl.appendChild(box);
+});
+</script>
+
+</body>
+</html>
