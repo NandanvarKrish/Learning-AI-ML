@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 7: Charts with Matplotlib · Brightcart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+
+.code-lang{color:#93C5FD;}
+:root{--muted:#4A6FA5;}
+.table-note{font-size:12.5px;color:var(--muted);margin:6px 0 12px;}
+table{margin:8px 0 14px;}
+.err-out{border:1px solid #FCA5A5;background:#FEF2F2;border-radius:10px;padding:10px 12px;margin:6px 0 14px;}
+.err-label{font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px;}
+.err-out pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:12.5px;color:#7F1D1D;}
+@media(max-width:600px){.container{padding:0 16px;}.tbl-wrap table{font-size:12px;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">Brightcart</span><span class="sep">|</span>
+  <span class="day-label">Day 7 of 10</span>
+  <span class="spacer"></span>
+  <span class="progress-label">Quiz: <span id="answered-live">0</span>/20 · score <span id="score-live">0</span></span>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Brightcart data analyst project · Day 7 of 10</div>
+  <h1>Day 7: <span>Charts with Matplotlib</span></h1>
+  <p>Draw line, bar and histogram charts with Matplotlib, add labels and annotations, and assemble a 2 by 2 dashboard. Save each chart as a file.</p>
+</div>
+<div class="grad-banner"><p>4 to 5 hours · Build every part of a chart yourself</p></div>
+<div class="container">
+<div class="section"><div class="section-header"><div class="section-icon">🎯</div><div><h2>Goal and deliverable</h2><p>Build every part of a chart yourself</p></div></div><div class="section-body"><p>Draw line, bar and histogram charts with Matplotlib, add labels and annotations, and assemble a 2 by 2 dashboard. Save each chart as a file.</p><p><strong>Deliverable:</strong> Four PNG charts in outputs/ and notes/day07_charts.md.</p></div></div><div class="section"><div class="section-header"><div class="section-icon">🧰</div><div><h2>Tools and functions</h2><p>Learn each one, then use it in the steps below.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">plt.subplots(nrows, ncols)</div><div class="mc-desc">Creates a figure and its axes. Returns the figure and the axes to draw on.</div><div class="mc-ex">fig, ax = plt.subplots(figsize=(9, 4.5))</div></div><div class="mini-card"><div class="mc-name">ax.plot / ax.bar / ax.hist</div><div class="mc-desc">Draws a line, bars or a histogram on an axes.</div><div class="mc-ex">ax.plot(x, y, marker=&#x27;o&#x27;)</div></div><div class="mini-card"><div class="mc-name">ax.set_title, set_xlabel, set_ylabel</div><div class="mc-desc">Adds the title and axis labels. Every chart needs them.</div><div class="mc-ex">ax.set_title(&#x27;Monthly revenue&#x27;)</div></div><div class="mini-card"><div class="mc-name">ax.legend()</div><div class="mc-desc">Shows the key for lines or bars with a label.</div><div class="mc-ex">ax.plot(..., label=&#x27;Revenue&#x27;); ax.legend()</div></div><div class="mini-card"><div class="mc-name">ax.bar_label(bars)</div><div class="mc-desc">Writes the value on top of each bar.</div><div class="mc-ex">ax.bar_label(bars, fmt=&#x27;%.1fM&#x27;)</div></div><div class="mini-card"><div class="mc-name">ax.annotate</div><div class="mc-desc">Writes a note with an arrow pointing at a spot on the chart.</div><div class="mc-ex">ax.annotate(&#x27;median 4 days&#x27;, xy=(4, 1500))</div></div><div class="mini-card"><div class="mc-name">fig.tight_layout(), fig.savefig</div><div class="mc-desc">Stops labels overlapping, then saves the chart as a file.</div><div class="mc-ex">fig.savefig(&#x27;chart.png&#x27;, dpi=120)</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🧠</div><div><h2>Concepts</h2><p>The ideas behind today's work.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">Figure and axes</div><div class="mc-desc">A figure is the whole picture. Axes are the drawing area inside it, with x and y axes. Most mistakes come from drawing on the wrong axes, so always name the axes you use (<code>ax</code>).</div></div><div class="mini-card"><div class="mc-name">Chart choice</div><div class="mc-desc">Use a line for change over time, bars for comparing categories, a histogram for how values are spread. Pick the chart that answers the question.</div></div><div class="mini-card"><div class="mc-name">Honest axes</div><div class="mc-desc">Bars start at zero. A bar chart with a cut-off axis exaggerates small differences. Label units, such as millions.</div></div><div class="mini-card"><div class="mc-name">Dashboards</div><div class="mc-desc">A dashboard is several small charts in one figure, arranged in a grid with <code>plt.subplots(2, 2)</code>. Each panel needs its own title.</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🛠️</div><div><h2>Timed steps</h2><p>About 290 minutes of work. Open each step, do it, then move on.</p></div></div><div class="section-body"><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">1</div><h4>Load the checkpoint tables</h4><span class="phase-time">20 min</span><span class="chevron open">▼</span></div><div class="task-phase-body open"><p>Load <code>monthly_revenue.csv</code> and <code>orders_enriched.csv</code>. Confirm the monthly table has 22 rows.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">2</div><h4>Line chart with a rolling average</h4><span class="phase-time">50 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Plot monthly revenue (in millions) and the 3-month average on one axes. Label the title and both axes, add a legend and a light grid. Save to <code>outputs/</code>.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">3</div><h4>Bar chart with value labels</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Plot net revenue by category, sorted largest first. Add value labels with <code>bar_label</code> and leave headroom above the tallest bar. Save the chart.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">4</div><h4>Histogram with an annotation</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Plot the delivery days histogram with integer bins from 1 to 26. Draw a dashed median line and annotate it with its value.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">5</div><h4>Dashboard grid</h4><span class="phase-time">60 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Build a 2 by 2 figure with a line, a bar, a histogram and a pie of channel share. Give every panel a title. Use <code>suptitle</code> for the whole dashboard.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">6</div><h4>Review and fix</h4><span class="phase-time">40 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Open each saved PNG. Check that labels are readable, nothing overlaps, units are stated, and bars start at zero. Fix one problem you see and describe it in your notes.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">7</div><h4>Write the chart note</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>In <code>notes/day07_charts.md</code>, list each chart, the question it answers, and the one thing a reader should take away from it.</p></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">💡</div><div><h2>Reference solution and expected output</h2><p>Check your work against this.</p></div></div><div class="section-body"><p>Try the task yourself first. Then compare your results with the reference below. Your numbers must match the expected output.</p><div class="code-wrap"><div class="code-header"><span class="code-lang">solutions/day07.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>&quot;&quot;&quot;Day 7 solution: Matplotlib from the ground up: line, bar, histogram, annotations and a 2x2 dashboard.&quot;&quot;&quot;
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use(&quot;Agg&quot;)  # no window needed: figures are saved as PNG files
+import matplotlib.pyplot as plt
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+CLEAN = ROOT / &quot;data&quot; / &quot;clean&quot;
+OUT = ROOT / &quot;outputs&quot;
+OUT.mkdir(exist_ok=True)
+
+monthly = pd.read_csv(CLEAN / &quot;monthly_revenue.csv&quot;, parse_dates=[&quot;month_end&quot;])
+enriched = pd.read_csv(CLEAN / &quot;orders_enriched.csv&quot;)
+
+# ---- 1. Line chart: monthly revenue with the 3-month rolling average -------
+fig, ax = plt.subplots(figsize=(9, 4.5))
+ax.plot(monthly[&quot;month_end&quot;], monthly[&quot;revenue&quot;] / 1e6, marker=&quot;o&quot;, label=&quot;Monthly revenue&quot;)
+ax.plot(monthly[&quot;month_end&quot;], monthly[&quot;rolling_3m&quot;] / 1e6, linestyle=&quot;--&quot;, label=&quot;3-month average&quot;)
+ax.set_title(&quot;Brightcart monthly net revenue&quot;)
+ax.set_xlabel(&quot;Month&quot;)
+ax.set_ylabel(&quot;Revenue (million)&quot;)
+ax.legend()
+ax.grid(alpha=0.3)
+fig.tight_layout()
+fig.savefig(OUT / &quot;d07_monthly_revenue.png&quot;, dpi=120)
+print(&quot;CHECK line_points&quot;, len(ax.lines[0].get_xdata()))
+
+# ---- 2. Bar chart with labels: revenue by category ---------------------------
+by_cat = enriched.groupby(&quot;category&quot;)[&quot;net_revenue&quot;].sum().sort_values(ascending=False) / 1e6
+fig, ax = plt.subplots(figsize=(7, 4))
+bars = ax.bar(by_cat.index, by_cat.values, color=&quot;#2563EB&quot;)
+ax.bar_label(bars, fmt=&quot;%.1fM&quot;, padding=3)            # value labels on each bar
+ax.set_title(&quot;Net revenue by category&quot;)
+ax.set_ylabel(&quot;Revenue (million)&quot;)
+ax.set_ylim(0, by_cat.max() * 1.15)                   # headroom for the labels
+fig.tight_layout()
+fig.savefig(OUT / &quot;d07_category_bars.png&quot;, dpi=120)
+print(&quot;CHECK top_bar_height&quot;, round(float(bars[0].get_height()), 2))
+
+# ---- 3. Histogram: delivery days with a median line -------------------------
+median = enriched[&quot;delivery_days&quot;].median()
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.hist(enriched[&quot;delivery_days&quot;], bins=range(1, 27), color=&quot;#0891B2&quot;, edgecolor=&quot;white&quot;)
+ax.axvline(median, color=&quot;red&quot;, linestyle=&quot;--&quot;)
+ax.annotate(f&quot;median {median:.0f} days&quot;, xy=(median, ax.get_ylim()[1] * 0.9),
+            xytext=(median + 3, ax.get_ylim()[1] * 0.9), arrowprops={&quot;arrowstyle&quot;: &quot;-&gt;&quot;})
+ax.set_title(&quot;Delivery time distribution&quot;)
+ax.set_xlabel(&quot;Days to deliver&quot;)
+ax.set_ylabel(&quot;Orders&quot;)
+fig.tight_layout()
+fig.savefig(OUT / &quot;d07_delivery_hist.png&quot;, dpi=120)
+print(&quot;CHECK delivery_median&quot;, median)
+
+# ---- 4. Dashboard: 2x2 grid of the three charts above, built with subplots ---
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+axes[0, 0].plot(monthly[&quot;month_end&quot;], monthly[&quot;revenue&quot;] / 1e6, color=&quot;#2563EB&quot;)
+axes[0, 0].set_title(&quot;Monthly revenue (M)&quot;)
+axes[0, 1].bar(by_cat.index, by_cat.values, color=&quot;#2563EB&quot;)
+axes[0, 1].set_title(&quot;Revenue by category (M)&quot;)
+axes[0, 1].tick_params(axis=&quot;x&quot;, rotation=20)
+axes[1, 0].hist(enriched[&quot;delivery_days&quot;], bins=range(1, 27), color=&quot;#0891B2&quot;)
+axes[1, 0].set_title(&quot;Delivery days&quot;)
+channel_share = enriched.groupby(&quot;channel&quot;)[&quot;net_revenue&quot;].sum()
+axes[1, 1].pie(channel_share.values, labels=channel_share.index, autopct=&quot;%1.0f%%&quot;)
+axes[1, 1].set_title(&quot;Channel share&quot;)
+fig.suptitle(&quot;Brightcart dashboard&quot;, fontsize=14)
+fig.tight_layout()
+fig.savefig(OUT / &quot;d07_dashboard.png&quot;, dpi=120)
+print(&quot;CHECK dashboard_axes&quot;, len(fig.axes))
+print(&quot;CHECK channel_top&quot;, channel_share.idxmax())
+</pre></div><p><strong>Expected output</strong>, from running the script:</p><div class="code-wrap"><div class="code-header"><span class="code-lang">Expected output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>CHECK line_points 22
+CHECK top_bar_height 34.21
+CHECK delivery_median 4.0
+CHECK dashboard_axes 4
+CHECK channel_top Web</pre></div></div></div><div class="section"><div class="section-header"><div class="section-icon">☑️</div><div><h2>Checklist</h2><p>Everything here must be true before you move on.</p></div></div><div class="section-body"><ul class="checklist"><li>Line chart with title, axis labels, legend and grid</li><li>Bar chart with value labels and zero baseline</li><li>Histogram with dashed median line and annotation</li><li>2 by 2 dashboard with a title on every panel</li><li>Every chart saved as a PNG</li><li>One chart problem found and fixed</li></ul></div></div><div class="section"><div class="section-header"><div class="section-icon">✅</div><div><h2>Quiz</h2><p>20 questions. Pass mark is 16 of 20 (80%).</p></div></div><div class="section-body">
+      <div class="quiz-meta">
+        <div class="quiz-stat"><div class="num"><span id="score-live2">0</span></div><div class="lbl">Correct so far</div></div>
+        <div class="quiz-stat"><div class="num"><span id="answered-live2">0</span> / 20</div><div class="lbl">Answered</div></div>
+      </div>
+      <div id="quiz-container"></div>
+      <div class="quiz-btns">
+        <button class="btn btn-primary" onclick="submitQuiz()">Submit answers</button>
+        <button class="btn btn-outline" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div class="score-box" id="score-box">
+        <div class="big-score" id="final-score"></div>
+        <div class="score-msg" id="score-msg"></div>
+        <div class="score-detail" id="score-detail"></div>
+      </div></div></div>
+</div>
+<div class="day-footer">
+  <div class="series">Brightcart 10-day data analyst project</div>
+  <div class="days-row"><a class="day-pill" href="day01.html">Day 1</a><a class="day-pill" href="day02.html">Day 2</a><a class="day-pill" href="day03.html">Day 3</a><a class="day-pill" href="day04.html">Day 4</a><a class="day-pill" href="day05.html">Day 5</a><a class="day-pill" href="day06.html">Day 6</a><a class="day-pill active" href="day07.html">Day 7</a><a class="day-pill" href="day08.html">Day 8</a><a class="day-pill" href="day09.html">Day 9</a><a class="day-pill" href="day10.html">Day 10</a></div>
+</div>
+<script>
+
+const questions=[{"q": "1. What does plt.subplots(2, 2) create?", "opts": ["Two charts only", "A figure with a 2 by 2 grid of axes", "Two figures", "A table"], "ans": 1, "explain": "subplots(2, 2) returns a figure with four axes in a grid."}, {"q": "2. What is the difference between a figure and an axes?", "opts": ["Figure is text", "No difference", "The figure is the whole picture; the axes is the drawing area inside it", "Axes is the file"], "ans": 2, "explain": "A figure holds one or more axes."}, {"q": "3. How many points does the monthly line chart plot?", "opts": ["24", "62", "12", "22"], "ans": 3, "explain": "The monthly series has 22 points."}, {"q": "4. Why should bars start at zero?", "opts": ["A cut-off axis exaggerates small differences", "Matplotlib requires it", "It saves ink", "It is a style rule only"], "ans": 0, "explain": "A non-zero baseline makes small gaps look large."}, {"q": "5. What does ax.bar_label do?", "opts": ["Renames the axis", "Writes the value on top of each bar", "Deletes the bars", "Sorts the bars"], "ans": 1, "explain": "bar_label adds value text to bars."}, {"q": "6. What is the largest category revenue shown in the bar chart?", "opts": ["About 1 million", "About 8 million", "About 34 million", "About 57 million"], "ans": 2, "explain": "Electronics is about 34.2 million."}, {"q": "7. What is the median delivery time shown in the histogram?", "opts": ["5 days", "9 days", "2 days", "4 days"], "ans": 3, "explain": "The median delivery time is 4 days."}, {"q": "8. Why use tight_layout()?", "opts": ["To stop titles and labels overlapping", "To add data", "To save the file", "To change colours"], "ans": 0, "explain": "tight_layout adjusts spacing so labels fit."}, {"q": "9. What does savefig(..., dpi=120) control?", "opts": ["File size of the data", "The resolution of the saved image", "The number of bars", "The colour scheme"], "ans": 1, "explain": "dpi sets the image resolution."}, {"q": "10. Which axes method sets the chart title?", "opts": ["ax.header()", "ax.name()", "ax.set_title()", "ax.label()"], "ans": 2, "explain": "set_title sets the title of one axes."}, {"q": "11. What does ax.legend() need to work?", "opts": ["A dpi setting", "A date index", "A label on each plotted item", "A number of rows"], "ans": 2, "explain": "The legend reads the label= given to each plotted series."}, {"q": "12. Which chart best shows how a spread of values is distributed?", "opts": ["A histogram", "A line of one point", "A table", "A pie chart"], "ans": 0, "explain": "Histograms show distribution shape."}, {"q": "13. Which chart best shows change over time?", "opts": ["A line chart", "A pie chart of one year", "A single number", "A scatter with no axes"], "ans": 0, "explain": "Lines show trend across time."}, {"q": "14. What is a dashboard in this context?", "opts": ["A database", "One large chart", "Several related charts in one figure in a grid", "A text file"], "ans": 2, "explain": "A dashboard is a grid of charts."}, {"q": "15. Why use matplotlib.use('Agg') in a script?", "opts": ["To speed up pandas", "To remove labels", "To change the colours", "To draw without opening a window, so charts can be saved on a server"], "ans": 3, "explain": "Agg is a non-interactive backend for saving files."}, {"q": "16. What is the purpose of an annotation?", "opts": ["To point at a specific value or event on the chart", "To change the font", "To add a legend", "To hide data"], "ans": 0, "explain": "Annotations draw attention to one point."}, {"q": "17. What does figsize=(9, 4.5) control?", "opts": ["The data size", "The width and height of the figure in inches", "The number of bins", "The title length"], "ans": 1, "explain": "figsize sets the width and height."}, {"q": "18. What is the purpose of a dashed median line?", "opts": ["It shows the mean", "Decoration only", "It marks the median so a reader can compare each bar's spread with it", "It hides the histogram"], "ans": 2, "explain": "A reference line gives the reader a benchmark."}, {"q": "19. Why give each dashboard panel its own title?", "opts": ["It makes the file bigger", "Titles are optional", "Matplotlib requires it", "A reader must know what each small chart shows without guessing"], "ans": 3, "explain": "Each panel needs its own label so it can be read on its own."}, {"q": "20. What did the channel share pie chart show?", "opts": ["Share of net revenue by channel, with Web the largest", "Monthly totals", "Customer counts", "Delivery times"], "ans": 0, "explain": "The pie shows each channel's revenue share, and Web is largest."}];
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function setCounts(v){['score-live','score-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function setAnswered(v){['answered-live','answered-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q.replace(/^\d+\.\s*/,'')}</div></div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  setAnswered(userAnswers.filter(a=>a!==null).length);
+}
+function submitQuiz(){
+  if(submitted)return;
+  if(userAnswers.some(a=>a===null)){alert('Answer every question before you submit.');return;}
+  submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,60,"Re-read the sections behind the questions you missed. 📚"],[60,80,"Close. Re-run the solution and check the outputs. 💪"],[80,95,"Strong. You can clean, analyse and report on data with confidence. 🎉"],[95,101,"Excellent. 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  setCounts(correct);
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  setCounts(0);setAnswered(0);
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');if(ch)ch.classList.toggle('open');b.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+
+</script>
+</body>
+</html>

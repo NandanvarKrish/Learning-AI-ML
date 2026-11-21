@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 9: Returns, tests and uncertainty · Brightcart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+
+.code-lang{color:#93C5FD;}
+:root{--muted:#4A6FA5;}
+.table-note{font-size:12.5px;color:var(--muted);margin:6px 0 12px;}
+table{margin:8px 0 14px;}
+.err-out{border:1px solid #FCA5A5;background:#FEF2F2;border-radius:10px;padding:10px 12px;margin:6px 0 14px;}
+.err-label{font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px;}
+.err-out pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:12.5px;color:#7F1D1D;}
+@media(max-width:600px){.container{padding:0 16px;}.tbl-wrap table{font-size:12px;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">Brightcart</span><span class="sep">|</span>
+  <span class="day-label">Day 9 of 10</span>
+  <span class="spacer"></span>
+  <span class="progress-label">Quiz: <span id="answered-live">0</span>/20 · score <span id="score-live">0</span></span>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Brightcart data analyst project · Day 9 of 10</div>
+  <h1>Day 9: <span>Returns, tests and uncertainty</span></h1>
+  <p>Compare return rates across groups, test whether a difference could be chance with a permutation test, and put a confidence interval around an average.</p>
+</div>
+<div class="grad-banner"><p>4 to 5 hours · Is the difference real, or just chance?</p></div>
+<div class="container">
+<div class="section"><div class="section-header"><div class="section-icon">🎯</div><div><h2>Goal and deliverable</h2><p>Is the difference real, or just chance?</p></div></div><div class="section-body"><p>Compare return rates across groups, test whether a difference could be chance with a permutation test, and put a confidence interval around an average.</p><p><strong>Deliverable:</strong> notes/day09_tests.md and data/clean/discount_return_summary.csv.</p></div></div><div class="section"><div class="section-header"><div class="section-icon">🧰</div><div><h2>Tools and functions</h2><p>Learn each one, then use it in the steps below.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">np.random.default_rng(seed)</div><div class="mc-desc">A reproducible random number generator. The same seed gives the same results.</div><div class="mc-ex">rng = np.random.default_rng(42)</div></div><div class="mini-card"><div class="mc-name">rng.permutation(array)</div><div class="mc-desc">Shuffles an array. Used to build a &#x27;what if there were no real difference&#x27; world.</div><div class="mc-ex">rng.permutation(is_big)</div></div><div class="mini-card"><div class="mc-name">rng.choice(array, size, replace=True)</div><div class="mc-desc">Draws a random sample with repetition, used for the bootstrap.</div><div class="mc-ex">rng.choice(delivery, size=len(delivery), replace=True)</div></div><div class="mini-card"><div class="mc-name">np.percentile(array, [2.5, 97.5])</div><div class="mc-desc">Cut-off values, used to read a 95 percent interval from simulated results.</div><div class="mc-ex">np.percentile(boot_means, [2.5, 97.5])</div></div><div class="mini-card"><div class="mc-name">np.corrcoef(x, y)</div><div class="mc-desc">Correlation between two arrays, as a 2 by 2 matrix.</div><div class="mc-ex">np.corrcoef(delivery, flags)[0, 1]</div></div><div class="mini-card"><div class="mc-name">Boolean group split</div><div class="mc-desc">Separates rows into two groups with a condition, such as discount 15 percent or more.</div><div class="mc-ex">big = df[&#x27;discount_pct&#x27;] &gt;= 15</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🧠</div><div><h2>Concepts</h2><p>The ideas behind today's work.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">Observed difference</div><div class="mc-desc">Compare the two groups. The observed difference is the first answer, but it could still be chance. A difference of half a percentage point can happen by luck in a sample of thousands.</div></div><div class="mini-card"><div class="mc-name">Permutation test</div><div class="mc-desc">Shuffle the group labels many times, each time measure the difference, and count how often a shuffle gives a difference as large as the real one. That share is the p-value. Small values (below 0.05) suggest the difference is unlikely to be chance.</div></div><div class="mini-card"><div class="mc-name">Bootstrap interval</div><div class="mc-desc">Resample the data with replacement many times, calculate the average each time, and take the middle 95 percent of those averages. This is a range the true average is likely to fall within.</div></div><div class="mini-card"><div class="mc-name">Report the uncertainty</div><div class="mc-desc">State the estimate, the interval or p-value, and what it means in plain words. Never report a number alone when a range is available.</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🛠️</div><div><h2>Timed steps</h2><p>About 290 minutes of work. Open each step, do it, then move on.</p></div></div><div class="section-body"><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">1</div><h4>Overall and group return rates</h4><span class="phase-time">40 min</span><span class="chevron open">▼</span></div><div class="task-phase-body open"><p>Compute the overall return rate in percent. Then the return rate by category and by channel. Name the highest-return category and the lowest-return channel.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">2</div><h4>Define the question</h4><span class="phase-time">25 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Write the question in one sentence: 'Do discounts of 15 percent or more increase returns?' Create the group <code>big = discount_pct &gt;= 15</code>. Count the orders in it.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">3</div><h4>Observed difference</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Compute the return rate for each group and the difference in percentage points. Write what the sign of the difference means.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">4</div><h4>Permutation test</h4><span class="phase-time">60 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Shuffle the big-discount labels 5,000 times with a fixed seed. For each shuffle, compute the difference in return rates. Count how many shuffled differences are as large as the observed one in size. That share is the p-value.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">5</div><h4>Decide and explain</h4><span class="phase-time">25 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Compare the p-value with 0.05. Write the conclusion in plain words: is there evidence that discounts change returns? Include the number.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">6</div><h4>Bootstrap the delivery average</h4><span class="phase-time">50 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Resample the delivery days 2,000 times with replacement and compute each mean. Take the 2.5th and 97.5th percentiles as the interval. Report the mean and interval.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">7</div><h4>Correlation with returns</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Compute the correlation between delivery days and the return flag. Say whether delivery speed looks linked to returns, and how strong the link is.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">8</div><h4>Write the test note</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Save <code>discount_return_summary.csv</code> and write <code>notes/day09_tests.md</code> with the question, method, result and caveat.</p></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">💡</div><div><h2>Reference solution and expected output</h2><p>Check your work against this.</p></div></div><div class="section-body"><p>Try the task yourself first. Then compare your results with the reference below. Your numbers must match the expected output.</p><div class="code-wrap"><div class="code-header"><span class="code-lang">solutions/day09.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>&quot;&quot;&quot;Day 9 solution: return analysis and hypothesis testing with NumPy and pandas.
+
+Question: do bigger discounts (15 percent or more) lead to more returns?
+Method: observed difference in return rate, a permutation test, and a bootstrap confidence interval.
+&quot;&quot;&quot;
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+CLEAN = ROOT / &quot;data&quot; / &quot;clean&quot;
+
+df = pd.read_csv(CLEAN / &quot;orders_enriched.csv&quot;)
+rng = np.random.default_rng(42)  # fixed seed: the same numbers every run
+
+# ---- descriptive: return rate by category and by channel ---------------------
+print(&quot;CHECK overall_return_rate&quot;, round(df[&quot;returned_flag&quot;].mean() * 100, 2))
+by_cat = df.groupby(&quot;category&quot;)[&quot;returned_flag&quot;].mean().mul(100).round(2).sort_values(ascending=False)
+print(&quot;CHECK highest_return_category&quot;, by_cat.index[0], by_cat.iloc[0])
+by_channel = df.groupby(&quot;channel&quot;)[&quot;returned_flag&quot;].mean().mul(100).round(2)
+print(&quot;CHECK lowest_return_channel&quot;, by_channel.idxmin(), by_channel.min())
+
+# ---- the question: discount group comparison --------------------------------
+big = df[&quot;discount_pct&quot;] &gt;= 15
+rate_big = df.loc[big, &quot;returned_flag&quot;].mean()
+rate_small = df.loc[~big, &quot;returned_flag&quot;].mean()
+observed = rate_big - rate_small
+print(&quot;CHECK big_discount_orders&quot;, int(big.sum()))
+print(&quot;CHECK rate_difference_pts&quot;, round(observed * 100, 3))
+
+# ---- permutation test: shuffle the discount labels and see how big a gap appears by chance
+flags = df[&quot;returned_flag&quot;].to_numpy()
+is_big = big.to_numpy()
+n_perm = 5000
+diffs = np.empty(n_perm)
+for i in range(n_perm):
+    shuffled = rng.permutation(is_big)
+    diffs[i] = flags[shuffled].mean() - flags[~shuffled].mean()
+p_value = np.mean(np.abs(diffs) &gt;= abs(observed))
+print(&quot;CHECK permutation_p_value&quot;, round(float(p_value), 3))
+print(&quot;CHECK significant_at_5pct&quot;, bool(p_value &lt; 0.05))
+
+# ---- bootstrap: a 95 percent confidence interval for the average delivery time ---
+delivery = df[&quot;delivery_days&quot;].to_numpy()
+boot_means = np.array([rng.choice(delivery, size=len(delivery), replace=True).mean() for _ in range(2000)])
+low, high = np.percentile(boot_means, [2.5, 97.5])
+print(&quot;CHECK delivery_mean&quot;, round(float(delivery.mean()), 3))
+print(&quot;CHECK delivery_ci_low&quot;, round(float(low), 3))
+print(&quot;CHECK delivery_ci_high&quot;, round(float(high), 3))
+
+# ---- correlation: does longer delivery relate to returns? ---------------------
+r = np.corrcoef(delivery, flags)[0, 1]
+print(&quot;CHECK corr_delivery_return&quot;, round(float(r), 4))
+
+# ---- a small summary table for the report --------------------------------------
+summary = pd.DataFrame({
+    &quot;return_rate_pct&quot;: [rate_small * 100, rate_big * 100],
+    &quot;orders&quot;: [int((~big).sum()), int(big.sum())],
+}, index=[&quot;discount under 15&quot;, &quot;discount 15 or more&quot;])
+summary.to_csv(CLEAN / &quot;discount_return_summary.csv&quot;)
+print(&quot;CHECK summary_rows&quot;, len(summary))
+</pre></div><p><strong>Expected output</strong>, from running the script:</p><div class="code-wrap"><div class="code-header"><span class="code-lang">Expected output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>CHECK overall_return_rate 6.94
+CHECK highest_return_category Electronics 12.66
+CHECK lowest_return_channel Marketplace 6.48
+CHECK big_discount_orders 2179
+CHECK rate_difference_pts -0.501
+CHECK permutation_p_value 0.436
+CHECK significant_at_5pct False
+CHECK delivery_mean 4.838
+CHECK delivery_ci_low 4.78
+CHECK delivery_ci_high 4.896
+CHECK corr_delivery_return -0.0039
+CHECK summary_rows 2</pre></div></div></div><div class="section"><div class="section-header"><div class="section-icon">☑️</div><div><h2>Checklist</h2><p>Everything here must be true before you move on.</p></div></div><div class="section-body"><ul class="checklist"><li>Overall and group return rates reported</li><li>Question written in one sentence</li><li>Observed difference reported in percentage points</li><li>Permutation test run with a fixed seed</li><li>Conclusion stated in plain words with the p-value</li><li>Bootstrap interval for mean delivery time reported</li><li>Correlation with returns reported with its strength</li><li>Test note saved</li></ul></div></div><div class="section"><div class="section-header"><div class="section-icon">✅</div><div><h2>Quiz</h2><p>20 questions. Pass mark is 16 of 20 (80%).</p></div></div><div class="section-body">
+      <div class="quiz-meta">
+        <div class="quiz-stat"><div class="num"><span id="score-live2">0</span></div><div class="lbl">Correct so far</div></div>
+        <div class="quiz-stat"><div class="num"><span id="answered-live2">0</span> / 20</div><div class="lbl">Answered</div></div>
+      </div>
+      <div id="quiz-container"></div>
+      <div class="quiz-btns">
+        <button class="btn btn-primary" onclick="submitQuiz()">Submit answers</button>
+        <button class="btn btn-outline" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div class="score-box" id="score-box">
+        <div class="big-score" id="final-score"></div>
+        <div class="score-msg" id="score-msg"></div>
+        <div class="score-detail" id="score-detail"></div>
+      </div></div></div>
+</div>
+<div class="day-footer">
+  <div class="series">Brightcart 10-day data analyst project</div>
+  <div class="days-row"><a class="day-pill" href="day01.html">Day 1</a><a class="day-pill" href="day02.html">Day 2</a><a class="day-pill" href="day03.html">Day 3</a><a class="day-pill" href="day04.html">Day 4</a><a class="day-pill" href="day05.html">Day 5</a><a class="day-pill" href="day06.html">Day 6</a><a class="day-pill" href="day07.html">Day 7</a><a class="day-pill" href="day08.html">Day 8</a><a class="day-pill active" href="day09.html">Day 9</a><a class="day-pill" href="day10.html">Day 10</a></div>
+</div>
+<script>
+
+const questions=[{"q": "1. What is the overall return rate?", "opts": ["About 2 percent", "About 6.9 percent", "About 12.7 percent", "About 50 percent"], "ans": 1, "explain": "6.94 percent of orders were returned."}, {"q": "2. Which category has the highest return rate?", "opts": ["Apparel", "Books", "Electronics", "Home"], "ans": 2, "explain": "Electronics returns about 12.7 percent of orders."}, {"q": "3. Which channel has the lowest return rate?", "opts": ["Marketplace", "Store", "Web", "App"], "ans": 0, "explain": "Marketplace has the lowest return rate, about 6.5 percent."}, {"q": "4. How many orders have a discount of 15 percent or more?", "opts": ["About 900", "About 8,960", "About 60", "About 2,200"], "ans": 3, "explain": "2,179 orders have a discount of 15 percent or more."}, {"q": "5. The return rate difference between the two discount groups is about -0.5 points. What does the minus sign mean?", "opts": ["The bigger discount group returns less", "The data is wrong", "Returns are negative", "No difference"], "ans": 0, "explain": "A negative difference means the big-discount group had a slightly lower return rate."}, {"q": "6. What is a permutation test?", "opts": ["A join", "Reordering rows for display", "Shuffling group labels to see how large a difference chance alone produces", "A chart type"], "ans": 2, "explain": "Shuffling builds a no-difference world to compare with."}, {"q": "7. The permutation p-value here is about 0.44. What does that mean?", "opts": ["The data is wrong", "The discount is 44 percent", "The difference is significant", "A difference this large would often occur by chance, so there is no evidence of an effect"], "ans": 3, "explain": "p about 0.44 is far above 0.05, so the result could easily be chance."}, {"q": "8. Is the discount effect on returns statistically significant at 5 percent?", "opts": ["No", "It cannot be tested", "Only for Electronics", "Yes"], "ans": 0, "explain": "p is above 0.05, so the effect is not significant."}, {"q": "9. Why use a fixed random seed?", "opts": ["It makes the data bigger", "The same results repeat exactly, so anyone can check them", "It speeds up the test", "Seeds are required by pandas"], "ans": 1, "explain": "A fixed seed makes results reproducible."}, {"q": "10. What does a bootstrap interval estimate?", "opts": ["The median only", "The exact true mean", "A plausible range for the average, from resampling the data", "The number of rows"], "ans": 2, "explain": "Resampling gives a range for the average."}, {"q": "11. The bootstrap 95 percent interval for mean delivery is about 4.78 to 4.90 days. What does it tell us?", "opts": ["All deliveries take less than 5 days", "The mean is 100 days", "Every delivery is 4.8 days", "The true average is likely in this range, given the data"], "ans": 3, "explain": "The interval gives a plausible range for the average."}, {"q": "12. Why resample with replacement in a bootstrap?", "opts": ["So each simulated sample can differ, which measures how much the average could vary", "Replacement is required by NumPy", "To remove outliers", "To delete duplicates"], "ans": 0, "explain": "Sampling with replacement produces the variation the bootstrap needs."}, {"q": "13. What is the correlation between delivery days and returns?", "opts": ["About 0.9", "About 0.5", "About -0.004", "About 3.0"], "ans": 2, "explain": "The correlation is almost zero, so delivery speed is not linked to returns here."}, {"q": "14. What does a correlation near zero mean?", "opts": ["The data is missing", "Strong positive link", "No linear link between the two measures", "Strong negative link"], "ans": 2, "explain": "Close to zero means no linear relationship."}, {"q": "15. Why is p-value of 0.05 used as a cut-off?", "opts": ["It is the mean", "It is required by NumPy", "It is a law", "It is a common convention for calling a result unlikely to be chance"], "ans": 3, "explain": "0.05 is a convention, not a law."}, {"q": "16. What is the observed difference?", "opts": ["The difference in return rates between the two real groups", "The p-value", "The sample size", "The shuffled difference"], "ans": 0, "explain": "The observed difference is the real measured gap."}, {"q": "17. Why should you report uncertainty with an estimate?", "opts": ["It makes the report longer", "A single number hides how much it could vary", "Managers prefer ranges only", "It is not needed"], "ans": 1, "explain": "A range shows how reliable the estimate is."}, {"q": "18. Which function selects random shuffles reproducibly here?", "opts": ["df.describe", "np.random.default_rng(seed).permutation", "pd.read_csv", "np.where"], "ans": 1, "explain": "A seeded generator with permutation gives reproducible shuffles."}, {"q": "19. What is a caveat to state with a return finding?", "opts": ["The result is always final", "Returns never matter", "None is needed", "The data are one company's sample, and the test does not prove cause"], "ans": 3, "explain": "Findings come with limits: one sample, and association is not cause."}, {"q": "20. What does a big-discount group of 2,179 orders mean for the test?", "opts": ["It is large enough for a reasonable comparison", "Only one order matters", "Tests need one million rows", "The sample is too small to test anything"], "ans": 0, "explain": "A few thousand rows make a useful comparison here."}];
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function setCounts(v){['score-live','score-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function setAnswered(v){['answered-live','answered-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q.replace(/^\d+\.\s*/,'')}</div></div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  setAnswered(userAnswers.filter(a=>a!==null).length);
+}
+function submitQuiz(){
+  if(submitted)return;
+  if(userAnswers.some(a=>a===null)){alert('Answer every question before you submit.');return;}
+  submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,60,"Re-read the sections behind the questions you missed. 📚"],[60,80,"Close. Re-run the solution and check the outputs. 💪"],[80,95,"Strong. You can clean, analyse and report on data with confidence. 🎉"],[95,101,"Excellent. 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  setCounts(correct);
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  setCounts(0);setAnswered(0);
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');if(ch)ch.classList.toggle('open');b.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+
+</script>
+</body>
+</html>

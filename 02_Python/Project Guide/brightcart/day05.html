@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 5: Time series analysis · Brightcart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+
+.code-lang{color:#93C5FD;}
+:root{--muted:#4A6FA5;}
+.table-note{font-size:12.5px;color:var(--muted);margin:6px 0 12px;}
+table{margin:8px 0 14px;}
+.err-out{border:1px solid #FCA5A5;background:#FEF2F2;border-radius:10px;padding:10px 12px;margin:6px 0 14px;}
+.err-label{font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px;}
+.err-out pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:12.5px;color:#7F1D1D;}
+@media(max-width:600px){.container{padding:0 16px;}.tbl-wrap table{font-size:12px;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">Brightcart</span><span class="sep">|</span>
+  <span class="day-label">Day 5 of 10</span>
+  <span class="spacer"></span>
+  <span class="progress-label">Quiz: <span id="answered-live">0</span>/20 · score <span id="score-live">0</span></span>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Brightcart data analyst project · Day 5 of 10</div>
+  <h1>Day 5: <span>Time series analysis</span></h1>
+  <p>Turn orders into monthly and quarterly series, measure growth, smooth the noise with rolling averages, and track how the channel mix changes.</p>
+</div>
+<div class="grad-banner"><p>4 to 5 hours · Trends, growth and seasonality over time</p></div>
+<div class="container">
+<div class="section"><div class="section-header"><div class="section-icon">🎯</div><div><h2>Goal and deliverable</h2><p>Trends, growth and seasonality over time</p></div></div><div class="section-body"><p>Turn orders into monthly and quarterly series, measure growth, smooth the noise with rolling averages, and track how the channel mix changes.</p><p><strong>Deliverable:</strong> data/clean/monthly_revenue.csv and notes/day05_trends.md.</p></div></div><div class="section"><div class="section-header"><div class="section-icon">🧰</div><div><h2>Tools and functions</h2><p>Learn each one, then use it in the steps below.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">set_index(&#x27;order_date&#x27;)</div><div class="mc-desc">Makes the date the index, which time-based methods need.</div><div class="mc-ex">ts = df.set_index(&#x27;order_date&#x27;).sort_index()</div></div><div class="mini-card"><div class="mc-name">resample(&#x27;ME&#x27;)</div><div class="mc-desc">Groups a time index into calendar periods. &#x27;ME&#x27; is month end, &#x27;QE&#x27; quarter end.</div><div class="mc-ex">ts[&#x27;net_revenue&#x27;].resample(&#x27;ME&#x27;).sum()</div></div><div class="mini-card"><div class="mc-name">pct_change()</div><div class="mc-desc">Percentage change from the previous row. Use *100 for percent.</div><div class="mc-ex">monthly.pct_change() * 100</div></div><div class="mini-card"><div class="mc-name">rolling(window).mean()</div><div class="mc-desc">Average of the last n rows, which smooths noisy series.</div><div class="mc-ex">monthly.rolling(3).mean()</div></div><div class="mini-card"><div class="mc-name">pd.Grouper(freq=)</div><div class="mc-desc">Groups by time inside a groupby, for example by month and channel together.</div><div class="mc-ex">groupby([pd.Grouper(freq=&#x27;ME&#x27;), &#x27;channel&#x27;])</div></div><div class="mini-card"><div class="mc-name">index.day_name()</div><div class="mc-desc">The weekday name of each date in a datetime index.</div><div class="mc-ex">ts.index.day_name()</div></div><div class="mini-card"><div class="mc-name">idxmax()</div><div class="mc-desc">The index label of the largest value, for example the best month.</div><div class="mc-ex">monthly.idxmax()</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🧠</div><div><h2>Concepts</h2><p>The ideas behind today's work.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">Why a DatetimeIndex</div><div class="mc-desc">Time methods need to know the calendar. Putting the date in the index lets <code>resample</code> group by month or quarter, and lets <code>rolling</code> average the right neighbours.</div></div><div class="mini-card"><div class="mc-name">Month-over-month and year-on-year</div><div class="mc-desc">Month-over-month compares each month with the one before. Seasonal businesses are better compared with the same month a year earlier, because a Christmas month always beats a February.</div></div><div class="mini-card"><div class="mc-name">Smoothing</div><div class="mc-desc">A rolling average reduces noise so the trend is visible. The first rows of a 3-month rolling average are NaN because there are not yet 3 months to average. This is expected.</div></div><div class="mini-card"><div class="mc-name">Share over time</div><div class="mc-desc">A share (channel revenue divided by total revenue for the month) shows whether a channel is growing relative to the others, even when total revenue is flat.</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🛠️</div><div><h2>Timed steps</h2><p>About 300 minutes of work. Open each step, do it, then move on.</p></div></div><div class="section-body"><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">1</div><h4>Load and index by date</h4><span class="phase-time">25 min</span><span class="chevron open">▼</span></div><div class="task-phase-body open"><p>Load <code>orders_enriched.csv</code> with <code>parse_dates</code>. Set <code>order_date</code> as the index and sort it. Confirm the first and last dates.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">2</div><h4>Monthly revenue</h4><span class="phase-time">40 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Resample net revenue to month end with <code>resample('ME').sum()</code>. Count the months (should be 22). Report the first month's revenue and the best month.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">3</div><h4>Growth and smoothing</h4><span class="phase-time">50 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Add a month-over-month percent column and a 3-month rolling average. Explain why the first two rolling values are NaN. Report the MoM change for January 2026.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">4</div><h4>Quarters and seasonality</h4><span class="phase-time">40 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Resample to quarter end with <code>'QE'</code>. Name the strongest quarter. Compare Q4 with the average of the other quarters and write one sentence on seasonality.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">5</div><h4>Channel share over time</h4><span class="phase-time">55 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Group by month and channel with <code>pd.Grouper(freq='ME')</code>. Convert the revenue to a share of each month's total. Report the App share for the first and last months, and say whether App is growing.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">6</div><h4>Weekday pattern</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Group net revenue by <code>index.day_name()</code>. Name the weekday with the most revenue. Decide whether the difference is large enough to act on.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">7</div><h4>Save the monthly table</h4><span class="phase-time">25 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Write <code>monthly_revenue.csv</code> with revenue, MoM percent and rolling average for Day 7 and Day 10.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">8</div><h4>Write the trend note</h4><span class="phase-time">35 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>In <code>notes/day05_trends.md</code>, write three trend statements, each with its number and its time period.</p></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">💡</div><div><h2>Reference solution and expected output</h2><p>Check your work against this.</p></div></div><div class="section-body"><p>Try the task yourself first. Then compare your results with the reference below. Your numbers must match the expected output.</p><div class="code-wrap"><div class="code-header"><span class="code-lang">solutions/day05.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>&quot;&quot;&quot;Day 5 solution: time series with pandas: monthly resample, growth, rolling averages, channel mix over time.&quot;&quot;&quot;
+from pathlib import Path
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+CLEAN = ROOT / &quot;data&quot; / &quot;clean&quot;
+
+df = pd.read_csv(CLEAN / &quot;orders_enriched.csv&quot;, parse_dates=[&quot;order_date&quot;])
+
+# A time series needs a DatetimeIndex so resample() and rolling() know the calendar.
+ts = df.set_index(&quot;order_date&quot;).sort_index()
+
+# ---- monthly totals -----------------------------------------------------------
+monthly = ts[&quot;net_revenue&quot;].resample(&quot;ME&quot;).sum()          # &#x27;ME&#x27; = month end
+print(&quot;CHECK months&quot;, len(monthly))
+print(&quot;CHECK first_month_revenue&quot;, round(monthly.iloc[0], 2))
+print(&quot;CHECK best_month&quot;, monthly.idxmax().strftime(&quot;%Y-%m&quot;))
+print(&quot;CHECK best_month_revenue&quot;, round(monthly.max(), 2))
+
+# ---- month-over-month growth and a 3-month rolling average -------------------
+mom = monthly.pct_change() * 100
+roll3 = monthly.rolling(window=3).mean()
+print(&quot;CHECK mom_2026_01_pct&quot;, round(float(mom.loc[&quot;2026-01&quot;].iloc[0]), 2))
+print(&quot;CHECK roll3_last&quot;, round(float(roll3.iloc[-1]), 2))
+
+# ---- Q4 versus the rest of the year -----------------------------------------
+q = ts[&quot;net_revenue&quot;].resample(&quot;QE&quot;).sum()                 # quarter end
+print(&quot;CHECK quarters&quot;, len(q))
+print(&quot;CHECK strongest_quarter&quot;, q.idxmax().strftime(&quot;%Y-Q&quot;) + str((q.idxmax().month - 1) // 3 + 1))
+
+# ---- channel mix over time (share of revenue per month) ----------------------
+by_month_channel = ts.groupby([pd.Grouper(freq=&quot;ME&quot;), &quot;channel&quot;])[&quot;net_revenue&quot;].sum().unstack(&quot;channel&quot;)
+share = by_month_channel.div(by_month_channel.sum(axis=1), axis=0) * 100
+print(&quot;CHECK app_share_first_month&quot;, round(share[&quot;App&quot;].iloc[0], 2))
+print(&quot;CHECK app_share_last_month&quot;, round(share[&quot;App&quot;].iloc[-1], 2))
+
+# ---- busiest weekday, using the datetime index ------------------------------
+weekday = ts[&quot;net_revenue&quot;].groupby(ts.index.day_name()).sum().sort_values(ascending=False)
+print(&quot;CHECK best_weekday&quot;, weekday.index[0])
+
+# ---- save the monthly table for Day 7 and Day 8 -----------------------------
+out = pd.DataFrame({&quot;revenue&quot;: monthly, &quot;mom_pct&quot;: mom, &quot;rolling_3m&quot;: roll3})
+out.index.name = &quot;month_end&quot;
+out.to_csv(CLEAN / &quot;monthly_revenue.csv&quot;)
+</pre></div><p><strong>Expected output</strong>, from running the script:</p><div class="code-wrap"><div class="code-header"><span class="code-lang">Expected output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>CHECK months 22
+CHECK first_month_revenue 2744263.01
+CHECK best_month 2026-09
+CHECK best_month_revenue 3055269.7
+CHECK mom_2026_01_pct -6.6
+CHECK roll3_last 2674433.0
+CHECK quarters 8
+CHECK strongest_quarter 2025-Q4
+CHECK app_share_first_month 27.77
+CHECK app_share_last_month 31.8
+CHECK best_weekday Tuesday</pre></div></div></div><div class="section"><div class="section-header"><div class="section-icon">☑️</div><div><h2>Checklist</h2><p>Everything here must be true before you move on.</p></div></div><div class="section-body"><ul class="checklist"><li>Orders indexed by date and sorted</li><li>Monthly series has 22 months</li><li>MoM percent and 3-month rolling average calculated</li><li>Strongest quarter identified</li><li>Channel share over time calculated</li><li>Weekday pattern reported</li><li>Trend note with three numbered statements</li></ul></div></div><div class="section"><div class="section-header"><div class="section-icon">✅</div><div><h2>Quiz</h2><p>20 questions. Pass mark is 16 of 20 (80%).</p></div></div><div class="section-body">
+      <div class="quiz-meta">
+        <div class="quiz-stat"><div class="num"><span id="score-live2">0</span></div><div class="lbl">Correct so far</div></div>
+        <div class="quiz-stat"><div class="num"><span id="answered-live2">0</span> / 20</div><div class="lbl">Answered</div></div>
+      </div>
+      <div id="quiz-container"></div>
+      <div class="quiz-btns">
+        <button class="btn btn-primary" onclick="submitQuiz()">Submit answers</button>
+        <button class="btn btn-outline" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div class="score-box" id="score-box">
+        <div class="big-score" id="final-score"></div>
+        <div class="score-msg" id="score-msg"></div>
+        <div class="score-detail" id="score-detail"></div>
+      </div></div></div>
+</div>
+<div class="day-footer">
+  <div class="series">Brightcart 10-day data analyst project</div>
+  <div class="days-row"><a class="day-pill" href="day01.html">Day 1</a><a class="day-pill" href="day02.html">Day 2</a><a class="day-pill" href="day03.html">Day 3</a><a class="day-pill" href="day04.html">Day 4</a><a class="day-pill active" href="day05.html">Day 5</a><a class="day-pill" href="day06.html">Day 6</a><a class="day-pill" href="day07.html">Day 7</a><a class="day-pill" href="day08.html">Day 8</a><a class="day-pill" href="day09.html">Day 9</a><a class="day-pill" href="day10.html">Day 10</a></div>
+</div>
+<script>
+
+const questions=[{"q": "1. Why must the date be the index for resample?", "opts": ["It is a pandas rule for speed", "resample groups by time periods, so it needs to know which column holds the dates", "Dates cannot be in columns", "It removes missing dates"], "ans": 1, "explain": "resample works on a datetime index."}, {"q": "2. What does resample('ME').sum() produce for this data?", "opts": ["The median per day", "One value per order", "One total per calendar month", "One total for the whole file"], "ans": 2, "explain": "'ME' groups by calendar month end, so you get one total per month."}, {"q": "3. How many months does the monthly series cover?", "opts": ["22", "24", "12", "18"], "ans": 0, "explain": "January 2025 to October 2026 gives 22 months."}, {"q": "4. What does pct_change() * 100 calculate?", "opts": ["The percent change from the previous period", "The average", "The index", "The absolute change"], "ans": 0, "explain": "pct_change gives the fractional change from the previous row, and * 100 makes it a percent."}, {"q": "5. In this data, what was the month-over-month change in January 2026?", "opts": ["About -6.6 percent", "About +21.5 percent", "About +0.0 percent", "About -50 percent"], "ans": 0, "explain": "January 2026 was about 6.6 percent below December 2025."}, {"q": "6. Why are the first two values of a 3-month rolling average NaN?", "opts": ["A bug", "The data is missing", "There are not yet three months to average", "Rolling averages start at zero"], "ans": 2, "explain": "A 3-month window needs three values, so the first two windows are incomplete."}, {"q": "7. What does a rolling average do?", "opts": ["Removes outliers", "Sorts the months", "Adds a column of dates", "Smooths short-term noise so the trend is easier to see"], "ans": 3, "explain": "A rolling mean averages neighbouring values to show the trend."}, {"q": "8. What is the best month for revenue?", "opts": ["September 2026", "December 2025", "October 2026", "January 2025"], "ans": 0, "explain": "September 2026 has the highest monthly net revenue, about 3.06 million."}, {"q": "9. Which quarter was the strongest?", "opts": ["2025 Q1", "2025 Q4", "2026 Q2", "2026 Q3"], "ans": 1, "explain": "2025 Q4 is the strongest quarter in this data."}, {"q": "10. Why compare the same month a year apart for seasonal data?", "opts": ["It removes trend", "It is easier to type", "Seasonal patterns repeat, so a Christmas month should be compared with last Christmas", "Pandas cannot compare months"], "ans": 2, "explain": "Year-on-year comparison removes the seasonal effect."}, {"q": "11. What does pd.Grouper(freq='ME') do inside a groupby?", "opts": ["Sorts by name", "Counts rows", "Deletes the month", "Groups by calendar month, alongside other columns such as channel"], "ans": 3, "explain": "Grouper lets you group by a time period in a groupby."}, {"q": "12. The App channel share was about 27.8 percent in the first month and about 31.8 percent in the last. What does this mean?", "opts": ["App's share grew by about 4 points", "App doubled", "The data is wrong", "App fell"], "ans": 0, "explain": "A rise from 27.8 to 31.8 percent is a growth of about 4 percentage points in its share."}, {"q": "13. What is a share over time?", "opts": ["A stock price", "A channel's revenue divided by the total revenue for the same period", "A count of customers", "A sorted list"], "ans": 1, "explain": "Shares show relative change even when totals move."}, {"q": "14. Which weekday had the most net revenue?", "opts": ["Sunday", "Monday", "Tuesday", "Friday"], "ans": 2, "explain": "Tuesday has the highest total net revenue by weekday."}, {"q": "15. What does idxmax() return on a monthly series?", "opts": ["The number of months", "The first row", "The largest value", "The label (month) where the largest value occurs"], "ans": 3, "explain": "idxmax returns the index label, here the month."}, {"q": "16. Why use resample('QE') for quarters?", "opts": ["It groups the dates into calendar quarters ending at quarter end", "It shows daily values", "It removes Q4", "It is a typo"], "ans": 0, "explain": "'QE' is the quarter-end frequency."}, {"q": "17. What is a risk of reading one month's growth alone?", "opts": ["There is no risk", "A single month can be unusual, so trend and seasonality should be checked", "Growth is always positive", "It causes missing values"], "ans": 1, "explain": "One month can mislead; look at the trend and the season."}, {"q": "18. Why is a datetime index better than text dates for time work?", "opts": ["Text is faster", "Text dates cannot be stored", "Real dates can be sorted, grouped and shifted by calendar periods", "It makes the file smaller"], "ans": 2, "explain": "Real datetimes support calendar arithmetic and grouping."}, {"q": "19. Which function converts text dates into real dates?", "opts": ["describe", "unstack", "to_csv", "to_datetime"], "ans": 3, "explain": "pd.to_datetime converts text to datetimes."}, {"q": "20. What should the trend note contain?", "opts": ["Statements each with a number and a time period", "Source code", "Random opinions", "Only charts"], "ans": 0, "explain": "Each claim needs a number and a period so it can be checked."}];
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function setCounts(v){['score-live','score-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function setAnswered(v){['answered-live','answered-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q.replace(/^\d+\.\s*/,'')}</div></div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  setAnswered(userAnswers.filter(a=>a!==null).length);
+}
+function submitQuiz(){
+  if(submitted)return;
+  if(userAnswers.some(a=>a===null)){alert('Answer every question before you submit.');return;}
+  submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,60,"Re-read the sections behind the questions you missed. 📚"],[60,80,"Close. Re-run the solution and check the outputs. 💪"],[80,95,"Strong. You can clean, analyse and report on data with confidence. 🎉"],[95,101,"Excellent. 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  setCounts(correct);
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  setCounts(0);setAnswered(0);
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');if(ch)ch.classList.toggle('open');b.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+
+</script>
+</body>
+</html>

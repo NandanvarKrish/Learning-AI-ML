@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 8: Statistical charts with Seaborn · Brightcart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+
+.code-lang{color:#93C5FD;}
+:root{--muted:#4A6FA5;}
+.table-note{font-size:12.5px;color:var(--muted);margin:6px 0 12px;}
+table{margin:8px 0 14px;}
+.err-out{border:1px solid #FCA5A5;background:#FEF2F2;border-radius:10px;padding:10px 12px;margin:6px 0 14px;}
+.err-label{font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px;}
+.err-out pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:12.5px;color:#7F1D1D;}
+@media(max-width:600px){.container{padding:0 16px;}.tbl-wrap table{font-size:12px;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">Brightcart</span><span class="sep">|</span>
+  <span class="day-label">Day 8 of 10</span>
+  <span class="spacer"></span>
+  <span class="progress-label">Quiz: <span id="answered-live">0</span>/20 · score <span id="score-live">0</span></span>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Brightcart data analyst project · Day 8 of 10</div>
+  <h1>Day 8: <span>Statistical charts with Seaborn</span></h1>
+  <p>Use Seaborn to build the charts that compare groups, show correlation and reveal structure, and set a consistent theme across all of them.</p>
+</div>
+<div class="grad-banner"><p>4 to 5 hours · Distributions, categories, heatmaps and regression</p></div>
+<div class="container">
+<div class="section"><div class="section-header"><div class="section-icon">🎯</div><div><h2>Goal and deliverable</h2><p>Distributions, categories, heatmaps and regression</p></div></div><div class="section-body"><p>Use Seaborn to build the charts that compare groups, show correlation and reveal structure, and set a consistent theme across all of them.</p><p><strong>Deliverable:</strong> Five PNG charts in outputs/ and notes/day08_seaborn.md.</p></div></div><div class="section"><div class="section-header"><div class="section-icon">🧰</div><div><h2>Tools and functions</h2><p>Learn each one, then use it in the steps below.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">sns.set_theme(style, palette)</div><div class="mc-desc">Sets one look for every chart in the script.</div><div class="mc-ex">sns.set_theme(style=&#x27;whitegrid&#x27;)</div></div><div class="mini-card"><div class="mc-name">sns.displot(kind=&#x27;hist&#x27;, hue=)</div><div class="mc-desc">Figure-level histogram, with groups as colours and optional panels.</div><div class="mc-ex">sns.displot(data=df, x=&#x27;net_revenue&#x27;, hue=&#x27;segment&#x27;)</div></div><div class="mini-card"><div class="mc-name">sns.boxplot(x, y, hue)</div><div class="mc-desc">Shows median, quartiles and spread for each category.</div><div class="mc-ex">sns.boxplot(data=df, x=&#x27;category&#x27;, y=&#x27;net_revenue&#x27;)</div></div><div class="mini-card"><div class="mc-name">sns.heatmap(pivot, annot=True)</div><div class="mc-desc">Colours a table by its numbers, with values written in each cell.</div><div class="mc-ex">sns.heatmap(pivot, cmap=&#x27;Blues&#x27;, annot=True)</div></div><div class="mini-card"><div class="mc-name">sns.regplot(x, y)</div><div class="mc-desc">Scatter plot with a fitted straight line and a confidence band.</div><div class="mc-ex">sns.regplot(data=df, x=&#x27;qty&#x27;, y=&#x27;net_revenue&#x27;)</div></div><div class="mini-card"><div class="mc-name">sns.catplot(kind=&#x27;bar&#x27;, col=)</div><div class="mc-desc">Figure-level bar chart, with one panel per group.</div><div class="mc-ex">sns.catplot(data=df, x=&#x27;channel&#x27;, y=&#x27;net_revenue&#x27;, col=&#x27;segment&#x27;, kind=&#x27;bar&#x27;)</div></div><div class="mini-card"><div class="mc-name">df.corr()</div><div class="mc-desc">Correlation matrix of numeric columns, the input for a heatmap of relationships.</div><div class="mc-ex">df[[&#x27;qty&#x27;, &#x27;net_revenue&#x27;]].corr()</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🧠</div><div><h2>Concepts</h2><p>The ideas behind today's work.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">Axes-level and figure-level</div><div class="mc-desc">Axes-level functions (boxplot, heatmap, regplot) draw on one axes you pass with <code>ax=</code>. Figure-level functions (displot, catplot) build their own figure and can create panels.</div></div><div class="mini-card"><div class="mc-name">Distributions</div><div class="mc-desc">Revenue per order is skewed: many small orders and a few large ones. A histogram shows this shape, and a boxplot shows the median and spread by group.</div></div><div class="mini-card"><div class="mc-name">Correlation is not cause</div><div class="mc-desc">A correlation coefficient measures how two numbers move together. It does not show that one causes the other. Quantity and net revenue are related because a bigger order has more items. That is not a discovery about customers.</div></div><div class="mini-card"><div class="mc-name">A consistent theme</div><div class="mc-desc">Set the theme once and keep the same palette in every chart. Readers should not have to relearn colours between charts.</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🛠️</div><div><h2>Timed steps</h2><p>About 285 minutes of work. Open each step, do it, then move on.</p></div></div><div class="section-body"><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">1</div><h4>Set the theme</h4><span class="phase-time">15 min</span><span class="chevron open">▼</span></div><div class="task-phase-body open"><p>Call <code>sns.set_theme</code> once at the top of the script. Choose one style and one palette, and say why in your notes.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">2</div><h4>Distribution by segment</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Build a stacked histogram of net revenue per order, coloured by segment, with <code>sns.displot</code>. Set a title and axis labels. Describe the shape of the distribution.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">3</div><h4>Category comparison</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Build a boxplot of net revenue by category with outliers hidden. Find the category with the highest median and explain why its median can be higher than its average suggests.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">4</div><h4>Heatmap of region and month</h4><span class="phase-time">60 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Build a pivot table of revenue (in millions) with region as rows and month number as columns. Draw a heatmap with values in each cell. Name the region and month with the highest value.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">5</div><h4>Quantity and revenue</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Plot quantity against net revenue with <code>sns.regplot</code> on a random sample of 1,500 orders. Compute the correlation and write a sentence on what it does and does not show.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">6</div><h4>Faceted bars</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Use <code>sns.catplot</code> with kind='bar' to show average net revenue by channel, one panel per segment, with a 95 percent confidence interval. Compare the Enterprise panel with the Consumer panel.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">7</div><h4>Review the set</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Open each saved chart. Confirm the theme, labels and colours match. Write one improvement you would make for a non-technical audience.</p></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">💡</div><div><h2>Reference solution and expected output</h2><p>Check your work against this.</p></div></div><div class="section-body"><p>Try the task yourself first. Then compare your results with the reference below. Your numbers must match the expected output.</p><div class="code-wrap"><div class="code-header"><span class="code-lang">solutions/day08.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>&quot;&quot;&quot;Day 8 solution: Seaborn statistical plots: distributions, categories, heatmap, regression and facets.&quot;&quot;&quot;
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use(&quot;Agg&quot;)
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+ROOT = Path(__file__).resolve().parents[1]
+CLEAN = ROOT / &quot;data&quot; / &quot;clean&quot;
+OUT = ROOT / &quot;outputs&quot;
+OUT.mkdir(exist_ok=True)
+
+df = pd.read_csv(CLEAN / &quot;orders_enriched.csv&quot;, parse_dates=[&quot;order_date&quot;])
+sns.set_theme(style=&quot;whitegrid&quot;, palette=&quot;deep&quot;)
+
+# ---- 1. Distribution: order value by segment (histogram with KDE) -----------
+g = sns.displot(data=df, x=&quot;net_revenue&quot;, hue=&quot;segment&quot;, kind=&quot;hist&quot;, bins=40,
+                multiple=&quot;stack&quot;, height=4, aspect=1.6)
+g.set(title=&quot;Order value by segment&quot;, xlabel=&quot;Net revenue per order&quot;, ylabel=&quot;Orders&quot;)
+g.savefig(OUT / &quot;d08_order_value_hist.png&quot;, dpi=120)
+print(&quot;CHECK displot_facets&quot;, len(g.axes.flat))
+
+# ---- 2. Categorical comparison: boxplot of order value by category ----------
+fig, ax = plt.subplots(figsize=(8, 4.5))
+sns.boxplot(data=df, x=&quot;category&quot;, y=&quot;net_revenue&quot;, hue=&quot;category&quot;, legend=False, ax=ax, showfliers=False)
+ax.set_title(&quot;Order value spread by category (outliers hidden)&quot;)
+fig.tight_layout()
+fig.savefig(OUT / &quot;d08_category_box.png&quot;, dpi=120)
+medians = df.groupby(&quot;category&quot;)[&quot;net_revenue&quot;].median().round(2)
+print(&quot;CHECK category_median_max&quot;, medians.idxmax())
+
+# ---- 3. Heatmap: revenue by region (rows) and month (columns) ----------------
+df[&quot;month&quot;] = df[&quot;order_date&quot;].dt.month
+pivot = df.pivot_table(index=&quot;region&quot;, columns=&quot;month&quot;, values=&quot;net_revenue&quot;, aggfunc=&quot;sum&quot;) / 1e6
+fig, ax = plt.subplots(figsize=(9, 3.8))
+sns.heatmap(pivot, cmap=&quot;Blues&quot;, annot=True, fmt=&quot;.1f&quot;, cbar_kws={&quot;label&quot;: &quot;Revenue (M)&quot;}, ax=ax)
+ax.set_title(&quot;Revenue by region and calendar month (all years, millions)&quot;)
+fig.tight_layout()
+fig.savefig(OUT / &quot;d08_region_month_heatmap.png&quot;, dpi=120)
+print(&quot;CHECK heatmap_shape&quot;, pivot.shape)
+
+# ---- 4. Relationship: quantity vs net revenue with a regression line ---------
+fig, ax = plt.subplots(figsize=(7, 4.5))
+sns.regplot(data=df.sample(1500, random_state=1), x=&quot;qty&quot;, y=&quot;net_revenue&quot;,
+            scatter_kws={&quot;alpha&quot;: 0.3}, line_kws={&quot;color&quot;: &quot;crimson&quot;}, ax=ax)
+ax.set_title(&quot;Quantity and net revenue (sample of 1,500 orders)&quot;)
+fig.tight_layout()
+fig.savefig(OUT / &quot;d08_qty_revenue_reg.png&quot;, dpi=120)
+slope = float(pd.Series(df[&quot;net_revenue&quot;]).corr(df[&quot;qty&quot;]))
+print(&quot;CHECK qty_revenue_corr&quot;, round(slope, 3))
+
+# ---- 5. Faceted bars: average order value by channel, one panel per segment --
+bar = sns.catplot(data=df, x=&quot;channel&quot;, y=&quot;net_revenue&quot;, col=&quot;segment&quot;, kind=&quot;bar&quot;,
+                  estimator=&quot;mean&quot;, errorbar=(&quot;ci&quot;, 95), height=3.6, aspect=0.9, color=&quot;#2563EB&quot;)
+bar.set_axis_labels(&quot;Channel&quot;, &quot;Average net revenue&quot;)
+bar.savefig(OUT / &quot;d08_channel_by_segment.png&quot;, dpi=120)
+seg_means = df.groupby(&quot;segment&quot;)[&quot;net_revenue&quot;].mean().round(2)
+print(&quot;CHECK enterprise_avg_order&quot;, seg_means[&quot;Enterprise&quot;])
+print(&quot;CHECK facet_count&quot;, len(bar.axes.flat))
+</pre></div><p><strong>Expected output</strong>, from running the script:</p><div class="code-wrap"><div class="code-header"><span class="code-lang">Expected output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>CHECK displot_facets 1
+CHECK category_median_max Electronics
+CHECK heatmap_shape (5, 12)
+CHECK qty_revenue_corr 0.524
+CHECK enterprise_avg_order 5880.85
+CHECK facet_count 3</pre></div></div></div><div class="section"><div class="section-header"><div class="section-icon">☑️</div><div><h2>Checklist</h2><p>Everything here must be true before you move on.</p></div></div><div class="section-body"><ul class="checklist"><li>Theme set once and used everywhere</li><li>Histogram by segment with labels and a shape description</li><li>Boxplot by category with the highest median named</li><li>Heatmap of region by month with values in cells</li><li>Regression scatter and correlation reported with a caveat</li><li>Faceted bar chart with confidence intervals</li><li>Review sentence on improving for a non-technical reader</li></ul></div></div><div class="section"><div class="section-header"><div class="section-icon">✅</div><div><h2>Quiz</h2><p>20 questions. Pass mark is 16 of 20 (80%).</p></div></div><div class="section-body">
+      <div class="quiz-meta">
+        <div class="quiz-stat"><div class="num"><span id="score-live2">0</span></div><div class="lbl">Correct so far</div></div>
+        <div class="quiz-stat"><div class="num"><span id="answered-live2">0</span> / 20</div><div class="lbl">Answered</div></div>
+      </div>
+      <div id="quiz-container"></div>
+      <div class="quiz-btns">
+        <button class="btn btn-primary" onclick="submitQuiz()">Submit answers</button>
+        <button class="btn btn-outline" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div class="score-box" id="score-box">
+        <div class="big-score" id="final-score"></div>
+        <div class="score-msg" id="score-msg"></div>
+        <div class="score-detail" id="score-detail"></div>
+      </div></div></div>
+</div>
+<div class="day-footer">
+  <div class="series">Brightcart 10-day data analyst project</div>
+  <div class="days-row"><a class="day-pill" href="day01.html">Day 1</a><a class="day-pill" href="day02.html">Day 2</a><a class="day-pill" href="day03.html">Day 3</a><a class="day-pill" href="day04.html">Day 4</a><a class="day-pill" href="day05.html">Day 5</a><a class="day-pill" href="day06.html">Day 6</a><a class="day-pill" href="day07.html">Day 7</a><a class="day-pill active" href="day08.html">Day 8</a><a class="day-pill" href="day09.html">Day 9</a><a class="day-pill" href="day10.html">Day 10</a></div>
+</div>
+<script>
+
+const questions=[{"q": "1. What does sns.set_theme do?", "opts": ["Changes the data", "Sets one consistent style and palette for every Seaborn chart", "Saves a file", "Sorts the data"], "ans": 1, "explain": "set_theme applies a look to all following charts."}, {"q": "2. What is the difference between axes-level and figure-level functions?", "opts": ["Axes-level cannot be saved", "None", "Axes-level draws on one axes you pass; figure-level builds its own figure and can make panels", "Figure-level is older"], "ans": 2, "explain": "Figure-level functions such as displot and catplot manage their own figures."}, {"q": "3. Why is the net revenue histogram skewed?", "opts": ["The chart is wrong", "Revenue is negative", "Revenue is always equal", "Many orders are small and a few are very large"], "ans": 3, "explain": "Most orders are small with a long tail of large ones."}, {"q": "4. What does a boxplot show?", "opts": ["Median, quartiles and spread for each group", "The file size", "The date", "Each single value"], "ans": 0, "explain": "A boxplot summarises the middle half and the spread of each group."}, {"q": "5. Which category has the highest median net revenue per order?", "opts": ["Books", "Electronics", "Sports", "Home"], "ans": 1, "explain": "Electronics has the highest median order value."}, {"q": "6. Why can a category's median be higher than its average suggests?", "opts": ["There is no reason", "Medians are always larger", "Long tails push the mean up, so the typical order can be lower than the average", "Averages are wrong"], "ans": 2, "explain": "In skewed data the mean is pulled above the typical value, not below."}, {"q": "7. What does annot=True do in a heatmap?", "opts": ["Adds a title", "Sorts the rows", "Hides the colours", "Writes the value in each cell"], "ans": 3, "explain": "annot writes the numbers inside the cells."}, {"q": "8. How should you find the highest cell in the region by month heatmap?", "opts": ["Read the largest value from the pivot table, not by eye", "Use the first cell", "Count the rows", "Guess from the colour"], "ans": 0, "explain": "Read the number from the table, because colour alone is hard to judge exactly."}, {"q": "9. What does sns.regplot add to a scatter plot?", "opts": ["A fitted line and a confidence band", "A pie chart", "A table of means", "A new column"], "ans": 0, "explain": "regplot fits a line and shows its uncertainty band."}, {"q": "10. The correlation between quantity and net revenue is about 0.52. What does this suggest?", "opts": ["The data is broken", "No relationship", "A moderate positive relationship: larger orders tend to be worth more", "Quantity causes revenue to fall"], "ans": 2, "explain": "A coefficient of about 0.5 is a moderate positive relationship."}, {"q": "11. Why is that correlation not a discovery about customer behaviour?", "opts": ["Correlation is never shown", "Revenue is not measured", "It is a discovery", "A bigger order has more items, so the link is largely built in"], "ans": 3, "explain": "Quantity is part of the revenue calculation, so the link is largely definitional."}, {"q": "12. What does catplot(kind='bar', col='segment') produce?", "opts": ["One bar chart panel per segment", "A pie chart", "A table", "One bar chart with all segments mixed"], "ans": 0, "explain": "col= creates one panel per segment."}, {"q": "13. What does the error bar in a bar chart with errorbar=('ci', 95) show?", "opts": ["The range of the data", "The 95 percent confidence interval of the mean", "The standard deviation of the orders", "The number of orders"], "ans": 1, "explain": "The error bar is a confidence interval of the mean."}, {"q": "14. Why compare Enterprise and Consumer panels?", "opts": ["To remove a segment", "They have the same data", "To see whether channel and value differ between customer types", "Panels cannot be compared"], "ans": 2, "explain": "Comparing panels shows how the same measure differs across groups."}, {"q": "15. What is df.corr() used for?", "opts": ["Sorting dates", "Joining tables", "Counting rows", "Computing the correlation matrix of numeric columns"], "ans": 3, "explain": "corr returns the correlation between each pair of numeric columns."}, {"q": "16. Why use a sample of 1,500 orders for the regression scatter?", "opts": ["A smaller sample keeps the points readable and the plot fast", "Samples change the data", "It is required", "Seaborn cannot plot more"], "ans": 0, "explain": "Too many overlapping points hide structure."}, {"q": "17. What is a good palette choice for a sequential heatmap of revenue?", "opts": ["Random rainbow colours", "A single-hue palette such as Blues, where darker means more", "No colours", "Red for everything"], "ans": 1, "explain": "A sequential palette shows ordered values clearly."}, {"q": "18. Why keep one theme across all charts?", "opts": ["It removes data", "It is decoration", "Readers should not need to relearn the colours and style between charts", "Seaborn requires it"], "ans": 2, "explain": "Consistency reduces confusion."}, {"q": "19. What is the main purpose of the review step?", "opts": ["To delete the charts", "To save time", "To add more charts", "To check that every chart is honest, labelled and readable before it is shared"], "ans": 3, "explain": "Review is the quality check for each chart."}, {"q": "20. Which Seaborn function builds a stacked histogram with hue?", "opts": ["sns.heatmap", "sns.regplot", "sns.boxplot only", "sns.displot(kind='hist', hue=)"], "ans": 3, "explain": "displot with kind='hist' and hue= makes grouped histograms."}];
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function setCounts(v){['score-live','score-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function setAnswered(v){['answered-live','answered-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q.replace(/^\d+\.\s*/,'')}</div></div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  setAnswered(userAnswers.filter(a=>a!==null).length);
+}
+function submitQuiz(){
+  if(submitted)return;
+  if(userAnswers.some(a=>a===null)){alert('Answer every question before you submit.');return;}
+  submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,60,"Re-read the sections behind the questions you missed. 📚"],[60,80,"Close. Re-run the solution and check the outputs. 💪"],[80,95,"Strong. You can clean, analyse and report on data with confidence. 🎉"],[95,101,"Excellent. 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  setCounts(correct);
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  setCounts(0);setAnswered(0);
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');if(ch)ch.classList.toggle('open');b.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+
+</script>
+</body>
+</html>

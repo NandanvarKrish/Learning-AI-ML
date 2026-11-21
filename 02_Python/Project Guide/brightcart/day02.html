@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 2: NumPy for analysis · Brightcart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+
+.code-lang{color:#93C5FD;}
+:root{--muted:#4A6FA5;}
+.table-note{font-size:12.5px;color:var(--muted);margin:6px 0 12px;}
+table{margin:8px 0 14px;}
+.err-out{border:1px solid #FCA5A5;background:#FEF2F2;border-radius:10px;padding:10px 12px;margin:6px 0 14px;}
+.err-label{font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px;}
+.err-out pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:12.5px;color:#7F1D1D;}
+@media(max-width:600px){.container{padding:0 16px;}.tbl-wrap table{font-size:12px;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">Brightcart</span><span class="sep">|</span>
+  <span class="day-label">Day 2 of 10</span>
+  <span class="spacer"></span>
+  <span class="progress-label">Quiz: <span id="answered-live">0</span>/20 · score <span id="score-live">0</span></span>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Brightcart data analyst project · Day 2 of 10</div>
+  <h1>Day 2: <span>NumPy for analysis</span></h1>
+  <p>Use NumPy arrays, not Python loops, to calculate revenue. Learn to handle NaN, build boolean masks, and use broadcasting.</p>
+</div>
+<div class="grad-banner"><p>4 to 5 hours · Vectorised maths, missing numbers and masks</p></div>
+<div class="container">
+<div class="section"><div class="section-header"><div class="section-icon">🎯</div><div><h2>Goal and deliverable</h2><p>Vectorised maths, missing numbers and masks</p></div></div><div class="section-body"><p>Use NumPy arrays, not Python loops, to calculate revenue. Learn to handle NaN, build boolean masks, and use broadcasting.</p><p><strong>Deliverable:</strong> notes/day02_numpy.md and the output of solutions/day02.py.</p></div></div><div class="section"><div class="section-header"><div class="section-icon">🧰</div><div><h2>Tools and functions</h2><p>Learn each one, then use it in the steps below.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">arr.to_numpy()</div><div class="mc-desc">Turns a DataFrame column into a NumPy array.</div><div class="mc-ex">qty = orders[&#x27;qty&#x27;].to_numpy(dtype=float)</div></div><div class="mini-card"><div class="mc-name">np.isnan(arr)</div><div class="mc-desc">True where a value is NaN (missing).</div><div class="mc-ex">np.isnan(price).sum()</div></div><div class="mini-card"><div class="mc-name">np.nanmean, np.nanmedian</div><div class="mc-desc">Mean or median that skips NaN. A normal mean returns NaN if any value is NaN.</div><div class="mc-ex">np.nanmean(price)</div></div><div class="mini-card"><div class="mc-name">Boolean masks: &amp;, |, ~</div><div class="mc-desc">Arrays of True and False used to select rows. Combine with &amp;, not and, and put each condition in brackets.</div><div class="mc-ex">(qty &gt; 0) &amp; ~np.isnan(price)</div></div><div class="mini-card"><div class="mc-name">np.where(cond, a, b)</div><div class="mc-desc">Vectorised if-else: picks a where cond is True, otherwise b.</div><div class="mc-ex">np.where(valid, revenue, 0.0)</div></div><div class="mini-card"><div class="mc-name">Broadcasting</div><div class="mc-desc">Arrays of different shapes are stretched to match, as long as the shapes line up from the right.</div><div class="mc-ex">amounts (2,1) * rate (3,) gives (2,3)</div></div><div class="mini-card"><div class="mc-name">arr[mask].sum()</div><div class="mc-desc">Selects the rows where the mask is True and adds them up.</div><div class="mc-ex">revenue[disc == 0].sum()</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🧠</div><div><h2>Concepts</h2><p>The ideas behind today's work.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">Why no loops</div><div class="mc-desc">A Python loop over 9,000 rows works but is slow and long. A vectorised expression runs the same arithmetic in compiled code over the whole array in one step. Learn to read the expression <code>qty * price * (1 - disc / 100)</code> as one operation on every row at once.</div></div><div class="mini-card"><div class="mc-name">NaN spreads</div><div class="mc-desc">NaN is 'not a number'. Any arithmetic with NaN gives NaN, and so does a plain mean. <code>np.nanmean</code> and <code>np.nanmedian</code> skip NaN values, but you must still decide what the missing values mean. Skipping is a choice, not a fix.</div></div><div class="mini-card"><div class="mc-name">Masks</div><div class="mc-desc">A mask is a True/False array the same length as the data. Combine masks with <code>&</code> (and) and <code>|</code> (or), and wrap each one in brackets, because <code>&</code> binds tighter than <code>&gt;</code>. Invert with <code>~</code>.</div></div><div class="mini-card"><div class="mc-name">Broadcasting</div><div class="mc-desc">NumPy compares shapes from the right. A (2, 1) array and a (3,) array become (2, 3): the column is repeated across three columns and the row across two. This is how one discount rate applies to a whole table without copying it by hand.</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🛠️</div><div><h2>Timed steps</h2><p>About 340 minutes of work. Open each step, do it, then move on.</p></div></div><div class="section-body"><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">1</div><h4>Extract the columns as arrays</h4><span class="phase-time">30 min</span><span class="chevron open">▼</span></div><div class="task-phase-body open"><p>Use <code>.to_numpy(dtype=float)</code> on <code>qty</code>, <code>unit_price</code>, <code>discount_pct</code> and <code>delivery_days</code>. Print the dtype and length of each array. Confirm that <code>unit_price</code> contains NaN.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">2</div><h4>See NaN spread</h4><span class="phase-time">40 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Compute <code>np.mean(price)</code> and show it is NaN. Then compute <code>np.nanmean(price)</code>. Write one sentence on why the two differ.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">3</div><h4>Build the usable-row mask</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Create <code>valid = (qty &gt; 0) &amp; ~np.isnan(price)</code>. Count the True values. Explain why the brackets are needed.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">4</div><h4>Vectorised revenue</h4><span class="phase-time">60 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Compute net revenue as <code>qty * price * (1 - disc / 100)</code> for usable rows, and 0 elsewhere, using <code>np.where</code>. Print the total. This total uses the raw file, so it will not match the Day 4 total (which uses the cleaned file). Write one sentence explaining the gap: duplicates, orphan customers and zero quantities.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">5</div><h4>Broadcasting exercise</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Make an array of three discount rates (0.05, 0.10, 0.20) and a column of two order values. Multiply them with broadcasting, and predict the output shape before running. Print the shape and the first row.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">6</div><h4>Outlier mask</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Flag delivery times above 60 days. Count them. Replace them and any NaN with NaN, then find the median of what remains with <code>np.nanmedian</code>.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">7</div><h4>Revenue share by discount level</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>For each discount level (0, 5, 10, ... 30), sum the revenue with a mask. Find the share of total revenue that came from 0 percent discount orders. Explain whether the discount level is the main driver of revenue.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">8</div><h4>Write a short method note</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>In <code>notes/day02_numpy.md</code>, list the NumPy functions you used and why each one was the right choice. Include one place where NaN changed your answer.</p></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">💡</div><div><h2>Reference solution and expected output</h2><p>Check your work against this.</p></div></div><div class="section-body"><p>Try the task yourself first. Then compare your results with the reference below. Your numbers must match the expected output.</p><div class="code-wrap"><div class="code-header"><span class="code-lang">solutions/day02.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>&quot;&quot;&quot;Day 2 solution: vectorised NumPy for revenue, NaN handling, boolean masks and broadcasting.&quot;&quot;&quot;
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / &quot;data&quot;
+
+orders = pd.read_csv(DATA / &quot;orders_raw.csv&quot;)
+
+# Pull the columns out as NumPy arrays (no Python loops anywhere below).
+qty = orders[&quot;qty&quot;].to_numpy(dtype=float)
+price = orders[&quot;unit_price&quot;].to_numpy(dtype=float)          # contains NaN where price is missing
+disc = orders[&quot;discount_pct&quot;].to_numpy(dtype=float)
+delivery = orders[&quot;delivery_days&quot;].to_numpy(dtype=float)     # contains NaN and outliers
+
+# NaN-aware statistics: a plain mean would be NaN if any value is missing.
+print(&quot;CHECK price_mean_with_nan&quot;, np.isnan(np.mean(price)))
+print(&quot;CHECK price_mean_ignoring_nan&quot;, round(float(np.nanmean(price)), 2))
+print(&quot;CHECK missing_price_count&quot;, int(np.isnan(price).sum()))
+
+# Vectorised revenue: quantity * price * (1 - discount).  Broadcasting does the work.
+valid = (qty &gt; 0) &amp; ~np.isnan(price)                         # boolean mask: usable rows
+revenue = np.where(valid, qty * price * (1 - disc / 100), 0.0)
+print(&quot;CHECK usable_rows&quot;, int(valid.sum()))
+print(&quot;CHECK total_revenue&quot;, round(float(revenue.sum()), 2))
+
+# Broadcasting: a discount rate applied to a whole row of values at once.
+rate = np.array([0.05, 0.10, 0.20])                          # shape (3,)
+amounts = np.array([[1000.0], [2000.0]])                     # shape (2, 1)
+print(&quot;CHECK broadcast_shape&quot;, (amounts * (1 - rate)).shape)
+print(&quot;CHECK broadcast_first_row&quot;, np.round(amounts[0] * (1 - rate), 2).tolist())
+
+# Outlier mask on delivery days: anything above 60 is impossible for this business.
+outlier = delivery &gt; 60
+print(&quot;CHECK delivery_outliers&quot;, int(np.nansum(outlier)))
+clean_delivery = np.where(outlier | np.isnan(delivery), np.nan, delivery)
+print(&quot;CHECK delivery_median_clean&quot;, round(float(np.nanmedian(clean_delivery)), 2))
+
+# Aggregation along an axis: revenue per discount level, using a 2-D table.
+levels = np.array([0, 5, 10, 15, 20, 25, 30], dtype=float)
+rev_by_level = np.array([revenue[disc == lv].sum() for lv in levels])  # small loop over 7 levels is fine
+print(&quot;CHECK revenue_top_level&quot;, float(levels[rev_by_level.argmax()]))
+share = rev_by_level / rev_by_level.sum()
+print(&quot;CHECK share_no_discount&quot;, round(float(share[0]), 4))
+</pre></div><p><strong>Expected output</strong>, from running the script:</p><div class="code-wrap"><div class="code-header"><span class="code-lang">Expected output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>CHECK price_mean_with_nan True
+CHECK price_mean_ignoring_nan 4001.47
+CHECK missing_price_count 60
+CHECK usable_rows 8980
+CHECK total_revenue 57625708.05
+CHECK broadcast_shape (2, 3)
+CHECK broadcast_first_row [950.0, 900.0, 800.0]
+CHECK delivery_outliers 15
+CHECK delivery_median_clean 4.0
+CHECK revenue_top_level 0.0
+CHECK share_no_discount 0.4816</pre></div></div></div><div class="section"><div class="section-header"><div class="section-icon">☑️</div><div><h2>Checklist</h2><p>Everything here must be true before you move on.</p></div></div><div class="section-body"><ul class="checklist"><li>Four columns converted to float arrays</li><li>NaN behaviour shown with mean and nanmean</li><li>Usable-row mask counted, with brackets correct</li><li>Revenue calculated with np.where, no Python loop</li><li>Broadcasting shape predicted before running</li><li>Outlier mask and nanmedian used</li><li>Revenue share by discount level reported</li></ul></div></div><div class="section"><div class="section-header"><div class="section-icon">✅</div><div><h2>Quiz</h2><p>20 questions. Pass mark is 16 of 20 (80%).</p></div></div><div class="section-body">
+      <div class="quiz-meta">
+        <div class="quiz-stat"><div class="num"><span id="score-live2">0</span></div><div class="lbl">Correct so far</div></div>
+        <div class="quiz-stat"><div class="num"><span id="answered-live2">0</span> / 20</div><div class="lbl">Answered</div></div>
+      </div>
+      <div id="quiz-container"></div>
+      <div class="quiz-btns">
+        <button class="btn btn-primary" onclick="submitQuiz()">Submit answers</button>
+        <button class="btn btn-outline" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div class="score-box" id="score-box">
+        <div class="big-score" id="final-score"></div>
+        <div class="score-msg" id="score-msg"></div>
+        <div class="score-detail" id="score-detail"></div>
+      </div></div></div>
+</div>
+<div class="day-footer">
+  <div class="series">Brightcart 10-day data analyst project</div>
+  <div class="days-row"><a class="day-pill" href="day01.html">Day 1</a><a class="day-pill active" href="day02.html">Day 2</a><a class="day-pill" href="day03.html">Day 3</a><a class="day-pill" href="day04.html">Day 4</a><a class="day-pill" href="day05.html">Day 5</a><a class="day-pill" href="day06.html">Day 6</a><a class="day-pill" href="day07.html">Day 7</a><a class="day-pill" href="day08.html">Day 8</a><a class="day-pill" href="day09.html">Day 9</a><a class="day-pill" href="day10.html">Day 10</a></div>
+</div>
+<script>
+
+const questions=[{"q": "1. Why does np.mean(price) return NaN when price contains missing values?", "opts": ["NumPy cannot compute means", "Any arithmetic with NaN gives NaN, so the whole mean becomes NaN", "The array is empty", "Mean only works on integers"], "ans": 1, "explain": "A single NaN makes a normal mean NaN, which is why nanmean exists."}, {"q": "2. What does np.nanmean(price) ignore?", "opts": ["Negative values", "Zero values", "NaN values", "The first row"], "ans": 2, "explain": "nanmean skips NaN values and averages the rest."}, {"q": "3. How many unit prices are missing in the raw orders?", "opts": ["60", "300", "0", "20"], "ans": 0, "explain": "60 unit prices are missing."}, {"q": "4. How many rows are usable (quantity above 0 and price present)?", "opts": ["8980", "9000", "9060", "8960"], "ans": 0, "explain": "Of 9,060 raw rows, 60 have no price and 20 have zero quantity, leaving 8,980."}, {"q": "5. What is the expression (qty > 0) & ~np.isnan(price) doing?", "opts": ["Adding two columns", "Building a True/False mask for rows with a positive quantity and a known price", "Sorting the data", "Converting text to numbers"], "ans": 1, "explain": "Two conditions are combined with &, and ~ inverts the NaN test."}, {"q": "6. Why must each condition in a mask be wrapped in brackets?", "opts": ["Brackets remove NaN", "It is a Python style rule", "& binds more tightly than comparisons, so without brackets the expression is wrong", "NumPy needs brackets for speed"], "ans": 2, "explain": "Operator precedence means brackets are required around each comparison."}, {"q": "7. What does np.where(valid, revenue, 0.0) do?", "opts": ["Sorts revenue", "Counts True values", "Deletes invalid rows", "Keeps revenue where valid is True and puts 0 where it is False"], "ans": 3, "explain": "np.where is a vectorised if-else over the whole array."}, {"q": "8. What shape does broadcasting (2, 1) with (3,) produce?", "opts": ["(3, 2)", "(2, 3)", "An error", "(2,)"], "ans": 1, "explain": "The shapes line up from the right and stretch to (2, 3)."}, {"q": "9. Using the rates 0.05, 0.10, 0.20 on order values 1000 and 2000, what is 1000 after the first rate?", "opts": ["950", "900", "800", "1050"], "ans": 0, "explain": "1000 times (1 minus 0.05) is 950."}, {"q": "10. How many delivery values are above 60 days?", "opts": ["300", "0", "15", "30"], "ans": 2, "explain": "15 orders have delivery times above 60 days, which are treated as errors."}, {"q": "11. After removing the outliers and NaN, what is the median delivery time?", "opts": ["4.8", "5.0", "3.0", "4.0"], "ans": 3, "explain": "The median of the cleaned delivery times is 4.0 days."}, {"q": "12. What is the main purpose of a mask?", "opts": ["To select the rows where a condition is True", "To rename columns", "To read files", "To format a chart"], "ans": 0, "explain": "A mask is a True/False selector."}, {"q": "13. Why use vectorised NumPy instead of a Python loop here?", "opts": ["Loops cannot count", "Vectorised arithmetic is faster and shorter, and runs the same operation over every row", "Loops give different answers", "NumPy cannot use loops"], "ans": 1, "explain": "Vectorised code is faster, shorter and less error-prone."}, {"q": "14. What does arr.to_numpy(dtype=float) do to a DataFrame column?", "opts": ["Writes it to disk", "Deletes it", "Converts it to a NumPy array of floats", "Sorts it"], "ans": 2, "explain": "to_numpy converts a column into a NumPy array with the given type."}, {"q": "15. Roughly what share of revenue came from orders with no discount?", "opts": ["About 48 percent", "About 90 percent", "About 12 percent", "About 28 percent"], "ans": 0, "explain": "Zero-discount orders account for about 48 percent of net revenue."}, {"q": "16. What is the difference between np.nanmedian and np.median when NaN is present?", "opts": ["nanmedian ignores NaN, median returns NaN", "median ignores NaN", "nanmedian is slower and wrong", "None"], "ans": 0, "explain": "np.median returns NaN if any value is NaN, while nanmedian skips them."}, {"q": "17. Why do we handle outliers before summarising delivery time?", "opts": ["Outliers are always wrong", "A few impossible values can distort the mean and the spread", "The median cannot be calculated otherwise", "NumPy requires it"], "ans": 1, "explain": "Impossible values distort summaries, so they are removed or flagged first."}, {"q": "18. Which function selects the values of an array where a mask is True?", "opts": ["np.round(mask)", "arr.sort()", "arr[mask]", "arr.reshape(mask)"], "ans": 2, "explain": "Indexing with a boolean mask selects the matching values."}, {"q": "19. A broadcast result of shape (2, 3) has how many elements?", "opts": ["8", "9", "5", "6"], "ans": 3, "explain": "2 times 3 is 6 elements."}, {"q": "20. What did the day 2 revenue share show about discounts?", "opts": ["Most revenue came from full-price orders, so discounts are not the main driver", "Discounts were never used", "Revenue is zero", "Discounts drive most revenue"], "ans": 0, "explain": "About half of revenue came from zero-discount orders."}];
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function setCounts(v){['score-live','score-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function setAnswered(v){['answered-live','answered-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q.replace(/^\d+\.\s*/,'')}</div></div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  setAnswered(userAnswers.filter(a=>a!==null).length);
+}
+function submitQuiz(){
+  if(submitted)return;
+  if(userAnswers.some(a=>a===null)){alert('Answer every question before you submit.');return;}
+  submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,60,"Re-read the sections behind the questions you missed. 📚"],[60,80,"Close. Re-run the solution and check the outputs. 💪"],[80,95,"Strong. You can clean, analyse and report on data with confidence. 🎉"],[95,101,"Excellent. 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  setCounts(correct);
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  setCounts(0);setAnswered(0);
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');if(ch)ch.classList.toggle('open');b.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+
+</script>
+</body>
+</html>

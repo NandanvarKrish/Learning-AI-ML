@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 6: Customer analytics · Brightcart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+
+.code-lang{color:#93C5FD;}
+:root{--muted:#4A6FA5;}
+.table-note{font-size:12.5px;color:var(--muted);margin:6px 0 12px;}
+table{margin:8px 0 14px;}
+.err-out{border:1px solid #FCA5A5;background:#FEF2F2;border-radius:10px;padding:10px 12px;margin:6px 0 14px;}
+.err-label{font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px;}
+.err-out pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:12.5px;color:#7F1D1D;}
+@media(max-width:600px){.container{padding:0 16px;}.tbl-wrap table{font-size:12px;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">Brightcart</span><span class="sep">|</span>
+  <span class="day-label">Day 6 of 10</span>
+  <span class="spacer"></span>
+  <span class="progress-label">Quiz: <span id="answered-live">0</span>/20 · score <span id="score-live">0</span></span>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Brightcart data analyst project · Day 6 of 10</div>
+  <h1>Day 6: <span>Customer analytics</span></h1>
+  <p>Score every customer with RFM (recency, frequency, monetary), group them into value segments, and build a cohort retention table.</p>
+</div>
+<div class="grad-banner"><p>4 to 5 hours · Who buys, how often, and how recently</p></div>
+<div class="container">
+<div class="section"><div class="section-header"><div class="section-icon">🎯</div><div><h2>Goal and deliverable</h2><p>Who buys, how often, and how recently</p></div></div><div class="section-body"><p>Score every customer with RFM (recency, frequency, monetary), group them into value segments, and build a cohort retention table.</p><p><strong>Deliverable:</strong> data/clean/rfm.csv and notes/day06_customers.md.</p></div></div><div class="section"><div class="section-header"><div class="section-icon">🧰</div><div><h2>Tools and functions</h2><p>Learn each one, then use it in the steps below.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">groupby(&#x27;customer_id&#x27;).agg()</div><div class="mc-desc">One summary row per customer: last order, order count and total spend.</div><div class="mc-ex">rfm = df.groupby(&#x27;customer_id&#x27;).agg(...)</div></div><div class="mini-card"><div class="mc-name">Timedelta and .dt.days</div><div class="mc-desc">Differences between dates, converted to whole days.</div><div class="mc-ex">(as_of - last_order).dt.days</div></div><div class="mini-card"><div class="mc-name">rank(method=&#x27;first&#x27;)</div><div class="mc-desc">Ranks values, breaking ties by order, so quantile cutting always works.</div><div class="mc-ex">s.rank(method=&#x27;first&#x27;)</div></div><div class="mini-card"><div class="mc-name">pd.qcut(x, q, labels=)</div><div class="mc-desc">Cuts values into q groups of roughly equal size (quintiles for 5).</div><div class="mc-ex">pd.qcut(ranks, 5, labels=[1, 2, 3, 4, 5])</div></div><div class="mini-card"><div class="mc-name">.apply(function)</div><div class="mc-desc">Runs a Python function on each value, for simple rules such as a segment label.</div><div class="mc-ex">rfm[&#x27;score&#x27;].apply(label)</div></div><div class="mini-card"><div class="mc-name">.dt.to_period(&#x27;M&#x27;)</div><div class="mc-desc">Converts a date to its year-month period, for cohort grouping.</div><div class="mc-ex">orders[&#x27;order_date&#x27;].dt.to_period(&#x27;M&#x27;)</div></div><div class="mini-card"><div class="mc-name">nunique()</div><div class="mc-desc">Counts distinct values, here the number of different customers active in a month.</div><div class="mc-ex">groupby(...)[&#x27;customer_id&#x27;].nunique()</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🧠</div><div><h2>Concepts</h2><p>The ideas behind today's work.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">RFM</div><div class="mc-desc">Recency is days since the last order (lower is better). Frequency is the number of orders (higher is better). Monetary is total spend (higher is better). Together these describe a customer's value and how close they are to leaving.</div></div><div class="mini-card"><div class="mc-name">Scores from quintiles</div><div class="mc-desc">Each measure is split into five equal-sized groups. Score 5 means the best fifth. For recency the scale is reversed, so the most recent customers score 5.</div></div><div class="mini-card"><div class="mc-name">Cohorts</div><div class="mc-desc">A cohort is the group of customers whose first order was in the same month. Retention asks how many of them ordered again in each later month. The month-0 value is always 100 percent by definition.</div></div><div class="mini-card"><div class="mc-name">Pareto</div><div class="mc-desc">In many businesses a small share of customers brings most of the revenue. Check this with the top-20-percent share, instead of assuming it.</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🛠️</div><div><h2>Timed steps</h2><p>About 335 minutes of work. Open each step, do it, then move on.</p></div></div><div class="section-body"><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">1</div><h4>Set the analysis date</h4><span class="phase-time">20 min</span><span class="chevron open">▼</span></div><div class="task-phase-body open"><p>Set <code>as_of</code> to the day after the last order date, so no customer has a recency of zero. Print it.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">2</div><h4>Customer summary</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Use groupby on <code>customer_id</code> to get last order date, order count and total net revenue. Check that all 800 customers appear.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">3</div><h4>Recency, frequency, monetary</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Add <code>recency_days</code>. Print the median recency. Explain why the median is more useful here than the mean.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">4</div><h4>RFM scores</h4><span class="phase-time">60 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Create R, F and M scores from 1 to 5 with <code>rank(method='first')</code> and <code>pd.qcut</code>. Reverse the R labels. Add them into a total score and print the range (3 to 15).</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">5</div><h4>Value segments</h4><span class="phase-time">45 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Write a function that maps the total score to Champions (13 or more), Loyal (10 to 12), At risk (7 to 9) and Lapsed (below 7). Count the Champions and their average spend.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">6</div><h4>Pareto check</h4><span class="phase-time">25 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Find the share of total revenue from the top 20 percent of customers by spend. Write whether this supports a focus on a small group.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">7</div><h4>Cohort table</h4><span class="phase-time">60 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Add each order's month as a period, find each customer's first month (cohort), and compute the number of months since the first order. Build a cohort-by-month table of distinct active customers with <code>nunique</code>, then convert each row to a percent of its month-0 count.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">8</div><h4>Write the customer note</h4><span class="phase-time">35 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Save <code>rfm.csv</code>. In <code>notes/day06_customers.md</code>, describe the four segments and the retention of the first cohort in its second month.</p></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">💡</div><div><h2>Reference solution and expected output</h2><p>Check your work against this.</p></div></div><div class="section-body"><p>Try the task yourself first. Then compare your results with the reference below. Your numbers must match the expected output.</p><div class="code-wrap"><div class="code-header"><span class="code-lang">solutions/day06.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>&quot;&quot;&quot;Day 6 solution: customer analytics with pandas: RFM scores, value segments and a cohort retention table.&quot;&quot;&quot;
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+CLEAN = ROOT / &quot;data&quot; / &quot;clean&quot;
+
+df = pd.read_csv(CLEAN / &quot;orders_enriched.csv&quot;, parse_dates=[&quot;order_date&quot;])
+customers = pd.read_csv(CLEAN / &quot;customers_clean.csv&quot;)
+
+# The analysis date is the day after the last order, so &#x27;recency&#x27; is never zero.
+as_of = df[&quot;order_date&quot;].max() + pd.Timedelta(days=1)
+
+# ---- RFM: recency, frequency, monetary, one row per customer -----------------
+rfm = df.groupby(&quot;customer_id&quot;).agg(
+    last_order=(&quot;order_date&quot;, &quot;max&quot;),
+    frequency=(&quot;order_id&quot;, &quot;count&quot;),
+    monetary=(&quot;net_revenue&quot;, &quot;sum&quot;),
+)
+rfm[&quot;recency_days&quot;] = (as_of - rfm[&quot;last_order&quot;]).dt.days
+print(&quot;CHECK active_customers&quot;, len(rfm))
+print(&quot;CHECK customers_never_ordered&quot;, int((~customers[&quot;customer_id&quot;].isin(rfm.index)).sum()))
+print(&quot;CHECK median_recency&quot;, float(rfm[&quot;recency_days&quot;].median()))
+
+# Scores 1 to 5 using quintiles. rank(method=&#x27;first&#x27;) breaks ties so qcut never fails.
+# Lower recency is better, so its labels run the other way.
+rfm[&quot;R&quot;] = pd.qcut(rfm[&quot;recency_days&quot;].rank(method=&quot;first&quot;), 5, labels=[5, 4, 3, 2, 1]).astype(int)
+rfm[&quot;F&quot;] = pd.qcut(rfm[&quot;frequency&quot;].rank(method=&quot;first&quot;), 5, labels=[1, 2, 3, 4, 5]).astype(int)
+rfm[&quot;M&quot;] = pd.qcut(rfm[&quot;monetary&quot;].rank(method=&quot;first&quot;), 5, labels=[1, 2, 3, 4, 5]).astype(int)
+rfm[&quot;score&quot;] = rfm[&quot;R&quot;] + rfm[&quot;F&quot;] + rfm[&quot;M&quot;]
+print(&quot;CHECK rfm_score_range&quot;, int(rfm[&quot;score&quot;].min()), int(rfm[&quot;score&quot;].max()))
+
+# Rule-based segments on the total score.
+def label(score):
+    if score &gt;= 13:
+        return &quot;Champions&quot;
+    if score &gt;= 10:
+        return &quot;Loyal&quot;
+    if score &gt;= 7:
+        return &quot;At risk&quot;
+    return &quot;Lapsed&quot;
+
+rfm[&quot;segment&quot;] = rfm[&quot;score&quot;].apply(label)
+seg = rfm.groupby(&quot;segment&quot;).agg(customers=(&quot;monetary&quot;, &quot;size&quot;), avg_value=(&quot;monetary&quot;, &quot;mean&quot;))
+print(&quot;CHECK champions_count&quot;, int(seg.loc[&quot;Champions&quot;, &quot;customers&quot;]))
+print(&quot;CHECK champions_avg_value&quot;, round(float(seg.loc[&quot;Champions&quot;, &quot;avg_value&quot;]), 2))
+
+# Share of revenue from the top 20 percent of customers (a Pareto check).
+top_20 = rfm[&quot;monetary&quot;].sort_values(ascending=False).head(int(len(rfm) * 0.2)).sum()
+print(&quot;CHECK top20_revenue_share&quot;, round(top_20 / rfm[&quot;monetary&quot;].sum() * 100, 2))
+
+# ---- cohort retention: first purchase month vs months since first purchase ----
+df[&quot;order_month&quot;] = df[&quot;order_date&quot;].dt.to_period(&quot;M&quot;)
+first = df.groupby(&quot;customer_id&quot;)[&quot;order_month&quot;].min().rename(&quot;cohort&quot;)
+df = df.join(first, on=&quot;customer_id&quot;)
+df[&quot;period_number&quot;] = (df[&quot;order_month&quot;] - df[&quot;cohort&quot;]).apply(lambda d: d.n)
+
+cohort_counts = df.groupby([&quot;cohort&quot;, &quot;period_number&quot;])[&quot;customer_id&quot;].nunique().unstack(&quot;period_number&quot;)
+cohort_sizes = cohort_counts[0]
+retention = cohort_counts.div(cohort_sizes, axis=0) * 100
+print(&quot;CHECK cohorts&quot;, cohort_counts.shape[0])
+print(&quot;CHECK cohort_month1_retention_first&quot;, round(float(retention.iloc[0, 1]), 2))
+print(&quot;CHECK retention_month0_all&quot;, bool(np.allclose(retention[0].dropna(), 100)))
+
+rfm.to_csv(CLEAN / &quot;rfm.csv&quot;)
+</pre></div><p><strong>Expected output</strong>, from running the script:</p><div class="code-wrap"><div class="code-header"><span class="code-lang">Expected output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>CHECK active_customers 800
+CHECK customers_never_ordered 0
+CHECK median_recency 39.0
+CHECK rfm_score_range 3 15
+CHECK champions_count 113
+CHECK champions_avg_value 117471.99
+CHECK top20_revenue_share 35.16
+CHECK cohorts 13
+CHECK cohort_month1_retention_first 33.13
+CHECK retention_month0_all True</pre></div></div></div><div class="section"><div class="section-header"><div class="section-icon">☑️</div><div><h2>Checklist</h2><p>Everything here must be true before you move on.</p></div></div><div class="section-body"><ul class="checklist"><li>Analysis date set to the day after the last order</li><li>Customer summary covers all 800 customers</li><li>Median recency reported</li><li>RFM scores in range 3 to 15</li><li>Four value segments with counts and average spend</li><li>Pareto share reported</li><li>Cohort retention table built, month 0 equal to 100 percent</li><li>Customer note saved</li></ul></div></div><div class="section"><div class="section-header"><div class="section-icon">✅</div><div><h2>Quiz</h2><p>20 questions. Pass mark is 16 of 20 (80%).</p></div></div><div class="section-body">
+      <div class="quiz-meta">
+        <div class="quiz-stat"><div class="num"><span id="score-live2">0</span></div><div class="lbl">Correct so far</div></div>
+        <div class="quiz-stat"><div class="num"><span id="answered-live2">0</span> / 20</div><div class="lbl">Answered</div></div>
+      </div>
+      <div id="quiz-container"></div>
+      <div class="quiz-btns">
+        <button class="btn btn-primary" onclick="submitQuiz()">Submit answers</button>
+        <button class="btn btn-outline" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div class="score-box" id="score-box">
+        <div class="big-score" id="final-score"></div>
+        <div class="score-msg" id="score-msg"></div>
+        <div class="score-detail" id="score-detail"></div>
+      </div></div></div>
+</div>
+<div class="day-footer">
+  <div class="series">Brightcart 10-day data analyst project</div>
+  <div class="days-row"><a class="day-pill" href="day01.html">Day 1</a><a class="day-pill" href="day02.html">Day 2</a><a class="day-pill" href="day03.html">Day 3</a><a class="day-pill" href="day04.html">Day 4</a><a class="day-pill" href="day05.html">Day 5</a><a class="day-pill active" href="day06.html">Day 6</a><a class="day-pill" href="day07.html">Day 7</a><a class="day-pill" href="day08.html">Day 8</a><a class="day-pill" href="day09.html">Day 9</a><a class="day-pill" href="day10.html">Day 10</a></div>
+</div>
+<script>
+
+const questions=[{"q": "1. How many customers have at least one order in the cleaned data?", "opts": ["600", "800", "9000", "62"], "ans": 1, "explain": "All 800 customers placed at least one order."}, {"q": "2. What does R stand for in RFM?", "opts": ["Region", "Revenue", "Recency", "Repeat"], "ans": 2, "explain": "R is recency: days since the last order."}, {"q": "3. Why is the analysis date set to the day after the last order?", "opts": ["To remove weekends", "To make dates text", "Pandas requires it", "So that no customer has a recency of zero"], "ans": 3, "explain": "Adding one day avoids a recency of zero for the latest buyers."}, {"q": "4. What is the median recency in days?", "opts": ["39 days", "300 days", "800 days", "4 days"], "ans": 0, "explain": "The median days since last order is 39."}, {"q": "5. Why is median recency used rather than mean?", "opts": ["Median is always larger", "Recency is skewed, and the median is not pulled by a few very old customers", "Mean cannot use days", "There is no reason"], "ans": 1, "explain": "Skewed recency distributions make the median a more representative summary."}, {"q": "6. Which RFM direction is reversed when scoring?", "opts": ["None", "Frequency", "Monetary", "Recency"], "ans": 3, "explain": "Lower recency is better, so the labels are reversed."}, {"q": "7. Why use rank(method='first') before pd.qcut?", "opts": ["It sorts the data", "It removes ties", "It is faster", "Ties are broken by order, so the quintile cut never fails on repeated values"], "ans": 3, "explain": "Ranking first removes duplicate values that would break qcut."}, {"q": "8. What is the range of the total RFM score?", "opts": ["3 to 15", "1 to 5", "10 to 20", "0 to 9"], "ans": 0, "explain": "Three scores of 1 to 5 add to a range of 3 to 15."}, {"q": "9. How many customers are Champions in this data?", "opts": ["50", "113", "400", "800"], "ans": 1, "explain": "113 customers score 13 or more."}, {"q": "10. What is the average spend of Champions?", "opts": ["About 1,175,000", "About 1,200", "About 11,700", "About 117,500"], "ans": 3, "explain": "The average Champion spend is about 117,500."}, {"q": "11. What share of revenue comes from the top 20 percent of customers?", "opts": ["About 80 percent", "About 5 percent", "About 20 percent", "About 35 percent"], "ans": 3, "explain": "The top fifth of customers brings about 35 percent of revenue, more than their share but less than the classic 80 percent."}, {"q": "12. What is a cohort?", "opts": ["Customers whose first order was in the same month", "A product category", "A channel", "A type of chart"], "ans": 0, "explain": "A cohort groups customers by the month they first bought."}, {"q": "13. What is month 0 in a retention table?", "opts": ["The first day of the year", "The cohort's first month, which is always 100 percent", "Zero orders", "A missing value"], "ans": 1, "explain": "Every cohort is 100 percent in its own first month by definition."}, {"q": "14. What does the first cohort's month-1 retention show?", "opts": ["The delivery time", "Revenue for month 1", "The share of that cohort who ordered again in the following month", "The number of products"], "ans": 2, "explain": "Month 1 retention is the share of the first cohort that ordered again the next month, about 33 percent."}, {"q": "15. Why use nunique() in the cohort table?", "opts": ["To sum revenue", "To sort months", "To count orders", "To count distinct customers, so one customer ordering twice is counted once"], "ans": 3, "explain": "nunique counts unique customers active in each period."}, {"q": "16. What does .dt.to_period('M') produce?", "opts": ["A year-month period used for grouping", "A day count", "A percent", "A text label only"], "ans": 0, "explain": "A monthly period is ideal for grouping by month."}, {"q": "17. Why is customer segmentation useful?", "opts": ["It makes the data bigger", "It lets a business treat different customers differently, such as rewarding Champions", "It removes customers", "It is required by pandas"], "ans": 1, "explain": "Segments turn scores into actions."}, {"q": "18. What does an at-risk customer look like in this model?", "opts": ["No orders", "High recency score", "A total score from 7 to 9, with some slipping on recency or spend", "A score of 15"], "ans": 2, "explain": "At risk customers have middling scores and are slipping."}, {"q": "19. Why keep the segment rules in one function?", "opts": ["It runs faster", "It hides the rules", "Pandas needs a function", "So the rules are written once, easy to read, and easy to change"], "ans": 3, "explain": "A single function is the one place to change a business rule."}, {"q": "20. What is a risk when using average spend to judge customers?", "opts": ["A few very large buyers can pull the average up, so medians or segments help", "Spend is always text", "Averages cannot be used", "None"], "ans": 0, "explain": "Large outliers distort averages."}];
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function setCounts(v){['score-live','score-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function setAnswered(v){['answered-live','answered-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q.replace(/^\d+\.\s*/,'')}</div></div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  setAnswered(userAnswers.filter(a=>a!==null).length);
+}
+function submitQuiz(){
+  if(submitted)return;
+  if(userAnswers.some(a=>a===null)){alert('Answer every question before you submit.');return;}
+  submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,60,"Re-read the sections behind the questions you missed. 📚"],[60,80,"Close. Re-run the solution and check the outputs. 💪"],[80,95,"Strong. You can clean, analyse and report on data with confidence. 🎉"],[95,101,"Excellent. 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  setCounts(correct);
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  setCounts(0);setAnswered(0);
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');if(ch)ch.classList.toggle('open');b.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+
+</script>
+</body>
+</html>

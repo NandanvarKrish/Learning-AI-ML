@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 3: Pandas data cleaning · Brightcart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700;800&display=swap');
+  :root{
+    --bg:#FFFBEB;--surface:#FFFFFF;--border:#FDE68A;--accent:#B45309;--accent2:#78350F;
+    --green:#059669;--red:#EF233C;--blue:#3B82F6;--purple:#7C3AED;--teal:#0891B2;--gold:#D97706;
+    --text:#2A1502;--muted:#B45309;--code-bg:#1E1206;--code-text:#FDE68A;--tag-bg:#FEF3C7;--tag-text:#78350F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.75;}
+  .topnav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 32px;height:58px;box-shadow:0 2px 12px rgba(180,83,9,.07);}
+  .topnav .logo{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--accent);}
+  .topnav .sep{color:var(--border);font-size:22px;} .topnav .day-label{background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .topnav .spacer{flex:1;} .topnav .progress-label{font-size:12px;color:var(--muted);}
+  .hero{background:linear-gradient(135deg,#B45309 0%,#78350F 50%,#0D9488 100%);color:#fff;padding:64px 40px 56px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:'🐼';font-size:120px;position:absolute;top:-20px;right:-20px;opacity:.08;}
+  .hero .eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.75;margin-bottom:14px;}
+  .hero h1{font-family:'Sora',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.1;margin-bottom:18px;}
+  .hero h1 span{color:#FDE68A;} .hero p{max-width:660px;margin:0 auto 28px;opacity:.9;font-size:15px;}
+  .hero-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .hero-pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:500;}
+  .grad-banner{background:linear-gradient(135deg,#0D9488,#0891B2);padding:16px 24px;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--border);}
+  .grad-banner p{color:#fff;font-size:14px;font-weight:500;margin:0;} .grad-banner strong{font-weight:700;}
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin:28px 0;overflow:hidden;}
+  .section-header{display:flex;align-items:center;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--bg);}
+  .section-icon{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;} .section-header p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .section-body{padding:28px;}
+  h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--accent2);} h3:first-child{margin-top:0;}
+  p{margin-bottom:10px;} ul,ol{padding-left:22px;margin-bottom:10px;} li{margin-bottom:5px;} strong{font-weight:600;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--tag-bg);color:var(--tag-text);padding:1px 5px;border-radius:4px;}
+  .code-wrap{background:var(--code-bg);border-radius:10px;margin:14px 0;overflow:hidden;}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+  .code-lang{font-size:11px;color:#B45309;font-weight:500;letter-spacing:.5px;}
+  .copy-btn{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:5px;cursor:pointer;transition:all .2s;}
+  .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+  pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);}
+  .callout{border-left:4px solid var(--accent);background:var(--tag-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;}
+  .callout.green{border-color:var(--green);background:#ECFDF5;} .callout.blue{border-color:var(--blue);background:#EFF6FF;}
+  .callout.purple{border-color:var(--purple);background:#F5F3FF;} .callout.teal{border-color:var(--teal);background:#ECFEFF;}
+  .callout.red{border-color:var(--red);background:#FFF1F2;}
+  .callout .callout-title{font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;color:var(--accent);}
+  .callout.green .callout-title{color:var(--green);} .callout.blue .callout-title{color:var(--blue);}
+  .callout.purple .callout-title{color:var(--purple);} .callout.teal .callout-title{color:var(--teal);} .callout.red .callout-title{color:var(--red);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;} table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{background:var(--accent);color:#fff;padding:10px 14px;text-align:left;font-weight:600;} td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;} tr:nth-child(even) td{background:var(--bg);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:16px 0;}
+  .mini-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--bg);}
+  .mini-card .mc-name{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;}
+  .mini-card .mc-desc{font-size:12.5px;color:var(--muted);}
+  .mini-card .mc-ex{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--green);background:#ECFDF5;padding:2px 7px;border-radius:5px;display:inline-block;}
+  .fbox{background:linear-gradient(135deg,#78350F,#B45309);color:#fff;border-radius:10px;padding:20px 24px;margin:14px 0;}
+  .fbox .ft{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.65;margin-bottom:8px;}
+  .fbox .fm{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;line-height:2.2;} .fbox .fnote{font-size:12px;opacity:.7;margin-top:6px;}
+  .quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .quiz-stat .num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent);} .quiz-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .q-card{border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s;}
+  .q-card.correct{border-color:var(--green);} .q-card.wrong{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--bg);border-bottom:1px solid var(--border);}
+  .q-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .q-text{font-weight:500;font-size:14.5px;}
+  .q-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--code-text);padding:8px 12px;border-radius:7px;margin:8px 0;display:block;white-space:pre;}
+  .q-options{padding:14px 20px;display:grid;gap:8px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:14px;user-select:none;}
+  .opt:hover{border-color:var(--accent);background:var(--tag-bg);} .opt.selected{border-color:var(--accent);background:var(--tag-bg);}
+  .opt.correct-ans{border-color:var(--green);background:#ECFDF5;} .opt.wrong-ans{border-color:var(--red);background:#FFF1F2;}
+  .opt-letter{width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .opt.selected .opt-letter{background:var(--accent);color:#fff;} .opt.correct-ans .opt-letter{background:var(--green);color:#fff;} .opt.wrong-ans .opt-letter{background:var(--red);color:#fff;}
+  .q-explain{margin:0 20px 14px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;} .q-explain.show{display:block;}
+  .q-explain.exp-correct{background:#ECFDF5;border-left:3px solid var(--green);color:#065F46;} .q-explain.exp-wrong{background:#FFF1F2;border-left:3px solid var(--red);color:#9B1C1C;}
+  .quiz-btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
+  .btn{padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);} .btn-outline:hover{background:var(--tag-bg);}
+  .score-box{background:linear-gradient(135deg,#B45309,#78350F,#0D9488);color:#fff;border-radius:14px;padding:32px;text-align:center;display:none;margin-top:20px;} .score-box.show{display:block;}
+  .score-box .big-score{font-family:'Sora',sans-serif;font-size:56px;font-weight:800;} .score-box .score-msg{font-size:16px;opacity:.9;margin-top:6px;} .score-box .score-detail{font-size:13px;opacity:.7;margin-top:4px;}
+  .cap-hero{background:linear-gradient(135deg,#B45309,#0D9488);padding:32px;border-radius:12px;color:#fff;margin-bottom:24px;}
+  .cap-hero h3{color:#fff;margin:0 0 10px;font-size:20px;font-family:'Sora',sans-serif;} .cap-hero p{margin:0;opacity:.92;font-size:14px;}
+  .cap-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:12px;margin-right:6px;}
+  .task-phase{border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+  .task-phase-header{background:var(--bg);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;} .task-phase-header:hover{background:var(--tag-bg);}
+  .phase-num{width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .task-phase-header h4{font-size:14.5px;font-weight:600;flex:1;} .phase-time{font-size:12px;color:var(--muted);background:var(--border);padding:2px 8px;border-radius:99px;}
+  .chevron{font-size:14px;transition:transform .3s;} .chevron.open{transform:rotate(180deg);}
+  .task-phase-body{padding:18px;display:none;} .task-phase-body.open{display:block;}
+  .task-step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
+  .step-content{flex:1;min-width:0;} .step-content h5{font-size:14px;font-weight:600;margin-bottom:5px;} .step-content p{font-size:13.5px;color:#374151;margin-bottom:6px;}
+  .checklist{list-style:none;padding:0;} .checklist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;margin-bottom:6px;color:#374151;}
+  .checklist li::before{content:'☐';font-size:15px;color:var(--accent);flex-shrink:0;line-height:1.5;}
+  .rubric-total{font-weight:700;background:var(--tag-bg);}
+  .day-footer{background:var(--surface);border-top:2px solid var(--border);padding:28px 40px;text-align:center;margin-top:40px;}
+  .day-footer .series{font-size:13px;color:var(--muted);margin-bottom:8px;} .day-footer .days-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .day-pill{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);cursor:default;}
+  .day-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);} .day-pill.done{background:var(--green);color:#fff;border-color:var(--green);}
+  @media(max-width:600px){.topnav{padding:0 16px;}.hero{padding:44px 20px 40px;}.section-body{padding:18px;}}
+
+.code-lang{color:#93C5FD;}
+:root{--muted:#4A6FA5;}
+.table-note{font-size:12.5px;color:var(--muted);margin:6px 0 12px;}
+table{margin:8px 0 14px;}
+.err-out{border:1px solid #FCA5A5;background:#FEF2F2;border-radius:10px;padding:10px 12px;margin:6px 0 14px;}
+.err-label{font-size:12px;font-weight:700;color:#B91C1C;margin-bottom:4px;}
+.err-out pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:12.5px;color:#7F1D1D;}
+@media(max-width:600px){.container{padding:0 16px;}.tbl-wrap table{font-size:12px;}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="logo">Brightcart</span><span class="sep">|</span>
+  <span class="day-label">Day 3 of 10</span>
+  <span class="spacer"></span>
+  <span class="progress-label">Quiz: <span id="answered-live">0</span>/20 · score <span id="score-live">0</span></span>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Brightcart data analyst project · Day 3 of 10</div>
+  <h1>Day 3: <span>Pandas data cleaning</span></h1>
+  <p>Turn the raw export into a clean, trustworthy table. Count every change so that the cleaning can be checked. Save checkpoint files for the rest of the project.</p>
+</div>
+<div class="grad-banner"><p>5 hours · Clean once, document every change, keep checkpoints</p></div>
+<div class="container">
+<div class="section"><div class="section-header"><div class="section-icon">🎯</div><div><h2>Goal and deliverable</h2><p>Clean once, document every change, keep checkpoints</p></div></div><div class="section-body"><p>Turn the raw export into a clean, trustworthy table. Count every change so that the cleaning can be checked. Save checkpoint files for the rest of the project.</p><p><strong>Deliverable:</strong> data/clean/ (three checkpoint CSVs) and notes/day03_cleaning_report.md.</p></div></div><div class="section"><div class="section-header"><div class="section-icon">🧰</div><div><h2>Tools and functions</h2><p>Learn each one, then use it in the steps below.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">drop_duplicates()</div><div class="mc-desc">Removes repeated rows. subset= limits the check to some columns.</div><div class="mc-ex">orders.drop_duplicates()</div></div><div class="mini-card"><div class="mc-name">str.strip(), str.title(), str.lower()</div><div class="mc-desc">Clean text: remove spaces, fix capitals so &#x27;web&#x27;, &#x27;Web&#x27; and &#x27; WEB &#x27; match.</div><div class="mc-ex">df[&#x27;channel&#x27;].str.strip().str.title()</div></div><div class="mini-card"><div class="mc-name">isin(), ~</div><div class="mc-desc">True where a value is in a list. Use ~ to invert it, for example to find unknown customer IDs.</div><div class="mc-ex">orders[&#x27;customer_id&#x27;].isin(customers[&#x27;customer_id&#x27;])</div></div><div class="mini-card"><div class="mc-name">merge(..., how=&#x27;left&#x27;)</div><div class="mc-desc">Joins a lookup table, keeping every row of the main table.</div><div class="mc-ex">orders.merge(products, on=&#x27;product_id&#x27;, how=&#x27;left&#x27;)</div></div><div class="mini-card"><div class="mc-name">fillna(value)</div><div class="mc-desc">Fills missing values with a value, a median, or another column.</div><div class="mc-ex">df[&#x27;unit_price&#x27;].fillna(df[&#x27;list_price&#x27;])</div></div><div class="mini-card"><div class="mc-name">to_datetime()</div><div class="mc-desc">Converts text dates into real dates so you can sort, filter and group by time.</div><div class="mc-ex">pd.to_datetime(orders[&#x27;order_date&#x27;])</div></div><div class="mini-card"><div class="mc-name">median()</div><div class="mc-desc">Middle value. A good fill for skewed numbers such as delivery time.</div><div class="mc-ex">orders[&#x27;delivery_days&#x27;].median()</div></div><div class="mini-card"><div class="mc-name">to_csv(index=False)</div><div class="mc-desc">Writes a checkpoint file without the row numbers.</div><div class="mc-ex">orders.to_csv(&#x27;orders_clean.csv&#x27;, index=False)</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🧠</div><div><h2>Concepts</h2><p>The ideas behind today's work.</p></div></div><div class="section-body"><div class="mini-grid"><div class="mini-card"><div class="mc-name">Cleaning is a set of decisions</div><div class="mc-desc">Each step answers one question: is this row a copy, is the label consistent, does the key exist, is the value possible, and what do we use when it is missing? Write down the decision and the count for every step.</div></div><div class="mini-card"><div class="mc-name">Drop, fill, or flag</div><div class="mc-desc">Drop a row when it cannot be used (an unknown customer cannot be analysed). Fill a value when a reasonable substitute exists (a missing price can use the list price). Flag a value when you are not sure, so it is visible in the report.</div></div><div class="mini-card"><div class="mc-name">Why the median</div><div class="mc-desc">Delivery times are skewed: most are short and a few are long. The median is not pulled by the long ones, so it is the safer fill.</div></div><div class="mini-card"><div class="mc-name">Checkpoints</div><div class="mc-desc">A checkpoint is a saved, cleaned file. Every later day starts from it, so a mistake in analysis never damages the cleaning, and anyone can repeat your results.</div></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">🛠️</div><div><h2>Timed steps</h2><p>About 340 minutes of work. Open each step, do it, then move on.</p></div></div><div class="section-body"><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">1</div><h4>Clean the products table</h4><span class="phase-time">25 min</span><span class="chevron open">▼</span></div><div class="task-phase-body open"><p>Read <code>products.csv</code>. Count the rows, remove duplicate <code>product_id</code> rows with <code>drop_duplicates(subset='product_id')</code>, and count again.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">2</div><h4>Clean the customers table</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Normalise <code>segment</code> with <code>.str.strip().str.title()</code>. Fill missing <code>city</code> with 'Unknown'. Convert <code>signup_date</code> to a datetime. Print the segment counts and confirm that only three segments remain.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">3</div><h4>Remove duplicate orders</h4><span class="phase-time">25 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Remove exact duplicate rows from the orders. Record how many rows were removed.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">4</div><h4>Standardise labels</h4><span class="phase-time">35 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Clean <code>channel</code> with strip and title. Create <code>returned_flag</code> as 1 for 'yes' or 'y' (after lower-casing), otherwise 0. Drop the old <code>returned</code> column. Print the distinct channel values.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">5</div><h4>Drop orphan customers</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Find orders whose <code>customer_id</code> is not in the customers table. Count them. Remove them and explain in your notes why they cannot be analysed.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">6</div><h4>Handle impossible quantities</h4><span class="phase-time">25 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Remove rows where <code>qty</code> is less than 1. Count them.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">7</div><h4>Fill missing prices from the product table</h4><span class="phase-time">40 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Merge the list price onto the orders with a left join. Count the missing unit prices, fill them with the list price, then drop the helper column.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">8</div><h4>Treat delivery outliers</h4><span class="phase-time">40 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Set delivery times above 60 days to NaN. Compute the median of the remaining values. Fill the NaN values with that median. Record the median you used.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">9</div><h4>Fix missing regions and dates</h4><span class="phase-time">30 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Replace missing <code>region</code> with 'Unknown'. Convert <code>order_date</code> to a datetime.</p></div></div><div class="task-phase"><div class="task-phase-header" onclick="togglePhase(this)"><div class="phase-num" style="background:#1D4ED8">10</div><h4>Validate and save checkpoints</h4><span class="phase-time">60 min</span><span class="chevron">▼</span></div><div class="task-phase-body"><p>Confirm that no nulls remain. Write <code>orders_clean.csv</code>, <code>customers_clean.csv</code> and <code>products_clean.csv</code> into <code>data/clean/</code>. Write a cleaning report: each step with its count, in <code>notes/day03_cleaning_report.md</code>.</p></div></div></div></div><div class="section"><div class="section-header"><div class="section-icon">💡</div><div><h2>Reference solution and expected output</h2><p>Check your work against this.</p></div></div><div class="section-body"><p>Try the task yourself first. Then compare your results with the reference below. Your numbers must match the expected output.</p><div class="code-wrap"><div class="code-header"><span class="code-lang">solutions/day03.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>&quot;&quot;&quot;Day 3 solution: clean the raw Brightcart data with pandas and write checkpoint files.
+
+Writes data/clean/orders_clean.csv, customers_clean.csv and products_clean.csv.
+Days 4 to 10 start from these files.
+&quot;&quot;&quot;
+from pathlib import Path
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / &quot;data&quot;
+CLEAN = DATA / &quot;clean&quot;
+CLEAN.mkdir(parents=True, exist_ok=True)
+
+report = {}  # every cleaning step is counted, so the report can be checked later
+
+# ---- products: remove duplicate product rows --------------------------------
+products = pd.read_csv(DATA / &quot;products.csv&quot;)
+report[&quot;product_rows_before&quot;] = len(products)
+products = products.drop_duplicates(subset=&quot;product_id&quot;, keep=&quot;first&quot;)
+report[&quot;product_rows_after&quot;] = len(products)
+
+# ---- customers: normalise labels, fill missing city -------------------------
+customers = pd.read_csv(DATA / &quot;customers.csv&quot;)
+customers[&quot;segment&quot;] = customers[&quot;segment&quot;].str.strip().str.title()     # &#x27;consumer&#x27; -&gt; &#x27;Consumer&#x27;
+customers[&quot;city&quot;] = customers[&quot;city&quot;].fillna(&quot;Unknown&quot;)
+customers[&quot;signup_date&quot;] = pd.to_datetime(customers[&quot;signup_date&quot;])
+report[&quot;segments&quot;] = customers[&quot;segment&quot;].value_counts().to_dict()
+
+# ---- orders: step by step ---------------------------------------------------
+orders = pd.read_csv(DATA / &quot;orders_raw.csv&quot;)
+report[&quot;orders_raw&quot;] = len(orders)
+
+# 1. Exact duplicate rows (the export repeated some orders).
+orders = orders.drop_duplicates()
+report[&quot;after_remove_duplicates&quot;] = len(orders)
+
+# 2. Normalise labels so &#x27;web&#x27; and &#x27;Web&#x27; are one category.
+orders[&quot;channel&quot;] = orders[&quot;channel&quot;].str.strip().str.title()
+orders[&quot;returned_flag&quot;] = orders[&quot;returned&quot;].str.strip().str.lower().isin([&quot;yes&quot;, &quot;y&quot;]).astype(int)
+orders = orders.drop(columns=&quot;returned&quot;)
+
+# 3. Orders for customers we do not know are unusable for customer analysis.
+known = orders[&quot;customer_id&quot;].isin(customers[&quot;customer_id&quot;])
+report[&quot;orphan_customer_rows_dropped&quot;] = int((~known).sum())
+orders = orders[known]
+
+# 4. Quantity must be at least 1.
+bad_qty = orders[&quot;qty&quot;] &lt; 1
+report[&quot;zero_qty_rows_dropped&quot;] = int(bad_qty.sum())
+orders = orders[~bad_qty]
+
+# 5. Missing unit price: use the product&#x27;s list price (a lookup join).
+orders = orders.merge(products[[&quot;product_id&quot;, &quot;list_price&quot;]], on=&quot;product_id&quot;, how=&quot;left&quot;)
+report[&quot;unit_price_filled_from_list&quot;] = int(orders[&quot;unit_price&quot;].isna().sum())
+orders[&quot;unit_price&quot;] = orders[&quot;unit_price&quot;].fillna(orders[&quot;list_price&quot;])
+orders = orders.drop(columns=&quot;list_price&quot;)
+
+# 6. Delivery days: above 60 is an error, and missing values get the median.
+outlier = orders[&quot;delivery_days&quot;] &gt; 60
+report[&quot;delivery_outliers_set_missing&quot;] = int(outlier.sum())
+orders.loc[outlier, &quot;delivery_days&quot;] = float(&quot;nan&quot;)
+median_delivery = orders[&quot;delivery_days&quot;].median()
+report[&quot;delivery_median_used&quot;] = float(median_delivery)
+orders[&quot;delivery_days&quot;] = orders[&quot;delivery_days&quot;].fillna(median_delivery)
+
+# 7. Missing region becomes an explicit &#x27;Unknown&#x27; rather than a hole.
+report[&quot;region_unknown_filled&quot;] = int(orders[&quot;region&quot;].isna().sum())
+orders[&quot;region&quot;] = orders[&quot;region&quot;].fillna(&quot;Unknown&quot;)
+
+# 8. Dates: text to real datetimes.
+orders[&quot;order_date&quot;] = pd.to_datetime(orders[&quot;order_date&quot;])
+
+report[&quot;orders_clean&quot;] = len(orders)
+
+# ---- write checkpoints ------------------------------------------------------
+orders.to_csv(CLEAN / &quot;orders_clean.csv&quot;, index=False)
+customers.to_csv(CLEAN / &quot;customers_clean.csv&quot;, index=False)
+products.to_csv(CLEAN / &quot;products_clean.csv&quot;, index=False)
+
+for key, value in report.items():
+    print(&quot;CHECK&quot;, key, value)
+print(&quot;CHECK clean_nulls_total&quot;, int(orders.isna().sum().sum()))
+print(&quot;CHECK clean_channel_values&quot;, sorted(orders[&quot;channel&quot;].unique()))
+print(&quot;CHECK clean_returned_rate&quot;, round(float(orders[&quot;returned_flag&quot;].mean()), 4))
+</pre></div><p><strong>Expected output</strong>, from running the script:</p><div class="code-wrap"><div class="code-header"><span class="code-lang">Expected output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre>CHECK product_rows_before 62
+CHECK product_rows_after 60
+CHECK segments {&#x27;Consumer&#x27;: 533, &#x27;Small Business&#x27;: 193, &#x27;Enterprise&#x27;: 74}
+CHECK orders_raw 9060
+CHECK after_remove_duplicates 9000
+CHECK orphan_customer_rows_dropped 20
+CHECK zero_qty_rows_dropped 20
+CHECK unit_price_filled_from_list 60
+CHECK delivery_outliers_set_missing 15
+CHECK delivery_median_used 4.0
+CHECK region_unknown_filled 40
+CHECK orders_clean 8960
+CHECK clean_nulls_total 0
+CHECK clean_channel_values [&#x27;App&#x27;, &#x27;Marketplace&#x27;, &#x27;Store&#x27;, &#x27;Web&#x27;]
+CHECK clean_returned_rate 0.0694</pre></div></div></div><div class="section"><div class="section-header"><div class="section-icon">☑️</div><div><h2>Checklist</h2><p>Everything here must be true before you move on.</p></div></div><div class="section-body"><ul class="checklist"><li>Product duplicates removed and counted</li><li>Customer segments normalised to three labels</li><li>Exact order duplicates removed and counted</li><li>Channel labels standardised; returned converted to returned_flag</li><li>Orphan customer rows dropped and counted</li><li>Zero-quantity rows dropped and counted</li><li>Missing prices filled from list price using a left join</li><li>Delivery outliers handled with a recorded median</li><li>No nulls remain; three checkpoint CSVs written</li><li>Cleaning report written with every count</li></ul></div></div><div class="section"><div class="section-header"><div class="section-icon">✅</div><div><h2>Quiz</h2><p>20 questions. Pass mark is 16 of 20 (80%).</p></div></div><div class="section-body">
+      <div class="quiz-meta">
+        <div class="quiz-stat"><div class="num"><span id="score-live2">0</span></div><div class="lbl">Correct so far</div></div>
+        <div class="quiz-stat"><div class="num"><span id="answered-live2">0</span> / 20</div><div class="lbl">Answered</div></div>
+      </div>
+      <div id="quiz-container"></div>
+      <div class="quiz-btns">
+        <button class="btn btn-primary" onclick="submitQuiz()">Submit answers</button>
+        <button class="btn btn-outline" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div class="score-box" id="score-box">
+        <div class="big-score" id="final-score"></div>
+        <div class="score-msg" id="score-msg"></div>
+        <div class="score-detail" id="score-detail"></div>
+      </div></div></div>
+</div>
+<div class="day-footer">
+  <div class="series">Brightcart 10-day data analyst project</div>
+  <div class="days-row"><a class="day-pill" href="day01.html">Day 1</a><a class="day-pill" href="day02.html">Day 2</a><a class="day-pill active" href="day03.html">Day 3</a><a class="day-pill" href="day04.html">Day 4</a><a class="day-pill" href="day05.html">Day 5</a><a class="day-pill" href="day06.html">Day 6</a><a class="day-pill" href="day07.html">Day 7</a><a class="day-pill" href="day08.html">Day 8</a><a class="day-pill" href="day09.html">Day 9</a><a class="day-pill" href="day10.html">Day 10</a></div>
+</div>
+<script>
+
+const questions=[{"q": "1. How many product rows remain after removing duplicates?", "opts": ["60", "62", "59", "58"], "ans": 0, "explain": "62 rows contained 2 duplicates, so 60 remain."}, {"q": "2. How many orders are left after removing exact duplicate rows?", "opts": ["8980", "9060", "9000", "8960"], "ans": 2, "explain": "9,060 raw rows minus 60 duplicates leaves 9,000."}, {"q": "3. How many orders have a customer ID that does not exist in the customers table?", "opts": ["60", "300", "0", "20"], "ans": 3, "explain": "20 orders reference the unknown customer C9999 and are dropped."}, {"q": "4. How many orders have a quantity below 1?", "opts": ["20", "40", "60", "0"], "ans": 0, "explain": "20 orders have zero quantity and are dropped."}, {"q": "5. Why use a left join when adding the list price?", "opts": ["It is faster", "It keeps every order, even when the product is not found in the lookup", "It removes missing values", "It sorts the table"], "ans": 1, "explain": "A left join keeps all orders on the left side and adds matching prices where they exist."}, {"q": "6. How many missing unit prices are filled from the list price?", "opts": ["300", "0", "42", "60"], "ans": 3, "explain": "60 missing unit prices are filled from list_price."}, {"q": "7. How many delivery times above 60 days are set to missing?", "opts": ["30", "300", "0", "15"], "ans": 3, "explain": "15 delivery times above 60 days are treated as errors."}, {"q": "8. What is the median delivery time used to fill the gaps?", "opts": ["4.0 days", "4.8 days", "300 days", "2.0 days"], "ans": 0, "explain": "The median of the cleaned delivery times is 4.0 days."}, {"q": "9. Why use the median rather than the mean to fill delivery days?", "opts": ["The mean is always wrong", "Delivery times are skewed, and the median is not pulled by a few very long values", "The median is faster", "The mean cannot be calculated"], "ans": 1, "explain": "A skewed distribution pulls the mean up; the median stays representative."}, {"q": "10. How many missing regions are filled with 'Unknown' in the cleaned data?", "opts": ["60", "0", "40", "42"], "ans": 2, "explain": "40 missing regions remain after duplicates are removed, and they become 'Unknown'."}, {"q": "11. How many orders are in the cleaned file?", "opts": ["9,000", "9,060", "8,960", "8,980"], "ans": 2, "explain": "The cleaned file holds 8,960 orders."}, {"q": "12. What does .str.strip().str.title() do to ' small business '?", "opts": ["Removes the spaces and capitalises each word to 'Small Business'", "Deletes it", "Splits it in two", "Makes it upper case"], "ans": 0, "explain": "strip removes spaces and title capitalises each word."}, {"q": "13. What does isin() return?", "opts": ["A number", "True where a value appears in a list, otherwise False", "A new table", "The sorted values"], "ans": 1, "explain": "isin gives a True/False result for each value."}, {"q": "14. What is the purpose of returned_flag?", "opts": ["To store dates", "To store text", "To store returns as 1 and 0 so they can be averaged", "To delete returns"], "ans": 2, "explain": "A 1/0 flag lets you calculate the return rate with a mean."}, {"q": "15. Why is a missing value not always a zero?", "opts": ["Missing values are impossible", "Zero is text", "It always is zero", "Zero is a real measurement; missing means no measurement was recorded"], "ans": 3, "explain": "Zero and missing mean different things and need different handling."}, {"q": "16. What is a checkpoint file?", "opts": ["A saved, cleaned table that later steps start from", "A chart", "A log of errors", "A backup of the Python code"], "ans": 0, "explain": "A checkpoint is a saved cleaned dataset used as the starting point for later work."}, {"q": "17. Why is to_csv(index=False) used?", "opts": ["It adds row numbers", "It saves the table without a meaningless extra column of row numbers", "It removes the header", "It compresses the file"], "ans": 1, "explain": "index=False stops pandas writing the row index as a column."}, {"q": "18. Which step fixed the 'web' and 'Web' problem?", "opts": ["median", "drop_duplicates", "str.strip().str.title() on the channel column", "to_datetime"], "ans": 2, "explain": "Standardising the text makes both spellings identical."}, {"q": "19. What must be true after cleaning?", "opts": ["There are no rows", "All numbers are rounded to whole numbers", "Every column is empty", "No nulls remain, every decision is counted, and checkpoints are saved"], "ans": 3, "explain": "A clean table has no unexplained nulls and every change is recorded."}, {"q": "20. Why keep a cleaning report?", "opts": ["It lets anyone check exactly what was changed and why", "Pandas requires it", "It makes the file smaller", "It is optional paperwork"], "ans": 0, "explain": "A report makes the cleaning transparent and repeatable."}];
+let userAnswers=Array(questions.length).fill(null),submitted=false;
+function setCounts(v){['score-live','score-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function setAnswered(v){['answered-live','answered-live2'].forEach(x=>{const e=document.getElementById(x);if(e)e.textContent=v;});}
+function buildQuiz(){
+  const c=document.getElementById('quiz-container');c.innerHTML='';
+  questions.forEach((q,i)=>{
+    const L=['A','B','C','D'];
+    const card=document.createElement('div');card.className='q-card';card.id=`q${i}`;
+    card.innerHTML=`<div class="q-header"><div class="q-num">${i+1}</div><div><div class="q-text">${q.q.replace(/^\d+\.\s*/,'')}</div></div></div>
+    <div class="q-options" id="opts${i}">${q.opts.map((o,j)=>`<div class="opt" onclick="sel(${i},${j})"><div class="opt-letter">${L[j]}</div><span>${o}</span></div>`).join('')}</div>
+    <div class="q-explain" id="exp${i}"></div>`;
+    c.appendChild(card);
+  });
+}
+function sel(qi,oi){
+  if(submitted)return;
+  userAnswers[qi]=oi;
+  document.getElementById(`opts${qi}`).querySelectorAll('.opt').forEach((el,j)=>{el.classList.remove('selected');if(j===oi)el.classList.add('selected');});
+  setAnswered(userAnswers.filter(a=>a!==null).length);
+}
+function submitQuiz(){
+  if(submitted)return;
+  if(userAnswers.some(a=>a===null)){alert('Answer every question before you submit.');return;}
+  submitted=true;let correct=0;
+  questions.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`),od=document.getElementById(`opts${i}`),ed=document.getElementById(`exp${i}`),ua=userAnswers[i];
+    if(ua===q.ans)correct++;
+    od.querySelectorAll('.opt').forEach((el,j)=>{if(j===q.ans)el.classList.add('correct-ans');else if(j===ua&&ua!==q.ans)el.classList.add('wrong-ans');});
+    card.classList.add(ua===q.ans?'correct':'wrong');
+    ed.className=`q-explain show ${ua===q.ans?'exp-correct':'exp-wrong'}`;
+    ed.textContent=(ua===q.ans?'✅ ':'❌ ')+q.explain;
+  });
+  const pct=Math.round(correct/questions.length*100);
+  const msgs=[[0,60,"Re-read the sections behind the questions you missed. 📚"],[60,80,"Close. Re-run the solution and check the outputs. 💪"],[80,95,"Strong. You can clean, analyse and report on data with confidence. 🎉"],[95,101,"Excellent. 🏆📊"]];
+  const msg=msgs.find(([lo,hi])=>pct>=lo&&pct<hi)[2];
+  document.getElementById('score-box').classList.add('show');
+  document.getElementById('final-score').textContent=`${correct} / ${questions.length}`;
+  document.getElementById('score-msg').textContent=msg;
+  document.getElementById('score-detail').textContent=`${pct}% — You need 16/20 (80%) to pass.`;
+  setCounts(correct);
+}
+function resetQuiz(){
+  submitted=false;userAnswers=Array(questions.length).fill(null);
+  document.getElementById('score-box').classList.remove('show');
+  setCounts(0);setAnswered(0);
+  buildQuiz();
+}
+function togglePhase(h){const b=h.nextElementSibling,ch=h.querySelector('.chevron');if(ch)ch.classList.toggle('open');b.classList.toggle('open');}
+function copyCode(btn){const pre=btn.closest('.code-wrap').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});}
+buildQuiz();
+
+</script>
+</body>
+</html>
